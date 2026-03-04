@@ -1,0 +1,4 @@
+# apt: rlwrap
+
+# Clojure CLI
+RUN curl -fsSL https://download.clojure.org/install/linux-install.sh | bash

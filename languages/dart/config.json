@@ -1,0 +1,8 @@
+{
+  "abbreviation": "dt",
+  "dependency": "dart",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": true,
+  "hasLint": true
+}

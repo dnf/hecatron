@@ -1,0 +1,42 @@
+name: Clojure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/clojure/**'
+      - 'codegen/**'
+      - '.github/workflows/clojure.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/clojure/**'
+      - 'codegen/**'
+      - '.github/workflows/clojure.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: DeLaGuardo/setup-clojure@13.1
+        with:
+          cli: 'latest'
+
+      - name: Cache Clojure deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+          key: clojure-${{ hashFiles('src/clojure/deps.edn') }}
+
+      - name: Run tests
+        working-directory: src/clojure
+        run: clojure -M:test

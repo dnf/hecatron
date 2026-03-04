@@ -1,0 +1,8 @@
+{
+  "abbreviation": "pl",
+  "dependency": "perl",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": false,
+  "hasLint": false
+}

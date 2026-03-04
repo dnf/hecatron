@@ -1,0 +1,8 @@
+# Zig
+RUN ARCH="$(dpkg --print-architecture)" && \
+    ZIG_ARCH="$ARCH" && \
+    if [ "$ARCH" = "amd64" ]; then ZIG_ARCH="x86_64"; fi && \
+    if [ "$ARCH" = "arm64" ]; then ZIG_ARCH="aarch64"; fi && \
+    mkdir -p /opt/zig && \
+    curl -fsSL "https://ziglang.org/download/0.14.0/zig-linux-${ZIG_ARCH}-0.14.0.tar.xz" | tar -C /opt/zig --strip-components=1 -xJ && \
+    ln -sf /opt/zig/zig /usr/local/bin/zig

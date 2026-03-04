@@ -1,0 +1,4 @@
+# apt: liblua5.4-dev lua5.4 luarocks
+
+# Lua testing framework (busted) via LuaRocks
+RUN luarocks install busted

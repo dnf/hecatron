@@ -1,0 +1,8 @@
+{
+  "abbreviation": null,
+  "dependency": "go",
+  "lintDependency": "golangci-lint",
+  "compiled": false,
+  "hasClean": false,
+  "hasLint": true
+}

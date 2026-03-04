@@ -1,0 +1,4 @@
+# Go
+RUN ARCH="$(dpkg --print-architecture)" && \
+    curl -fsSL "https://go.dev/dl/go1.21.13.linux-${ARCH}.tar.gz" | tar -C /usr/local -xz
+ENV PATH="/usr/local/go/bin:${PATH}"

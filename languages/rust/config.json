@@ -1,0 +1,8 @@
+{
+  "abbreviation": "rs",
+  "dependency": "cargo",
+  "lintDependency": null,
+  "compiled": true,
+  "hasClean": true,
+  "hasLint": true
+}

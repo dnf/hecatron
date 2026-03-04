@@ -1,0 +1,26 @@
+name: Gleam
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        gleam-version: ['1.14']
+        otp-version: ['26', '27']
+    defaults:
+      run:
+        working-directory: src/gleam
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ matrix.otp-version }}
+          gleam-version: ${{ matrix.gleam-version }}
+      - run: gleam build
+      - run: gleam test

@@ -1,0 +1,25 @@
+name: OCaml
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ocaml-compiler: ['4.14.x', '5.1.x', '5.2.x']
+    defaults:
+      run:
+        working-directory: src/ocaml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+      - run: opam install . --deps-only --with-test --yes
+      - run: opam exec -- dune build
+      - run: opam exec -- dune runtest

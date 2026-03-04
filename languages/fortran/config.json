@@ -1,0 +1,8 @@
+{
+  "abbreviation": "ft",
+  "dependency": "cmake",
+  "lintDependency": null,
+  "compiled": true,
+  "hasClean": true,
+  "hasLint": false
+}

@@ -1,0 +1,8 @@
+{
+  "abbreviation": "el",
+  "dependency": "elm",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": true,
+  "hasLint": false
+}

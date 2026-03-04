@@ -1,0 +1,9 @@
+# Swift
+RUN ARCH="$(dpkg --print-architecture)" && \
+    VER="5.10.1" && \
+    if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then \
+      URL="https://download.swift.org/swift-${VER}-release/ubuntu2404-aarch64/swift-${VER}-RELEASE/swift-${VER}-RELEASE-ubuntu24.04-aarch64.tar.gz"; \
+    else \
+      URL="https://download.swift.org/swift-${VER}-release/ubuntu2404/swift-${VER}-RELEASE/swift-${VER}-RELEASE-ubuntu24.04.tar.gz"; \
+    fi && \
+    curl -fsSL "$URL" | tar -C /usr/local --strip-components=2 -xz

@@ -1,0 +1,7 @@
+# apt: opam
+
+# OCaml via opam
+RUN opam init --disable-sandboxing --yes \
+    && eval $(opam env) \
+    && opam install dune alcotest --yes
+ENV PATH="/root/.opam/default/bin:${PATH}"

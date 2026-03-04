@@ -1,0 +1,8 @@
+{
+  "abbreviation": "sc",
+  "dependency": "java",
+  "lintDependency": null,
+  "compiled": true,
+  "hasClean": true,
+  "hasLint": false
+}

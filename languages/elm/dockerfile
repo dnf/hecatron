@@ -1,0 +1,9 @@
+# after: typescript
+
+# Elm via npm — no arm64 Linux binary available
+RUN ARCH="$(dpkg --print-architecture)" && \
+    if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "aarch64" ]; then \
+      npm install -g elm elm-test; \
+    else \
+      echo "Skipping Elm: no arm64 Linux binary available"; \
+    fi

@@ -1,0 +1,8 @@
+{
+  "abbreviation": null,
+  "dependency": "cmake",
+  "lintDependency": null,
+  "compiled": true,
+  "hasClean": true,
+  "hasLint": false
+}

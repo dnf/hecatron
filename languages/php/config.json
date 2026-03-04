@@ -1,0 +1,8 @@
+{
+  "abbreviation": null,
+  "dependency": "php",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": false,
+  "hasLint": true
+}

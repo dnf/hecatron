@@ -1,0 +1,8 @@
+{
+  "abbreviation": "zg",
+  "dependency": "zig",
+  "lintDependency": null,
+  "compiled": true,
+  "hasClean": true,
+  "hasLint": false
+}

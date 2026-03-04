@@ -1,0 +1,8 @@
+{
+  "abbreviation": "fs",
+  "dependency": "dotnet",
+  "lintDependency": null,
+  "compiled": true,
+  "hasClean": true,
+  "hasLint": true
+}

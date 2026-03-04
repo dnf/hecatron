@@ -1,0 +1,4 @@
+# apt: php-cli php-mbstring php-xml
+
+# Composer (PHP package manager)
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
