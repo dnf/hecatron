@@ -4,4 +4,4 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/#define SAYABLEAGE_VERSION "[^"]*"/#define SAYABLEAGE_VERSION "'"${ver}"'"/' \
-    "${ROOT}/sayable-age/codegen/targets/c/emitter.py"
+    "${ROOT}/age/codegen/targets/c/emitter.py"

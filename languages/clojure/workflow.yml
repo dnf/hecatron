@@ -4,14 +4,14 @@ on:
   push:
     branches: [main]
     paths:
-      - 'sayable-age/src/clojure/**'
-      - 'sayable-age/codegen/**'
+      - 'age/src/clojure/**'
+      - 'age/codegen/**'
       - '.github/workflows/clojure.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'sayable-age/src/clojure/**'
-      - 'sayable-age/codegen/**'
+      - 'age/src/clojure/**'
+      - 'age/codegen/**'
       - '.github/workflows/clojure.yml'
 
 jobs:
@@ -35,8 +35,8 @@ jobs:
           path: |
             ~/.m2/repository
             ~/.gitlibs
-          key: clojure-${{ hashFiles('sayable-age/src/clojure/deps.edn') }}
+          key: clojure-${{ hashFiles('age/src/clojure/deps.edn') }}
 
       - name: Run tests
-        working-directory: sayable-age/src/clojure
+        working-directory: age/src/clojure
         run: clojure -M:test

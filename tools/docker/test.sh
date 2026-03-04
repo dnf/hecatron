@@ -11,19 +11,19 @@ docker build -t sayable-age-linux .
 DOCKER_OPTS=(
     --rm
     -v "$(pwd)":/workspace
-    -v /workspace/sayable-age/src/typescript/node_modules
-    -v /workspace/sayable-age/src/python/.venv
-    -v /workspace/sayable-age/src/rust/target
-    -v /workspace/sayable-age/src/cpp/build
-    -v /workspace/sayable-age/src/groovy/.gradle
-    -v /workspace/sayable-age/src/java/.gradle
-    -v /workspace/sayable-age/src/kotlin/.gradle
+    -v /workspace/age/src/typescript/node_modules
+    -v /workspace/age/src/python/.venv
+    -v /workspace/age/src/rust/target
+    -v /workspace/age/src/cpp/build
+    -v /workspace/age/src/groovy/.gradle
+    -v /workspace/age/src/java/.gradle
+    -v /workspace/age/src/kotlin/.gradle
 )
 
 if [ $# -eq 0 ]; then
     docker run "${DOCKER_OPTS[@]}" sayable-age-linux bash -c '
-        (cd sayable-age/src/typescript && npm install --no-audit --no-fund) &&
-        (cd sayable-age/src/python && uv sync --extra dev --quiet) &&
+        (cd age/src/typescript && npm install --no-audit --no-fund) &&
+        (cd age/src/python && uv sync --extra dev --quiet) &&
         just test
     '
 else

@@ -4,4 +4,4 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/const Version = "[^"]*"/const Version = "'"${ver}"'"/' \
-    "${ROOT}/sayable-age/src/go/sayableage.go"
+    "${ROOT}/age/src/go/sayableage.go"

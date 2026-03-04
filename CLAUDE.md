@@ -134,7 +134,7 @@ Each language has a `workflow.yml` template in its language directory. `just add
 
 ### Banner system
 
-`tools/codegen/util.py` generates a 9-line double-line box-frame `DO NOT EDIT` banner used on all generated files (Dockerfile, workflows, locale files). The `make_banner()` function accepts 5 body lines and configurable line prefix/suffix for different comment syntaxes. `make_header()` is a convenience for codegen-generated files. `locale_source_comment()` generates the `Source: sayable-age/locales/src/{code}.json` line.
+`tools/codegen/util.py` generates a 9-line double-line box-frame `DO NOT EDIT` banner used on all generated files (Dockerfile, workflows, locale files). The `make_banner()` function accepts 5 body lines and configurable line prefix/suffix for different comment syntaxes. `make_header()` is a convenience for codegen-generated files. `locale_source_comment()` generates the `Source: age/locales/src/{code}.json` line.
 
 ### Parallel runner
 
@@ -187,6 +187,6 @@ The `.hecatron/` directory is infrastructure — it knows how to manage the lang
 - `.hecatron/tools/` — implementation (scripts)
 - `.hecatron/languages/` — per-language definitions
 - `.hecatron/config/` — project-level config
-- `sayable-age/src/` — actual library implementations
-- `sayable-age/config/` — project config (version.json, metadata.json, tests.json)
-- `sayable-age/codegen/` — locale code generator (reads `sayable-age/locales/*.json`, writes to `sayable-age/src/<lang>/locales/`)
+- `age/src/` — actual library implementations
+- `age/config/` — project config (version.json, metadata.json, tests.json)
+- `age/codegen/` — locale code generator (reads `age/locales/*.json`, writes to `age/src/<lang>/locales/`)

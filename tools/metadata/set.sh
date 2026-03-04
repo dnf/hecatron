@@ -12,7 +12,7 @@ fi
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 source "${ROOT}/.hecatron/tools/language/helpers.sh"
 
-METADATA="${ROOT}/sayable-age/config/metadata.json"
+METADATA="${ROOT}/age/config/metadata.json"
 if [ ! -f "${METADATA}" ]; then
     echo "error: config/metadata.json not found" >&2
     exit 1

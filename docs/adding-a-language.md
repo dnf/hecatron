@@ -12,9 +12,9 @@ into native locale definitions. You write the emitter, the core formatter, and
 the tests; codegen handles the locale data.
 
 ```
-sayable-age/locales/*.json  ──►  sayable-age/codegen/targets/<lang>/emitter.py  ──►  sayable-age/src/<lang>/sayable-age/locales/*
+age/locales/*.json  ──►  age/codegen/targets/<lang>/emitter.py  ──►  age/src/<lang>/age/locales/*
                                                                     (per-file emitters)
-sayable-age/locales/*.json  ──►  sayable-age/codegen/targets/<lang>/emitter.py  ──►  sayable-age/src/<lang>/.../Locales.<ext>
+age/locales/*.json  ──►  age/codegen/targets/<lang>/emitter.py  ──►  age/src/<lang>/.../Locales.<ext>
                                                                     (single-file emitters)
 ```
 
@@ -23,9 +23,9 @@ sayable-age/locales/*.json  ──►  sayable-age/codegen/targets/<lang>/emitte
 Follow the project layout convention:
 
 ```
-sayable-age/src/<lang>/
+age/src/<lang>/
   src/ or lib/          # Source files (varies by convention)
-    sayable-age/locales/            # Generated locale files go here
+    age/locales/            # Generated locale files go here
     formatter.<ext>     # Core format_age / format_stage logic
     types.<ext>         # AgeLocale, PluralCategory, CompactnessOverride types
   tests/                # Test files
@@ -36,7 +36,7 @@ Match whatever is idiomatic.
 
 ## 2. Define types
 
-Implement these types (see `sayable-age/src/typescript/src/locale.ts` or `sayable-age/src/python/src/sayable_age/locale.py` for examples):
+Implement these types (see `age/src/typescript/src/locale.ts` or `age/src/python/src/sayable_age/locale.py` for examples):
 
 - **`PluralCategory`** — `"zero" | "one" | "two" | "few" | "many" | "other"`
 - **`UnitForms`** — either a single template string or a map of PluralCategory to template string
@@ -48,9 +48,9 @@ The `plural` field is a function `(int) -> PluralCategory`.
 
 ## 3. Write the codegen emitter
 
-Create `sayable-age/codegen/targets/<lang>/emitter.py`. Use an existing emitter as a
-reference — `sayable-age/codegen/targets/python/emitter.py` for per-file output,
-`sayable-age/codegen/targets/kotlin/emitter.py` for single-file output.
+Create `age/codegen/targets/<lang>/emitter.py`. Use an existing emitter as a
+reference — `age/codegen/targets/python/emitter.py` for per-file output,
+`age/codegen/targets/kotlin/emitter.py` for single-file output.
 
 ### Required exports
 
@@ -105,7 +105,7 @@ Each locale's JSON is passed as a dict with these keys:
 
 ## 4. Add plural rules
 
-Create `sayable-age/codegen/targets/<lang>/plural_rules.py`. There are 23 plural rule
+Create `age/codegen/targets/<lang>/plural_rules.py`. There are 23 plural rule
 patterns (covering all CLDR cardinal patterns), each defined as a code
 string for your target language.
 
@@ -114,10 +114,10 @@ string for your target language.
 3. If any rules need named functions (not inline), add a `_<LANG>_NAMED` dict
 4. If your language distinguishes simple vs complex plurals, add `is_simple_plural()`
 
-Use the existing entries in any `sayable-age/codegen/targets/*/plural_rules.py` as
+Use the existing entries in any `age/codegen/targets/*/plural_rules.py` as
 templates. See `docs/adding-a-locale.md` for the full rule table.
 
-## 5. Register in sayable-age/codegen/generate.py
+## 5. Register in age/codegen/generate.py
 
 Add a generator function and register it in `_GENERATORS`:
 
@@ -143,7 +143,7 @@ Run `python -m codegen.generate --lang newlang` to generate just your language.
 ## 6. Implement the core formatter
 
 Port the formatting logic from an existing implementation
-(e.g. `sayable-age/src/typescript/src/format-age.ts` or `sayable-age/src/python/src/sayable_age/format_age.py`). The algorithm:
+(e.g. `age/src/typescript/src/format-age.ts` or `age/src/python/src/sayable_age/format_age.py`). The algorithm:
 
 1. Parse ISO date strings into year/month/day
 2. Compute calendar differences (years, months, days)
@@ -280,10 +280,10 @@ manually with `just dockerfile`. Never edit `Dockerfile` by hand.
 
 ### Language-specific README
 
-Every language implementation **must** have a `sayable-age/src/<lang>/README.md`. This is a
+Every language implementation **must** have a `age/src/<lang>/README.md`. This is a
 project rule — the root `README.md` table must link to it in the Docs column.
 
-Create `sayable-age/src/<lang>/README.md` with installation, usage, and API docs. Include
+Create `age/src/<lang>/README.md` with installation, usage, and API docs. Include
 a `## License` section linking to [`LICENSE.md`](../../LICENSE.md). Use an existing
 language's README as a template (e.g., `src/go/README.md`).
 
@@ -318,9 +318,9 @@ just test               # run all languages to confirm nothing broke
 
 - [ ] Language directory with idiomatic structure
 - [ ] Type definitions (AgeLocale, PluralCategory, etc.)
-- [ ] Codegen emitter in `sayable-age/codegen/targets/<lang>/emitter.py`
-- [ ] Plural rules in `sayable-age/codegen/targets/<lang>/plural_rules.py` (all 23 patterns)
-- [ ] Generator function registered in `sayable-age/codegen/generate.py`
+- [ ] Codegen emitter in `age/codegen/targets/<lang>/emitter.py`
+- [ ] Plural rules in `age/codegen/targets/<lang>/plural_rules.py` (all 23 patterns)
+- [ ] Generator function registered in `age/codegen/generate.py`
 - [ ] Generated locale files pass the language's linter
 - [ ] Core formatter ported from an existing implementation
 - [ ] All test cases from `config/tests.json` implemented

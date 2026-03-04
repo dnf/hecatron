@@ -4,8 +4,8 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/^let version = "[^"]*"/let version = "'"${ver}"'"/' \
-    "${ROOT}/sayable-age/src/ocaml/lib/formatter.ml"
+    "${ROOT}/age/src/ocaml/lib/formatter.ml"
 _sed_i 's/^version: "[^"]*"/version: "'"${ver}"'"/' \
-    "${ROOT}/sayable-age/src/ocaml/sayable_age.opam"
+    "${ROOT}/age/src/ocaml/sayable_age.opam"
 _sed_i 's/(version [^)]*)/(version '"${ver}"')/' \
-    "${ROOT}/sayable-age/src/ocaml/dune-project"
+    "${ROOT}/age/src/ocaml/dune-project"

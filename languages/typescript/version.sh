@@ -4,9 +4,9 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/export const VERSION = "[^"]*"/export const VERSION = "'"${ver}"'"/' \
-    "${ROOT}/sayable-age/src/typescript/src/format-age.ts"
+    "${ROOT}/age/src/typescript/src/format-age.ts"
 _sed_i 's/"version": "[^"]*"/"version": "'"${ver}"'"/' \
-    "${ROOT}/sayable-age/src/typescript/package.json"
+    "${ROOT}/age/src/typescript/package.json"
 if has npm; then
-    (cd "${ROOT}/sayable-age/src/typescript" && npm install --package-lock-only)
+    (cd "${ROOT}/age/src/typescript" && npm install --package-lock-only)
 fi

@@ -3,6 +3,6 @@
 source "$(dirname "$0")/../_common.sh"
 
 _sed_i 's/^description = "[^"]*"/description = "'"${PT_DESCRIPTION}"'"/' \
-    "${ROOT}/sayable-age/src/gleam/gleam.toml"
+    "${ROOT}/age/src/gleam/gleam.toml"
 _sed_i 's/^licences = \["[^"]*"\]/licences = ["'"${PT_LICENSE}"'"]/' \
-    "${ROOT}/sayable-age/src/gleam/gleam.toml"
+    "${ROOT}/age/src/gleam/gleam.toml"
