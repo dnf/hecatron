@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: age/src/c
+        working-directory: age/impl/c
     steps:
       - uses: actions/checkout@v4
       - run: cmake -B build -DCMAKE_BUILD_TYPE=Release

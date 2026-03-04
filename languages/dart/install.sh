@@ -14,7 +14,7 @@ install_linux() {
 }
 
 deps() {
-    if [ -d "age/src/dart" ] && has dart; then
+    if [ -d "age/impl/dart" ] && has dart; then
         (cd src/dart && dart pub get)
     fi
 }

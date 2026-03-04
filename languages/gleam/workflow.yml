@@ -15,7 +15,7 @@ jobs:
         otp-version: ['26', '27']
     defaults:
       run:
-        working-directory: age/src/gleam
+        working-directory: age/impl/gleam
     steps:
       - uses: actions/checkout@v4
       - uses: erlef/setup-beam@v1

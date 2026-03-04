@@ -4,4 +4,4 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/public static let version = "[^"]*"/public static let version = "'"${ver}"'"/' \
-    "${ROOT}/age/src/swift/Sources/SayableAge/SayableAge.swift"
+    "${ROOT}/age/impl/swift/Sources/SayableAge/SayableAge.swift"

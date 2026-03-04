@@ -4,6 +4,6 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/pub const version = "[^"]*"/pub const version = "'"${ver}"'"/' \
-    "${ROOT}/age/src/zig/src/sayableage.zig"
+    "${ROOT}/age/impl/zig/src/sayableage.zig"
 _sed_i 's/\.version = "[^"]*"/.version = "'"${ver}"'"/' \
-    "${ROOT}/age/src/zig/build.zig.zon"
+    "${ROOT}/age/impl/zig/build.zig.zon"

@@ -3,6 +3,6 @@
 source "$(dirname "$0")/../_common.sh"
 
 _sed_i 's|DESCRIPTION "[^"]*"|DESCRIPTION "'"${PT_DESCRIPTION}"'"|' \
-    "${ROOT}/age/src/cpp/CMakeLists.txt"
+    "${ROOT}/age/impl/cpp/CMakeLists.txt"
 _sed_i 's|HOMEPAGE_URL "[^"]*"|HOMEPAGE_URL "'"${PT_REPOSITORY}"'"|' \
-    "${ROOT}/age/src/cpp/CMakeLists.txt"
+    "${ROOT}/age/impl/cpp/CMakeLists.txt"

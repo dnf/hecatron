@@ -4,4 +4,4 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/Version : constant String := "[^"]*"/Version : constant String := "'"${ver}"'"/' \
-    "${ROOT}/age/src/ada/src/sayableage.ads"
+    "${ROOT}/age/impl/ada/src/sayableage.ads"

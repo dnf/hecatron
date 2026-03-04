@@ -187,6 +187,6 @@ The `.hecatron/` directory is infrastructure — it knows how to manage the lang
 - `.hecatron/tools/` — implementation (scripts)
 - `.hecatron/languages/` — per-language definitions
 - `.hecatron/config/` — project-level config
-- `age/src/` — actual library implementations
+- `age/impl/` — actual library implementations
 - `age/config/` — project config (version.json, metadata.json, tests.json)
-- `age/codegen/` — locale code generator (reads `age/locales/*.json`, writes to `age/src/<lang>/locales/`)
+- `age/codegen/` — locale code generator (reads `age/locales/*.json`, writes to `age/impl/<lang>/locales/`)

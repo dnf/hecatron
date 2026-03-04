@@ -4,6 +4,6 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/@version "[^"]*"/@version "'"${ver}"'"/' \
-    "${ROOT}/age/src/elixir/lib/sayable_age/formatter.ex"
+    "${ROOT}/age/impl/elixir/lib/sayable_age/formatter.ex"
 _sed_i 's/version: "[^"]*"/version: "'"${ver}"'"/' \
-    "${ROOT}/age/src/elixir/mix.exs"
+    "${ROOT}/age/impl/elixir/mix.exs"

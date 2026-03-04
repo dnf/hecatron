@@ -12,9 +12,9 @@ into native locale definitions. You write the emitter, the core formatter, and
 the tests; codegen handles the locale data.
 
 ```
-age/locales/*.json  ──►  age/codegen/targets/<lang>/emitter.py  ──►  age/src/<lang>/age/locales/*
+age/locales/*.json  ──►  age/codegen/targets/<lang>/emitter.py  ──►  age/impl/<lang>/age/locales/*
                                                                     (per-file emitters)
-age/locales/*.json  ──►  age/codegen/targets/<lang>/emitter.py  ──►  age/src/<lang>/.../Locales.<ext>
+age/locales/*.json  ──►  age/codegen/targets/<lang>/emitter.py  ──►  age/impl/<lang>/.../Locales.<ext>
                                                                     (single-file emitters)
 ```
 
@@ -23,7 +23,7 @@ age/locales/*.json  ──►  age/codegen/targets/<lang>/emitter.py  ──► 
 Follow the project layout convention:
 
 ```
-age/src/<lang>/
+age/impl/<lang>/
   src/ or lib/          # Source files (varies by convention)
     age/locales/            # Generated locale files go here
     formatter.<ext>     # Core format_age / format_stage logic
@@ -36,7 +36,7 @@ Match whatever is idiomatic.
 
 ## 2. Define types
 
-Implement these types (see `age/src/typescript/src/locale.ts` or `age/src/python/src/sayable_age/locale.py` for examples):
+Implement these types (see `age/impl/typescript/src/locale.ts` or `age/impl/python/src/sayable_age/locale.py` for examples):
 
 - **`PluralCategory`** — `"zero" | "one" | "two" | "few" | "many" | "other"`
 - **`UnitForms`** — either a single template string or a map of PluralCategory to template string
@@ -143,7 +143,7 @@ Run `python -m codegen.generate --lang newlang` to generate just your language.
 ## 6. Implement the core formatter
 
 Port the formatting logic from an existing implementation
-(e.g. `age/src/typescript/src/format-age.ts` or `age/src/python/src/sayable_age/format_age.py`). The algorithm:
+(e.g. `age/impl/typescript/src/format-age.ts` or `age/impl/python/src/sayable_age/format_age.py`). The algorithm:
 
 1. Parse ISO date strings into year/month/day
 2. Compute calendar differences (years, months, days)
@@ -280,10 +280,10 @@ manually with `just dockerfile`. Never edit `Dockerfile` by hand.
 
 ### Language-specific README
 
-Every language implementation **must** have a `age/src/<lang>/README.md`. This is a
+Every language implementation **must** have a `age/impl/<lang>/README.md`. This is a
 project rule — the root `README.md` table must link to it in the Docs column.
 
-Create `age/src/<lang>/README.md` with installation, usage, and API docs. Include
+Create `age/impl/<lang>/README.md` with installation, usage, and API docs. Include
 a `## License` section linking to [`LICENSE.md`](../../LICENSE.md). Use an existing
 language's README as a template (e.g., `src/go/README.md`).
 

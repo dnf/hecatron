@@ -14,7 +14,7 @@ jobs:
         perl-version: ["5.32", "5.36", "5.38", "5.40"]
     defaults:
       run:
-        working-directory: age/src/perl
+        working-directory: age/impl/perl
     steps:
       - uses: actions/checkout@v4
       - uses: shogo82148/actions-setup-perl@v1

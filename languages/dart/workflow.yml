@@ -14,7 +14,7 @@ jobs:
         sdk: ["3.2.0", "stable"]
     defaults:
       run:
-        working-directory: age/src/dart
+        working-directory: age/impl/dart
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
