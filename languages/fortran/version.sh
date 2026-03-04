@@ -4,4 +4,4 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/PT_VERSION = "[^"]*"/PT_VERSION = "'"${ver}"'"/' \
-    "${ROOT}/src/fortran/src/parenttime.f90"
+    "${ROOT}/sayable-age/src/fortran/src/sayableage.f90"

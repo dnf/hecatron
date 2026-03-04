@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: src/zig
+        working-directory: sayable-age/src/zig
     steps:
       - uses: actions/checkout@v4
       - uses: mlugg/setup-zig@v2

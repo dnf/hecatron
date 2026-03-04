@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: src/erlang
+        working-directory: sayable-age/src/erlang
     steps:
       - uses: actions/checkout@v4
       - uses: erlef/setup-beam@v1

@@ -3,4 +3,4 @@
 source "$(dirname "$0")/../_common.sh"
 
 _sed_i "s/^description: .*/description: ${PT_DESCRIPTION}/" \
-    "${ROOT}/src/dart/pubspec.yaml"
+    "${ROOT}/sayable-age/src/dart/pubspec.yaml"

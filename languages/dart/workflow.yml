@@ -14,7 +14,7 @@ jobs:
         sdk: ["3.2.0", "stable"]
     defaults:
       run:
-        working-directory: src/dart
+        working-directory: sayable-age/src/dart
     steps:
       - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1

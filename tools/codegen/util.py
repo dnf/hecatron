@@ -59,4 +59,4 @@ def make_header(generator_path: str, line_prefix: str = "// ", line_suffix: str 
 
 def locale_source_comment(locale_code: str, line_prefix: str = "// ", line_suffix: str = "") -> str:
     """Return a single-line source comment for a locale file."""
-    return f"{line_prefix}Source: locales/src/{locale_code}.json{line_suffix}\n"
+    return f"{line_prefix}Source: sayable-age/locales/src/{locale_code}.json{line_suffix}\n"

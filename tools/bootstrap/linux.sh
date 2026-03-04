@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.."
 
-echo "==> parent-time: Linux development setup (Ubuntu/Debian)"
+echo "==> sayable-age: Linux development setup (Ubuntu/Debian)"
 echo ""
 
 # Use sudo only when not already root
@@ -31,7 +31,7 @@ SHELL_RC="$HOME/.bashrc"
 [ -n "${ZSH_VERSION:-}" ] && SHELL_RC="$HOME/.zshrc"
 {
     echo ''
-    echo '# Added by parent-time bootstrap'
+    echo '# Added by sayable-age bootstrap'
     echo 'export PATH="/usr/local/go/bin:$PATH"'
     echo '[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"'
     echo '[ -f "$HOME/.ghcup/env" ] && . "$HOME/.ghcup/env"'

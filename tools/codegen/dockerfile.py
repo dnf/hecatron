@@ -204,7 +204,7 @@ def main() -> None:
     check = "--check" in sys.argv
 
     content = generate()
-    dockerfile_path = os.path.join(ROOT, "Dockerfile")
+    dockerfile_path = os.path.join(ROOT, "sayable-age", "Dockerfile")
 
     if check:
         if os.path.isfile(dockerfile_path):

@@ -4,6 +4,6 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/val Version = "[^"]*"/val Version = "'"${ver}"'"/' \
-    "${ROOT}/src/scala/src/main/scala/parenttime/ParentTime.scala"
+    "${ROOT}/sayable-age/src/scala/src/main/scala/sayableage/SayableAge.scala"
 _sed_i 's/^version = "[^"]*"/version = "'"${ver}"'"/' \
-    "${ROOT}/src/scala/build.gradle.kts"
+    "${ROOT}/sayable-age/src/scala/build.gradle.kts"

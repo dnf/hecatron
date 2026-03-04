@@ -4,6 +4,6 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/static final String VERSION = "[^"]*"/static final String VERSION = "'"${ver}"'"/' \
-    "${ROOT}/src/groovy/src/main/groovy/parenttime/ParentTime.groovy"
+    "${ROOT}/sayable-age/src/groovy/src/main/groovy/sayableage/SayableAge.groovy"
 _sed_i "s/^version = '[^']*'/version = '${ver}'/" \
-    "${ROOT}/src/groovy/build.gradle"
+    "${ROOT}/sayable-age/src/groovy/build.gradle"

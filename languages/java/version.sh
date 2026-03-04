@@ -4,6 +4,6 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/public static final String VERSION = "[^"]*"/public static final String VERSION = "'"${ver}"'"/' \
-    "${ROOT}/src/java/src/main/java/parenttime/ParentTime.java"
+    "${ROOT}/sayable-age/src/java/src/main/java/sayableage/SayableAge.java"
 _sed_i 's/^version = "[^"]*"/version = "'"${ver}"'"/' \
-    "${ROOT}/src/java/build.gradle.kts"
+    "${ROOT}/sayable-age/src/java/build.gradle.kts"

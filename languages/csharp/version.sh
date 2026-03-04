@@ -4,6 +4,6 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/public const string Version = "[^"]*"/public const string Version = "'"${ver}"'"/' \
-    "${ROOT}/src/csharp/ParentTime/ParentTime.cs"
+    "${ROOT}/sayable-age/src/csharp/SayableAge/SayableAge.cs"
 _sed_i 's/<Version>[^<]*<\/Version>/<Version>'"${ver}"'<\/Version>/' \
-    "${ROOT}/src/csharp/ParentTime/ParentTime.csproj"
+    "${ROOT}/sayable-age/src/csharp/SayableAge/SayableAge.csproj"

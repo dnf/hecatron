@@ -4,4 +4,4 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i "s/our \$VERSION = '[^']*'/our \$VERSION = '${ver}'/" \
-    "${ROOT}/src/perl/lib/ParentTime/Formatter.pm"
+    "${ROOT}/sayable-age/src/perl/lib/SayableAge/Formatter.pm"

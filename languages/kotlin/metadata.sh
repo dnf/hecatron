@@ -2,4 +2,4 @@
 # Update Kotlin package metadata
 source "$(dirname "$0")/../_common.sh"
 
-_set_metadata_gradle_kts "${ROOT}/src/kotlin/build.gradle.kts"
+_set_metadata_gradle_kts "${ROOT}/sayable-age/src/kotlin/build.gradle.kts"

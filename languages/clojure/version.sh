@@ -4,4 +4,4 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/(def version "[^"]*")/(def version "'"${ver}"'")/' \
-    "${ROOT}/src/clojure/src/parenttime/formatter.clj"
+    "${ROOT}/sayable-age/src/clojure/src/sayableage/formatter.clj"

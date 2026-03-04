@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.."
 
-echo "==> parent-time: macOS development setup"
+echo "==> sayable-age: macOS development setup"
 echo ""
 
 # ---- Homebrew ----

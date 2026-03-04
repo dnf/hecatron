@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: src/fsharp
+        working-directory: sayable-age/src/fsharp
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4

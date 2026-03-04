@@ -4,6 +4,6 @@ source "$(dirname "$0")/../_common.sh"
 
 ver="${1:?version required}"
 _sed_i 's/-define(VERSION, "[^"]*")/-define(VERSION, "'"${ver}"'")/' \
-    "${ROOT}/src/erlang/include/parenttime.hrl"
+    "${ROOT}/sayable-age/src/erlang/include/sayableage.hrl"
 _sed_i 's/{vsn, "[^"]*"}/{vsn, "'"${ver}"'"}/' \
-    "${ROOT}/src/erlang/src/parenttime.app.src"
+    "${ROOT}/sayable-age/src/erlang/src/sayableage.app.src"

@@ -14,12 +14,12 @@ jobs:
         ruby-version: ["3.0", "3.1", "3.2", "3.3"]
     defaults:
       run:
-        working-directory: src/ruby
+        working-directory: sayable-age/src/ruby
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
-          working-directory: src/ruby
+          working-directory: sayable-age/src/ruby
       - run: bundle exec rake test
