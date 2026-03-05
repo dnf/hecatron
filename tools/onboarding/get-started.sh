@@ -118,7 +118,7 @@ _print_intro() {
     echo ""
     echo -e "${BOLD}sayable-age${RESET}"
     echo "Formats ages the way parents talk — \"6 weeks\", \"14 months\", \"3½ years\"."
-    echo "23 identical implementations, 71 locales, zero dependencies."
+    echo "23 identical implementations, 110 locales, zero dependencies."
     echo ""
 }
 

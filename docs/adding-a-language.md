@@ -6,7 +6,7 @@ build integration.
 
 ## Overview
 
-sayable-age uses a codegen system where 71 locale JSON files are the single
+sayable-age uses a codegen system where 110 locale JSON files are the single
 source of truth. A Python emitter for each language converts these JSON files
 into native locale definitions. You write the emitter, the core formatter, and
 the tests; codegen handles the locale data.
