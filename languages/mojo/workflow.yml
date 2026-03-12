@@ -14,11 +14,13 @@ jobs:
         working-directory: age/impl/mojo
     steps:
       - uses: actions/checkout@v4
-      - name: Install Modular CLI
-        run: curl -s https://get.modular.com | sh -
+      - name: Install Pixi
+        run: curl -fsSL https://pixi.sh/install.sh | bash
+      - name: Add Pixi to PATH
+        run: echo "$HOME/.pixi/bin" >> $GITHUB_PATH
       - name: Install Mojo
-        run: modular install mojo
-      - name: Add Mojo to PATH
-        run: echo "$HOME/.modular/bin" >> $GITHUB_PATH
+        run: |
+          pixi init -c https://conda.modular.com/max-nightly/ -c conda-forge .
+          pixi add mojo
       - name: Run tests
-        run: mojo run tests/test_format_age.mojo
+        run: pixi run mojo run tests/test_format_age.mojo
