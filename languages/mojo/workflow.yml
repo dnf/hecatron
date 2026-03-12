@@ -14,10 +14,9 @@ jobs:
         working-directory: age/impl/mojo
     steps:
       - uses: actions/checkout@v4
-      - name: Install Pixi
-        run: curl -fsSL https://pixi.sh/install.sh | bash
-      - name: Add Pixi to PATH
-        run: echo "$HOME/.pixi/bin" >> $GITHUB_PATH
+      - uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          run-install: false
       - name: Install Mojo
         run: |
           pixi init -c https://conda.modular.com/max/ -c conda-forge .
