@@ -21,9 +21,18 @@ jobs:
         run: |
           mkdir -p ${HOME}/.pharo
           cd ${HOME}/.pharo
-          curl -fsSL https://get.pharo.org/64/${{ matrix.pharo-version }}+vm | bash
+          for i in 1 2 3; do
+            curl -fsSL https://get.pharo.org/64/${{ matrix.pharo-version }}+vm -o install.sh && bash install.sh && break
+            echo "Retry $i..." && sleep 10
+          done
+          test -f pharo || { echo "Pharo VM install failed"; exit 1; }
           echo "${HOME}/.pharo" >> ${GITHUB_PATH}
       - name: Download Pharo image
-        run: curl -fsSL https://get.pharo.org/64/${{ matrix.pharo-version }} | bash
+        run: |
+          for i in 1 2 3; do
+            curl -fsSL https://get.pharo.org/64/${{ matrix.pharo-version }} -o get-image.sh && bash get-image.sh && break
+            echo "Retry $i..." && sleep 10
+          done
+          test -f Pharo.image || { echo "Pharo image download failed"; exit 1; }
       - name: Run tests
         run: pharo --headless Pharo.image st run_tests.st

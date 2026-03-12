@@ -20,7 +20,7 @@ jobs:
         run: echo "$HOME/.pixi/bin" >> $GITHUB_PATH
       - name: Install Mojo
         run: |
-          pixi init -c https://conda.modular.com/max-nightly/ -c conda-forge .
-          pixi add mojo
+          pixi init -c https://conda.modular.com/max/ -c conda-forge .
+          pixi add 'max-mojo'
       - name: Run tests
         run: pixi run mojo run -I src tests/test_format_age.mojo
