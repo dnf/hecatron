@@ -1,0 +1,8 @@
+{
+  "abbreviation": "ni",
+  "dependency": "nim",
+  "lintDependency": null,
+  "compiled": true,
+  "hasClean": true,
+  "hasLint": false
+}

@@ -1,0 +1,24 @@
+name: Crystal
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        crystal-version: ["1.10.0", "latest"]
+    defaults:
+      run:
+        working-directory: age/impl/crystal
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: ${{ matrix.crystal-version }}
+      - run: shards install
+      - run: crystal spec

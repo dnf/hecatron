@@ -1,0 +1,8 @@
+{
+  "abbreviation": null,
+  "dependency": "Rscript",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": false,
+  "hasLint": false
+}
