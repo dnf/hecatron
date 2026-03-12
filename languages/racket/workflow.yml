@@ -1,0 +1,23 @@
+name: Racket
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        racket-version: ["8.14", "8.15"]
+    defaults:
+      run:
+        working-directory: age/impl/racket
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Bogdanp/setup-racket@v1
+        with:
+          version: ${{ matrix.racket-version }}
+      - run: raco test tests/

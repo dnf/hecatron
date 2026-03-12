@@ -1,0 +1,8 @@
+{
+  "abbreviation": "swi",
+  "dependency": "swipl",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": true,
+  "hasLint": false
+}

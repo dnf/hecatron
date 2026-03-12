@@ -1,0 +1,8 @@
+{
+  "abbreviation": "pas",
+  "dependency": "fpc",
+  "lintDependency": null,
+  "compiled": true,
+  "hasClean": true,
+  "hasLint": false
+}

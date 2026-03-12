@@ -1,0 +1,23 @@
+name: D
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dc: [dmd-latest, ldc-latest]
+    defaults:
+      run:
+        working-directory: age/impl/d
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dlang-community/setup-dlang@v2
+        with:
+          compiler: ${{ matrix.dc }}
+      - run: dub test

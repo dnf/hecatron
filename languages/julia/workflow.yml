@@ -1,0 +1,23 @@
+name: Julia
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        julia-version: ["1.10", "1.11"]
+    defaults:
+      run:
+        working-directory: age/impl/julia
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: ${{ matrix.julia-version }}
+      - run: julia --project -e 'using Pkg; Pkg.test()'
