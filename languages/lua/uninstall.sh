@@ -6,7 +6,8 @@ uninstall_macos() {
     brew uninstall luarocks lua 2>/dev/null || true
 }
 uninstall_linux() {
-    $SUDO apt-get remove -y luarocks lua5.4 liblua5.4-dev 2>/dev/null || true
+    # Remove whichever lua5.x version is installed
+    $SUDO apt-get remove -y luarocks lua5.5 liblua5.5-dev lua5.4 liblua5.4-dev lua5.3 liblua5.3-dev 2>/dev/null || true
 }
 
 log "Uninstalling Lua..."
