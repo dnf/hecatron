@@ -23,4 +23,4 @@ jobs:
           pixi init -c https://conda.modular.com/max-nightly/ -c conda-forge .
           pixi add mojo
       - name: Run tests
-        run: pixi run mojo run tests/test_format_age.mojo
+        run: pixi run mojo run -I src tests/test_format_age.mojo
