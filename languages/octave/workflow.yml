@@ -1,0 +1,24 @@
+name: Octave
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        octave-version: ["8", "9"]
+    defaults:
+      run:
+        working-directory: age/impl/octave
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Octave
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y octave
+      - run: octave --no-gui --path . test_format_age.m

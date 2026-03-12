@@ -1,0 +1,5 @@
+# Mojo via Modular CLI
+# apt: curl
+RUN curl -s https://get.modular.com | sh -
+RUN modular install mojo
+ENV PATH="/root/.modular/bin:${PATH}"

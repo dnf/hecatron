@@ -1,0 +1,4 @@
+# apt: curl
+# after: ruby
+RUN mkdir -p /opt/pharo && cd /opt/pharo && curl -fsSL https://get.pharo.org/64/120+vm | bash
+ENV PATH="/opt/pharo:${PATH}"

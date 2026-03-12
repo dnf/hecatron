@@ -1,0 +1,8 @@
+{
+  "abbreviation": "ps1",
+  "dependency": "pwsh",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": false,
+  "hasLint": false
+}

@@ -1,0 +1,8 @@
+{
+  "abbreviation": "od",
+  "dependency": "odin",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": false,
+  "hasLint": false
+}

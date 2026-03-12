@@ -1,0 +1,3 @@
+# apt: powershell
+# after: dotnet
+RUN pwsh -Command "Install-Module -Name Pester -Force -SkipPublisherCheck -Scope AllUsers"

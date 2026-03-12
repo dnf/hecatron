@@ -1,0 +1,23 @@
+name: Bash
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        bash-version: ["5"]
+    defaults:
+      run:
+        working-directory: age/impl/bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Bash version
+        run: bash --version
+      - name: Run tests
+        run: bash test_format_age.sh

@@ -1,0 +1,29 @@
+name: Pharo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        pharo-version: ["120"]
+    defaults:
+      run:
+        working-directory: age/impl/pharo
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Pharo VM
+        run: |
+          mkdir -p ${HOME}/.pharo
+          cd ${HOME}/.pharo
+          curl -fsSL https://get.pharo.org/64/${{ matrix.pharo-version }}+vm | bash
+          echo "${HOME}/.pharo" >> ${GITHUB_PATH}
+      - name: Download Pharo image
+        run: curl -fsSL https://get.pharo.org/64/${{ matrix.pharo-version }} | bash
+      - name: Run tests
+        run: pharo --headless Pharo.image st run_tests.st

@@ -1,0 +1,8 @@
+{
+  "abbreviation": "oct",
+  "dependency": "octave",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": false,
+  "hasLint": false
+}

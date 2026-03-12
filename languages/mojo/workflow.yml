@@ -1,0 +1,24 @@
+name: Mojo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: age/impl/mojo
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Modular CLI
+        run: curl -s https://get.modular.com | sh -
+      - name: Install Mojo
+        run: modular install mojo
+      - name: Add Mojo to PATH
+        run: echo "$HOME/.modular/bin" >> $GITHUB_PATH
+      - name: Run tests
+        run: mojo run tests/test_format_age.mojo
