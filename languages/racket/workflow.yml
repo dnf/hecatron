@@ -17,7 +17,7 @@ jobs:
         working-directory: age/impl/racket
     steps:
       - uses: actions/checkout@v4
-      - uses: Bogdanp/setup-racket@v1
+      - uses: Bogdanp/setup-racket@v1.14
         with:
           version: ${{ matrix.racket-version }}
       - run: raco test tests/

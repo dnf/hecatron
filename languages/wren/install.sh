@@ -10,14 +10,15 @@ install_linux() {
         log "wren_cli already installed"
         return
     fi
-    log "Building wren_cli from source..."
-    apt_install git make gcc
+    log "Installing wren_cli from prebuilt release..."
+    apt_install curl unzip
     local tmpdir
     tmpdir="$(mktemp -d)"
-    git clone --depth 1 https://github.com/wren-lang/wren-cli.git "${tmpdir}/wren-cli"
-    cd "${tmpdir}/wren-cli"
-    make
-    $SUDO cp bin/wren_cli /usr/local/bin/wren_cli
+    curl -fsSL -o "${tmpdir}/wren-cli.zip" \
+        https://github.com/wren-lang/wren-cli/releases/download/0.4.0/wren-cli-linux-0.4.0.zip
+    unzip -o "${tmpdir}/wren-cli.zip" -d "${tmpdir}"
+    ${SUDO} cp "${tmpdir}/wren-cli-linux-0.4.0/wren_cli" /usr/local/bin/wren_cli
+    ${SUDO} chmod +x /usr/local/bin/wren_cli
     rm -rf "${tmpdir}"
 }
 

@@ -15,5 +15,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y fpc
-      - run: ./build.sh
-      - run: ./test.sh
+      - run: mkdir -p build && fpc -FEbuild -FUbuild -Fulocales -o"build/test_format_age" test_format_age.pas
+      - run: ./build/test_format_age

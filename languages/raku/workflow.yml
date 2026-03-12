@@ -14,5 +14,6 @@ jobs:
         working-directory: age/impl/raku
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y rakudo
+      - uses: Raku/setup-raku@v1
+      - run: zef install --/test App::Prove6
       - run: prove6 -I lib t/
