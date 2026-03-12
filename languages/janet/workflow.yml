@@ -1,0 +1,24 @@
+name: Janet
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: age/impl/janet
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Janet
+        run: |
+          cd /tmp
+          curl -sL https://github.com/janet-lang/janet/archive/refs/tags/v1.37.1.tar.gz | tar xz
+          cd janet-1.37.1
+          make -j$(nproc)
+          sudo make install
+      - run: janet test_format_age.janet

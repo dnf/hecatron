@@ -1,0 +1,24 @@
+name: Wren
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: age/impl/wren
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build wren_cli from source
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y git make gcc
+          git clone --depth 1 https://github.com/wren-lang/wren-cli.git /tmp/wren-cli
+          cd /tmp/wren-cli && make
+          sudo cp bin/wren_cli /usr/local/bin/wren_cli
+      - run: wren_cli test_format_age.wren

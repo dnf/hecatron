@@ -16,9 +16,11 @@
   "go",
   "groovy",
   "haskell",
+  "janet",
   "java",
   "julia",
   "kotlin",
+  "lisp",
   "lua",
   "ocaml",
   "pascal",
@@ -32,7 +34,9 @@
   "rust",
   "scala",
   "swift",
+  "tcl",
   "typescript",
   "v",
+  "wren",
   "zig"
 ]

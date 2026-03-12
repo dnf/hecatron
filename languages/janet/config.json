@@ -1,0 +1,8 @@
+{
+  "abbreviation": "jt",
+  "dependency": "janet",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": false,
+  "hasLint": false
+}

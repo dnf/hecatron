@@ -1,0 +1,26 @@
+name: Common Lisp
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: age/impl/lisp
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SBCL
+        run: sudo apt-get update && sudo apt-get install -y sbcl
+      - name: Run tests
+        run: |
+          sbcl --noinform --non-interactive \
+            --eval '(require :asdf)' \
+            --eval '(push (truename ".") asdf:*central-registry*)' \
+            --eval '(asdf:load-system "sayable-age")' \
+            --load test/test-formatter.lisp \
+            --eval '(sayable-age-test:run-tests)'

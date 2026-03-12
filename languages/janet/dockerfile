@@ -1,0 +1,5 @@
+# Janet (built from source — not in standard apt repos)
+RUN cd /tmp && \
+    curl -sL https://github.com/janet-lang/janet/archive/refs/tags/v1.37.1.tar.gz | tar xz && \
+    cd janet-1.37.1 && make -j$(nproc) && make install && \
+    rm -rf /tmp/janet-1.37.1

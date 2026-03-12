@@ -1,0 +1,8 @@
+{
+  "abbreviation": null,
+  "dependency": "tclsh",
+  "lintDependency": null,
+  "compiled": false,
+  "hasClean": false,
+  "hasLint": false
+}

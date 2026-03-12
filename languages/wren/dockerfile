@@ -1,0 +1,6 @@
+# apt: git make gcc
+
+# Build wren_cli from source
+RUN git clone --depth 1 https://github.com/wren-lang/wren-cli.git /tmp/wren-cli && \
+    cd /tmp/wren-cli && make && cp bin/wren_cli /usr/local/bin/wren_cli && \
+    rm -rf /tmp/wren-cli

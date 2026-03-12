@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Install Janet
+source "$(dirname "$0")/../_common.sh"
+
+install_macos() {
+    brew_install janet
+}
+install_linux() {
+    # Janet is not in standard apt repos; build from source
+    local ver="1.37.1"
+    local tmp
+    tmp="$(mktemp -d)"
+    cd "${tmp}"
+    curl -sL "https://github.com/janet-lang/janet/archive/refs/tags/v${ver}.tar.gz" | tar xz
+    cd "janet-${ver}"
+    make -j"$(nproc)"
+    ${SUDO} make install
+    rm -rf "${tmp}"
+}
+
+deps() {
+    :
+}
+
+log "Installing Janet..."
+"install_${OS}"
+deps

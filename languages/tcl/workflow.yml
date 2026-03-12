@@ -1,0 +1,23 @@
+name: Tcl
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tcl-version: ["8.6"]
+    defaults:
+      run:
+        working-directory: age/impl/tcl
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Tcl
+        run: sudo apt-get update && sudo apt-get install -y tcl${{ matrix.tcl-version }}
+      - name: Run tests
+        run: tclsh test_format_age.tcl
