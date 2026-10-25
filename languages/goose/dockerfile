@@ -1,0 +1,10 @@
+# Goose
+# apt: build-essential
+RUN GOOSE_VERSION="v2026.3" && \
+    if [ "$(uname -m)" = "x86_64" ]; then \
+        curl -fsSL "https://github.com/aardappel/goose/releases/download/${GOOSE_VERSION}/goose-${GOOSE_VERSION}-linux-x64.tar.gz" -o /tmp/goose.tar.gz && \
+        mkdir -p /opt/goose && \
+        tar -xzf /tmp/goose.tar.gz -C /opt/goose --strip-components=1 && \
+        rm /tmp/goose.tar.gz && \
+        ln -sf /opt/goose/goose /usr/local/bin/goose; \
+    fi

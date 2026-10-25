@@ -1,0 +1,55 @@
+name: Goose
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        component: [age, date, duration, time]
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+          - os: macos-latest
+            platform: macos-arm64
+    env:
+      GOOSE_VERSION: v2026.3
+    defaults:
+      run:
+        working-directory: ${{ matrix.component }}/impl/goose
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Goose
+        run: |
+          curl -fsSL "https://github.com/aardappel/goose/releases/download/${GOOSE_VERSION}/goose-${GOOSE_VERSION}-${{ matrix.platform }}.tar.gz" -o "${RUNNER_TEMP}/goose.tar.gz"
+          mkdir -p "${RUNNER_TEMP}/goose"
+          tar -xzf "${RUNNER_TEMP}/goose.tar.gz" -C "${RUNNER_TEMP}/goose" --strip-components=1
+          echo "${RUNNER_TEMP}/goose" >> "${GITHUB_PATH}"
+      - name: Lint
+        run: bash lint.sh
+      - name: Test
+        run: goose tests/test_format_${{ matrix.component }}.goose
+      - name: Build natively and run
+        run: bash build.sh && ./build/test_format_${{ matrix.component }}
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md). Once per OS: the CLI links all four libraries.
+      - name: Build CLI
+        if: matrix.component == 'age'
+        working-directory: .
+        run: cli/impl/goose/sayable version
+      - name: CLI harness (single REPL process)
+        if: matrix.component == 'age'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/goose/sayable
+      - name: Fuzz against the Python reference
+        if: matrix.component == 'age'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs goose -n 2000 --invalid-rate 0
