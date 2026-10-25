@@ -24,3 +24,19 @@ jobs:
           gleam-version: ${{ matrix.gleam-version }}
       - run: gleam build
       - run: gleam test
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: (cd cli/impl/gleam && gleam build)
+      - name: CLI harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/gleam/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs gleam -n 2000 --invalid-rate 0

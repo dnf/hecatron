@@ -40,3 +40,19 @@ jobs:
       - name: Run tests
         working-directory: age/impl/clojure
         run: clojure -M:test
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: echo version | cli/impl/clojure/sayable --repl
+      - name: CLI harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/clojure/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs clojure -n 2000 --invalid-rate 0

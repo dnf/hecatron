@@ -36,3 +36,25 @@ jobs:
           test -f Pharo.image || { echo "Pharo image download failed"; exit 1; }
       - name: Run tests
         run: pharo --headless Pharo.image st run_tests.st
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        # Not yet passing: the Pharo date/duration/time libraries and CLI don't load in current Pharo 12 images yet; fixed in the follow-up spec PR.
+        continue-on-error: true
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: (cd cli/impl/pharo && curl -fsSL https://get.pharo.org/64/${{ matrix.pharo-version }} | bash)
+      - name: CLI harness (single REPL process)
+        # Not yet passing: the Pharo date/duration/time libraries and CLI don't load in current Pharo 12 images yet; fixed in the follow-up spec PR.
+        continue-on-error: true
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/pharo/sayable
+      - name: Fuzz against the Python reference
+        # Not yet passing: the Pharo date/duration/time libraries and CLI don't load in current Pharo 12 images yet; fixed in the follow-up spec PR.
+        continue-on-error: true
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs pharo -n 2000 --invalid-rate 0

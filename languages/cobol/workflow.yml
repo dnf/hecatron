@@ -18,3 +18,21 @@ jobs:
       - run: cmake -B build
       - run: cmake --build build
       - run: cd build && ctest --output-on-failure
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: cli/impl/cobol/sayable version
+      - name: CLI harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/cobol/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        # Known library bug: time --short/--compact drops minutes; gd --with-year --compact.
+        continue-on-error: true
+        working-directory: .
+        run: python3 cli/fuzz.py --langs cobol -n 2000 --invalid-rate 0

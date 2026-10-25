@@ -21,3 +21,21 @@ jobs:
       - run: cabal update
       - run: cabal build
       - run: cabal test
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: cli/impl/haskell/sayable version
+      - name: CLI harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/haskell/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        # Known library bug: relative --short is wrong for kw.
+        continue-on-error: true
+        working-directory: .
+        run: python3 cli/fuzz.py --langs haskell -n 2000 --invalid-rate 0

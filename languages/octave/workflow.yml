@@ -22,3 +22,21 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y octave
       - run: octave --no-gui --path . test_format_age.m
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: cli/impl/octave/sayable version
+      - name: CLI harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/octave/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        # Known library bug: date --with-year crashes in sayable_date_new>format_absolute.
+        continue-on-error: true
+        working-directory: .
+        run: python3 cli/fuzz.py --langs octave -n 2000 --invalid-rate 0

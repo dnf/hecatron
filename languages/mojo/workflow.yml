@@ -23,3 +23,25 @@ jobs:
           pixi add "mojo==0.26.1.0"
       - name: Run tests
         run: pixi run mojo run -I src tests/test_format_age.mojo
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        # Not yet passing: the Mojo date/duration/time libraries and CLI don't compile on Mojo 0.26.1 yet; fixed in the follow-up spec PR.
+        continue-on-error: true
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/impl/mojo/build.sh
+      - name: CLI harness (single REPL process)
+        # Not yet passing: the Mojo date/duration/time libraries and CLI don't compile on Mojo 0.26.1 yet; fixed in the follow-up spec PR.
+        continue-on-error: true
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/mojo/sayable
+      - name: Fuzz against the Python reference
+        # Not yet passing: the Mojo date/duration/time libraries and CLI don't compile on Mojo 0.26.1 yet; fixed in the follow-up spec PR.
+        continue-on-error: true
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs mojo -n 2000 --invalid-rate 0

@@ -20,3 +20,19 @@ jobs:
           rebar3-version: '3.23'
       - run: rebar3 compile
       - run: rebar3 eunit
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: cli/impl/erlang/sayable version
+      - name: CLI harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/erlang/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs erlang -n 2000 --invalid-rate 0

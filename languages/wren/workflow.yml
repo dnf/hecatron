@@ -22,3 +22,19 @@ jobs:
           sudo chmod +x /usr/local/bin/wren_cli
           rm -rf /tmp/wren-cli.zip /tmp/wren-cli-linux-0.4.0
       - run: wren_cli test_format_age.wren
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: cli/impl/wren/sayable version
+      - name: CLI harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/wren/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs wren -n 2000 --invalid-rate 0

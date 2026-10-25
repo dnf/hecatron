@@ -17,3 +17,19 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y fpc
       - run: mkdir -p build && fpc -FEbuild -FUbuild -Fulocales -o"build/test_format_age" test_format_age.pas
       - run: ./build/test_format_age
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: cli/impl/pascal/sayable version
+      - name: CLI harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/pascal/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs pascal -n 2000 --invalid-rate 0

@@ -21,3 +21,19 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y tcl${{ matrix.tcl-version }}
       - name: Run tests
         run: tclsh test_format_age.tcl
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: cli/impl/tcl/sayable version
+      - name: CLI harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/tcl/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs tcl -n 2000 --invalid-rate 0

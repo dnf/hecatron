@@ -18,3 +18,19 @@ jobs:
         with:
           dotnet-version: 10.0
       - run: dotnet test
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: dotnet build cli/impl/fsharp/SayableCli.fsproj -c Release --nologo
+      - name: CLI harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: bash cli/test-harness.sh cli/impl/fsharp/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs fsharp -n 2000 --invalid-rate 0
