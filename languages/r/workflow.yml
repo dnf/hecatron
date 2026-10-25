@@ -22,5 +22,5 @@ jobs:
           r-version: ${{ matrix.r-version }}
           use-public-rspm: true
       - name: Install testthat
-        run: Rscript -e 'install.packages("testthat", repos = "https://cloud.r-project.org")'
+        run: Rscript -e 'install.packages("testthat")'
       - run: Rscript tests/testthat.R

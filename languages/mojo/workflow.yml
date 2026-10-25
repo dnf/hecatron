@@ -20,6 +20,6 @@ jobs:
       - name: Install Mojo
         run: |
           pixi init -c https://conda.modular.com/max/ -c conda-forge .
-          pixi add "mojo<1.2"
+          pixi add "mojo==0.26.1.0"
       - name: Run tests
         run: pixi run mojo run -I src tests/test_format_age.mojo
