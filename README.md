@@ -67,26 +67,18 @@ It doesn't build anything itself, and it doesn't know what your code does.
 
 ## Hecatron or ad hoc?
 
-[A worked comparison](docs/hecatron-vs-ad-hoc.md) follows one library
-implemented in ten languages (Go, Python, TypeScript, Rust, Java, Kotlin, C#,
-Swift, Ruby and C), maintained with hecatron and without it.
+For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
 
-- **What you write.** Either way you write the code, its tests and a CI
-  workflow per language. Ad hoc, you also write and keep working the setup for
-  ten toolchains on macOS and Linux, a script to run everything, and a
-  Dockerfile. With hecatron, a project's own part is hooks of a line or two:
-  sayable's test, lint, build and clean hooks for those ten languages are 47
-  lines of commands in total.
-- **What breaks.** Toolchain setup rots without anyone touching the
-  repository: 6 of those 10 languages' installers, written and used daily on
-  macOS, failed on a fresh Debian or Ubuntu machine. Ad hoc, every project
-  finds and fixes that itself; with hecatron, it's fixed once and tested on
-  every supported distribution.
-- **What it costs.** A dependency on a young tool (0.2), bash 4 and
-  Python 3.9, its conventions, and no Windows.
-- **When not to use it.** Two or three mainstream languages, a need for
-  Windows, or a build system such as Bazel or Nx that already owns your
-  toolchains.
+| Ad hoc | With hecatron |
+| --- | --- |
+| Setup docs for 10 toolchains × 2 OSes | `hct doctor --fix` |
+| 10 test commands to remember | `hct test`, all in parallel |
+| CI and Dockerfile kept in sync by hand | `hct workflows`, `hct dockerfile`<br>`hct check` catches drift |
+| Each project fixes toolchain rot itself | Fixed once, tested on every supported distribution |
+
+The cost: a young dependency (0.2), bash 4+ and Python 3.9+, and no Windows.
+Skip it for two or three mainstream languages, or if Bazel or Nx already owns
+your toolchains.
 
 ## Quick start
 
