@@ -58,6 +58,12 @@ _problems() (
     if [ -n "${_lint}" ] && ! command -v "${_lint}" >/dev/null 2>&1; then
         echo "lint tool ${_lint} not found"
     fi
+    # Each component's version (docs/design.md §18), where the definition
+    # can list what's installed.
+    python3 "${HECATRON_HOME}/libexec/lib/project.py" missing-versions "${_lang}" |
+        while IFS=$'\t' read -r _component _spec _source; do
+            echo "${_component}: ${_lang} ${_spec} not installed (from ${_source})"
+        done
     if _script="$(_resolve "${_lang}" doctor.sh)"; then
         (cd "${_ROOT}" && bash "${_script}") || true
     fi

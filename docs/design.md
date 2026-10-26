@@ -558,7 +558,9 @@ surprise.
   distinct spec the components resolve to with its sources (`-` for a pin
   file naming no version), so an installer installs each one.
 - **Doctor.** `doctor` checks that the resolved version is installed and is
-  the one a language's commands run; `--fix` installs it. A version past its
+  the one a language's commands run; `--fix` installs it. It reports each
+  component whose version has no installed match ("b: java 21 not installed
+  (from pin:b/java/.java-version)"), for languages with an `installed.sh`. A version past its
   upstream end of life is a warning, not a failure.
 - **Generated files.** The Dockerfile installs every version any component
   resolves to. A workflow template names a language's resolved version with
