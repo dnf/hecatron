@@ -1,5 +1,5 @@
-# Dart SDK
-RUN ARCH="$(dpkg --print-architecture)" && \
+# Dart SDK (its archive names x86_64 "x64")
+RUN case "$(uname -m)" in aarch64) ARCH=arm64 ;; *) ARCH=x64 ;; esac && \
     curl -fsSL "https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-linux-${ARCH}-release.zip" -o /tmp/dart.zip && \
     unzip -q /tmp/dart.zip -d /opt && rm /tmp/dart.zip
 ENV PATH="/opt/dart-sdk/bin:${PATH}"
