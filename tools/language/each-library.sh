@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Run one of a language's per-library scripts (test.sh or lint.sh) for every
+# Run one of a language's per-library scripts (test.sh, lint.sh, build.sh or clean.sh) for every
 # library, or the ones named.
 #
-# Usage: each-library.sh <test|lint> <lang> [library ...]
+# Usage: each-library.sh <test|lint|build|clean> <lang> [library ...]
 #        (libraries: age date duration time)
 #
 # .hecatron/languages/<lang>/<action>.sh handles one library. It is called
@@ -13,8 +13,8 @@ set -euo pipefail
 
 source "$(dirname "$0")/helpers.sh"
 
-_action="${1:?usage: each-library.sh <test|lint> <lang> [library ...]}"
-_lang="${2:?usage: each-library.sh <test|lint> <lang> [library ...]}"
+_action="${1:?usage: each-library.sh <test|lint|build|clean> <lang> [library ...]}"
+_lang="${2:?usage: each-library.sh <test|lint|build|clean> <lang> [library ...]}"
 shift 2
 _libraries=("$@")
 [ "${#_libraries[@]}" -eq 0 ] && _libraries=(age date duration time)

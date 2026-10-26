@@ -395,16 +395,17 @@ jobs:
         run: python3 cli/fuzz.py --langs newlang -n 2000
 ```
 
-## 10. Add justfile arms
+## 10. Justfile
 
-Register the language in the root `justfile`'s `build`, `lint` and `clean`
-recipes, with its abbreviation. `just test <lang>` needs no arm: it runs the
-language's `test.sh` (above) for all four libraries. The bare (no-argument)
-runs pick the language up from `config.json` automatically. The date, duration
-and time directories also have their own justfiles covering a subset of
-languages; adding the language there is optional.
-
-Every recipe must keep handling `help` / `--help` (see the root `CLAUDE.md`).
+There are no per-language justfile arms. `just test`, `lint`, `build` and
+`clean <lang>` run the language's `test.sh`, `lint.sh`, `build.sh` and
+`clean.sh` (whichever exist) once per library, and the no-argument runs pick
+the language up from `config.json`. `build.sh` builds one library;
+`clean.sh` removes that library's build artifacts (never installed
+dependencies or tracked files). Both run from inside `<library>/impl/<lang>/`
+with the library name as `$1`, like `test.sh`. The date, duration and time
+directories also have their own justfiles covering a subset of languages;
+adding the language there is optional.
 
 ## 11. Add linting
 
@@ -489,9 +490,8 @@ just test                     # all languages, to confirm nothing broke
 - [ ] Formatters ported for all four libraries, with zero runtime dependencies and a version constant
 - [ ] Every case in each library's `config/tests.json` implemented and annotated with its ID
 - [ ] CLI in `cli/impl/<lang>/` implementing `--repl`; `check-repl.py`, `just test cli <lang>` and `just fuzz --langs <lang>` pass
-- [ ] `.hecatron/languages/<lang>/`: `config.json`, `test.sh`, `install.sh`, `uninstall.sh`, `version.sh` (and `metadata.sh`), `dockerfile`, `workflow.yml` testing every library and the CLI
+- [ ] `.hecatron/languages/<lang>/`: `config.json`, `test.sh` (and `build.sh`, `clean.sh`, `lint.sh` as applicable), `install.sh`, `uninstall.sh`, `version.sh` (and `metadata.sh`), `dockerfile`, `workflow.yml` testing every library and the CLI
 - [ ] `tools/check_test_ids.py --lang <lang>` reports nothing, and `just test <lang>` passes for all four libraries
-- [ ] Root justfile arms for build, lint and clean
 - [ ] Build artifacts in each `<library>/impl/.gitignore`
 - [ ] Linter configured with zero warnings
 - [ ] `<library>/impl/<lang>/README.md` with license link, and a row in each library's README table

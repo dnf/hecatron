@@ -17,6 +17,7 @@ Build tooling and language management for multi-language projects. This director
       config.json                  # Language properties (abbreviation, dependency, flags)
       test.sh                      # Run one library's native suite (`just test <lang>` runs all four)
       lint.sh                      # Lint one library (optional; languages with a separate linter)
+      build.sh, clean.sh           # Build one library / remove its build artifacts (optional)
       doctor.sh                    # Detect a broken toolchain (optional; `just doctor`)
       install.sh                   # Install toolchain (macOS + Linux)
       uninstall.sh                 # Remove toolchain
@@ -29,8 +30,9 @@ Build tooling and language management for multi-language projects. This director
       _helpers.py                  # Shared Python module (config loading, workflow sync, etc.)
       emit-config.py               # Generates shell variables + functions for eval in helpers.sh
       helpers.sh                   # Shell helpers sourced by all justfile recipes
-      each-library.sh              # Run languages/<lang>/<test|lint>.sh once per library
-      test.sh, lint.sh             # `just test <lang>` / `just lint <lang>` (wrappers over each-library.sh)
+      each-library.sh              # Run languages/<lang>/<action>.sh once per library
+      test.sh, lint.sh,            # `just test|lint|build|clean <lang>`
+      build.sh, clean.sh           #   (thin wrappers over each-library.sh)
       doctor.sh                    # `just doctor`: check toolchains, `--fix` runs installers
       add.py                       # Add languages to active set
       remove.py                    # Remove languages from active set
@@ -121,7 +123,7 @@ Each language has a set of single-purpose scripts in `languages/<lang>/`:
 
 - **`doctor.sh`** — (optional) Detects a toolchain that is installed but broken, one `problem` per issue. `tools/language/doctor.sh` (behind `just doctor`) also checks the `dependency` and `lintDependency` commands for every language; `--fix` runs the language's `install.sh`, which repairs what its `doctor.sh` detects.
 - **`test.sh`** — Runs one library's native suite. `tools/language/test.sh <lang>` (behind `just test <lang>`) calls it from inside each `<library>/impl/<lang>/` with the library name as `$1`, and reports which libraries failed.
-- **`lint.sh`** — (only for languages with a separate linter) Lints one library the same way; `tools/language/lint.sh <lang>` is behind `just lint <lang>`. Both dispatchers are thin wrappers over `tools/language/each-library.sh <test|lint> <lang> [library ...]`.
+- **`lint.sh`** — (only for languages with a separate linter) Lints one library the same way; `tools/language/lint.sh <lang>` is behind `just lint <lang>`. `build.sh` and `clean.sh` work the same way behind `just build <lang>` and `just clean <lang>`. All four dispatchers are thin wrappers over `tools/language/each-library.sh <test|lint|build|clean> <lang> [library ...]`, so a language-specific `just` command always covers every library.
 
 - **`install.sh`** — Installs the toolchain. Sources `_common.sh`, defines `install_macos()` + `install_linux()` + `deps()`, calls `"install_${OS}"` then `deps`.
 - **`uninstall.sh`** — Removes the toolchain. Same pattern with `uninstall_macos()` + `uninstall_linux()`.
