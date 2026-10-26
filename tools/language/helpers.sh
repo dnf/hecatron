@@ -39,9 +39,21 @@ _is_removed() {
 _ada_env() {
     command -v gprbuild >/dev/null 2>&1 && return
     local dir
-    for dir in "$HOME/.local/share/alire/toolchains"/*/bin; do
-        [ -d "$dir" ] && export PATH="$dir:$PATH"
+    for dir in "${HOME}/.local/share/alire/toolchains"/*/bin; do
+        [ -d "${dir}" ] && export PATH="${dir}:${PATH}"
     done
+}
+
+# True when a language's (or tool's) dependency is installed. Ada's GNAT may
+# live only in Alire's toolchain directory, which _ada_env adds to PATH for
+# Ada recipes alone: that directory also has gcc/g++, so putting it on PATH
+# everywhere would shadow the system compilers other languages build with.
+_dep_available() {
+    local dep
+    dep=$(_dep "$1" 2>/dev/null || true)
+    [ -z "${dep}" ] && return 0
+    command -v "${dep}" >/dev/null 2>&1 && return 0
+    [ "$1" = "ada" ] && compgen -G "${HOME}/.local/share/alire/toolchains/*/bin/${dep}" >/dev/null
 }
 
 # ---------------------------------------------------------------------------
