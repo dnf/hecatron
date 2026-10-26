@@ -463,10 +463,10 @@ For a language in a component, the version is the first of:
 
 1. **The ecosystem's own pin file**, nearest first from the language's
    implementation directory (`implPath`) up to the project root, as the
-   ecosystems' own tools search, read with that ecosystem's meaning: `.python-version`,
-   `.nvmrc` or `.node-version`, `rust-toolchain.toml` or `rust-toolchain`,
-   `global.json` (`sdk.version`), the `toolchain` line of `go.mod`,
-   `.ruby-version`, Gradle's `gradle-daemon-jvm.properties`
+   ecosystems' own tools search, read with that ecosystem's meaning:
+   `.python-version`, `.nvmrc` or `.node-version`, `rust-toolchain.toml` or
+   `rust-toolchain`, `global.json` (`sdk.version`), the `toolchain` line of
+   `go.mod`, `.ruby-version`, Gradle's `gradle-daemon-jvm.properties`
    (`toolchainVersion`, the JDK)... Each definition lists the files it reads
    in `config.json` (`pinFiles`). Using these means a project declares a
    version once, where its other tools already look.
@@ -500,12 +500,14 @@ In hecatron's configuration:
 | `"=4.5"` | Exactly the release named 4.5 and never anything else, even if the language later publishes 4.5.1 |
 
 A prefix follows new patch releases, and a project that doesn't want that
-writes `=`. A prefix is resolved in two places: installing resolves it to the
-newest matching release upstream, and running (a hook's environment, the
-doctor) resolves it to the newest matching version installed on the machine,
-so running never needs the network. Without the marker, a project pinning `"4.5"` would silently move
+writes `=`. Without the marker, a project pinning `"4.5"` would silently move
 to 4.5.x once upstream added a level of versioning, which is outside the
 project's control. Hecatron's own defaults are always exact.
+
+A prefix is resolved in two places: installing resolves it to the newest
+matching release upstream, and running (a hook's environment, the doctor)
+resolves it to the newest matching version installed on the machine, so
+running never needs the network.
 
 ### Defaults and how they are updated
 
