@@ -14,7 +14,27 @@ install_macos() {
     fi
 }
 
-install_linux() { apt_install openjdk-17-jdk-headless; }
+# The distribution's OpenJDK 17, else Eclipse Temurin 17 from Adoptium's
+# repository, for distributions that no longer package 17 (Debian 13).
+install_linux() {
+    if apt_has openjdk-17-jdk-headless; then
+        apt_install openjdk-17-jdk-headless
+    else
+        _add_adoptium_source
+        apt_install temurin-17-jdk
+    fi
+}
+_add_adoptium_source() {
+    local keyring="/etc/apt/keyrings/adoptium.asc" codename
+    [ -f /etc/apt/sources.list.d/adoptium.list ] && return
+    codename="$(. /etc/os-release && echo "${VERSION_CODENAME}")"
+    log "Adding Adoptium's apt repository for ${codename}..."
+    $SUDO install -d -m 0755 "$(dirname "${keyring}")"
+    curl -fsSL https://packages.adoptium.net/artifactory/api/gpg/key/public | $SUDO tee "${keyring}" >/dev/null
+    echo "deb [signed-by=${keyring}] https://packages.adoptium.net/artifactory/deb ${codename} main" |
+        $SUDO tee /etc/apt/sources.list.d/adoptium.list >/dev/null
+    $SUDO apt-get update -qq
+}
 
 deps() { :; }
 

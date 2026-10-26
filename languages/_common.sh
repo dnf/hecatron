@@ -77,15 +77,28 @@ _sed_i() {
     fi
 }
 
-apt_install() {
-    # Refresh package list if stale (>1 hour) or missing
+# Refresh the package lists when they are missing or more than an hour old.
+apt_refresh() {
     local stamp="/var/lib/apt/lists/partial"
     if [ ! -d "/var/lib/apt/lists" ] || \
        [ -z "$(find /var/lib/apt/lists -maxdepth 1 -name '*.Release' 2>/dev/null | head -1)" ] || \
        [ -n "$(find "$stamp" -maxdepth 0 -mmin +60 2>/dev/null)" ]; then
         $SUDO apt-get update -qq
     fi
+}
+apt_install() {
+    apt_refresh
     $SUDO apt-get install -y "$@"
+}
+# Whether the configured apt sources offer a package: distributions drop and
+# add toolchains between releases (Debian 13 has no OpenJDK 17).
+# (Not piped into grep -q: under pipefail, apt-cache dying of SIGPIPE when grep
+# exits early would fail the check.)
+apt_has() {
+    local policy
+    apt_refresh
+    policy="$(apt-cache policy "$1" 2>/dev/null)"
+    [[ "${policy}" == *"Candidate: "[!\(]* ]]
 }
 
 # Update metadata in a Gradle KTS build file (shared by Java, Kotlin, Scala).
