@@ -70,7 +70,7 @@ bash -lc "cd '${_project}' && hecatron doctor --fix ${_lang}" >/dev/null 2>&1; _
 _smoke_result=none
 if [ -f "${_smoke}" ]; then
     echo "### smoke ${_lang}"
-    bash -lc "cd '${_project}' && eval \"\$(hecatron env)\" && _use_lang_path ${_lang} && cd \"\$(mktemp -d)\" && bash '${_smoke}'"
+    bash -lc "cd '${_project}' && eval \"\$(hecatron env ${_lang})\" && cd \"\$(mktemp -d)\" && bash '${_smoke}'"
     _smoke_result="$(_outcome $?)"
 fi
 echo "### result ${_lang}: install=$(_outcome "${_fix}") doctor=$(_outcome "${_after}") rerun=$(_outcome "${_rerun}") smoke=${_smoke_result}"
