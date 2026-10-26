@@ -65,6 +65,29 @@ repository can use it.
 Hecatron calls each language's own tools (`cargo`, `go`, `gradle`, `uv`...).
 It doesn't build anything itself, and it doesn't know what your code does.
 
+## Hecatron or ad hoc?
+
+[A worked comparison](docs/hecatron-vs-ad-hoc.md) follows one library
+implemented in ten languages (Go, Python, TypeScript, Rust, Java, Kotlin, C#,
+Swift, Ruby and C), maintained with hecatron and without it.
+
+- **What you write.** Either way you write the code, its tests and a CI
+  workflow per language. Ad hoc, you also write and keep working the setup for
+  ten toolchains on macOS and Linux, a script to run everything, and a
+  Dockerfile. With hecatron, a project's own part is hooks of a line or two:
+  sayable's test, lint, build and clean hooks for those ten languages are 47
+  lines of commands in total.
+- **What breaks.** Toolchain setup rots without anyone touching the
+  repository: 6 of those 10 languages' installers, written and used daily on
+  macOS, failed on a fresh Debian or Ubuntu machine. Ad hoc, every project
+  finds and fixes that itself; with hecatron, it's fixed once and tested on
+  every supported distribution.
+- **What it costs.** A dependency on a young tool (0.2), bash 4 and
+  Python 3.9, its conventions, and no Windows.
+- **When not to use it.** Two or three mainstream languages, a need for
+  Windows, or a build system such as Bazel or Nx that already owns your
+  toolchains.
+
 ## Quick start
 
 Hecatron needs bash 4 or later and Python 3.9 or later. macOS ships bash 3.2;
@@ -135,6 +158,7 @@ but expect changes before 1.0.
 | --- | --- |
 | [docs/design.md](docs/design.md) | How hecatron works and why: concepts, configuration, commands, and the decisions behind them |
 | [docs/coverage.md](docs/coverage.md) | Which languages install and work on which platforms |
+| [docs/hecatron-vs-ad-hoc.md](docs/hecatron-vs-ad-hoc.md) | A ten-language library maintained with hecatron and without it |
 | [docs/installers.md](docs/installers.md) | How each language's toolchain is installed on macOS and Linux, and toolchains languages share |
 | [docs/adding-a-language.md](docs/adding-a-language.md) | Writing a language definition |
 | [docs/build-conventions.md](docs/build-conventions.md) | Where each language's build artifacts go |
