@@ -5,16 +5,12 @@ source "$(dirname "$0")/../_common.sh"
 install_macos() { brew_install nim; }
 _nim_root="/opt/nim"
 
-# The distribution's Nim, else the official build (Debian 13 doesn't package
-# it). Nim compiles through the system C compiler.
+# The latest stable official build: distributions lag (Ubuntu 24.04 has Nim
+# 1.6, which current Nim code fails to compile with) or have none (Debian 13).
+# Nim compiles through the system C compiler.
 install_linux() {
     has cc || apt_install build-essential
-    has nim && return
-    if apt_has nim; then
-        apt_install nim
-    else
-        _download_nim
-    fi
+    has nim || _download_nim
 }
 _download_nim() {
     local version arch tool
