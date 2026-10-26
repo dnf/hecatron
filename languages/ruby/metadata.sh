@@ -10,7 +10,7 @@ _sed_i 's|s\.authors     = \["[^"]*"\]|s.authors     = ["'"${PT_AUTHOR}"'"]|' \
     "${ROOT}/age/impl/ruby/sayable_age.gemspec"
 _sed_i 's|s\.homepage    = "[^"]*"|s.homepage    = "'"${PT_REPOSITORY}"'"|' \
     "${ROOT}/age/impl/ruby/sayable_age.gemspec"
-_sed_i 's|"source_code_uri" => "[^"]*"|"source_code_uri" => "'"${PT_REPOSITORY}"'/tree/main/src/ruby"|' \
+_sed_i 's|"source_code_uri" => "[^"]*"|"source_code_uri" => "'"${PT_REPOSITORY}"'/tree/main/age/impl/ruby"|' \
     "${ROOT}/age/impl/ruby/sayable_age.gemspec"
 _sed_i 's|"bug_tracker_uri" => "[^"]*"|"bug_tracker_uri" => "'"${PT_REPOSITORY}"'/issues"|' \
     "${ROOT}/age/impl/ruby/sayable_age.gemspec"

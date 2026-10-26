@@ -10,9 +10,9 @@ install_linux() {
     local ver="1.37.1"
     local tmp
     tmp="$(mktemp -d)"
-    cd "${tmp}"
+    cd "${tmp}" || return 1
     curl -sL "https://github.com/janet-lang/janet/archive/refs/tags/v${ver}.tar.gz" | tar xz
-    cd "janet-${ver}"
+    cd "janet-${ver}" || return 1
     make -j"$(nproc)"
     ${SUDO} make install
     rm -rf "${tmp}"

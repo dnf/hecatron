@@ -21,9 +21,47 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 log() { echo "==> $*"; }
 
+# Each library's implementation directory for a language (age, date,
+# duration, time), one per line.
+impl_dirs() {
+    local _library
+    for _library in age date duration time; do
+        [ -d "${ROOT}/${_library}/impl/$1" ] && echo "${ROOT}/${_library}/impl/$1"
+    done
+    return 0
+}
+
+# Run a command inside each library's implementation of a language,
+# e.g. `each_impl ruby bundle install`.
+each_impl() {
+    local _lang="$1" _dir
+    shift
+    while IFS= read -r _dir; do
+        log "${_dir#"${ROOT}/"}: $*"
+        (cd "${_dir}" && "$@")
+    done < <(impl_dirs "${_lang}")
+}
+
+# For doctor.sh scripts: `problem` reports one problem, and `doctor_done`
+# exits non-zero when any were reported.
+_doctor_failed=0
+problem() { echo "$*"; _doctor_failed=1; }
+doctor_done() { exit "${_doctor_failed}"; }
+
 has() { command -v "$1" &>/dev/null; }
 
 brew_install() { brew install "$@" || true; }
+
+# Homebrew sometimes installs a formula without linking it (e.g. when a stray
+# file already sits in its prefix), leaving its commands off PATH. Link it when
+# the command it provides is missing.
+brew_ensure_linked() {
+    local _formula="$1" _command="$2"
+    has "${_command}" && return
+    brew list --versions "${_formula}" >/dev/null 2>&1 || return 0
+    log "Linking ${_formula} (${_command} is not on PATH)"
+    brew link --overwrite "${_formula}"
+}
 
 # Portable in-place sed (macOS requires empty backup suffix)
 _sed_i() {

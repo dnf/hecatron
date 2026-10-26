@@ -11,7 +11,13 @@ just uninstall go rust      # uninstall specific languages
 just get-started            # interactive onboarding with status + install menu
 just get-started --status   # print language status table
 just get-started --check    # exit 0 if all installed, 1 if missing
+just doctor                 # check every toolchain actually works, and how to repair it
+just doctor --fix go lua    # run the installer of each unhealthy language, then re-check
 ```
+
+`just install <lang>` is also the repair: installers are idempotent and fix the
+broken states their `doctor.sh` detects (a linter built with an older Go,
+luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula...).
 
 Short aliases work everywhere: `just install ad ts py rb rs kt gy lu ft c++ cs fs sw hs ex erl clj gm sc zg el pl dt ml`
 
@@ -78,17 +84,40 @@ Each script sources `.hecatron/languages/_common.sh` for shared helpers:
 - `has()` — check if a command exists
 - `apt_install()` — apt-get install with auto cache refresh
 - `brew_install()` — brew install with `|| true`
+- `brew_ensure_linked <formula> <command>` — link a formula Homebrew installed but left unlinked
+- `impl_dirs <lang>` — each library's `<library>/impl/<lang>/` directory, one per line
+- `each_impl <lang> <command...>` — run a command in each of them (e.g. `each_impl ruby bundle install`)
+- `problem` / `doctor_done` — for `doctor.sh`: report a problem; exit non-zero if any were reported
 - `$OS` — `"macos"` or `"linux"`
 - `$SUDO` — `"sudo"` or `""` (when root)
+- `$ROOT` — the repository root
 
-Each language has up to four scripts:
+Each language has these scripts:
 
-| Script         | Purpose                            | Required |
-| -------------- | ---------------------------------- | -------- |
-| `install.sh`   | Install toolchain + deps           | Yes      |
-| `uninstall.sh` | Remove toolchain                   | Yes      |
-| `version.sh`   | Update version in source/manifests | Yes      |
-| `metadata.sh`  | Update package metadata            | No       |
+| Script         | Purpose                                                 | Required |
+| -------------- | ------------------------------------------------------- | -------- |
+| `install.sh`   | Install toolchain + deps; idempotent, repairs           | Yes      |
+| `uninstall.sh` | Remove toolchain                                        | Yes      |
+| `version.sh`   | Update version in source/manifests                      | Yes      |
+| `test.sh`      | Run one library's native suite (`just test <lang>`)     | Yes      |
+| `doctor.sh`    | Detect breakages beyond a missing command (`just doctor`) | No     |
+| `metadata.sh`  | Update package metadata                                 | No       |
+
+`just doctor` already checks that the `dependency` and `lintDependency`
+commands from `config.json` exist. Add a `doctor.sh` when a toolchain can be
+present but broken, and make `install.sh` repair that state:
+
+```bash
+#!/usr/bin/env bash
+# Check that busted and luacheck start (luacheck needs Lua 5.4; see install.sh).
+source "$(dirname "$0")/../_common.sh"
+
+busted --version >/dev/null 2>&1 || problem "busted fails to start"
+doctor_done
+```
+
+Library dependencies install into every library's implementation, not just
+age's: `deps() { each_impl ruby bundle install; }`.
 
 Templates:
 

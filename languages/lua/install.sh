@@ -22,9 +22,28 @@ install_linux() {
     apt_install "${_lua_pkg}" "${_lua_dev}" luarocks
 }
 
+# luacheck 1.2 can't run on Lua 5.5 (it assigns to loop variables, which 5.5
+# makes constant), so it runs on Lua 5.4 whatever the default Lua is. The code
+# it checks is unaffected. A luacheck that fails to start is reinstalled.
+_install_luacheck() {
+    luacheck --version >/dev/null 2>&1 && return
+    local _lua54_dir=""
+    if [ "${OS}" = "macos" ]; then
+        brew_install lua@5.4
+        _lua54_dir="$(brew --prefix lua@5.4)"
+    else
+        apt_install lua5.4 liblua5.4-dev
+        _lua54_dir="/usr"
+    fi
+    local _rock
+    for _rock in argparse luafilesystem luacheck; do
+        luarocks --lua-version=5.4 --lua-dir="${_lua54_dir}" install --force "${_rock}"
+    done
+}
+
 deps() {
     luarocks install busted
-    luarocks install luacheck
+    _install_luacheck
 }
 
 log "Installing Lua..."

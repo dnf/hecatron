@@ -2,7 +2,7 @@
 # Install R
 source "$(dirname "$0")/../_common.sh"
 
-install_macos() { brew_install r; }
+install_macos() { brew_install r; brew_ensure_linked r Rscript; }
 install_linux() { apt_install r-base; }
 
 deps() {

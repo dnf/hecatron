@@ -11,8 +11,8 @@ install_linux() {
 }
 
 deps() {
-    if [ -d "${ROOT}/age/impl/crystal" ] && has crystal; then
-        (cd "${ROOT}/age/impl/crystal" && shards install)
+    if has crystal; then
+        each_impl crystal shards install
     fi
 }
 

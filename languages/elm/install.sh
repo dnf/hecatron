@@ -7,7 +7,7 @@ install_macos() {
     if ! has node; then
         bash "$(dirname "$0")/../typescript/install.sh"
     fi
-    npm install -g elm elm-test
+    npm install -g elm@latest elm-test@latest
 }
 
 install_linux() {
@@ -21,7 +21,7 @@ install_linux() {
         echo "Skipping Elm installation on arm64." >&2
         return 1
     fi
-    npm install -g elm elm-test
+    npm install -g elm@latest elm-test@latest
 }
 
 deps() { :; }

@@ -10,7 +10,7 @@ install_linux() {
     fi
 }
 
-deps() { (cd "$ROOT/src/php" && composer install); }
+deps() { each_impl php composer install; }
 
 log "Installing PHP..."
 "install_${OS}"

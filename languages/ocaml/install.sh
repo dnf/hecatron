@@ -20,10 +20,7 @@ install_linux() {
     opam install dune alcotest --yes
 }
 
-deps() {
-    cd "$ROOT/src/ocaml"
-    eval "$(opam env)" 2>/dev/null || true
-}
+deps() { :; }
 
 log "Installing OCaml..."
 "install_${OS}"

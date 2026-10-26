@@ -10,7 +10,7 @@ install_linux() {
     fi
 }
 
-deps() { (cd "$ROOT/src/typescript" && npm install); }
+deps() { each_impl typescript npm install; }
 
 log "Installing TypeScript (Node.js)..."
 "install_${OS}"

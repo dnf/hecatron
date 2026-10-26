@@ -16,6 +16,7 @@ Build tooling and language management for multi-language projects. This director
     <lang>/
       config.json                  # Language properties (abbreviation, dependency, flags)
       test.sh                      # Run one library's native suite (`just test <lang>` runs all four)
+      doctor.sh                    # Detect a broken toolchain (optional; `just doctor`)
       install.sh                   # Install toolchain (macOS + Linux)
       uninstall.sh                 # Remove toolchain
       version.sh                   # Update version in source/manifests
@@ -28,6 +29,7 @@ Build tooling and language management for multi-language projects. This director
       emit-config.py               # Generates shell variables + functions for eval in helpers.sh
       helpers.sh                   # Shell helpers sourced by all justfile recipes
       test.sh                      # `just test <lang>`: every library's suite via languages/<lang>/test.sh
+      doctor.sh                    # `just doctor`: check toolchains, `--fix` runs installers
       add.py                       # Add languages to active set
       remove.py                    # Remove languages from active set
       list.py                      # List languages (active or all)
@@ -39,6 +41,8 @@ Build tooling and language management for multi-language projects. This director
     codegen/
       util.py                      # Banner generator (DO NOT EDIT box-frame)
       dockerfile.py                # Dockerfile generator from per-language snippets
+    lint/
+      shellcheck.sh                # `just lint shell`: shellcheck every tracked shell script
     metadata/
       set.sh                       # Interactive metadata updater for package manifests
     runner/
@@ -72,7 +76,7 @@ Configuration is split across three concerns:
 | `languages/<lang>/config.json` | Static language properties | Yes |
 | `config/languages/added.json` | Which languages are active | Yes |
 | `config/languages/disabled.json` | Temporarily skip in parallel runs | No (gitignored) |
-| `config/languages.json` | Non-language tool dependencies | Yes |
+| `config/languages.json` | Non-language tool dependencies (`cli` → cmake, `shell` → shellcheck) | Yes |
 
 **added vs disabled**: `added.json` controls which languages exist in the project — removed languages are refused by all commands. `disabled.json` is a local-only mechanism to temporarily skip languages in parallel runs (e.g., skip Haskell if you don't have `cabal` installed). Disabled languages can still be run individually.
 
@@ -113,6 +117,7 @@ Each language's `config.json` has these fields:
 
 Each language has a set of single-purpose scripts in `languages/<lang>/`:
 
+- **`doctor.sh`** — (optional) Detects a toolchain that is installed but broken, one `problem` per issue. `tools/language/doctor.sh` (behind `just doctor`) also checks the `dependency` and `lintDependency` commands for every language; `--fix` runs the language's `install.sh`, which repairs what its `doctor.sh` detects.
 - **`test.sh`** — Runs one library's native suite. `tools/language/test.sh <lang>` (behind `just test <lang>`) calls it from inside each `<library>/impl/<lang>/` with the library name as `$1`, and reports which libraries failed.
 
 - **`install.sh`** — Installs the toolchain. Sources `_common.sh`, defines `install_macos()` + `install_linux()` + `deps()`, calls `"install_${OS}"` then `deps`.
@@ -120,7 +125,7 @@ Each language has a set of single-purpose scripts in `languages/<lang>/`:
 - **`version.sh`** — Takes a version string as `$1`, runs sed commands to update version in source files and manifests.
 - **`metadata.sh`** — (optional) Updates package metadata using `PT_*` env vars exported by `tools/metadata/set.sh`.
 
-`_common.sh` provides: `$OS` (macos/linux), `$SUDO`, `$ROOT`, `log()`, `has()`, `brew_install()`, `apt_install()`, `_sed_i()`, `_set_metadata_gradle_kts()`, `_set_metadata_gradle_groovy()`.
+`_common.sh` provides: `$OS` (macos/linux), `$SUDO`, `$ROOT`, `log()`, `has()`, `brew_install()`, `brew_ensure_linked()`, `apt_install()`, `impl_dirs()`, `each_impl()`, `problem()`/`doctor_done()` (for `doctor.sh`), `_sed_i()`, `_set_metadata_gradle_kts()`, `_set_metadata_gradle_groovy()`.
 
 ### Dockerfile generation
 

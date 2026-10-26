@@ -683,6 +683,7 @@ _cleanup() {
     fi
     [ -n "${_key_fd:-}" ] && exec 9<&- 2>/dev/null
     [ -t 1 ] && _show_cursor 2>/dev/null
+    # shellcheck disable=SC2046  # one PID per word
     kill $(jobs -p) 2>/dev/null
     wait 2>/dev/null
     for i in "${!all_labels[@]}"; do
@@ -700,7 +701,6 @@ trap 'exit 130' INT
 # ===================================================================
 # Job scheduling + progress display
 # ===================================================================
-global_start=$SECONDS
 global_start_ds=$(_now_ds)
 pids=()
 
@@ -747,6 +747,7 @@ if [ "$max_jobs" -gt 0 ]; then
                 done
             done
             if [ ${#_durs[@]} -gt 0 ]; then
+                # shellcheck disable=SC2207  # bash 3.2 has no mapfile; values are integers
                 IFS=$'\n' _sorted_d=($(sort -n <<<"${_durs[*]}")); unset IFS
                 _predicted_dur[$i]=${_sorted_d[$(( ${#_sorted_d[@]} / 2 ))]}
             fi

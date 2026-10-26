@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
-# Uninstall Pharo Smalltalk
+# Uninstall the Pharo VM installed by install.sh
 source "$(dirname "$0")/../_common.sh"
 
-uninstall_macos() {
-	brew uninstall pharo 2>/dev/null || true
-	rm -rf "${HOME}/.pharo" 2>/dev/null || true
-	rm -f /usr/local/bin/pharo 2>/dev/null || true
+_uninstall() {
+    rm -rf "${HOME}/.pharo"
+    rm -f "${HOME}/.local/bin/pharo"
 }
 
-uninstall_linux() {
-	rm -rf "${HOME}/.pharo" 2>/dev/null || true
-	rm -f /usr/local/bin/pharo 2>/dev/null || true
-}
+uninstall_macos() { _uninstall; }
+uninstall_linux() { _uninstall; }
 
 log "Uninstalling Pharo..."
 "uninstall_${OS}"
