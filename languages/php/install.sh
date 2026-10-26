@@ -10,7 +10,9 @@ install_linux() {
     fi
 }
 
-deps() { each_impl php composer install; }
+# Only libraries with a composer.json have dependencies to install.
+_composer_install() { [ ! -f composer.json ] || composer install; }
+deps() { each_impl php _composer_install; }
 
 log "Installing PHP..."
 "install_${OS}"
