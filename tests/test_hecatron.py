@@ -302,6 +302,11 @@ class RunTest(Fixture):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.split(), ["go", "rust"])
 
+    def test_help_prints_the_env_example_literally(self):
+        result = self.hecatron("help")
+        self.assertEqual(result.stderr, "")
+        self.assertIn('eval "$(hecatron env)"', result.stdout)
+
     def test_outside_a_project_is_an_error(self):
         with tempfile.TemporaryDirectory() as outside:
             result = subprocess.run(["bash", BIN, "test"], cwd=outside, capture_output=True, text=True)
