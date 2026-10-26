@@ -11,7 +11,11 @@ _install() {
 }
 
 install_macos() { _install; }
-install_linux() { _install; }
+# rustc links through the system C compiler, which a fresh Linux box lacks.
+install_linux() {
+    has cc || apt_install build-essential
+    _install
+}
 
 deps() { :; }
 
