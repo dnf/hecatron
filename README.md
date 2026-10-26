@@ -1,4 +1,9 @@
-# hecatron
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo/hero-dark.svg">
+    <img alt="hecatron" src="assets/logo/hero.svg" width="380">
+  </picture>
+</h1>
 
 Toolchains, tests and CI for polyglot repositories: one project implemented in
 many programming languages, possibly as several components each implemented
@@ -43,6 +48,7 @@ hooks (`test.sh`, `lint.sh`, `build.sh`, `clean.sh`) in
 | `libexec/{metadata,onboarding,bootstrap,lint}/` | Metadata updates, onboarding, machine bootstrap, shellcheck |
 | `tests/` | Unit and command tests against fixture repositories |
 | [`docs/`](docs/) | Installer reference, adding a language, build conventions |
+| [`assets/logo/`](assets/logo/) | The logo, favicons and social preview, and the script that builds them |
 | `examples/sayable/` | Sayable's project hooks, CI workflow templates and config at the time of the split |
 
 ## License
