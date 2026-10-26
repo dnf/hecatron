@@ -15,6 +15,7 @@ Shell queries:
     versions <lang>             print each distinct version spec the components
                                 resolve to, with its sources
     env <lang> [component]      print shell exports for the language's environment
+    missing-versions <lang>     print each component whose version isn't installed
     tasks <action>              print the project's extra tasks for an action
     task <action> <name>        print one task's command
 """
@@ -311,6 +312,18 @@ class Project:
         best = versions.newest(list(matching))
         return (best, matching[best]) if best else None
 
+    def missing_versions(self, lang: str) -> list[tuple[str, str, str]]:
+        """(component, spec, source) for each component whose spec has no
+        installed match. Empty without installed.sh: nothing to check against."""
+        if not self.resolve(lang, "installed.sh"):
+            return []
+        missing = []
+        for component in [c for c, _ in self.impl_dirs(lang)] or [self.components[0]]:
+            resolved = self.resolve_version(lang, component)
+            if resolved["spec"] is not None and self.installed_version(lang, component) is None:
+                missing.append((component, resolved["spec"], resolved["source"]))
+        return missing
+
     def _static_path(self, lang: str) -> list[str]:
         """"path" entries that need no resolved version."""
         dirs = []
@@ -462,6 +475,9 @@ def _query(project: Project, query: str, args: list[str]) -> int:
         resolved = project.resolve_version(*args)
         match = project.installed_version(*args)
         print("\t".join([resolved["spec"] or "-", resolved["source"] or "-", *(match or ("-", "-"))]))
+    elif query == "missing-versions" and len(args) == 1:
+        for component, spec, source in project.missing_versions(args[0]):
+            print(f"{component}\t{spec}\t{source}")
     elif query == "versions" and len(args) == 1:
         for spec, sources in project.versions(args[0]):
             print(f"{spec or '-'}\t{','.join(sources) or '-'}")

@@ -194,6 +194,38 @@ class CheckTest(VersionFixture):
         self.assertIn("a/tool/.tool-version pins 1.8, but the project's version is 1.9", result.stdout)
 
 
+class DoctorTest(VersionFixture):
+    def setUp(self) -> None:
+        super().setUp()
+        self.define(version="=2.0.0", dependency="bash",
+                    pinFiles=[{"file": ".tool-version", "format": "python-version"}])
+        write(self.path("a", "tool", ".tool-version"), "1.0\n")
+
+    def doctor(self) -> subprocess.CompletedProcess:
+        env = dict(os.environ, HECATRON_BUILTIN_LANGUAGES=self.builtin)
+        return subprocess.run(["bash", BIN, "doctor", "tool"], cwd=self.root, capture_output=True, text=True, env=env)
+
+    def test_missing_versions_lists_each_component_without_an_installed_match(self):
+        self.installed("1.0.4\t/opt/tool-1.0.4")
+        self.assertEqual(self.load().missing_versions("tool"), [("b", "=2.0.0", "default")])
+
+    def test_doctor_reports_a_version_that_isnt_installed(self):
+        self.installed("1.0.4\t/opt/tool-1.0.4")
+        result = self.doctor()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("b: tool =2.0.0 not installed (from default)", result.stdout)
+        self.assertNotIn("a: tool", result.stdout)
+
+    def test_doctor_is_happy_when_every_version_is_installed(self):
+        self.installed("1.0.4\t/opt/tool-1.0.4", "2.0.0\t/opt/tool-2.0.0")
+        result = self.doctor()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_without_installed_sh_versions_arent_checked(self):
+        self.assertEqual(self.load().missing_versions("tool"), [])
+        self.assertEqual(self.doctor().returncode, 0)
+
+
 class EnvironmentTest(VersionFixture):
     def test_the_newest_installed_match_is_used(self):
         self.installed("1.9.0\t/opt/tool-1.9.0", "2.0.0\t/opt/tool-2.0.0", "1.9.3\t/opt/tool-1.9.3")
