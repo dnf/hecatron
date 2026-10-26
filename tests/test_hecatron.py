@@ -228,6 +228,14 @@ class GeneratedFilesTest(Fixture):
         for package in ("python3", "perl"):
             self.assertRegex(content, rf"\n\s+{package} \\\n")
 
+    def test_dockerfile_sets_a_utf8_locale(self):
+        # ubuntu images ship C.UTF-8 but leave LANG unset, and test suites
+        # printing non-ASCII (Haskell, R) then fail.
+        self.assertEqual(self.hecatron("dockerfile").returncode, 0)
+        with open(self.path("Dockerfile"), encoding="utf-8") as f:
+            content = f.read()
+        self.assertIn("ENV LANG=C.UTF-8", content)
+
 
 class RunTest(Fixture):
     def setUp(self):
