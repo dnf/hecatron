@@ -147,6 +147,9 @@ def generate(project) -> str:
     lines.append("FROM ubuntu:24.04")
     lines.append("")
     lines.append('ENV DEBIAN_FRONTEND=noninteractive')
+    # The image ships the C.UTF-8 locale but doesn't select it, and tools
+    # writing non-ASCII to stdout (GHC's runtime, R) fail under POSIX.
+    lines.append('ENV LANG=C.UTF-8')
     lines.append("")
 
     # Apt batch install
