@@ -1,2 +1,9 @@
-# Nim
-# apt: nim
+# Nim: the latest stable official build for the image's architecture
+# (distributions lag: Ubuntu 24.04 has 1.6, Debian 13 none), and the C
+# compiler Nim compiles through
+# apt: build-essential xz-utils
+RUN VERSION="$(curl -fsSL https://nim-lang.org/channels/stable)" && \
+    case "$(uname -m)" in aarch64) ARCH=arm64 ;; *) ARCH=x64 ;; esac && \
+    mkdir -p /opt/nim && \
+    curl -fsSL "https://nim-lang.org/download/nim-${VERSION}-linux_${ARCH}.tar.xz" | tar -C /opt/nim --strip-components=1 -xJ && \
+    ln -s /opt/nim/bin/nim /opt/nim/bin/nimble /usr/local/bin/
