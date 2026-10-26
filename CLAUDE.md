@@ -1,190 +1,53 @@
-# .hecatron
+# CLAUDE.md
 
-Build tooling and language management for multi-language projects. This directory is the infrastructure layer — it manages language toolchains, generates CI workflows and Dockerfiles, runs parallel test/build/lint operations, and keeps project metadata in sync across all implementations.
+## What this repository is
 
-## Directory structure
+Hecatron manages polyglot repositories: it installs, checks and repairs each
+language's toolchain, runs a project's tests, linters, builds and cleans per
+language and component (or everything in parallel), and keeps generated CI
+workflows and a Dockerfile in sync.
+
+It was split out of [dnf/sayable](https://github.com/dnf/sayable), where it
+lived as `.hecatron/`. **It is not yet usable standalone.** The plan for the
+installable tool (`brew install hecatron`, `hecatron init`) is
+[`docs/design.md`](docs/design.md); read it before changing structure, and
+keep it current when a decision changes.
+
+## Layout (current, before the restructure in docs/design.md §5)
 
 ```
-.hecatron/
-  config/                          # Project-level configuration
-    languages.json                 # Tools config (non-language deps like cmake for CLI)
-    languages/
-      added.json                   # Active language set (committed, sorted array)
-      disabled.json                # Temporarily disabled languages (gitignored, sorted array)
-  languages/                       # Per-language definitions
-    _common.sh                     # Shared bash helpers sourced by all installer scripts
-    <lang>/
-      config.json                  # Language properties (abbreviation, dependency, flags)
-      test.sh                      # Run one library's native suite (`just test <lang>` runs all four)
-      lint.sh                      # Lint one library (optional; languages with a separate linter)
-      build.sh, clean.sh           # Build one library / remove its build artifacts (optional)
-      doctor.sh                    # Detect a broken toolchain (optional; `just doctor`)
-      install.sh                   # Install toolchain (macOS + Linux)
-      uninstall.sh                 # Remove toolchain
-      version.sh                   # Update version in source/manifests
-      metadata.sh                  # Update package metadata (optional, only for langs with manifests)
-      dockerfile                   # Dockerfile snippet for the generator
-      workflow.yml                 # CI workflow template (copied to .github/workflows/ by `just add`)
-  tools/
-    language/                      # Language management scripts
-      _helpers.py                  # Shared Python module (config loading, workflow sync, etc.)
-      emit-config.py               # Generates shell variables + functions for eval in helpers.sh
-      helpers.sh                   # Shell helpers sourced by all justfile recipes
-      each-library.sh              # Run languages/<lang>/<action>.sh once per library
-      test.sh, lint.sh,            # `just test|lint|build|clean <lang>`
-      build.sh, clean.sh           #   (thin wrappers over each-library.sh)
-      doctor.sh                    # `just doctor`: check toolchains, `--fix` runs installers
-      add.py                       # Add languages to active set
-      remove.py                    # Remove languages from active set
-      list.py                      # List languages (active or all)
-      install.py                   # Install language toolchains
-      uninstall.py                 # Uninstall language toolchains
-      disable.py                   # Temporarily disable languages from parallel runs
-      enable.py                    # Re-enable disabled languages
-      sync_workflows.py            # Re-copy all active workflows with banners
-    codegen/
-      util.py                      # Banner generator (DO NOT EDIT box-frame)
-      dockerfile.py                # Dockerfile generator from per-language snippets
-    lint/
-      shellcheck.sh                # `just lint shell`: shellcheck every tracked shell script
-    metadata/
-      set.sh                       # Interactive metadata updater for package manifests
-    runner/
-      run-parallel.sh              # Parallel test/build/lint executor with live progress
-      ARCHITECTURE.md              # Internal design docs for the runner
-      README.md                    # Runner usage docs
-    onboarding/
-      get-started.sh               # Interactive onboarding with status + install menu
-    bootstrap/
-      macos.sh                     # macOS development environment setup
-      linux.sh                     # Linux development environment setup
-    docker/
-      test.sh                      # Docker-based test runner
-  docs/
-    adding-a-language.md           # Full guide for adding a new language implementation
-    installers.md                  # Installer script reference
+languages/<lang>/        # toolchain definitions: config.json, install.sh, uninstall.sh, doctor.sh, dockerfile
+languages/_common.sh     # helpers for installers and hooks
+tools/runner/            # run-parallel.sh: parallel runner with live display and history
+tools/language/          # config bridge (emit-config.py, helpers.sh), add/remove/enable/disable/list,
+                         # install/uninstall, doctor, per-component dispatch (each-library.sh)
+tools/codegen/           # DO NOT EDIT banner (util.py), Dockerfile generator
+tools/metadata/          # interactive package-metadata updater
+tools/onboarding/        # get-started status and install menu
+tools/bootstrap/         # macOS/Linux machine setup
+tools/lint/              # shellcheck over every tracked shell script
+docs/                    # design, installer reference, adding a language, build conventions
+examples/sayable/        # sayable's hooks, workflow templates and config at the split (reference only)
 ```
 
-## How it works
+The scripts still assume they live at `<project>/.hecatron/` (they compute the
+project root from their own path) and that a justfile drives them. Removing
+those assumptions is the implementation phase of the design.
 
-### Language discovery
+## Conventions
 
-Languages are discovered by scanning `.hecatron/languages/*/config.json`. There is no central registry of languages — the filesystem is the source of truth. Any directory under `languages/` with a `config.json` is a known language.
-
-### Configuration split
-
-Configuration is split across three concerns:
-
-| File | Purpose | Committed |
-|---|---|---|
-| `languages/<lang>/config.json` | Static language properties | Yes |
-| `config/languages/added.json` | Which languages are active | Yes |
-| `config/languages/disabled.json` | Temporarily skip in parallel runs | No (gitignored) |
-| `config/languages.json` | Non-language tool dependencies (`cli` → cmake, `shell` → shellcheck) | Yes |
-
-**added vs disabled**: `added.json` controls which languages exist in the project — removed languages are refused by all commands. `disabled.json` is a local-only mechanism to temporarily skip languages in parallel runs (e.g., skip Haskell if you don't have `cabal` installed). Disabled languages can still be run individually.
-
-### Shell/Python bridge
-
-The justfile sources `tools/language/helpers.sh`, which runs `tools/language/emit-config.py` via `eval`. The Python script reads all config files and emits shell variables and functions:
-
-- **Lists**: `_ALL_LANGS`, `_ADDED_LANGS`, `_COMPILED_LANGS`, `_CLEAN_LANGS`, `_LINT_LANGS`, `_NO_BUILD_LANGS`, `_DISABLED_LANGS` (newline-separated)
-- **Functions**: `_name()` (abbreviation → full name), `_abbr()` (full → abbreviation), `_dep()` (language → build dependency), `_lint_dep()` (language → lint dependency), `_is_disabled()`
-
-This means adding or modifying language properties only requires editing `config.json` files — no shell script changes needed.
-
-### Helpers.sh
-
-`tools/language/helpers.sh` is sourced by every justfile recipe. Beyond the emitted config, it provides:
-
-- `_is_removed()` — check if a language is known but not in `added.json`
-- `_ada_env()` — add Alire-managed GNAT to PATH on macOS
-- `_lang_grid()` — format languages into a multi-column grid with abbreviations
-- `_lang_csv()` — format languages as comma-separated string
-- `_suggest()` — fuzzy matching for misspelled language names
-- `_check()` — validate + resolve a language name (with fuzzy suggestion on miss)
-
-### Per-language config.json
-
-Each language's `config.json` has these fields:
-
-| Field | Type | Description |
-|---|---|---|
-| `abbreviation` | `string\|null` | Short alias (e.g., `"ad"` for Ada, `"c++"` for C++) |
-| `dependency` | `string` | Build dependency command name (e.g., `"go"`, `"gnat"`, `"cmake"`) |
-| `lintDependency` | `string\|null` | Lint-specific dependency if different from build (e.g., `"golangci-lint"` for Go) |
-| `compiled` | `boolean` | Whether `just build` applies |
-| `hasClean` | `boolean` | Whether `just clean` applies |
-| `hasLint` | `boolean` | Whether `just lint` applies |
-
-### Installer and test scripts
-
-Each language has a set of single-purpose scripts in `languages/<lang>/`:
-
-- **`doctor.sh`** — (optional) Detects a toolchain that is installed but broken, one `problem` per issue. `tools/language/doctor.sh` (behind `just doctor`) also checks the `dependency` and `lintDependency` commands for every language; `--fix` runs the language's `install.sh`, which repairs what its `doctor.sh` detects.
-- **`test.sh`** — Runs one library's native suite. `tools/language/test.sh <lang>` (behind `just test <lang>`) calls it from inside each `<library>/impl/<lang>/` with the library name as `$1`, and reports which libraries failed.
-- **`lint.sh`** — (only for languages with a separate linter) Lints one library the same way; `tools/language/lint.sh <lang>` is behind `just lint <lang>`. `build.sh` and `clean.sh` work the same way behind `just build <lang>` and `just clean <lang>`. All four dispatchers are thin wrappers over `tools/language/each-library.sh <test|lint|build|clean> <lang> [library ...]`, so a language-specific `just` command always covers every library.
-
-- **`install.sh`** — Installs the toolchain. Sources `_common.sh`, defines `install_macos()` + `install_linux()` + `deps()`, calls `"install_${OS}"` then `deps`.
-- **`uninstall.sh`** — Removes the toolchain. Same pattern with `uninstall_macos()` + `uninstall_linux()`.
-- **`version.sh`** — Takes a version string as `$1`, runs sed commands to update version in source files and manifests.
-- **`metadata.sh`** — (optional) Updates package metadata using `PT_*` env vars exported by `tools/metadata/set.sh`.
-
-`_common.sh` provides: `$OS` (macos/linux), `$SUDO`, `$ROOT`, `log()`, `has()`, `brew_install()`, `brew_ensure_linked()`, `apt_install()`, `impl_dirs()`, `each_impl()`, `problem()`/`doctor_done()` (for `doctor.sh`), `_sed_i()`, `_set_metadata_gradle_kts()`, `_set_metadata_gradle_groovy()`.
-
-### Dockerfile generation
-
-`tools/codegen/dockerfile.py` generates `age/Dockerfile` from per-language `languages/<lang>/dockerfile` snippets. Snippets support:
-
-- `# apt: pkg1 pkg2` — collected, deduplicated, sorted into one `apt-get install`
-- `# after: otherlang` — topological ordering constraint
-- Literal `RUN`/`ENV`/comment lines — emitted verbatim
-
-The generator reads `config/languages/added.json` to determine which languages to include.
-
-### CI workflow management
-
-Each language has a `workflow.yml` template in its language directory. `just add <lang>` copies it to `.github/workflows/<lang>.yml` with a generated DO NOT EDIT banner. `just remove <lang>` deletes the workflow file. `sync_workflows.py` re-copies all active workflows (used after banner format changes).
-
-### Banner system
-
-`tools/codegen/util.py` generates a 9-line double-line box-frame `DO NOT EDIT` banner used on all generated files (Dockerfile, workflows, locale files). The `make_banner()` function accepts 5 body lines and configurable line prefix/suffix for different comment syntaxes. `make_header()` is a convenience for codegen-generated files. `locale_source_comment()` generates the `Source: locales/{code}.json` line.
-
-### Parallel runner
-
-`tools/runner/run-parallel.sh` runs justfile recipes in parallel with a live terminal progress display (bar chart + swim lanes). Supports slot-based concurrency (`-j N`, `-j P%`) and unlimited mode. Captures output to `.logs/<command>/<language>.log`.
-
-### Metadata system
-
-`tools/metadata/set.sh` is an interactive script that reads `config/metadata.json`, prompts for changes, exports both old (`PT_OLD_*`) and new (`PT_*`) values as env vars, then calls each language's `metadata.sh` script to perform targeted replacements in package manifests.
-
-### Python helpers (_helpers.py)
-
-The shared Python module provides:
-
-- `project_root()` — compute project root from file location
-- `config_path()`, `load_config()`, `save_config()` — central config access
-- `load_languages(root)` — discover languages from filesystem
-- `added_path()`, `load_added()`, `save_added()` — active language set
-- `disabled_path()`, `read_disabled()`, `write_disabled()` — disabled set
-- `resolve_name()` — resolve abbreviation or full name to canonical name
-- `sync_workflow()` — copy/remove CI workflow with banner
-- `workflow_banner()` — generate workflow-specific banner
-- `regenerate_dockerfile()` — invoke the Dockerfile generator
-
-## Key design decisions
-
-1. **Filesystem-as-registry**: Languages are discovered from `languages/*/config.json` rather than a central list. Adding a language = adding a directory. This prevents merge conflicts when adding languages concurrently.
-
-2. **Config split**: `added.json` (committed) vs `disabled.json` (gitignored) vs per-language `config.json` (committed). Each has a different change frequency and visibility need.
-
-3. **Shell/Python bridge via eval**: Python reads JSON configs and emits shell code. This avoids JSON parsing in bash while keeping the justfile as the user-facing interface.
-
-4. **Single-purpose scripts**: Each installer action is a separate executable file, not a case-arm in a monolithic script. This makes each file small and independently testable.
-
-5. **Banner on generated files**: Every generated file (Dockerfile, workflows, locale files) carries a prominent DO NOT EDIT banner with the source path and regeneration command. This prevents people from editing generated files by hand.
-
-6. **Abbreviation support**: Languages can have short aliases (e.g., `ts` for TypeScript, `rs` for Rust). The shell `_name()` function resolves abbreviations; `_check()` validates with fuzzy suggestion on typos.
+- **Language definitions are generic.** Nothing under `languages/<lang>/` may
+  name a particular project's files. Project-specific behaviour belongs in
+  hooks (see `examples/sayable/languages/<lang>/`).
+- **Installers are idempotent and repair.** An installer must be safe to rerun
+  and must fix the broken states its `doctor.sh` detects.
+- **Every per-language command covers every component.** Dispatch through
+  `each-library.sh`; never hard-code one component's path.
+- **Zero warnings.** shellcheck clean at warning level
+  (`bash tools/lint/shellcheck.sh`); any `# shellcheck disable=` carries a
+  comment saying why.
+- **Name over comment.** Extract a named function or variable instead of a
+  comment explaining what a line does; comments explain why.
 
 ## Shell conventions
 
@@ -192,16 +55,9 @@ The shared Python module provides:
 - **Brace-delimit before Unicode**: `${_s_pass}✓` not `$_s_pass✓` (Bash 3.2 treats Unicode as identifier chars)
 - **ANSI colors**: Base `_c_*` variables define raw escapes; semantic `_s_*` variables give meaning. Always use `_s_*` in output (except structural codes like `_c_reset`).
 - **One entry per line**: Language lists, case arms, and grids use one-per-line format to prevent merge conflicts.
+- **Bash 3.2 compatibility** for anything a user runs directly on macOS: no `mapfile`, no associative arrays, and expand possibly-empty arrays as `${arr[@]+"${arr[@]}"}` under `set -u`.
 
-## Relationship to project root
+## Commit conventions
 
-The `.hecatron/` directory is infrastructure — it knows how to manage the languages in each library's `<library>/impl/`, but doesn't contain any library source code. The root `justfile` is the user-facing entry point that delegates to `.hecatron/tools/` scripts. The split:
-
-- `justfile` — user interface (recipes)
-- `.hecatron/tools/` — implementation (scripts)
-- `.hecatron/languages/` — per-language definitions
-- `.hecatron/config/` — project-level config
-- `<library>/impl/` — actual library implementations (age, date, duration, time)
-- `<library>/config/` — each library's config (version.json, metadata.json, tests.json)
-- `locales/` — one JSON file per language, shared by all four libraries
-- `<library>/codegen/` — each library's locale code generator (reads its section of `locales/*.json`, writes to `<library>/impl/<lang>/locales/`)
+- Imperative mood ("Add Odin installer"), one logical change per commit.
+- Squash-merge pull requests.

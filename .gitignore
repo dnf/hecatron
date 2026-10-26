@@ -1,1 +1,3 @@
-config/languages/disabled.json
+__pycache__/
+.logs/
+examples/sayable/config/languages/disabled.json
