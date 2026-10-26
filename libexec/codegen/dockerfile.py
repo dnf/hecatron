@@ -17,13 +17,17 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from banner import make_banner  # noqa: E402
 
-# Always included regardless of active languages
+# Always included regardless of active languages: build tools, what snippets
+# download with, and what hecatron itself runs on (python3 for the CLI, perl's
+# Time::HiRes for the parallel runner's timing; neither is in the base image).
 BASE_PACKAGES = [
     "build-essential",
     "ca-certificates",
     "curl",
     "git",
     "gnupg",
+    "perl",
+    "python3",
     "unzip",
 ]
 

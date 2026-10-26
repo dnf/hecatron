@@ -219,6 +219,15 @@ class GeneratedFilesTest(Fixture):
         self.assertIn("FROM ubuntu", content)
         self.assertEqual(self.hecatron("dockerfile", "--check").returncode, 0)
 
+    def test_dockerfile_installs_what_hecatron_needs(self):
+        # The image must run hecatron itself whatever the languages: the CLI
+        # needs python3, and the parallel runner perl's Time::HiRes.
+        self.assertEqual(self.hecatron("dockerfile").returncode, 0)
+        with open(self.path("Dockerfile"), encoding="utf-8") as f:
+            content = f.read()
+        for package in ("python3", "perl"):
+            self.assertRegex(content, rf"\n\s+{package} \\\n")
+
 
 class RunTest(Fixture):
     def setUp(self):
