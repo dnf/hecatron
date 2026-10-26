@@ -1,6 +1,7 @@
 # wren_cli, as install.sh installs it: the 0.4.0 release on x86_64 (the only
 # Linux build published), else built from source at the last commit on main
-# (0.4.0's source no longer compiles with current GCC)
+# (0.4.0's source no longer compiles with current GCC), without the x86-only
+# -m64 its makefile passes
 # apt: build-essential curl unzip
 RUN if [ "$(uname -m)" = "x86_64" ]; then \
         curl -fsSL -o /tmp/wren-cli.zip https://github.com/wren-lang/wren-cli/releases/download/0.4.0/wren-cli-linux-0.4.0.zip && \
@@ -10,6 +11,7 @@ RUN if [ "$(uname -m)" = "x86_64" ]; then \
     else \
         COMMIT=18553636618a4d33f10af9b5ab92da6431784a8c && \
         curl -fsSL "https://github.com/wren-lang/wren-cli/archive/${COMMIT}.tar.gz" | tar -C /tmp -xz && \
+        sed -i 's/ -m64//g' "/tmp/wren-cli-${COMMIT}/projects/make/wren_cli.make" && \
         make -C "/tmp/wren-cli-${COMMIT}/projects/make" -j"$(nproc)" && \
         cp "/tmp/wren-cli-${COMMIT}/bin/wren_cli" /usr/local/bin/wren_cli && \
         rm -rf "/tmp/wren-cli-${COMMIT}"; \
