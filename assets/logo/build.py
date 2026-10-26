@@ -36,7 +36,7 @@ ACCENT = "#3B5BFF"
 WHITE = "#FFFFFF"
 
 WORDMARK = "hecatron"
-TAGLINE = "Toolchains, tests and CI for polyglot repositories"
+TAGLINE = "Tools for polyglot repositories"
 TRACKING = -0.03  # em, as in the design canvas
 
 # The mark on a 64-unit grid. The chevron points down at the centre and is
