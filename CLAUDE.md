@@ -120,7 +120,7 @@ Each language has a set of single-purpose scripts in `languages/<lang>/`:
 
 ### Dockerfile generation
 
-`tools/codegen/dockerfile.py` generates the root `Dockerfile` from per-language `languages/<lang>/dockerfile` snippets. Snippets support:
+`tools/codegen/dockerfile.py` generates `age/Dockerfile` from per-language `languages/<lang>/dockerfile` snippets. Snippets support:
 
 - `# apt: pkg1 pkg2` — collected, deduplicated, sorted into one `apt-get install`
 - `# after: otherlang` — topological ordering constraint
@@ -134,7 +134,7 @@ Each language has a `workflow.yml` template in its language directory. `just add
 
 ### Banner system
 
-`tools/codegen/util.py` generates a 9-line double-line box-frame `DO NOT EDIT` banner used on all generated files (Dockerfile, workflows, locale files). The `make_banner()` function accepts 5 body lines and configurable line prefix/suffix for different comment syntaxes. `make_header()` is a convenience for codegen-generated files. `locale_source_comment()` generates the `Source: age/locales/src/{code}.json` line.
+`tools/codegen/util.py` generates a 9-line double-line box-frame `DO NOT EDIT` banner used on all generated files (Dockerfile, workflows, locale files). The `make_banner()` function accepts 5 body lines and configurable line prefix/suffix for different comment syntaxes. `make_header()` is a convenience for codegen-generated files. `locale_source_comment()` generates the `Source: locales/{code}.json` line.
 
 ### Parallel runner
 
@@ -181,12 +181,13 @@ The shared Python module provides:
 
 ## Relationship to project root
 
-The `.hecatron/` directory is infrastructure — it knows how to manage the languages in `src/`, but doesn't contain any library source code. The root `justfile` is the user-facing entry point that delegates to `.hecatron/tools/` scripts. The split:
+The `.hecatron/` directory is infrastructure — it knows how to manage the languages in each library's `<library>/impl/`, but doesn't contain any library source code. The root `justfile` is the user-facing entry point that delegates to `.hecatron/tools/` scripts. The split:
 
 - `justfile` — user interface (recipes)
 - `.hecatron/tools/` — implementation (scripts)
 - `.hecatron/languages/` — per-language definitions
 - `.hecatron/config/` — project-level config
-- `age/impl/` — actual library implementations
-- `age/config/` — project config (version.json, metadata.json, tests.json)
-- `age/codegen/` — locale code generator (reads `age/locales/*.json`, writes to `age/impl/<lang>/locales/`)
+- `<library>/impl/` — actual library implementations (age, date, duration, time)
+- `<library>/config/` — each library's config (version.json, metadata.json, tests.json)
+- `locales/` — one JSON file per language, shared by all four libraries
+- `<library>/codegen/` — each library's locale code generator (reads its section of `locales/*.json`, writes to `<library>/impl/<lang>/locales/`)

@@ -6,6 +6,9 @@ from here so existing emitter imports continue to work.
 
 from __future__ import annotations
 
+import json
+import os
+
 _INNER_WIDTH = 62
 
 
@@ -59,4 +62,30 @@ def make_header(generator_path: str, line_prefix: str = "// ", line_suffix: str 
 
 def locale_source_comment(locale_code: str, line_prefix: str = "// ", line_suffix: str = "") -> str:
     """Return a single-line source comment for a locale file."""
-    return f"{line_prefix}Source: age/locales/src/{locale_code}.json{line_suffix}\n"
+    return f"{line_prefix}Source: locales/{locale_code}.json{line_suffix}\n"
+
+
+LOCALES_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
+    "locales",
+)
+# Fields every library shares; each library's own data is under its name.
+SHARED_LOCALE_FIELDS = ("code", "name", "pluralRule")
+
+
+def load_component_locales(component: str) -> list[dict]:
+    """Return every locale as one library sees it, sorted by code.
+
+    locales/<code>.json holds the shared fields once and a section per
+    library; a library's view is the shared fields plus its own section.
+    """
+    views = []
+    for fname in sorted(os.listdir(LOCALES_DIR)):
+        if not fname.endswith(".json"):
+            continue
+        with open(os.path.join(LOCALES_DIR, fname), encoding="utf-8") as f:
+            data = json.load(f)
+        view = {k: data[k] for k in SHARED_LOCALE_FIELDS if k in data}
+        view.update(data[component])
+        views.append(view)
+    return views
