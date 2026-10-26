@@ -7,7 +7,8 @@
 # <name> is used for the log directory: .logs/<name>/
 # Each subsequent argument is passed to the job command (HECATRON_JOB_COMMAND,
 # default just) as a complete command.
-# The label shown in output is the last word of each argument.
+# The label shown in output (and naming the log file) is the part before "::"
+# in "label::command", or else the command's last word.
 # Entries prefixed with "skip:" are shown as "not installed" in their
 # original position without launching a job.
 set -uo pipefail
@@ -43,13 +44,14 @@ _show_help() {
     cat <<'HELP'
 Usage: run-parallel.sh [flags] <name> "cmd args" ...
 
-Run just recipes in parallel with live progress display.
+Run jobs (just recipes by default) in parallel with live progress display.
 
 Arguments:
   <name>            Log directory name — output goes to .logs/<name>/
-  "cmd args" ...    Commands passed to `just`. The last word of each becomes
-                    the display label. Prefix with "skip:" to mark as
-                    not installed (e.g. "skip:haskell").
+  "cmd args" ...    Commands passed to the job command (HECATRON_JOB_COMMAND,
+                    default `just`). Write "label::cmd args" to name a job;
+                    otherwise its last word is the label. Prefix with
+                    "skip:" to mark as not installed (e.g. "skip:haskell").
 
 Flags:
   -j VALUE          Set concurrency: integer, percentage (default 50%),
@@ -169,7 +171,15 @@ for _arg in "$@"; do
         all_disable+=(0)
         skip_n=$((skip_n + 1))
     else
-        all_labels+=("${_arg##* }")
+        # "label::command" names the job explicitly; otherwise the label is the
+        # command's last word ("test go" -> go). Labels name the log files.
+        if [[ "$_arg" == *::* ]]; then
+            _job_label="${_arg%%::*}"
+            _arg="${_arg#*::}"
+        else
+            _job_label="${_arg##* }"
+        fi
+        all_labels+=("${_job_label//\//_}")
         all_cmds+=("$_arg")
         all_skip+=(0)
         all_sep+=(0)

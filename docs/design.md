@@ -237,6 +237,8 @@ recipes do today. Output of single-language runs streams and is also saved to
 | `hecatron version <ver> [component]` | Version bump through `version.sh` hooks | `just version` (age only today) |
 | `hecatron get-started` | Onboarding status table and install menu | `just get-started` |
 | `hecatron banner ...` | Print a DO NOT EDIT banner for a generator to embed | `codegen/util.py` |
+| `hecatron env` | Shell code for a project's own scripts: `eval "$(hecatron env)"` loads the language lists and helpers | `source helpers.sh` |
+| `hecatron parallel <name> "job"...` | Run a project's own job list (just recipes by default) with the parallel display and logs | `run-parallel.sh` |
 | `hecatron --version` | Hecatron's own version | new |
 
 Flags shared by the run commands: `-j N|P%|unlimited` (concurrency) and

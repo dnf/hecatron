@@ -105,20 +105,26 @@ esac
 
 # --- Everything, in parallel ------------------------------------------------
 if [ "${#_targets[@]}" -eq 0 ]; then
+    _cflags=""
+    for _component in ${_components[@]+"${_components[@]}"}; do
+        _cflags="${_cflags} -c ${_component}"
+    done
     _jobs=()
     for _lang in $(_action_langs "${_action}"); do
         if _is_disabled "${_lang}"; then
             _jobs+=("disable:${_lang}")
         elif _dep_available "${_lang}"; then
-            _jobs+=("${_action} ${_lang}")
+            _jobs+=("${_lang}::${_action} ${_lang}${_cflags}")
         else
             _jobs+=("skip:${_lang}")
         fi
     done
     _extra=()
-    while IFS= read -r _task; do
-        [ -n "${_task}" ] && _extra+=("${_action} ${_task}")
-    done < <(_tasks "${_action}")
+    if [ -z "${_cflags}" ]; then
+        while IFS= read -r _task; do
+            [ -n "${_task}" ] && _extra+=("${_action} ${_task}")
+        done < <(_tasks "${_action}")
+    fi
     if [ "${_action}" = "lint" ] && _is_tool shell; then
         if command -v shellcheck >/dev/null 2>&1; then _extra+=("lint shell"); else _extra+=("skip:shell"); fi
     fi
