@@ -134,6 +134,7 @@ but expect changes before 1.0.
 | Document | Contents |
 | --- | --- |
 | [docs/design.md](docs/design.md) | How hecatron works and why: concepts, configuration, commands, and the decisions behind them |
+| [docs/coverage.md](docs/coverage.md) | Which languages install and work on which platforms |
 | [docs/installers.md](docs/installers.md) | How each language's toolchain is installed on macOS and Linux, and toolchains languages share |
 | [docs/adding-a-language.md](docs/adding-a-language.md) | Writing a language definition |
 | [docs/build-conventions.md](docs/build-conventions.md) | Where each language's build artifacts go |
