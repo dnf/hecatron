@@ -101,6 +101,22 @@ apt_has() {
     [[ "${policy}" == *"Candidate: "[!\(]* ]]
 }
 
+# For a definition's releases.sh: the latest release of each of a product's
+# release lines from endoflife.date, newest first, as "version<TAB>flags",
+# where flags lists "lts" (a long-term support line as of today) and "eol"
+# (past its end of life), comma-separated. Build suffixes ("+11") are dropped.
+endoflife_releases() {
+    curl -fsSL "https://endoflife.date/api/$1.json" | python3 -c '
+import datetime, json, sys
+today = datetime.date.today().isoformat()
+def reached(value):
+    return value is True or (isinstance(value, str) and value <= today)
+for cycle in json.load(sys.stdin):
+    flags = [name for name, key in (("lts", "lts"), ("eol", "eol")) if reached(cycle.get(key))]
+    print(str(cycle["latest"]).split("+")[0] + "\t" + ",".join(flags))
+'
+}
+
 # Update metadata in a Gradle KTS build file (shared by Java, Kotlin, Scala).
 # Reads PT_OLD_* and PT_* env vars set by .hecatron/tools/metadata/set.sh.
 _set_metadata_gradle_kts() {
