@@ -17,7 +17,7 @@ fi
 # ---- Base packages ----
 echo "==> Installing base packages..."
 $SUDO apt-get update
-$SUDO apt-get install -y curl ca-certificates git gnupg unzip
+$SUDO apt-get install -y curl ca-certificates git gnupg perl unzip
 
 # ---- Install all language toolchains ----
 "${HECATRON_HOME}/bin/hecatron" install
