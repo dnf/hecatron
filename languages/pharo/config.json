@@ -4,5 +4,8 @@
   "lintDependency": null,
   "detect": [
     "*.st"
+  ],
+  "path": [
+    "~/.local/bin"
   ]
 }

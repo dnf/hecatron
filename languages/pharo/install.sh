@@ -25,7 +25,7 @@ _install() {
 install_macos() { _install; }
 install_linux() { _install; }
 
-# The test image is downloaded into age/impl/pharo by test.sh on first run.
+# A project's test hook downloads the Pharo image it tests against.
 deps() { :; }
 
 log "Installing Pharo..."

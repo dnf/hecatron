@@ -7,7 +7,7 @@ install_macos() {
     if ! has node; then
         bash "$(dirname "$0")/../typescript/install.sh"
     fi
-    npm install -g elm@latest elm-test@latest
+    _npm_global elm@latest elm-test@latest
 }
 
 install_linux() {
@@ -21,7 +21,16 @@ install_linux() {
         echo "Skipping Elm installation on arm64." >&2
         return 1
     fi
-    npm install -g elm@latest elm-test@latest
+    _npm_global elm@latest elm-test@latest
+}
+
+# Global npm packages go into Node's prefix; it's root's with apt's Node.
+_npm_global() {
+    if [ -w "$(npm prefix -g)/lib" ]; then
+        npm install -g "$@"
+    else
+        $SUDO npm install -g "$@"
+    fi
 }
 
 deps() { :; }

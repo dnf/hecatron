@@ -14,6 +14,8 @@ _install() {
     fi
     if ! has uv; then
         bash "$(dirname "$0")/../python/install.sh"
+        # uv lands in ~/.local/bin, which this shell's PATH may predate.
+        export PATH="${HOME}/.local/bin:${PATH}"
     fi
     uv tool install --force "mojo==${MOJO_VERSION}" --with-executables-from mojo-compiler
 }

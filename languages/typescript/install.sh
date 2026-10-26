@@ -10,7 +10,9 @@ install_linux() {
     fi
 }
 
-deps() { each_impl typescript npm install; }
+# Only libraries with a package.json have dependencies to install.
+_npm_install() { [ ! -f package.json ] || npm install; }
+deps() { each_impl typescript _npm_install; }
 
 log "Installing TypeScript (Node.js)..."
 "install_${OS}"

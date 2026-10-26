@@ -10,9 +10,11 @@ install_linux() {
     fi
 }
 
+# Only libraries with a shard.yml have dependencies to install.
+_shards_install() { [ ! -f shard.yml ] || shards install; }
 deps() {
     if has crystal; then
-        each_impl crystal shards install
+        each_impl crystal _shards_install
     fi
 }
 

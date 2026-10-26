@@ -13,6 +13,7 @@ install_linux() {
 # A .venv copied or moved from another checkout keeps scripts whose shebangs
 # point at the old location, so `uv run pyright` can't start; rebuild it.
 _sync_venv() {
+    [ -f pyproject.toml ] || return 0
     if [ -f .venv/bin/pytest ] && ! head -1 .venv/bin/pytest | grep -qF "${PWD}/.venv/"; then
         log "Recreating moved virtualenv in ${PWD}"
         rm -rf .venv

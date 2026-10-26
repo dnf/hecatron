@@ -8,12 +8,17 @@ _install() {
             BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
             BOOTSTRAP_HASKELL_INSTALL_CABAL=1 \
             BOOTSTRAP_HASKELL_INSTALL_GHC=1 \
+            BOOTSTRAP_HASKELL_ADJUST_BASHRC=1 \
             sh
     fi
 }
 
 install_macos() { _install; }
-install_linux() { _install; }
+# GHC's documented build dependencies, which a fresh Debian or Ubuntu lacks.
+install_linux() {
+    apt_install build-essential libffi-dev libgmp-dev libncurses-dev pkg-config zlib1g-dev
+    _install
+}
 
 deps() { :; }
 

@@ -5,19 +5,21 @@ source "$(dirname "$0")/../_common.sh"
 install_macos() { brew_install dart-sdk; }
 install_linux() {
     if ! has dart; then
-        ARCH="$(dpkg --print-architecture)"
-        curl -fsSL "https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-linux-${ARCH}-release.zip" -o /tmp/dart-sdk.zip
-        $SUDO unzip -q -o /tmp/dart-sdk.zip -d /opt
-        rm -f /tmp/dart-sdk.zip
+        local arch zip
+        arch="x64"
+        [ "$(uname -m)" = "aarch64" ] && arch="arm64"
+        zip="$(mktemp)"
+        curl -fsSL "https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-linux-${arch}-release.zip" -o "${zip}"
+        $SUDO rm -rf /opt/dart-sdk
+        $SUDO unzip -q -o "${zip}" -d /opt
+        rm -f "${zip}"
         $SUDO ln -sf /opt/dart-sdk/bin/dart /usr/local/bin/dart
     fi
 }
 
-deps() {
-    if [ -d "age/impl/dart" ] && has dart; then
-        (cd src/dart && dart pub get)
-    fi
-}
+# Only libraries with a pubspec.yaml have packages to get.
+_pub_get() { [ ! -f pubspec.yaml ] || dart pub get; }
+deps() { each_impl dart _pub_get; }
 
 log "Installing Dart..."
 "install_${OS}"
