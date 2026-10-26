@@ -4,5 +4,8 @@
   "lintDependency": "golangci-lint",
   "detect": [
     "go.mod"
+  ],
+  "path": [
+    "~/.local/bin"
   ]
 }

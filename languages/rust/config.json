@@ -4,5 +4,8 @@
   "lintDependency": null,
   "detect": [
     "Cargo.toml"
+  ],
+  "path": [
+    "~/.cargo/bin"
   ]
 }
