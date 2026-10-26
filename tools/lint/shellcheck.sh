@@ -4,7 +4,8 @@
 # languages (the Lua, Perl, PHP... CLI launchers) are skipped.
 set -euo pipefail
 
-cd "$(dirname "$0")/../../.."
+# Check the repository the command runs in, not the one this script lives in.
+cd "$(git rev-parse --show-toplevel)"
 
 if ! command -v shellcheck >/dev/null 2>&1; then
     echo "error: shellcheck not found (brew install shellcheck, or apt-get install shellcheck)" >&2
@@ -25,4 +26,5 @@ while IFS= read -r _file; do
 done < <(git ls-files)
 
 echo "shellcheck: ${#_scripts[@]} scripts"
+[ "${#_scripts[@]}" -eq 0 ] && exit 0
 shellcheck -x -S warning "${_scripts[@]}"
