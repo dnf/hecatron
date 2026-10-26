@@ -79,32 +79,40 @@ Languages install via a mix of apt packages and direct downloads:
 
 ## Installer script structure
 
-Each script sources `.hecatron/languages/_common.sh` for shared helpers:
+Each script sources `languages/_common.sh` for shared helpers:
 
 - `has()` — check if a command exists
 - `apt_install()` — apt-get install with auto cache refresh
 - `brew_install()` — brew install with `|| true`
 - `brew_ensure_linked <formula> <command>` — link a formula Homebrew installed but left unlinked
-- `impl_dirs <lang>` — each library's `<library>/impl/<lang>/` directory, one per line
+- `impl_dirs <lang>` — each component's directory for the language (from the project's `components` and `implPath`), one per line
 - `each_impl <lang> <command...>` — run a command in each of them (e.g. `each_impl ruby bundle install`)
 - `problem` / `doctor_done` — for `doctor.sh`: report a problem; exit non-zero if any were reported
 - `$OS` — `"macos"` or `"linux"`
 - `$SUDO` — `"sudo"` or `""` (when root)
 - `$ROOT` — the repository root
 
-Each language has these scripts:
+A language definition has these files (see
+[adding-a-language.md](adding-a-language.md)):
 
-| Script         | Purpose                                                 | Required |
-| -------------- | ------------------------------------------------------- | -------- |
-| `install.sh`   | Install toolchain + deps; idempotent, repairs           | Yes      |
-| `uninstall.sh` | Remove toolchain                                        | Yes      |
-| `version.sh`   | Update version in source/manifests                      | Yes      |
-| `test.sh`      | Hook: test one component (`hecatron test <lang>`)       | Project |
-| `lint.sh`      | Hook: lint one component, if there's a separate linter  | Project |
-| `build.sh`     | Hook: build one component, if there's a build step      | Project |
-| `clean.sh`     | Hook: remove one component's build artifacts            | Project |
-| `doctor.sh`    | Detect breakages beyond a missing command (`hecatron doctor`) | No     |
-| `metadata.sh`  | Update package metadata                                 | No       |
+| File           | Purpose                                                       | Required |
+| -------------- | ------------------------------------------------------------- | -------- |
+| `config.json`  | Dependency commands, abbreviation, detection globs, PATH entries | Yes   |
+| `install.sh`   | Install toolchain + deps; idempotent, repairs                 | Yes      |
+| `uninstall.sh` | Remove toolchain                                              | Yes      |
+| `doctor.sh`    | Detect breakages beyond a missing command (`hecatron doctor`) | No       |
+| `dockerfile`   | Snippet for `hecatron dockerfile`                             | No       |
+
+A project adds hooks for its own code in `.hecatron/languages/<lang>/`:
+
+| Hook           | Purpose                                                       |
+| -------------- | ------------------------------------------------------------- |
+| `test.sh`      | Test one component (`hecatron test <lang>`)                   |
+| `lint.sh`      | Lint one component, if there's a separate linter              |
+| `build.sh`     | Build one component, if there's a build step                  |
+| `clean.sh`     | Remove one component's build artifacts                        |
+| `version.sh`   | Update the version in source and manifests (`hecatron version`) |
+| `metadata.sh`  | Update package metadata (`hecatron metadata`)                 |
 
 `hecatron doctor` already checks that the `dependency` and `lintDependency`
 commands from `config.json` exist. Add a `doctor.sh` when a toolchain can be
@@ -119,8 +127,8 @@ busted --version >/dev/null 2>&1 || problem "busted fails to start"
 doctor_done
 ```
 
-Project dependencies install into every component's implementation, not just
-age's: `deps() { each_impl ruby bundle install; }`.
+Project dependencies install into every component's implementation:
+`deps() { each_impl ruby bundle install; }`.
 
 Templates:
 
