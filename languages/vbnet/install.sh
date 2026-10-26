@@ -3,12 +3,8 @@
 source "$(dirname "$0")/../_common.sh"
 
 install_macos() { brew_install dotnet; }
-install_linux() {
-    if ! dotnet --list-sdks 2>/dev/null | grep -q '^10\.'; then
-        $SUDO apt-get update
-        apt_install dotnet-sdk-10.0
-    fi
-}
+# The .NET SDK is C#'s; its installer knows where each distribution gets it.
+install_linux() { bash "$(dirname "$0")/../csharp/install.sh"; }
 
 deps() { :; }
 
