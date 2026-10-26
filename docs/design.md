@@ -461,8 +461,9 @@ choose another.
 
 For a language in a component, the version is the first of:
 
-1. **The ecosystem's own pin file**, in the component's directory or the
-   project root, read with that ecosystem's meaning: `.python-version`,
+1. **The ecosystem's own pin file**, nearest first from the language's
+   implementation directory (`implPath`) up to the project root, as the
+   ecosystems' own tools search, read with that ecosystem's meaning: `.python-version`,
    `.nvmrc` or `.node-version`, `rust-toolchain.toml` or `rust-toolchain`,
    `global.json` (`sdk.version`), the `toolchain` line of `go.mod`,
    `.ruby-version`, Gradle's `gradle-daemon-jvm.properties`
@@ -473,6 +474,21 @@ For a language in a component, the version is the first of:
 3. **The definition's default `version`.**
 
 Components can resolve to different versions; installers install each one.
+When a pin file and the project's `version` both apply and disagree, the pin
+file wins and `hecatron check` reports the disagreement: two sources for one
+version are almost always a mistake.
+
+### Reading pin files
+
+Each `pinFiles` entry names a file and the format that reads it
+(`{"file": ".nvmrc", "format": "nvmrc"}`); the formats live in
+`libexec/lib/` with the rest of resolution, so a definition only chooses
+among them. A format turns the file's contents into hecatron's version syntax
+(below): `.python-version`'s `3.12` becomes the prefix `3.12`, a
+`rust-toolchain.toml` channel of `1.80.1` becomes `=1.80.1`. A value with no
+version in it (`stable`, `lts/*`, `nightly`) is left to the ecosystem's own
+tool: hecatron neither installs nor checks that language's version for that
+component, and the doctor says so.
 
 ### Version syntax
 
@@ -484,7 +500,10 @@ In hecatron's configuration:
 | `"=4.5"` | Exactly the release named 4.5 and never anything else, even if the language later publishes 4.5.1 |
 
 A prefix follows new patch releases, and a project that doesn't want that
-writes `=`. Without the marker, a project pinning `"4.5"` would silently move
+writes `=`. A prefix is resolved in two places: installing resolves it to the
+newest matching release upstream, and running (a hook's environment, the
+doctor) resolves it to the newest matching version installed on the machine,
+so running never needs the network. Without the marker, a project pinning `"4.5"` would silently move
 to 4.5.x once upstream added a level of versioning, which is outside the
 project's control. Hecatron's own defaults are always exact.
 
@@ -516,13 +535,19 @@ surprise.
 - **Per-language environment.** The `path` mechanism (§7) becomes a
   per-language environment: for the resolved version it gives PATH entries
   and variables (`JAVA_HOME`, `DOTNET_ROOT`...), applied wherever `path` is
-  today. A version that can't be found leaves the environment unchanged, and
-  the doctor reports it.
+  today. It is per component, since components can resolve to different
+  versions: `each-component.sh` applies the component's environment before
+  running its hook, and `hecatron env -c COMPONENT` prints it for a
+  project's own recipes. A version that can't be found leaves the
+  environment unchanged, and the doctor reports it.
 - **Doctor.** `doctor` checks that the resolved version is installed and is
   the one a language's commands run; `--fix` installs it. A version past its
   upstream end of life is a warning, not a failure.
-- **Generated files.** The Dockerfile and workflows use the resolved
-  versions.
+- **Generated files.** The Dockerfile installs every version any component
+  resolves to. A workflow template names a language's resolved version with
+  a placeholder (`{{version:java}}`, or `{{version:java:age}}` for one
+  component), which `hecatron workflows` fills in, and `hecatron check`
+  fails when a generated file is behind its versions.
 
 ### Later
 
