@@ -52,6 +52,9 @@ Generated files:
 
 Project:
   parallel <name> "job"...   Run your own jobs (just recipes by default) with the live display
+  env                        Print shell code for a project's own recipes: eval "$(hecatron env)"
+                             gives HECATRON_* variables, the language lists and helpers
+                             (_name, _check, _dep_available, _lang_grid, _ada_env, ...)
   version <version>          Bump versions through each language's version.sh
   metadata                   Update package metadata through metadata.sh hooks
 
@@ -92,6 +95,11 @@ case "${_command}" in
         esac ;;
     metadata)
         exec bash "${HECATRON_HOME}/libexec/metadata/set.sh" "$@" ;;
+    env)
+        printf 'export HECATRON_HOME=%q\n' "${HECATRON_HOME}"
+        printf 'export HECATRON_ROOT=%q\n' "${HECATRON_ROOT}"
+        printf 'source %q\n' "${HECATRON_HOME}/libexec/lib/helpers.sh"
+        exit 0 ;;
     parallel)
         # A project's own job list through the runner, e.g. one job per CLI.
         # Jobs are just recipes unless HECATRON_JOB_COMMAND says otherwise.

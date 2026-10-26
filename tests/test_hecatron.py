@@ -258,6 +258,12 @@ class RunTest(Fixture):
         result = self.hecatron("test", "go", cwd=self.path("a", "go"))
         self.assertIn("ran a", result.stdout)
 
+    def test_env_gives_project_recipes_the_helpers(self):
+        script = 'eval "$(bash %s env)"; echo "$_ADDED_LANGS"; _name rs' % BIN
+        result = subprocess.run(["bash", "-c", script], cwd=self.root, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.split(), ["go", "rust"])
+
     def test_outside_a_project_is_an_error(self):
         with tempfile.TemporaryDirectory() as outside:
             result = subprocess.run(["bash", BIN, "test"], cwd=outside, capture_output=True, text=True)
