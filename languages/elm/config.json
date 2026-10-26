@@ -4,5 +4,8 @@
   "lintDependency": null,
   "detect": [
     "elm.json"
+  ],
+  "unsupported": [
+    "linux-aarch64"
   ]
 }

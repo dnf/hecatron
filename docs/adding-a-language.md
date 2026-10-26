@@ -11,7 +11,7 @@ combine.
 
 | File | Purpose | Required |
 | --- | --- | --- |
-| `config.json` | `abbreviation`, `dependency` (the command that proves the toolchain is installed), optional `lintDependency`, `detect` (manifest globs `hecatron init` looks for), and optional `path` (toolchain directories to put on PATH for this language only, e.g. `["~/.cargo/bin"]`) | Yes |
+| `config.json` | `abbreviation`, `dependency` (the command that proves the toolchain is installed), optional `lintDependency`, `detect` (manifest globs `hecatron init` looks for), optional `path` (toolchain directories to put on PATH for this language only, e.g. `["~/.cargo/bin"]`), and optional `unsupported` (platforms with no toolchain upstream, e.g. `["linux-aarch64"]`, shown as – in the [coverage matrix](coverage.md)) | Yes |
 | `install.sh` | Install the toolchain on macOS and Linux; idempotent, and repairs what `doctor.sh` detects | Yes |
 | `uninstall.sh` | Remove the toolchain (a no-op with a message when other languages share it) | Yes |
 | `doctor.sh` | Detect a toolchain that is installed but broken, one `problem` per issue | No |
@@ -68,4 +68,6 @@ tracked files.
 - [ ] `install.sh` and `uninstall.sh` for macOS and Linux, idempotent
 - [ ] `doctor.sh` if the toolchain can be present but broken
 - [ ] `dockerfile` snippet
+- [ ] `tests/docker/smoke/<lang>.sh`, building and running a hello world, and
+      `tests/docker/install-test.sh ubuntu:24.04 <lang>` passing
 - [ ] `bash libexec/lint/shellcheck.sh` and `python3 -m unittest discover -s tests` pass

@@ -4,5 +4,8 @@
   "lintDependency": null,
   "detect": [
     "*.goose"
+  ],
+  "unsupported": [
+    "linux-aarch64"
   ]
 }
