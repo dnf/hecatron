@@ -4,7 +4,7 @@ source "$(dirname "$0")/../_common.sh"
 
 python3 -c "
 import json, os
-f = os.path.join('${ROOT}', 'src', 'typescript', 'package.json')
+f = os.path.join('${ROOT}', 'age', 'impl', 'typescript', 'package.json')
 with open(f) as fh: data = json.load(fh)
 data['description'] = os.environ['PT_DESCRIPTION']
 data['author'] = os.environ['PT_AUTHOR']

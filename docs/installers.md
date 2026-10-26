@@ -100,6 +100,7 @@ Each language has these scripts:
 | `uninstall.sh` | Remove toolchain                                        | Yes      |
 | `version.sh`   | Update version in source/manifests                      | Yes      |
 | `test.sh`      | Run one library's native suite (`just test <lang>`)     | Yes      |
+| `lint.sh`      | Lint one library (`just lint <lang>`), if it has a linter | No     |
 | `doctor.sh`    | Detect breakages beyond a missing command (`just doctor`) | No     |
 | `metadata.sh`  | Update package metadata                                 | No       |
 

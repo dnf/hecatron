@@ -10,7 +10,7 @@ _sed_i 's/authors = \[{ name = "[^"]*" }\]/authors = [{ name = "'"${PT_AUTHOR}"'
     "${ROOT}/age/impl/python/pyproject.toml"
 _sed_i 's|^Repository = "[^"]*"|Repository = "'"${PT_REPOSITORY}"'"|' \
     "${ROOT}/age/impl/python/pyproject.toml"
-_sed_i 's|^Documentation = "[^"]*"|Documentation = "'"${PT_REPOSITORY}"'/tree/main/src/python#readme"|' \
+_sed_i 's|^Documentation = "[^"]*"|Documentation = "'"${PT_REPOSITORY}"'/tree/main/age/impl/python#readme"|' \
     "${ROOT}/age/impl/python/pyproject.toml"
 _sed_i 's|^Issues = "[^"]*"|Issues = "'"${PT_REPOSITORY}"'/issues"|' \
     "${ROOT}/age/impl/python/pyproject.toml"

@@ -293,6 +293,11 @@ go test ./...
 Use a `case "$1"` only where file names differ per library. The commands should
 match the language's CI workflow.
 
+A language with a separate linter (ruff, clippy, golangci-lint...) also gets a
+`lint.sh` with the same contract, which `just lint <lang>` runs for every
+library. Give every library the same lint config. Languages whose compiler
+treats warnings as errors need no `lint.sh`: `test.sh` builds every library.
+
 ### Installer scripts
 
 At minimum `install.sh`, `uninstall.sh` and `version.sh`, plus `metadata.sh`
