@@ -11,7 +11,7 @@ converted to outlines.
 | `mark.svg`, `mark-dark.svg` | The mark alone, for light and dark backgrounds |
 | `hero.svg`, `hero-dark.svg` | The mark with the wordmark, for light and dark backgrounds (the README picks one with `prefers-color-scheme`) |
 | `favicon.svg` | The favicon: the mark reversed out of a blue rounded square |
-| `favicon.ico`, `favicon-16.png`, `favicon-32.png`, `favicon-48.png` | Raster favicons; the 16 px one is drawn on the pixel grid, because the vector mark blurs at that size |
+| `favicon.ico`, `favicon-32.png`, `favicon-48.png` | Raster favicons (the `.ico` holds 32 and 48 px; browsers scale it down for smaller tabs) |
 | `apple-touch-icon.png`, `icon-512.png` | Home-screen and web-manifest icons |
 | `social-preview.png` (and `.svg`) | GitHub's social preview (1280×640): Settings › General › Social preview |
 
@@ -24,7 +24,7 @@ converted to outlines.
 For a website:
 
 ```html
-<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.ico" sizes="32x32 48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 ```

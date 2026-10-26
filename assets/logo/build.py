@@ -46,40 +46,6 @@ CHEVRON = "M23 10L32 19L41 10"
 NUDGE = 1.5
 
 
-# At 16 px the vector mark blurs, so the 16 px favicon is drawn on the pixel
-# grid: the same three chevrons and dot, one pixel wide.
-PIXELS_16 = """
-................
-................
-.....#....#.....
-......#..#......
-.......##.......
-................
-.......##.......
-..#....##....#..
-...###....###...
-.....#....#.....
-.....#....#.....
-....#......#....
-................
-................
-................
-................
-"""
-
-
-def pixel_tile():
-    rows = PIXELS_16.strip().splitlines()
-    pixels = "".join(
-        f'<rect x="{x}" y="{y}" width="1" height="1"/>'
-        for y, row in enumerate(rows) for x, cell in enumerate(row) if cell == "#"
-    )
-    return (
-        f'<rect width="16" height="16" rx="3.5" fill="{ACCENT}"/>'
-        f'<g fill="{WHITE}" shape-rendering="crispEdges">{pixels}</g>'
-    )
-
-
 def mark_group(stroke, dot, width=6.0, radius=6.0):
     chevrons = "".join(
         f'<path d="{CHEVRON}"{f" transform=\"rotate({angle} 32 32)\"" if angle else ""}/>'
@@ -103,7 +69,7 @@ def svg(width, height, body, label):
 
 def tile(size=64):
     """The favicon: the mark reversed out of an accent rounded square, drawn
-    heavier so it survives 16 px."""
+    heavier so it holds up at 32 px."""
     scale = size / 64
     return (
         f'<rect width="{size}" height="{size}" rx="{14 * scale:g}" fill="{ACCENT}"/>'
@@ -195,9 +161,6 @@ def main(font_path):
     )
     write("social-preview.svg", svg(1280, 640, social, "hecatron: " + TAGLINE))
 
-    write("favicon-16.svg", svg(16, 16, pixel_tile(), "hecatron"))
-    png("favicon-16.svg", "favicon-16.png", 16)
-    (OUT / "favicon-16.svg").unlink()
     for size in (32, 48):
         png("favicon.svg", f"favicon-{size}.png", size)
     png("favicon.svg", "icon-512.png", 512)
@@ -209,7 +172,7 @@ def main(font_path):
     (OUT / "apple-touch-icon.svg").unlink()
     png("social-preview.svg", "social-preview.png", 1280, 640)
     subprocess.run(
-        ["magick", *(str(OUT / f"favicon-{s}.png") for s in (16, 32, 48)), str(OUT / "favicon.ico")],
+        ["magick", *(str(OUT / f"favicon-{s}.png") for s in (32, 48)), str(OUT / "favicon.ico")],
         check=True,
     )
     print("wrote favicon.ico")
