@@ -1,6 +1,6 @@
 # Hecatron design
 
-Status: **accepted** (decisions in §17); phase 2 of §15 (the standalone CLI) is implemented. This repository was split out of
+Status: **accepted** (decisions in §17); phase 2 of §15 (the standalone CLI) is implemented, and §18 (toolchain versions) is accepted but not yet implemented. This repository was split out of
 [dnf/sayable](https://github.com/dnf/sayable), where hecatron grew up as its
 `.hecatron/` directory. This document is the design of the tool you install
 once and use in any repository (`hct` is a short alias for `hecatron`):
@@ -440,3 +440,99 @@ Settled on 2026-10-26:
    homebrew-core accepts the formula.
 6. **Language definitions live in this repository**, versioned and released
    with the CLI.
+7. **Toolchain versions (§18).** A project chooses each language's version
+   through the ecosystem's own pin file, else `version` in its config, else
+   hecatron's default. `=` marks an exact version. Defaults are pinned, follow
+   the language's LTS line where it has one and its newest stable release
+   otherwise, and a weekly job updates them. (Owner's decision.)
+
+## 18. Toolchain versions
+
+Status: **accepted**, not yet implemented. Until it is, installers install
+one version per language, some pinned (JDK 17, Node 22, .NET 10) and some
+the latest at install time (Go, Swift, Julia, PowerShell, Odin, Crystal).
+
+A project can need an older or newer version of a language than the
+newest one, and two projects on the same machine can need different ones. So
+a language's version is data: hecatron has a default, and a project can
+choose another.
+
+### Choosing a version
+
+For a language in a component, the version is the first of:
+
+1. **The ecosystem's own pin file**, in the component's directory or the
+   project root, read with that ecosystem's meaning: `.python-version`,
+   `.nvmrc` or `.node-version`, `rust-toolchain.toml` or `rust-toolchain`,
+   `global.json` (`sdk.version`), the `toolchain` line of `go.mod`,
+   `.ruby-version`, Gradle's `gradle-daemon-jvm.properties`
+   (`toolchainVersion`, the JDK)... Each definition lists the files it reads
+   in `config.json` (`pinFiles`). Using these means a project declares a
+   version once, where its other tools already look.
+2. **`version` in the project's `.hecatron/languages/<lang>/config.json`.**
+3. **The definition's default `version`.**
+
+Components can resolve to different versions; installers install each one.
+
+### Version syntax
+
+In hecatron's configuration:
+
+| Written | Means |
+| --- | --- |
+| `"3.12"` | The newest release whose version begins with the components 3.12: 3.12, 3.12.7... but not 3.120 |
+| `"=4.5"` | Exactly the release named 4.5 and never anything else, even if the language later publishes 4.5.1 |
+
+A prefix follows new patch releases, and a project that doesn't want that
+writes `=`. Without the marker, a project pinning `"4.5"` would silently move
+to 4.5.x once upstream added a level of versioning, which is outside the
+project's control. Hecatron's own defaults are always exact.
+
+### Defaults and how they are updated
+
+Each definition's `config.json` records its default `version` (exact) and its
+`track`: `"lts"` where the language has long-term support releases (Java,
+Node.js, .NET) and `"stable"` (the newest release) otherwise. Installers
+never resolve "latest" at install time, so two machines installing on
+different days get the same toolchain and every change is a reviewable diff.
+
+`libexec/maintenance/update-versions` asks each language's release source
+(go.dev, python.org, nodejs.org, Adoptium, swift.org, GitHub releases, with
+endoflife.date where a language has no API) for the newest release on its
+track and rewrites the defaults; `--check` reports what's behind without
+writing. A weekly GitHub Action, on GitHub-hosted runners, runs it, runs the
+Docker install tests (`tests/docker/`) for each language it changed on Ubuntu
+24.04 and 26.04 and Debian 13, and opens a pull request that merges when its
+checks pass. Each merged update is released as a new minor version, so a
+project gets new default toolchains when it updates hecatron, never by
+surprise.
+
+### Installing and using a version
+
+- **Side by side.** Installers add the resolved version next to any others,
+  through the ecosystem's version manager where it has one (uv, rustup,
+  ghcup, .NET's side-by-side SDKs, `openjdk-N` or Temurin, Go's toolchain
+  downloads), and never replace a version another project may use.
+- **Per-language environment.** The `path` mechanism (§7) becomes a
+  per-language environment: for the resolved version it gives PATH entries
+  and variables (`JAVA_HOME`, `DOTNET_ROOT`...), applied wherever `path` is
+  today. A version that can't be found leaves the environment unchanged, and
+  the doctor reports it.
+- **Doctor.** `doctor` checks that the resolved version is installed and is
+  the one a language's commands run; `--fix` installs it. A version past its
+  upstream end of life is a warning, not a failure.
+- **Generated files.** The Dockerfile and workflows use the resolved
+  versions.
+
+### Later
+
+`version` may become a list, so a library can test against its oldest and
+newest supported versions in one run. The first implementation takes one
+version.
+
+### Who builds what
+
+The configuration, version resolution and per-language environment (the
+`libexec/lib/` and `libexec/commands/` side) are one piece of work; the
+installers, doctor checks, `update-versions` and the weekly workflow are
+another.
