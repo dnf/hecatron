@@ -28,6 +28,8 @@ install_linux() {
         log "Building wren_cli from source for $(uname -m)..."
         { has make && has cc; } || apt_install build-essential
         curl -fsSL "https://github.com/wren-lang/wren-cli/archive/${_WREN_CLI_COMMIT}.tar.gz" | tar -C "${tmpdir}" -xz
+        # Its makefile passes the x86-only -m64 on every 64-bit build.
+        _sed_i 's/ -m64//g' "${tmpdir}/wren-cli-${_WREN_CLI_COMMIT}/projects/make/wren_cli.make"
         make -C "${tmpdir}/wren-cli-${_WREN_CLI_COMMIT}/projects/make" -j"$(nproc)"
         ${SUDO} cp "${tmpdir}/wren-cli-${_WREN_CLI_COMMIT}/bin/wren_cli" /usr/local/bin/wren_cli
     fi
