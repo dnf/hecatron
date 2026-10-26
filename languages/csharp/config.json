@@ -2,7 +2,7 @@
   "abbreviation": "cs",
   "dependency": "dotnet",
   "lintDependency": null,
-  "compiled": true,
-  "hasClean": true,
-  "hasLint": true
+  "detect": [
+    "*.csproj"
+  ]
 }

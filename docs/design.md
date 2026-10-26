@@ -1,10 +1,9 @@
 # Hecatron design
 
-Status: **accepted** (decisions in §17). This repository was split out of
+Status: **accepted** (decisions in §17); phase 2 of §15 (the standalone CLI) is implemented. This repository was split out of
 [dnf/sayable](https://github.com/dnf/sayable), where hecatron grew up as its
-`.hecatron/` directory. Nothing here runs standalone yet; this document is the
-plan for turning the extracted scripts into a tool you install once and use in
-any repository:
+`.hecatron/` directory. This document is the design of the tool you install
+once and use in any repository (`hct` is a short alias for `hecatron`):
 
 ```bash
 brew install dnf/tap/hecatron  # later, from homebrew-core: brew install hecatron
@@ -134,11 +133,12 @@ tests/                       # hecatron's own tests (§14)
 examples/sayable/            # snapshot of sayable's hooks and config, for reference
 ```
 
-After the split, today's tree is the step before this: `tools/`, `languages/`
-(definitions only), `docs/`, and `examples/sayable/` holding sayable's hooks,
-CI templates and config as they were at the split. The rename to `bin/` and
-`libexec/` happens in the implementation phase, so this layout can still
-change under review.
+This layout is in place: `bin/hecatron` (and the `hct` link), `libexec/`
+(`lib/project.py` is the project model every command reads through,
+`commands/run.sh` the action runner, `commands/manage.py` the configuration
+commands), `languages/`, `tests/`, and `examples/sayable/` with sayable's
+hooks, CI templates and config as they were at the split. Default hooks
+(`languages/<lang>/hooks/`) come in phase 4.
 
 ### A project using hecatron
 
@@ -173,6 +173,10 @@ change under review.
     "dockerfile": "age/Dockerfile",
     "workflows": ".github/workflows/{lang}.yml"
   },
+  "tasks": {
+    "test": { "codegen": "cd age && python3 -m unittest codegen.test_locale_groups" }
+  },
+  "metadata": "age/config/metadata.json",
   "logs": ".logs"
 }
 ```
@@ -188,6 +192,8 @@ change under review.
 | `tools` | Non-language dependencies, as `{ "dependency": "<command>" }` | `{}` |
 | `generated.dockerfile` | Where `hecatron dockerfile` writes; omit for none | none |
 | `generated.workflows` | Where `hecatron workflows` writes each language's CI workflow | none |
+| `tasks` | Extra named jobs per action (`test`, `lint`, ...): shell commands run from the root, in parallel with the languages and by name (`hecatron test codegen`) | `{}` |
+| `metadata` | JSON file `hecatron metadata` reads (name, description, author, license, repository) | none |
 | `logs` | Log directory for runs | `.logs` |
 
 `.hecatron/local.json` holds per-developer state, currently only
@@ -233,8 +239,16 @@ recipes do today. Output of single-language runs streams and is also saved to
 | `hecatron banner ...` | Print a DO NOT EDIT banner for a generator to embed | `codegen/util.py` |
 | `hecatron --version` | Hecatron's own version | new |
 
-Flags shared by the parallel commands: `-j N|P%|unlimited` (concurrency) and
-`-s scroll|full|zoom` (display), as today.
+Flags shared by the run commands: `-j N|P%|unlimited` (concurrency) and
+`-s scroll|full|zoom` (display) for parallel runs, as today, and `-c
+COMPONENT` (repeatable) to run a language on some components only
+(`hecatron test go -c age`).
+
+Which languages an action covers follows from their hooks: a language with a
+`build.sh` (project or default) is built, one with `lint.sh` is linted, and
+so on, so `config.json` needs no `compiled`/`hasLint` flags. `hecatron
+bootstrap` sets up a fresh machine for the project (base packages, then
+`hecatron install`).
 
 Exit status: 0 when everything run passed, 1 when anything failed, 2 for a
 usage error. A language whose toolchain is missing is reported as "not
@@ -370,9 +384,14 @@ config bridge; worth revisiting after 1.0.
 
 1. **Split (this repository's first commit).** Scripts, history and docs move
    here. Sayable keeps its vendored `.hecatron/` and keeps working unchanged.
-2. **Standalone CLI.** Implement §5–§12 here: project-root discovery, config
-   schema, file resolution, `bin/hecatron` and the commands; the runner calls
-   `hecatron`, not `just`. Test against a copy of sayable.
+2. **Standalone CLI (done).** §5–§12: project-root discovery, config schema,
+   file resolution, `bin/hecatron` and the commands; the runner calls
+   `hecatron`, not `just`. Tested against a copy of sayable migrated as in
+   step 3: `test`, `lint`, `build`, `clean`, `doctor`, `check` and the
+   generators match sayable's results (generated files differ only in banner
+   text). One migration step for sayable surfaced: its locale codegen imports
+   the banner module from `.hecatron/tools/codegen/util.py`, so it must keep
+   its own copy (or use `hecatron banner`).
 3. **Sayable consumes hecatron.** Sayable's `.hecatron/` shrinks to
    `config.json`, `local.json` and its hooks; its justfile delegates the
    hecatron recipes; its CI installs hecatron with the action; the vendored

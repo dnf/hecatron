@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
+# hecatron bootstrap: set up this machine for the project and install every
+# language toolchain it uses.
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.."
+cd "${HECATRON_ROOT}"
 
-echo "==> sayable-age: Linux development setup (Ubuntu/Debian)"
+echo "==> ${HECATRON_PROJECT}: Linux development setup (Ubuntu/Debian)"
 echo ""
 
 # Use sudo only when not already root
@@ -17,21 +19,15 @@ echo "==> Installing base packages..."
 $SUDO apt-get update
 $SUDO apt-get install -y curl ca-certificates git gnupg unzip
 
-# ---- just (task runner) ----
-if ! command -v just &>/dev/null; then
-    echo "==> Installing just..."
-    curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | $SUDO bash -s -- --to /usr/local/bin
-fi
-
 # ---- Install all language toolchains ----
-just install
+"${HECATRON_HOME}/bin/hecatron" install
 
 # ---- Persist PATH for future shells ----
 SHELL_RC="$HOME/.bashrc"
 [ -n "${ZSH_VERSION:-}" ] && SHELL_RC="$HOME/.zshrc"
 {
     echo ''
-    echo '# Added by sayable-age bootstrap'
+    echo "# Added by hecatron bootstrap (${HECATRON_PROJECT})"
     echo 'export PATH="/usr/local/go/bin:$PATH"'
     echo '[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"'
     echo '[ -f "$HOME/.ghcup/env" ] && . "$HOME/.ghcup/env"'
@@ -39,7 +35,7 @@ SHELL_RC="$HOME/.bashrc"
 } >> "$SHELL_RC"
 
 echo ""
-echo "==> Setup complete! Verify with: just test"
+echo "==> Setup complete! Verify with: hecatron test"
 echo ""
 echo "PATH entries were added to $SHELL_RC."
-echo "Run 'source $SHELL_RC' or open a new terminal, then run 'just test'."
+echo "Run 'source $SHELL_RC' or open a new terminal, then run 'hecatron test'."

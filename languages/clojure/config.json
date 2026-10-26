@@ -2,7 +2,8 @@
   "abbreviation": "clj",
   "dependency": "clojure",
   "lintDependency": null,
-  "compiled": false,
-  "hasClean": true,
-  "hasLint": false
+  "detect": [
+    "deps.edn",
+    "project.clj"
+  ]
 }

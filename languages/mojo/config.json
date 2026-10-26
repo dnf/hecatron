@@ -2,7 +2,7 @@
   "abbreviation": "mj",
   "dependency": "mojo",
   "lintDependency": null,
-  "compiled": true,
-  "hasClean": true,
-  "hasLint": false
+  "detect": [
+    "*.mojo"
+  ]
 }

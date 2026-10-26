@@ -2,7 +2,7 @@
   "abbreviation": "jl",
   "dependency": "julia",
   "lintDependency": null,
-  "compiled": false,
-  "hasClean": false,
-  "hasLint": false
+  "detect": [
+    "Project.toml"
+  ]
 }

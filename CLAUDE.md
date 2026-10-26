@@ -8,31 +8,37 @@ language and component (or everything in parallel), and keeps generated CI
 workflows and a Dockerfile in sync.
 
 It was split out of [dnf/sayable](https://github.com/dnf/sayable), where it
-lived as `.hecatron/`. **It is not yet usable standalone.** The plan for the
-installable tool (`brew install hecatron`, `hecatron init`) is
-[`docs/design.md`](docs/design.md); read it before changing structure, and
-keep it current when a decision changes.
+lived as `.hecatron/`. The design is [`docs/design.md`](docs/design.md); read
+it before changing structure, and keep it current when a decision changes.
 
-## Layout (current, before the restructure in docs/design.md §5)
+## Layout
 
 ```
-languages/<lang>/        # toolchain definitions: config.json, install.sh, uninstall.sh, doctor.sh, dockerfile
-languages/_common.sh     # helpers for installers and hooks
-tools/runner/            # run-parallel.sh: parallel runner with live display and history
-tools/language/          # config bridge (emit-config.py, helpers.sh), add/remove/enable/disable/list,
-                         # install/uninstall, doctor, per-component dispatch (each-library.sh)
-tools/codegen/           # DO NOT EDIT banner (util.py), Dockerfile generator
-tools/metadata/          # interactive package-metadata updater
-tools/onboarding/        # get-started status and install menu
-tools/bootstrap/         # macOS/Linux machine setup
-tools/lint/              # shellcheck over every tracked shell script
-docs/                    # design, installer reference, adding a language, build conventions
+bin/hecatron, bin/hct    # entry point: finds HECATRON_HOME, the project root, dispatches
+libexec/lib/project.py   # the project model: config, components, language definitions, file resolution
+libexec/lib/helpers.sh   # shell helpers built from project.py's shell-env
+libexec/lib/each-component.sh  # run one hook for every component
+libexec/commands/        # run.sh (test/lint/build/clean/rebuild/retest), manage.py (init, add, list,
+                         # install, dockerfile, workflows, check, banner...), doctor.sh, version.sh
+libexec/runner/          # run-parallel.sh and its docs
+libexec/codegen/         # banner.py, dockerfile.py
+libexec/{metadata,onboarding,bootstrap,lint}/
+languages/<lang>/        # built-in definitions: config.json, install.sh, uninstall.sh, doctor.sh, dockerfile
+tests/                   # python3 -m unittest discover -s tests
+docs/                    # design.md (keep current), installers.md, adding-a-language.md, build-conventions.md
 examples/sayable/        # sayable's hooks, workflow templates and config at the split (reference only)
 ```
 
-The scripts still assume they live at `<project>/.hecatron/` (they compute the
-project root from their own path) and that a justfile drives them. Removing
-those assumptions is the implementation phase of the design.
+Every command finds the project by walking up from the working directory
+(`project.find_root`) and reads it through `project.py`; nothing computes a
+project path from its own location.
+
+## Checks
+
+```bash
+bash libexec/lint/shellcheck.sh
+python3 -m unittest discover -s tests
+```
 
 ## Conventions
 
@@ -42,7 +48,7 @@ those assumptions is the implementation phase of the design.
 - **Installers are idempotent and repair.** An installer must be safe to rerun
   and must fix the broken states its `doctor.sh` detects.
 - **Every per-language command covers every component.** Dispatch through
-  `each-library.sh`; never hard-code one component's path.
+  `each-component.sh`; never hard-code a component's path.
 - **Zero warnings.** shellcheck clean at warning level
   (`bash tools/lint/shellcheck.sh`); any `# shellcheck disable=` carries a
   comment saying why.

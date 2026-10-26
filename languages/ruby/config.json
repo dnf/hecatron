@@ -2,7 +2,8 @@
   "abbreviation": "rb",
   "dependency": "ruby",
   "lintDependency": null,
-  "compiled": false,
-  "hasClean": false,
-  "hasLint": true
+  "detect": [
+    "*.gemspec",
+    "Gemfile"
+  ]
 }

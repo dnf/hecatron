@@ -1,27 +1,27 @@
 # Language Installers
 
-Per-language installer scripts live in `.hecatron/languages/<lang>/` as separate single-purpose files. Each script handles both macOS and Linux, and runs its action on execute (no subcommands).
+Each language's definition lives in `languages/<lang>/` in this repository (a project can override any file in its own `.hecatron/languages/<lang>/`), as separate single-purpose files. Each script handles both macOS and Linux, and runs its action on execute (no subcommands).
 
 ## Commands
 
 ```bash
-just install                # install all available languages
-just install go rust        # install specific languages
-just uninstall go rust      # uninstall specific languages
-just get-started            # interactive onboarding with status + install menu
-just get-started --status   # print language status table
-just get-started --check    # exit 0 if all installed, 1 if missing
-just doctor                 # check every toolchain actually works, and how to repair it
-just doctor --fix go lua    # run the installer of each unhealthy language, then re-check
+hecatron install                # install all available languages
+hecatron install go rust        # install specific languages
+hecatron uninstall go rust      # uninstall specific languages
+hecatron get-started            # interactive onboarding with status + install menu
+hecatron get-started --status   # print language status table
+hecatron get-started --check    # exit 0 if all installed, 1 if missing
+hecatron doctor                 # check every toolchain actually works, and how to repair it
+hecatron doctor --fix go lua    # run the installer of each unhealthy language, then re-check
 ```
 
-`just install <lang>` is also the repair: installers are idempotent and fix the
+`hecatron install <lang>` is also the repair: installers are idempotent and fix the
 broken states their `doctor.sh` detects (a linter built with an older Go,
 luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula...).
 
-Short aliases work everywhere: `just install ad ts py rb rs kt gy lu ft c++ cs fs sw hs ex erl clj gm sc zg el pl dt ml`
+Short aliases work everywhere: `hecatron install ad ts py rb rs kt gy lu ft c++ cs fs sw hs ex erl clj gm sc zg el pl dt ml`
 
-Misspelled names get a "did you mean?" prompt (e.g. `just install elixer` suggests `elixir`).
+Misspelled names get a "did you mean?" prompt (e.g. `hecatron install elixer` suggests `elixir`).
 
 ## Shared toolchains
 
@@ -31,7 +31,7 @@ Some languages share a toolchain. Uninstalling one affects the others.
 | ---------- | --------------------- | ----------------------------------------------------------------------- |
 | .NET SDK   | C#, F#                | Both share the same SDK; uninstalling one removes the other             |
 | cmake      | C, C++, Fortran       | All three lose build capability until reinstalled                       |
-| JDK 17     | Java, Kt, Scala, Gy   | Protected: `just uninstall java` is a no-op (prints a message)          |
+| JDK 17     | Java, Kt, Scala, Gy   | Protected: `hecatron uninstall java` is a no-op (prints a message)          |
 | Node.js    | TypeScript, Elm       | Elm depends on npm; Elm installer auto-installs Node if missing         |
 | Erlang/OTP | Erlang, Elixir, Gleam | Elixir and Gleam depend on Erlang runtime; uninstall Erlang breaks both |
 
@@ -44,7 +44,7 @@ Some languages lack pre-built binaries on certain architectures. The installer s
 | Elm        | Yes          | No          | Yes         | No arm64 Linux binary (elm/compiler#2292) |
 | All others | Yes          | Yes         | Yes         |                                           |
 
-`just get-started` shows unavailable languages with `–` instead of `✓`/`✗` in the status table.
+`hecatron get-started` shows unavailable languages with `–` instead of `✓`/`✗` in the status table.
 
 ## Platform behavior
 
@@ -99,14 +99,14 @@ Each language has these scripts:
 | `install.sh`   | Install toolchain + deps; idempotent, repairs           | Yes      |
 | `uninstall.sh` | Remove toolchain                                        | Yes      |
 | `version.sh`   | Update version in source/manifests                      | Yes      |
-| `test.sh`      | Run one library's native suite (`just test <lang>`)     | Yes      |
-| `lint.sh`      | Lint one library (`just lint <lang>`), if it has a linter | No     |
-| `build.sh`     | Build one library (`just build <lang>`), if it has a build step | No |
-| `clean.sh`     | Remove one library's build artifacts (`just clean <lang>`) | No   |
-| `doctor.sh`    | Detect breakages beyond a missing command (`just doctor`) | No     |
+| `test.sh`      | Hook: test one component (`hecatron test <lang>`)       | Project |
+| `lint.sh`      | Hook: lint one component, if there's a separate linter  | Project |
+| `build.sh`     | Hook: build one component, if there's a build step      | Project |
+| `clean.sh`     | Hook: remove one component's build artifacts            | Project |
+| `doctor.sh`    | Detect breakages beyond a missing command (`hecatron doctor`) | No     |
 | `metadata.sh`  | Update package metadata                                 | No       |
 
-`just doctor` already checks that the `dependency` and `lintDependency`
+`hecatron doctor` already checks that the `dependency` and `lintDependency`
 commands from `config.json` exist. Add a `doctor.sh` when a toolchain can be
 present but broken, and make `install.sh` repair that state:
 
@@ -119,7 +119,7 @@ busted --version >/dev/null 2>&1 || problem "busted fails to start"
 doctor_done
 ```
 
-Library dependencies install into every library's implementation, not just
+Project dependencies install into every component's implementation, not just
 age's: `deps() { each_impl ruby bundle install; }`.
 
 Templates:

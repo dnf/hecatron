@@ -2,7 +2,7 @@
   "abbreviation": "cl",
   "dependency": "sbcl",
   "lintDependency": null,
-  "compiled": false,
-  "hasClean": true,
-  "hasLint": false
+  "detect": [
+    "*.asd"
+  ]
 }
