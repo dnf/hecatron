@@ -1,9 +1,10 @@
-# Swift
-RUN ARCH="$(dpkg --print-architecture)" && \
-    VER="5.10.1" && \
-    if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then \
-      URL="https://download.swift.org/swift-${VER}-release/ubuntu2404-aarch64/swift-${VER}-RELEASE/swift-${VER}-RELEASE-ubuntu24.04-aarch64.tar.gz"; \
-    else \
-      URL="https://download.swift.org/swift-${VER}-release/ubuntu2404/swift-${VER}-RELEASE/swift-${VER}-RELEASE-ubuntu24.04.tar.gz"; \
-    fi && \
-    curl -fsSL "$URL" | tar -C /usr/local --strip-components=2 -xz
+# Swift: swift.org's build of the latest release for the image's distribution,
+# in its own prefix as install.sh installs it (merged into /usr/local, SwiftPM
+# can't find swiftc), with the libraries the toolchain needs
+# apt: binutils g++ libc6-dev libcurl4-openssl-dev libedit2 libncurses-dev libpython3-dev libsqlite3-0 libxml2-dev libz3-dev pkg-config python3 tzdata unzip zlib1g-dev
+RUN VERSION="$(curl -fsSL https://www.swift.org/api/v1/install/releases.json | python3 -c 'import json, sys; print(json.load(sys.stdin)[-1]["name"])')" && \
+    PLATFORM="$(. /etc/os-release && echo "${ID}${VERSION_ID}")" && \
+    SUFFIX="$([ "$(uname -m)" = aarch64 ] && echo -aarch64 || true)" && \
+    mkdir -p /opt/swift && \
+    curl -fsSL "https://download.swift.org/swift-${VERSION}-release/$(echo "$PLATFORM" | tr -d .)${SUFFIX}/swift-${VERSION}-RELEASE/swift-${VERSION}-RELEASE-${PLATFORM}${SUFFIX}.tar.gz" | tar -C /opt/swift --strip-components=1 -xz && \
+    ln -s /opt/swift/usr/bin/swift /opt/swift/usr/bin/swiftc /opt/swift/usr/bin/swift-format /opt/swift/usr/bin/sourcekit-lsp /usr/local/bin/

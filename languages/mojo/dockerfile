@@ -1,5 +1,6 @@
-# Mojo via Modular CLI
+# Mojo: the PyPI package as a uv tool, the same pinned version as install.sh
+# (Modular retired its `modular` CLI and apt repository)
 # apt: curl
-RUN curl -s https://get.modular.com | sh -
-RUN modular install mojo
-ENV PATH="/root/.modular/bin:${PATH}"
+RUN command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh && \
+    UV_TOOL_DIR=/opt/uv-tools UV_TOOL_BIN_DIR=/usr/local/bin \
+    uv tool install "mojo==0.26.1.0" --with-executables-from mojo-compiler

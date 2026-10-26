@@ -1,4 +1,4 @@
-# apt: r-base
-
-# R testing framework (testthat)
-RUN Rscript -e 'install.packages("testthat", repos = "https://cloud.r-project.org")'
+# R and its testing framework, testthat, from apt as install.sh installs them
+# (install.packages only warns when it fails, so a broken CRAN install didn't
+# fail the build)
+# apt: r-base r-cran-testthat

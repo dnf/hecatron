@@ -1,9 +1,9 @@
-# Odin
-# apt: llvm-14 clang-14
-RUN ARCH="$(dpkg --print-architecture)" && \
-    ODIN_VERSION="dev-2025-03" && \
-    curl -fsSL "https://github.com/odin-lang/Odin/releases/download/${ODIN_VERSION}/odin-ubuntu_amd64-${ODIN_VERSION}.zip" -o /tmp/odin.zip && \
+# Odin: the latest monthly release for this architecture, as install.sh
+# installs it, and the clang it links through
+# apt: clang
+RUN RELEASE="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/odin-lang/Odin/releases/latest)" && \
+    RELEASE="${RELEASE##*/}" && \
+    ARCH="$(dpkg --print-architecture)" && \
     mkdir -p /opt/odin && \
-    unzip -qo /tmp/odin.zip -d /opt/odin && \
-    rm /tmp/odin.zip && \
-    ln -sf /opt/odin/odin /usr/local/bin/odin
+    curl -fsSL "https://github.com/odin-lang/Odin/releases/download/${RELEASE}/odin-linux-${ARCH}-${RELEASE}.tar.gz" | tar -C /opt/odin --strip-components=1 -xz && \
+    ln -s /opt/odin/odin /usr/local/bin/odin

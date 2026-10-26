@@ -1,3 +1,8 @@
-# Crystal
-# apt: gnupg
-RUN curl -fsSL https://crystal-lang.org/install.sh | bash
+# Crystal: the official build of the latest release (its apt repository has no
+# arm64 packages), with the libraries the compiler links programs against
+# apt: pkg-config libpcre2-dev libevent-dev libssl-dev libxml2-dev libyaml-dev libgmp-dev zlib1g-dev
+RUN VERSION="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/crystal-lang/crystal/releases/latest)" && \
+    VERSION="${VERSION##*/}" && \
+    mkdir -p /opt/crystal && \
+    curl -fsSL "https://github.com/crystal-lang/crystal/releases/download/${VERSION}/crystal-${VERSION}-1-linux-$(uname -m).tar.gz" | tar -C /opt/crystal --strip-components=1 -xz && \
+    ln -s /opt/crystal/bin/crystal /opt/crystal/bin/shards /usr/local/bin/

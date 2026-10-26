@@ -1,4 +1,13 @@
-# apt: curl
+# Pharo: Pharo 12's VM for the image's architecture, as install.sh installs it
+# (get.pharo.org's script only knows x86 Linux): the stable VM, else the
+# latest, which is all Pharo publishes for aarch64. The launcher finds its
+# libraries from the path it was run by, so `pharo` is a wrapper.
+# apt: curl unzip
 # after: ruby
-RUN mkdir -p /opt/pharo && cd /opt/pharo && curl -fsSL https://get.pharo.org/64/120+vm | bash
-ENV PATH="/opt/pharo:${PATH}"
+RUN BASE="https://files.pharo.org/get-files/120/pharo-vm-Linux-$(uname -m)" && \
+    URL="${BASE}-stable.zip" && \
+    { curl -fsSI -o /dev/null "$URL" || URL="${BASE}-latest.zip"; } && \
+    curl -fsSL -o /tmp/pharo-vm.zip "$URL" && \
+    mkdir -p /opt/pharo/vm && unzip -q /tmp/pharo-vm.zip -d /opt/pharo/vm && rm /tmp/pharo-vm.zip && \
+    printf '#!/bin/sh\nexec /opt/pharo/vm/bin/pharo --headless "$@"\n' > /usr/local/bin/pharo && \
+    chmod +x /usr/local/bin/pharo

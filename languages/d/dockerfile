@@ -1,2 +1,2 @@
-# D
-# apt: ldc
+# D: the LDC compiler and dub, its package manager and build tool
+# apt: ldc dub

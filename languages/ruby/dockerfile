@@ -1,1 +1,2 @@
-# apt: ruby
+# Ruby and Bundler, as install.sh installs them
+# apt: ruby ruby-bundler
