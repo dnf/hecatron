@@ -51,6 +51,7 @@ Generated files:
   banner --generator PATH    Print a DO NOT EDIT banner for a code generator
 
 Project:
+  parallel <name> "job"...   Run your own jobs (just recipes by default) with the live display
   version <version>          Bump versions through each language's version.sh
   metadata                   Update package metadata through metadata.sh hooks
 
@@ -91,6 +92,14 @@ case "${_command}" in
         esac ;;
     metadata)
         exec bash "${HECATRON_HOME}/libexec/metadata/set.sh" "$@" ;;
+    parallel)
+        # A project's own job list through the runner, e.g. one job per CLI.
+        # Jobs are just recipes unless HECATRON_JOB_COMMAND says otherwise.
+        _env="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env)"
+        eval "${_env}"
+        cd "${HECATRON_ROOT}"
+        export HECATRON_JOB_COMMAND="${HECATRON_JOB_COMMAND:-just}"
+        exec bash "${HECATRON_HOME}/libexec/runner/run-parallel.sh" "$@" ;;
     version)
         exec bash "${HECATRON_HOME}/libexec/commands/version.sh" "$@" ;;
     init|install|uninstall|list|add|remove|enable|disable|dockerfile|workflows|check|banner)

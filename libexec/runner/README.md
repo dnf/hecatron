@@ -1,6 +1,6 @@
 # run-parallel.sh
 
-A bash script that runs just recipes in parallel with live progress display, history-based scheduling, and interactive swim lane visualization.
+A bash script that runs jobs (hecatron commands, or just recipes when run standalone) in parallel with live progress display, history-based scheduling, and interactive swim lane visualization.
 
 ## Overview
 
@@ -39,7 +39,7 @@ Usage: run-parallel.sh [flags] <name> "cmd args" ...
 | Argument         | Description                                                     |
 | ---------------- | --------------------------------------------------------------- |
 | `<name>`         | Log directory name — output goes to `.logs/<name>/`             |
-| `"cmd args" ...` | Commands passed to `just`. Last word becomes the display label. |
+| `"cmd args" ...` | Commands passed to the job command (`HECATRON_JOB_COMMAND`, default `just`). `"label::cmd args"` names a job; otherwise its last word is the label, which also names its log file. |
 | `"skip:<label>"` | Shown as "not installed" in output position, no job launched.   |
 
 ### Flags

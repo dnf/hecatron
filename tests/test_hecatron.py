@@ -238,6 +238,16 @@ class RunTest(Fixture):
         self.assertIn("ran b", result.stdout)
         self.assertNotIn("ran a", result.stdout)
 
+    def test_parallel_run_keeps_the_component_flag(self):
+        self.hook('echo "ran $1"')
+        result = self.hecatron("test", "-c", "b")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        with open(self.path(".logs", "test", "go.log"), encoding="utf-8") as f:
+            log = f.read()
+        self.assertIn("ran b", log)
+        self.assertNotIn("ran a", log)
+        self.assertFalse(os.path.exists(self.path(".logs", "test", "hello.log")))
+
     def test_project_tasks_run_by_name(self):
         result = self.hecatron("test", "hello")
         self.assertEqual(result.returncode, 0, result.stderr)
