@@ -2,20 +2,27 @@
 # Install Odin
 source "$(dirname "$0")/../_common.sh"
 
+_odin_root="/opt/odin"
+
 install_macos() { brew_install odin; }
+
+# The latest monthly release for this architecture. Odin links through clang.
 install_linux() {
-    if ! has odin; then
-        ARCH="$(dpkg --print-architecture)"
-        ODIN_ARCH="${ARCH}"
-        if [ "${ARCH}" = "amd64" ]; then ODIN_ARCH="ubuntu_amd64"; fi
-        if [ "${ARCH}" = "arm64" ]; then ODIN_ARCH="ubuntu_amd64"; fi
-        ODIN_VERSION="dev-2025-03"
-        $SUDO mkdir -p /opt/odin
-        curl -fsSL "https://github.com/odin-lang/Odin/releases/download/${ODIN_VERSION}/odin-${ODIN_ARCH}-${ODIN_VERSION}.zip" -o /tmp/odin.zip
-        $SUDO unzip -qo /tmp/odin.zip -d /opt/odin
-        rm /tmp/odin.zip
-        $SUDO ln -sf /opt/odin/odin /usr/local/bin/odin
-    fi
+    apt_install clang
+    has odin || _download_odin
+    $SUDO ln -sfn "${_odin_root}/odin" /usr/local/bin/odin
+}
+_download_odin() {
+    local release arch
+    release="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/odin-lang/Odin/releases/latest)"
+    release="${release##*/}"
+    arch="amd64"
+    [ "$(uname -m)" = "aarch64" ] && arch="arm64"
+    log "Downloading Odin ${release} for linux-${arch}..."
+    $SUDO rm -rf "${_odin_root}"
+    $SUDO mkdir -p "${_odin_root}"
+    curl -fsSL "https://github.com/odin-lang/Odin/releases/download/${release}/odin-linux-${arch}-${release}.tar.gz" |
+        $SUDO tar -C "${_odin_root}" --strip-components=1 -xz
 }
 
 deps() { :; }
