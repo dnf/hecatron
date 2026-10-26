@@ -3,7 +3,8 @@
 # doctor --fix, then doctor again from a new login shell (so the PATH the
 # installer persisted is what counts), then rerun the installer to show it is
 # idempotent, and last build and run a hello world with it (smoke/<lang>.sh),
-# because a command being on PATH doesn't mean it works.
+# because a command being on PATH doesn't mean it works. The smoke test sees
+# the language's PATH entries, as its hooks do.
 #
 #   tests/docker/install-test.sh ubuntu:24.04 go
 set -euo pipefail
@@ -29,7 +30,7 @@ bash -lc "cd ~/project && hecatron doctor ${_lang}"; _after=$?
 echo "### doctor --fix ${_lang} (rerun)"
 bash -lc "cd ~/project && hecatron doctor --fix ${_lang}" >/dev/null 2>&1; _rerun=$?
 echo "### smoke ${_lang}"
-bash -lc "cd \"\$(mktemp -d)\" && bash /hecatron/tests/docker/smoke/${_lang}.sh"; _smoke=$?
+bash -lc "cd ~/project && eval \"\$(hecatron env)\" && _use_lang_path ${_lang} && cd \"\$(mktemp -d)\" && bash /hecatron/tests/docker/smoke/${_lang}.sh"; _smoke=$?
 echo "### result ${_lang}: fix=${_fix} doctor=${_after} rerun=${_rerun} smoke=${_smoke}"
 [ "${_fix}" -eq 0 ] && [ "${_after}" -eq 0 ] && [ "${_rerun}" -eq 0 ] && [ "${_smoke}" -eq 0 ]
 ' _ "${_lang}"
