@@ -239,10 +239,16 @@ class RunTest(Fixture):
         self.assertNotIn("ran a", result.stdout)
 
     def test_parallel_run_keeps_the_component_flag(self):
-        self.hook('echo "ran $1"')
+        # A parallel run skips languages whose toolchain is missing, so use a
+        # project-defined language that needs only bash.
+        write(self.path(".hecatron", "languages", "fixture", "config.json"), json.dumps({"dependency": "bash"}))
+        write(self.path(".hecatron", "languages", "fixture", "test.sh"), '#!/usr/bin/env bash\necho "ran $1"\n', 0o755)
+        for component in ("a", "b"):
+            os.makedirs(self.path(component, "fixture"))
+        self.configure(languages=["fixture"], components=["a", "b"], implPath="{component}/{lang}")
         result = self.hecatron("test", "-c", "b")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        with open(self.path(".logs", "test", "go.log"), encoding="utf-8") as f:
+        with open(self.path(".logs", "test", "fixture.log"), encoding="utf-8") as f:
             log = f.read()
         self.assertIn("ran b", log)
         self.assertNotIn("ran a", log)
