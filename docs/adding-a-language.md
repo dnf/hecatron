@@ -224,12 +224,18 @@ hand-implemented. Expose a version constant matching
 
 ## 7. Write the tests
 
-All tests come from each library's `<library>/config/tests.json`: 234 for age,
-70 for date, 64 for duration, 37 for time. Implement every case in the
-language's standard test framework, annotated with its canonical ID as a
-comment above the test or inline (`// 3.1`, `# 25.10, 25.11`). Use the
-explicit inputs and reference dates from the spec; never the current date
-(except the default-asOf sections, which test exactly that).
+All tests come from each library's `<library>/config/tests.json`. Implement
+every case in the language's standard test framework, annotated with its
+canonical ID as a comment above the test or inline (`// 3.1`, `# 25.10, 25.11`),
+one ID per test (`tools/check_test_ids.py` doesn't expand ranges like
+"3.1 - 3.12"). Use the explicit inputs and reference dates from the spec; never
+the current date, except in the default-asOf sections (age 15.x and 23.x), which
+test exactly that: the library must default to today when the as-of date is
+absent or empty. A case the language truly can't express (a null argument of a
+non-nullable type) gets a `<ID>: not applicable — <reason>` comment instead.
+
+`tools/check_test_ids.py --lang <lang>` lists the canonical IDs a suite never
+mentions; `just check` runs it for every language.
 
 ## 8. Add the CLI
 
@@ -269,6 +275,23 @@ Use an existing language as a template (e.g. `.hecatron/languages/go/`).
 `.hecatron/tools/language/helpers.sh` builds every language list,
 abbreviation and dependency map from these files, so there are no shared lists
 to edit. See [`.hecatron/CLAUDE.md`](../CLAUDE.md) for the fields.
+
+### Test runner
+
+`test.sh` runs one library's native suite. `just test <lang>` calls it once per
+library (through `.hecatron/tools/language/test.sh`) from inside
+`<library>/impl/<lang>/`, with the library name as `$1`. It builds whatever the
+suite needs and exits non-zero on a failure:
+
+```bash
+#!/usr/bin/env bash
+# Run one library's Go tests ($1: age, date, duration or time).
+set -euo pipefail
+go test ./...
+```
+
+Use a `case "$1"` only where file names differ per library. The commands should
+match the language's CI workflow.
 
 ### Installer scripts
 
@@ -369,20 +392,12 @@ jobs:
 
 ## 10. Add justfile arms
 
-Register the language in the root `justfile`'s `test`, `build`, `lint` and
-`clean` recipes, with its abbreviation:
-
-```bash
-# In the test recipe:
-elif [ "$_target" = "newlang" ] || [ "$_target" = "nl" ]; then
-    cd age/impl/newlang && <test-command>
-```
-
-The bare (no-argument) runs pick the language up from `config.json`
-automatically. Most root `test` arms run the age suite; the Goose arm runs all
-four libraries in a loop, which is the better pattern for a new language. The
-date, duration and time directories also have their own justfiles covering a
-subset of languages; adding the language there is optional.
+Register the language in the root `justfile`'s `build`, `lint` and `clean`
+recipes, with its abbreviation. `just test <lang>` needs no arm: it runs the
+language's `test.sh` (above) for all four libraries. The bare (no-argument)
+runs pick the language up from `config.json` automatically. The date, duration
+and time directories also have their own justfiles covering a subset of
+languages; adding the language there is optional.
 
 Every recipe must keep handling `help` / `--help` (see the root `CLAUDE.md`).
 
@@ -469,8 +484,9 @@ just test                     # all languages, to confirm nothing broke
 - [ ] Formatters ported for all four libraries, with zero runtime dependencies and a version constant
 - [ ] Every case in each library's `config/tests.json` implemented and annotated with its ID
 - [ ] CLI in `cli/impl/<lang>/` implementing `--repl`; `check-repl.py`, `just test cli <lang>` and `just fuzz --langs <lang>` pass
-- [ ] `.hecatron/languages/<lang>/`: `config.json`, `install.sh`, `uninstall.sh`, `version.sh` (and `metadata.sh`), `dockerfile`, `workflow.yml` testing every library and the CLI
-- [ ] Root justfile arms for test, build, lint and clean
+- [ ] `.hecatron/languages/<lang>/`: `config.json`, `test.sh`, `install.sh`, `uninstall.sh`, `version.sh` (and `metadata.sh`), `dockerfile`, `workflow.yml` testing every library and the CLI
+- [ ] `tools/check_test_ids.py --lang <lang>` reports nothing, and `just test <lang>` passes for all four libraries
+- [ ] Root justfile arms for build, lint and clean
 - [ ] Build artifacts in each `<library>/impl/.gitignore`
 - [ ] Linter configured with zero warnings
 - [ ] `<library>/impl/<lang>/README.md` with license link, and a row in each library's README table

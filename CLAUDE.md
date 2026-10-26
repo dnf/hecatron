@@ -15,6 +15,7 @@ Build tooling and language management for multi-language projects. This director
     _common.sh                     # Shared bash helpers sourced by all installer scripts
     <lang>/
       config.json                  # Language properties (abbreviation, dependency, flags)
+      test.sh                      # Run one library's native suite (`just test <lang>` runs all four)
       install.sh                   # Install toolchain (macOS + Linux)
       uninstall.sh                 # Remove toolchain
       version.sh                   # Update version in source/manifests
@@ -26,6 +27,7 @@ Build tooling and language management for multi-language projects. This director
       _helpers.py                  # Shared Python module (config loading, workflow sync, etc.)
       emit-config.py               # Generates shell variables + functions for eval in helpers.sh
       helpers.sh                   # Shell helpers sourced by all justfile recipes
+      test.sh                      # `just test <lang>`: every library's suite via languages/<lang>/test.sh
       add.py                       # Add languages to active set
       remove.py                    # Remove languages from active set
       list.py                      # List languages (active or all)
@@ -107,9 +109,11 @@ Each language's `config.json` has these fields:
 | `hasClean` | `boolean` | Whether `just clean` applies |
 | `hasLint` | `boolean` | Whether `just lint` applies |
 
-### Installer scripts
+### Installer and test scripts
 
 Each language has a set of single-purpose scripts in `languages/<lang>/`:
+
+- **`test.sh`** — Runs one library's native suite. `tools/language/test.sh <lang>` (behind `just test <lang>`) calls it from inside each `<library>/impl/<lang>/` with the library name as `$1`, and reports which libraries failed.
 
 - **`install.sh`** — Installs the toolchain. Sources `_common.sh`, defines `install_macos()` + `install_linux()` + `deps()`, calls `"install_${OS}"` then `deps`.
 - **`uninstall.sh`** — Removes the toolchain. Same pattern with `uninstall_macos()` + `uninstall_linux()`.
