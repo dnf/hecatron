@@ -52,7 +52,7 @@ Generated files:
 
 Project:
   parallel <name> "job"...   Run your own jobs (just recipes by default) with the live display
-  env                        Print shell code for a project's own recipes: eval "$(hecatron env)"
+  env                        Print shell code for a project's own recipes: eval "\$(hecatron env)"
                              gives HECATRON_* variables, the language lists and helpers
                              (_name, _check, _dep_available, _lang_grid, _ada_env, ...)
   version <version>          Bump versions through each language's version.sh
