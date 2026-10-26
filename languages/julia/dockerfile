@@ -1,2 +1,6 @@
-# Julia
-# apt: julia
+# Julia: the official tarball (Debian and Ubuntu don't package it), latest stable
+# apt: python3
+RUN ARCH="$(uname -m)" && \
+    URL="$(curl -fsSL https://julialang-s3.julialang.org/bin/versions.json | python3 -c 'import json, sys; r = json.load(sys.stdin); v = max((v for v in r if r[v]["stable"] and v.replace(".", "").isdigit()), key=lambda v: tuple(map(int, v.split(".")))); print(next(f["url"] for f in r[v]["files"] if f["os"] == "linux" and f["arch"] == sys.argv[1] and f["kind"] == "archive" and f["extension"] == "tar.gz"))' "$ARCH")" && \
+    mkdir -p /opt/julia && curl -fsSL "$URL" | tar -C /opt/julia --strip-components=1 -xz && \
+    ln -s /opt/julia/bin/julia /usr/local/bin/julia
