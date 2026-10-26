@@ -24,9 +24,8 @@ if ! _hook="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" resolve "${_lang
     exit 1
 fi
 
-# Only Ada gets Alire's toolchain on PATH: it also has gcc/g++, which would
-# shadow the system compilers other languages build with.
-if [ "${_lang}" = "ada" ]; then _ada_env; fi
+# The language's own toolchain directories (config.json "path"), for its hooks only.
+_use_lang_path "${_lang}"
 
 _ran=0
 _failed=()

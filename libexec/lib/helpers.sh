@@ -34,26 +34,31 @@ _is_removed() {
 # Environment setup for non-standard tool locations
 # ---------------------------------------------------------------------------
 
-# Add Alire-managed GNAT + GPRbuild to PATH (macOS installs via Alire).
-# No-op on Linux (apt puts them on PATH) or if already found.
-_ada_env() {
-    command -v gprbuild >/dev/null 2>&1 && return
-    local dir
-    for dir in "${HOME}/.local/share/alire/toolchains"/*/bin; do
-        [ -d "${dir}" ] && export PATH="${dir}:${PATH}"
+# Put a language's own toolchain directories (config.json "path": ~ expanded,
+# globs allowed, existing ones only) at the front of PATH. Only for that
+# language's work: Alire's GNAT directory, for one, also has gcc/g++, which
+# would shadow the system compilers other languages build with.
+_use_lang_path() {
+    local pattern dir
+    for pattern in $(_lang_path_patterns "$1"); do
+        pattern="${pattern/#\~/${HOME}}"
+        for dir in ${pattern}; do
+            [ -d "${dir}" ] && PATH="${dir}:${PATH}"
+        done
     done
+    export PATH
 }
 
-# True when a language's (or tool's) dependency is installed. Ada's GNAT may
-# live only in Alire's toolchain directory, which _ada_env adds to PATH for
-# Ada recipes alone: that directory also has gcc/g++, so putting it on PATH
-# everywhere would shadow the system compilers other languages build with.
+# Kept for scripts written before "path" existed.
+_ada_env() { _use_lang_path ada; }
+
+# True when a language's (or tool's) dependency is installed, counting the
+# language's own "path" directories.
 _dep_available() {
     local dep
     dep=$(_dep "$1" 2>/dev/null || true)
     [ -z "${dep}" ] && return 0
-    command -v "${dep}" >/dev/null 2>&1 && return 0
-    [ "$1" = "ada" ] && compgen -G "${HOME}/.local/share/alire/toolchains/*/bin/${dep}" >/dev/null
+    ( _use_lang_path "$1"; command -v "${dep}" >/dev/null 2>&1 )
 }
 
 # ---------------------------------------------------------------------------

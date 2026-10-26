@@ -73,7 +73,9 @@ def run_definition_script(project, lang: str, script: str) -> int:
     if path is None:
         print(f"{lang}: no {script}", file=sys.stderr)
         return 1
-    return subprocess.run(["bash", path], env=hook_env(project), cwd=project.root).returncode
+    env = hook_env(project)
+    env["PATH"] = os.pathsep.join(project.language_path(lang) + [env.get("PATH", "")])
+    return subprocess.run(["bash", path], env=env, cwd=project.root).returncode
 
 
 def cmd_install(args) -> int:

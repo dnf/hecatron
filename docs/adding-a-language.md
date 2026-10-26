@@ -11,7 +11,7 @@ combine.
 
 | File | Purpose | Required |
 | --- | --- | --- |
-| `config.json` | `abbreviation`, `dependency` (the command that proves the toolchain is installed), optional `lintDependency`, and `detect` (manifest globs `hecatron init` looks for) | Yes |
+| `config.json` | `abbreviation`, `dependency` (the command that proves the toolchain is installed), optional `lintDependency`, `detect` (manifest globs `hecatron init` looks for), and optional `path` (toolchain directories to put on PATH for this language only, e.g. `["~/.cargo/bin"]`) | Yes |
 | `install.sh` | Install the toolchain on macOS and Linux; idempotent, and repairs what `doctor.sh` detects | Yes |
 | `uninstall.sh` | Remove the toolchain (a no-op with a message when other languages share it) | Yes |
 | `doctor.sh` | Detect a toolchain that is installed but broken, one `problem` per issue | No |
