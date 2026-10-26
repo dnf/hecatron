@@ -34,12 +34,14 @@ while IFS=$'\t' read -r _component _dir; do
     echo "=== ${_action} ${_component} (${_lang}) ==="
     # The language's environment for this component's version (config.json
     # "path" and "env", docs/design.md §7, §18), for its hooks only.
-    if ! _env="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" env "${_lang}" "${_component}")"; then
+    if ! _env="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" env "${_lang}" "${_component}" </dev/null)"; then
         _failed+=("${_component}")
         continue
     fi
+    # stdin is the component list; a hook reading it (uv does) would swallow
+    # the components after its own.
     if ! (eval "${_env}" && cd "${_dir}" && HECATRON_COMPONENT="${_component}" HECATRON_LANG="${_lang}" \
-            bash "${_hook}" "${_component}"); then
+            bash "${_hook}" "${_component}" </dev/null); then
         _failed+=("${_component}")
     fi
 done < <(python3 "${HECATRON_HOME}/libexec/lib/project.py" impl-dirs "${_lang}")

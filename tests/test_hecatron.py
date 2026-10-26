@@ -261,6 +261,14 @@ class RunTest(Fixture):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("ran b", result.stdout)
 
+    def test_a_hook_reading_stdin_doesnt_swallow_the_other_components(self):
+        # Tools like uv read stdin; the component list must not be on it.
+        self.hook('cat >/dev/null; echo "ran $1"')
+        result = self.hecatron("test", "go")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("ran a", result.stdout)
+        self.assertIn("ran b", result.stdout)
+
     def test_component_flag_selects_components(self):
         self.hook('echo "ran $1"')
         result = self.hecatron("test", "go", "-c", "b")
