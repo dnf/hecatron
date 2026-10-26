@@ -1,2 +1,3 @@
-# Ruby and Bundler, as install.sh installs them
-# apt: ruby ruby-bundler
+# Ruby, Bundler, and the headers gems with native extensions compile against,
+# as install.sh installs them
+# apt: ruby ruby-dev ruby-bundler
