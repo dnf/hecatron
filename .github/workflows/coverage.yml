@@ -1,0 +1,107 @@
+name: Coverage
+
+# Check every language's toolchain on every platform (tests/install/check.sh)
+# and build the coverage matrix (docs/coverage.md) from the results. Weekly,
+# and on demand for some languages.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      languages:
+        description: "Languages to check, space-separated (empty: all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  languages:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.list.outputs.list }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        env:
+          REQUESTED: ${{ inputs.languages }}
+        run: |
+          if [ -n "${REQUESTED}" ]; then
+            languages="${REQUESTED}"
+          else
+            languages="$(find languages -mindepth 1 -maxdepth 1 -type d ! -name '_*' -exec basename {} \; | sort)"
+          fi
+          echo "list=$(printf '%s\n' ${languages} | python3 -c 'import json, sys; print(json.dumps(sys.stdin.read().split()))')" >> "${GITHUB_OUTPUT}"
+
+  # Each Linux job checks one language on one architecture, in fresh
+  # Ubuntu 24.04, Ubuntu 26.04 and Debian 13 containers (tests/docker/).
+  linux:
+    needs: languages
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        language: ${{ fromJSON(needs.languages.outputs.list) }}
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check on Ubuntu 24.04, Ubuntu 26.04 and Debian 13
+        run: |
+          for image in ubuntu:24.04 ubuntu:26.04 debian:stable; do
+            tests/docker/install-test.sh "${image}" "${{ matrix.language }}" 2>&1 | tee -a check.log || true
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.language }}-${{ matrix.runner }}
+          path: check.log
+
+  # macOS jobs check directly on the runner, which comes with many toolchains
+  # preinstalled.
+  macos:
+    needs: languages
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        language: ${{ fromJSON(needs.languages.outputs.list) }}
+        runner: [macos-26, macos-26-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bash 4+ (hecatron's runner needs it; macOS ships 3.2)
+        run: brew install bash
+      - name: Check
+        run: |
+          export PATH="${PWD}/bin:${PATH}"
+          tests/install/check.sh "${{ matrix.language }}" 2>&1 | tee check.log || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.language }}-${{ matrix.runner }}
+          path: check.log
+
+  matrix:
+    needs: [linux, macos]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: logs
+      - name: Build the matrix
+        run: |
+          python3 tests/coverage/matrix.py collect --commit "${GITHUB_SHA}" logs/*/check.log
+          python3 tests/coverage/matrix.py render
+          cat docs/coverage.md >> "${GITHUB_STEP_SUMMARY}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-matrix
+          path: |
+            docs/coverage.md
+            tests/coverage/results.json
