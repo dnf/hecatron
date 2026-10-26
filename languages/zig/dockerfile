@@ -1,8 +1,6 @@
-# Zig
-RUN ARCH="$(dpkg --print-architecture)" && \
-    ZIG_ARCH="$ARCH" && \
-    if [ "$ARCH" = "amd64" ]; then ZIG_ARCH="x86_64"; fi && \
-    if [ "$ARCH" = "arm64" ]; then ZIG_ARCH="aarch64"; fi && \
+# Zig: the latest release, as install.sh installs it
+# apt: python3 xz-utils
+RUN URL="$(curl -fsSL https://ziglang.org/download/index.json | python3 -c 'import json, sys; r = json.load(sys.stdin); v = max((v for v in r if v != "master"), key=lambda v: tuple(map(int, v.split(".")))); print(r[v][sys.argv[1] + "-linux"]["tarball"])' "$(uname -m)")" && \
     mkdir -p /opt/zig && \
-    curl -fsSL "https://ziglang.org/download/0.14.0/zig-linux-${ZIG_ARCH}-0.14.0.tar.xz" | tar -C /opt/zig --strip-components=1 -xJ && \
-    ln -sf /opt/zig/zig /usr/local/bin/zig
+    curl -fsSL "$URL" | tar -C /opt/zig --strip-components=1 -xJ && \
+    ln -s /opt/zig/zig /usr/local/bin/zig
