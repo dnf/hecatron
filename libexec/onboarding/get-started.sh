@@ -19,35 +19,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=../../languages/_common.sh
 source "$SCRIPT_DIR/../../languages/_common.sh"
 
-# Language → detection tool (matches justfile _tool())
-_tool() {
-    case "$1" in
-        ada)         echo gnat    ;;
-        c|cpp)       echo cmake   ;;
-        clojure)     echo clojure ;;
-        csharp)      echo dotnet  ;;
-        dart)        echo dart    ;;
-        elixir)      echo mix     ;;
-        elm)         echo elm     ;;
-        erlang)      echo rebar3  ;;
-        fsharp)      echo dotnet  ;;
-        fortran)     echo gfortran ;;
-        go)          echo go      ;;
-        haskell)     echo cabal   ;;
-        groovy|java|kotlin|scala) echo java ;;
-        ocaml)       echo opam    ;;
-        perl)        echo perl    ;;
-        php)         echo php     ;;
-        python)      echo uv      ;;
-        ruby)        echo ruby    ;;
-        rust)        echo cargo   ;;
-        swift)       echo swift   ;;
-        typescript)  echo npm     ;;
-        zig)         echo zig     ;;
-    esac
-}
+# shellcheck source=../lib/helpers.sh
+source "${HECATRON_HOME}/libexec/lib/helpers.sh"
 
-ALL_LANGS=(ada c clojure cpp csharp dart elixir elm erlang fsharp fortran gleam go groovy haskell java kotlin ocaml perl php python ruby rust scala swift typescript zig)
+# The project's languages, and the command that shows each one is installed.
+read -ra ALL_LANGS <<< "$(echo ${_ADDED_LANGS})"
+_tool() { _dep "$1"; }
 
 # Languages unavailable on certain architectures
 _unavailable() {
@@ -163,11 +140,11 @@ _print_status() {
 }
 
 _print_quickstart() {
-    echo "  just test           Run all test suites in parallel"
-    echo "  just test go        Run a single language's tests"
-    echo "  just build          Build all compiled languages"
-    echo "  just lint           Run all linters"
-    echo "  just --list         See all available commands"
+    echo "  hecatron test       Run all test suites in parallel"
+    echo "  hecatron test go    Run one language's tests"
+    echo "  hecatron build      Build all compiled languages"
+    echo "  hecatron lint       Run all linters"
+    echo "  hecatron help       See all commands"
     echo ""
 }
 
@@ -204,7 +181,7 @@ if [ $# -gt 0 ]; then
             fi
             echo -e "Installing ${BOLD}${#missing[@]}${RESET} languages: ${missing[*]}"
             echo ""
-            just install "${missing[@]}"
+            "${HECATRON_HOME}/bin/hecatron" install "${missing[@]}"
             exit 0
             ;;
         --install)
@@ -213,7 +190,7 @@ if [ $# -gt 0 ]; then
                 echo "error: --install requires at least one language" >&2
                 exit 1
             fi
-            just install "$@"
+            "${HECATRON_HOME}/bin/hecatron" install "$@"
             exit 0
             ;;
         *)
@@ -289,7 +266,7 @@ case "$cursor" in
     0)  # Install all
         echo -e "Installing ${BOLD}${#missing[@]}${RESET} languages..."
         echo ""
-        just install "${missing[@]}"
+        "${HECATRON_HOME}/bin/hecatron" install "${missing[@]}"
         ;;
     1)  # Choose languages
         n=${#missing[@]}
@@ -371,16 +348,16 @@ case "$cursor" in
         else
             echo -e "Installing ${BOLD}${#to_install[@]}${RESET} languages: ${to_install[*]}"
             echo ""
-            just install "${to_install[@]}"
+            "${HECATRON_HOME}/bin/hecatron" install "${to_install[@]}"
         fi
         ;;
     2)  # Continue without installing
         echo "Quick-start commands (for installed languages):"
         echo ""
-        echo "  just test           Run all test suites in parallel"
-        echo "  just test go        Run a single language's tests"
-        echo "  just install <lang> Install a specific toolchain later"
-        echo "  just --list         See all available commands"
+        echo "  hecatron test       Run all test suites in parallel"
+        echo "  hecatron test go    Run one language's tests"
+        echo "  hecatron install <lang>  Install a toolchain later"
+        echo "  hecatron help       See all commands"
         echo ""
         ;;
 esac

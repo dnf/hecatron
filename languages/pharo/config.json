@@ -2,7 +2,7 @@
   "abbreviation": "ph",
   "dependency": "pharo",
   "lintDependency": null,
-  "compiled": false,
-  "hasClean": true,
-  "hasLint": false
+  "detect": [
+    "*.st"
+  ]
 }

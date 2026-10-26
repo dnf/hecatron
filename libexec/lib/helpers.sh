@@ -1,32 +1,32 @@
 #!/usr/bin/env bash
-# Shared helpers for justfile recipes.
-# Sourced (not executed) — provides shared functions and language lists.
+# Shared helpers for hecatron's shell commands (sourced, not executed).
 #
-# Language data (lists, abbreviations, dependencies, disabled set) is loaded
-# from per-language config files via .hecatron/tools/language/emit-config.py.
+# Loads the project model from libexec/lib/project.py: the language lists
+# (_ALL_LANGS, _ADDED_LANGS, _COMPILED_LANGS, _CLEAN_LANGS, _LINT_LANGS,
+# _TEST_LANGS, _NO_BUILD_LANGS, _DISABLED_LANGS, _TOOLS), the lookups _name,
+# _abbr, _dep, _lint_dep and _is_disabled, and HECATRON_ROOT, _COMPONENTS,
+# _IMPL_PATH and _LOGS. Requires HECATRON_HOME (set by bin/hecatron).
 
-# ---------------------------------------------------------------------------
-# Load language configuration
-# ---------------------------------------------------------------------------
+_HECATRON_LIB="${HECATRON_HOME}/libexec/lib"
+_env="$(python3 "${_HECATRON_LIB}/project.py" shell-env)" || exit 1
+eval "${_env}"
+unset _env
+_ROOT="${HECATRON_ROOT}"
 
-_HELPERS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-_ROOT="$(cd "${_HELPERS_DIR}/../../.." && pwd)"
-eval "$(python3 "${_HELPERS_DIR}/emit-config.py")"
+# True when a name is a language hecatron knows (built in or project-defined).
+_is_known() {
+    printf '%s\n' ${_ALL_LANGS} | grep -qx "$1"
+}
 
-# ---------------------------------------------------------------------------
-# Removed languages (not in .hecatron/config/languages/added.json)
-# ---------------------------------------------------------------------------
+# True when a name is a project tool (config.json "tools"), e.g. shell.
+_is_tool() {
+    printf '%s\n' ${_TOOLS} | grep -qx "$1"
+}
 
+# A known language the project doesn't implement (not in config.json "languages").
 _is_removed() {
-    local lang="$1" known=false added
-    # Only check known languages — tools (cli, codegen) are never "removed"
-    for added in ${_ALL_LANGS}; do
-        [ "${added}" = "${lang}" ] && known=true && break
-    done
-    ${known} || return 1
-    for added in ${_ADDED_LANGS}; do
-        [ "${added}" = "${lang}" ] && return 1
-    done
+    _is_known "$1" || return 1
+    printf '%s\n' ${_ADDED_LANGS} | grep -qx "$1" && return 1
     return 0
 }
 
@@ -161,14 +161,14 @@ _suggest() {
 }
 
 # Validate a language name (abbreviation or full), with fuzzy suggestion on miss.
-# Also refuses removed languages (not in added.json).
+# Also refuses languages the project doesn't implement.
 # Usage: name=$(_check "$lang" "install")
 _check() {
-    local lang="$1" help_cmd="${2:-help}" name suggest
+    local lang="$1" help_cmd="${2:-help}" name suggest answer
     name=$(_name "$lang")
-    if [ -d ".hecatron/languages/${name}" ]; then
+    if _is_known "${name}"; then
         if _is_removed "${name}"; then
-            echo "Language '${name}' is not added. Run 'just add ${name}' to add it." >&2
+            echo "Language '${name}' is not added. Run 'hecatron add ${name}' to add it." >&2
             exit 1
         fi
         echo "$name"
@@ -185,7 +185,7 @@ _check() {
             echo "Unknown language '$lang'. Did you mean '$suggest'?" >&2
         fi
     else
-        echo "Unknown language: $lang (try 'just $help_cmd help')" >&2
+        echo "Unknown language: $lang (try 'hecatron $help_cmd help')" >&2
     fi
     exit 1
 }

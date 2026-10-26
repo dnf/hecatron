@@ -2,7 +2,8 @@
   "abbreviation": "hs",
   "dependency": "cabal",
   "lintDependency": null,
-  "compiled": true,
-  "hasClean": true,
-  "hasLint": false
+  "detect": [
+    "*.cabal",
+    "stack.yaml"
+  ]
 }

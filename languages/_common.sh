@@ -16,17 +16,22 @@ if [ "$(id -u)" -ne 0 ]; then
     SUDO="sudo"
 fi
 
-# Project root (two levels up from .hecatron/languages/)
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# The project being worked on (bin/hecatron exports HECATRON_ROOT), else the
+# repository the current directory is in.
+ROOT="${HECATRON_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
 log() { echo "==> $*"; }
 
-# Each library's implementation directory for a language (age, date,
-# duration, time), one per line.
+# Each component's directory for a language, one per line: the project's
+# HECATRON_IMPL_PATH template (e.g. {component}/impl/{lang}) filled in for each
+# of HECATRON_COMPONENTS.
 impl_dirs() {
-    local _library
-    for _library in age date duration time; do
-        [ -d "${ROOT}/${_library}/impl/$1" ] && echo "${ROOT}/${_library}/impl/$1"
+    local _component _relative
+    for _component in ${HECATRON_COMPONENTS:-.}; do
+        _relative="${HECATRON_IMPL_PATH:-{lang\}}"
+        _relative="${_relative//\{component\}/${_component}}"
+        _relative="${_relative//\{lang\}/$1}"
+        [ -d "${ROOT}/${_relative}" ] && (cd "${ROOT}/${_relative}" && pwd)
     done
     return 0
 }

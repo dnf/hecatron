@@ -1,16 +1,31 @@
 #!/usr/bin/env bash
 # Check that each language's toolchain works, and say how to repair it.
 #
-# Usage: doctor.sh [--fix] [lang ...]   (default: every added, enabled language)
+# Usage: hecatron doctor [--fix] [lang ...]   (default: every added, enabled language)
 #
 # A language is healthy when the build and lint dependencies named in its
-# config.json run, and its optional .hecatron/languages/<lang>/doctor.sh
+# config.json run, and its doctor.sh (the project's, else the built-in one)
 # passes. A doctor.sh prints one line per problem and exits non-zero when it
 # finds any. With --fix, an unhealthy language's install.sh runs (installers
 # repair the states their doctor.sh detects), and the language is checked again.
 set -euo pipefail
 
-source "$(dirname "$0")/helpers.sh"
+# shellcheck source=../lib/helpers.sh
+source "${HECATRON_HOME}/libexec/lib/helpers.sh"
+
+_resolve() { python3 "${HECATRON_HOME}/libexec/lib/project.py" resolve "$1" "$2"; }
+
+if [ "${1:-}" = "help" ] || [ "${1:-}" = "--help" ]; then
+    printf '%s\n' \
+        "Usage: hecatron doctor [--fix] [language ...]" \
+        "" \
+        "Check that each language's toolchain works: its build and lint tools run, and" \
+        "known breakages are absent. With no languages, checks every added, enabled one." \
+        "" \
+        "Flags:" \
+        "  --fix      Run each unhealthy language's installer, then check it again"
+    exit 0
+fi
 
 _fix=false
 _langs=()
@@ -18,7 +33,7 @@ for _arg in "$@"; do
     if [ "${_arg}" = "--fix" ]; then
         _fix=true
     else
-        _langs+=("$(_name "${_arg}")")
+        _langs+=("$(_check "${_arg}" doctor)")
     fi
 done
 if [ "${#_langs[@]}" -eq 0 ]; then
@@ -39,8 +54,7 @@ _problems() {
     if [ -n "${_lint}" ] && ! command -v "${_lint}" >/dev/null 2>&1; then
         echo "lint tool ${_lint} not found"
     fi
-    _script="${_ROOT}/.hecatron/languages/${_lang}/doctor.sh"
-    if [ -f "${_script}" ]; then
+    if _script="$(_resolve "${_lang}" doctor.sh)"; then
         (cd "${_ROOT}" && bash "${_script}") || true
     fi
 }
@@ -51,8 +65,9 @@ for _lang in "${_langs[@]}"; do
     if [ "${_lang}" = "ada" ]; then _ada_env; fi
     _found="$(_problems "${_lang}")"
     if [ -n "${_found}" ] && ${_fix}; then
-        echo "${_lang}: repairing with .hecatron/languages/${_lang}/install.sh"
-        bash "${_ROOT}/.hecatron/languages/${_lang}/install.sh" || true
+        _installer="$(_resolve "${_lang}" install.sh)"
+        echo "${_lang}: repairing with ${_installer}"
+        bash "${_installer}" || true
         _found="$(_problems "${_lang}")"
     fi
     if [ -z "${_found}" ]; then
@@ -70,5 +85,5 @@ if [ "${#_unhealthy[@]}" -eq 0 ]; then
     exit 0
 fi
 echo "${#_unhealthy[@]} of ${#_langs[@]} need attention: ${_unhealthy[*]}"
-${_fix} || echo "Repair with: just doctor --fix ${_unhealthy[*]}   (runs each language's installer)"
+${_fix} || echo "Repair with: hecatron doctor --fix ${_unhealthy[*]}   (runs each language's installer)"
 exit 1

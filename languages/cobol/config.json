@@ -2,7 +2,8 @@
   "abbreviation": "cb",
   "dependency": "cobc",
   "lintDependency": null,
-  "compiled": true,
-  "hasClean": true,
-  "hasLint": false
+  "detect": [
+    "*.cbl",
+    "*.cob"
+  ]
 }

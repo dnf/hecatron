@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Interactive metadata updater for all language manifests.
-# Usage: bash .hecatron/tools/metadata/set.sh
-# Called by: just metadata
+# Usage: hecatron metadata
+# Reads the file named by config.json "metadata" (name, description, author,
+# license, repository) and runs each language's metadata.sh hook.
 set -euo pipefail
 
 if [ ! -t 0 ]; then
@@ -9,14 +10,15 @@ if [ ! -t 0 ]; then
     exit 1
 fi
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-source "${ROOT}/.hecatron/tools/language/helpers.sh"
+# shellcheck source=../lib/helpers.sh
+source "${HECATRON_HOME}/libexec/lib/helpers.sh"
+ROOT="${HECATRON_ROOT}"
 
-METADATA="${ROOT}/age/config/metadata.json"
-if [ ! -f "${METADATA}" ]; then
-    echo "error: config/metadata.json not found" >&2
+if [ -z "${HECATRON_METADATA:-}" ] || [ ! -f "${HECATRON_METADATA}" ]; then
+    echo "error: no metadata file (set \"metadata\" in .hecatron/config.json)" >&2
     exit 1
 fi
+METADATA="${HECATRON_METADATA}"
 
 # Read current values
 cur_name="$(python3 -c "import json; print(json.load(open('${METADATA}'))['name'])")"
@@ -108,4 +110,4 @@ done
 
 echo ""
 echo "Done. Metadata updated across all manifests."
-echo "Run 'just test' to verify, then commit."
+echo "Run 'hecatron test' to verify, then commit."

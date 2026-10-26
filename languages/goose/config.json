@@ -2,7 +2,7 @@
   "abbreviation": "gs",
   "dependency": "goose",
   "lintDependency": null,
-  "compiled": true,
-  "hasClean": true,
-  "hasLint": true
+  "detect": [
+    "*.goose"
+  ]
 }

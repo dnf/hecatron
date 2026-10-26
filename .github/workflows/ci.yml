@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck (macOS)
+        if: runner.os == 'macOS'
+        run: brew install shellcheck
+      - name: shellcheck every shell script
+        run: bash libexec/lint/shellcheck.sh
+      - name: Unit and command tests
+        run: python3 -m unittest discover -s tests -v
+      - name: The command runs
+        run: bin/hecatron --version && bin/hct help

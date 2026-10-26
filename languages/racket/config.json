@@ -2,7 +2,7 @@
   "abbreviation": "rkt",
   "dependency": "racket",
   "lintDependency": null,
-  "compiled": false,
-  "hasClean": true,
-  "hasLint": false
+  "detect": [
+    "info.rkt"
+  ]
 }

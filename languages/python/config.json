@@ -2,7 +2,8 @@
   "abbreviation": "py",
   "dependency": "uv",
   "lintDependency": null,
-  "compiled": false,
-  "hasClean": true,
-  "hasLint": true
+  "detect": [
+    "pyproject.toml",
+    "setup.py"
+  ]
 }

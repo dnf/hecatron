@@ -2,7 +2,5 @@
   "abbreviation": "sh",
   "dependency": "bash",
   "lintDependency": null,
-  "compiled": false,
-  "hasClean": false,
-  "hasLint": false
+  "detect": []
 }

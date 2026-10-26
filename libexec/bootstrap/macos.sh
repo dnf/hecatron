@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
+# hecatron bootstrap: set up this machine for the project and install every
+# language toolchain it uses.
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.."
+cd "${HECATRON_ROOT}"
 
-echo "==> sayable-age: macOS development setup"
+echo "==> ${HECATRON_PROJECT}: macOS development setup"
 echo ""
 
 # ---- Homebrew ----
@@ -12,14 +14,8 @@ if ! command -v brew &>/dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
-# ---- just (task runner) ----
-if ! command -v just &>/dev/null; then
-    echo "==> Installing just..."
-    brew install just
-fi
-
 # ---- Install all language toolchains ----
-just install
+"${HECATRON_HOME}/bin/hecatron" install
 
 echo ""
-echo "==> Setup complete! Verify with: just test"
+echo "==> Setup complete! Verify with: hecatron test"

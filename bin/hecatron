@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# hecatron: toolchains, tests and CI for polyglot repositories (also `hct`).
+# See docs/design.md for the commands and the project configuration.
+set -euo pipefail
+
+# The install directory: this script's real location, one level up from bin/.
+# Homebrew links bin/hecatron (and bin/hct) into its prefix, so follow links.
+_resolve_home() {
+    local source="${BASH_SOURCE[0]}" dir
+    while [ -L "${source}" ]; do
+        dir="$(cd -P "$(dirname "${source}")" && pwd)"
+        source="$(readlink "${source}")"
+        [[ "${source}" != /* ]] && source="${dir}/${source}"
+    done
+    cd -P "$(dirname "${source}")/.." && pwd
+}
+HECATRON_HOME="${HECATRON_HOME:-$(_resolve_home)}"
+export HECATRON_HOME
+
+_version() { cat "${HECATRON_HOME}/VERSION"; }
+
+_usage() {
+    cat <<EOF
+Usage: hecatron <command> [arguments]     (or: hct <command>)
+
+Set up:
+  init [dir]                 Set up a repository for hecatron
+  doctor [--fix] [lang...]   Check toolchains; --fix runs installers to repair them
+  install [lang...]          Install toolchains (all of the project's when none named)
+  uninstall <lang...>        Uninstall toolchains
+  get-started                Status table and install menu
+  bootstrap                  Set up a fresh machine for the project (base packages + install)
+
+Run (every component of each language; no languages means all, in parallel):
+  test [lang...]             Tests
+  lint [lang...|shell]       Linters (shell: shellcheck on every shell script)
+  build [lang...]            Builds
+  clean [lang...]            Remove build artifacts
+  rebuild, retest [lang...]  Clean, then build or test
+
+Languages:
+  list [languages] [--all]   Show the project's (or every known) language
+  add <lang...>              Add languages to the project
+  remove <lang...>           Remove languages from the project
+  enable, disable <lang...>  Re-enable or skip languages in parallel runs, for you only
+
+Generated files:
+  dockerfile [--check]       Generate the Dockerfile from language snippets
+  workflows [--check]        Generate each language's CI workflow
+  check                      Verify every generated file is current
+  banner --generator PATH    Print a DO NOT EDIT banner for a code generator
+
+Project:
+  version <version>          Bump versions through each language's version.sh
+  metadata                   Update package metadata through metadata.sh hooks
+
+Run 'hecatron <command> help' for a command's options.
+hecatron $(_version)
+EOF
+}
+
+_command="${1:-help}"
+[ "$#" -gt 0 ] && shift
+
+case "${_command}" in
+    help|-h|--help) _usage; exit 0 ;;
+    --version|-V|version-of-hecatron) _version; exit 0 ;;
+esac
+
+# Every command but init runs inside a project; find it (like git).
+if [ "${_command}" != "init" ] && [ "${_command}" != "banner" ]; then
+    if ! HECATRON_ROOT="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" root)"; then
+        exit 1
+    fi
+    export HECATRON_ROOT
+fi
+
+case "${_command}" in
+    test|lint|build|clean|rebuild|retest)
+        exec bash "${HECATRON_HOME}/libexec/commands/run.sh" "${_command}" "$@" ;;
+    doctor)
+        exec bash "${HECATRON_HOME}/libexec/commands/doctor.sh" "$@" ;;
+    get-started)
+        exec bash "${HECATRON_HOME}/libexec/onboarding/get-started.sh" "$@" ;;
+    bootstrap)
+        _env="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env)"
+        eval "${_env}"
+        case "$(uname -s)" in
+            Darwin) exec bash "${HECATRON_HOME}/libexec/bootstrap/macos.sh" ;;
+            *) exec bash "${HECATRON_HOME}/libexec/bootstrap/linux.sh" ;;
+        esac ;;
+    metadata)
+        exec bash "${HECATRON_HOME}/libexec/metadata/set.sh" "$@" ;;
+    version)
+        exec bash "${HECATRON_HOME}/libexec/commands/version.sh" "$@" ;;
+    init|install|uninstall|list|add|remove|enable|disable|dockerfile|workflows|check|banner)
+        exec python3 "${HECATRON_HOME}/libexec/commands/manage.py" "${_command}" "$@" ;;
+    *)
+        echo "hecatron: unknown command '${_command}' (try 'hecatron help')" >&2
+        exit 2 ;;
+esac

@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# Runs just recipes in parallel with live progress display.
+# Runs jobs (hecatron or just commands) in parallel with live progress display.
 # Usage: run-parallel.sh [-j N|P%|pcores|unlimited] [-n NICE] [-s full|zoom] <name> "cmd" ...
 # -j VALUE limits concurrent jobs (default: 50% of CPUs).
 # -n NICE runs jobs under sudo nice -n NICE (e.g. -n -20).
 # -s MODE sets visualization: scroll (default), full, or zoom.
 # <name> is used for the log directory: .logs/<name>/
-# Each subsequent argument is passed to `just` as a complete command.
+# Each subsequent argument is passed to the job command (HECATRON_JOB_COMMAND,
+# default just) as a complete command.
 # The label shown in output is the last word of each argument.
 # Entries prefixed with "skip:" are shown as "not installed" in their
 # original position without launching a job.
@@ -114,7 +115,10 @@ done
 if [ $# -lt 2 ]; then echo "Usage: $0 [-j N|P%|pcores|unlimited] [-n NICE] [-s full|zoom] <name> 'cmd args'..." >&2; exit 1; fi
 
 name="$1"; shift
-logdir=".logs/$name"
+# Each job is "<job_cmd> <job>": hecatron sets HECATRON_JOB_COMMAND to itself;
+# run standalone, the runner keeps its original behaviour of calling just.
+job_cmd="${HECATRON_JOB_COMMAND:-just}"
+logdir="${HECATRON_LOGS:-.logs}/$name"
 mkdir -p "$logdir"
 # If running under sudo, fix ownership so non-sudo runs aren't blocked
 if [ -n "${SUDO_USER:-}" ]; then
@@ -129,7 +133,7 @@ if ! mkdir "$lockdir" 2>/dev/null; then
         rmdir "$lockdir" 2>/dev/null
     fi
     if ! mkdir "$lockdir" 2>/dev/null; then
-        echo "error: just $name is already running (lock: $lockdir)" >&2
+        echo "error: ${job_cmd##*/} $name is already running (lock: $lockdir)" >&2
         exit 1
     fi
 fi
@@ -843,7 +847,7 @@ if [ "$max_jobs" -gt 0 ]; then
                 label="${all_labels[$_qi]}"
                 (
                     _rc=0; _st=$(_now_ds)
-                    ${_nice_cmd} just ${all_cmds[$_qi]} > "$logdir/$label.log" 2>&1 || _rc=$?
+                    ${_nice_cmd} ${job_cmd} ${all_cmds[$_qi]} > "$logdir/$label.log" 2>&1 || _rc=$?
                     _et=$(_now_ds)
                     echo "$((_et - _st)) $_rc" > "$logdir/$label.result"
                 ) &
@@ -1037,7 +1041,7 @@ if [ "$max_jobs" -gt 0 ]; then
                 label="${all_labels[$_qi]}"
                 (
                     _rc=0; _st=$(_now_ds)
-                    ${_nice_cmd} just ${all_cmds[$_qi]} > "$logdir/$label.log" 2>&1 || _rc=$?
+                    ${_nice_cmd} ${job_cmd} ${all_cmds[$_qi]} > "$logdir/$label.log" 2>&1 || _rc=$?
                     _et=$(_now_ds)
                     echo "$((_et - _st)) $_rc" > "$logdir/$label.result"
                 ) &
@@ -1068,7 +1072,7 @@ else
         (
             _rc=0
             _st=$(_now_ds)
-            ${_nice_cmd} just ${all_cmds[$i]} > "$logdir/$label.log" 2>&1 || _rc=$?
+            ${_nice_cmd} ${job_cmd} ${all_cmds[$i]} > "$logdir/$label.log" 2>&1 || _rc=$?
             _et=$(_now_ds)
             echo "$((_et - _st)) $_rc" > "$logdir/$label.result"
         ) &
