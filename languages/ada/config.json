@@ -4,5 +4,8 @@
   "lintDependency": null,
   "detect": [
     "*.gpr"
+  ],
+  "path": [
+    "~/.local/share/alire/toolchains/*/bin"
   ]
 }

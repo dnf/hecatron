@@ -106,6 +106,18 @@ class ProjectModelTest(Fixture):
         self.assertEqual(p.definitions["go"]["dependency"], "go")
         self.assertEqual(p.resolve_name("golang"), "go")
 
+    def test_language_path_expands_home_and_globs(self):
+        os.makedirs(self.path("tools", "v1", "bin"))
+        os.makedirs(self.path("tools", "v2", "bin"))
+        write(self.path(".hecatron", "languages", "go", "config.json"),
+              json.dumps({"path": [self.path("tools", "*", "bin"), "~/surely-not-a-real-dir-xyz"]}))
+        # A language whose definition has no "path" at all, independent of the host.
+        write(self.path(".hecatron", "languages", "fixture", "config.json"), json.dumps({"dependency": "bash"}))
+        self.configure()
+        p = project.load(self.root)
+        self.assertEqual(p.language_path("go"), [self.path("tools", "v1", "bin"), self.path("tools", "v2", "bin")])
+        self.assertEqual(p.language_path("fixture"), [])
+
     def test_a_project_can_define_a_new_language(self):
         write(self.path(".hecatron", "languages", "brainfuck", "config.json"), json.dumps({"dependency": "bf"}))
         self.configure()
@@ -263,6 +275,26 @@ class RunTest(Fixture):
         self.hook('echo "ran $1"')
         result = self.hecatron("test", "go", cwd=self.path("a", "go"))
         self.assertIn("ran a", result.stdout)
+
+    def test_hooks_see_their_own_language_path_only(self):
+        tooldir = self.path("tooldir")
+        write(os.path.join(tooldir, "mytool"), "#!/bin/sh\necho tool-ran\n", 0o755)
+        write(self.path(".hecatron", "languages", "go", "config.json"), json.dumps({"path": [tooldir]}))
+        self.hook('mytool')
+        result = self.hecatron("test", "go")
+        self.assertIn("tool-ran", result.stdout)
+        script = 'eval "$(bash %s env)"; command -v mytool || echo not-on-path; _dep_available go && echo go-ok' % BIN
+        out = subprocess.run(["bash", "-c", script], cwd=self.root, capture_output=True, text=True).stdout
+        self.assertIn("not-on-path", out)
+
+    def test_dep_available_counts_the_language_path(self):
+        tooldir = self.path("tooldir")
+        write(os.path.join(tooldir, "fixturedep"), "#!/bin/sh\n", 0o755)
+        write(self.path(".hecatron", "languages", "fixture", "config.json"),
+              json.dumps({"dependency": "fixturedep", "path": [tooldir]}))
+        script = 'eval "$(bash %s env)"; _dep_available fixture && echo found' % BIN
+        out = subprocess.run(["bash", "-c", script], cwd=self.root, capture_output=True, text=True).stdout
+        self.assertIn("found", out)
 
     def test_env_gives_project_recipes_the_helpers(self):
         script = 'eval "$(bash %s env)"; echo "$_ADDED_LANGS"; _name rs' % BIN

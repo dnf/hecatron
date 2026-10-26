@@ -16,6 +16,7 @@ Shell queries:
 
 from __future__ import annotations
 
+import glob
 import json
 import os
 import shlex
@@ -184,6 +185,18 @@ class Project:
         builtin = os.path.join(builtin_dir, "hooks" if filename in HOOKS else "", filename)
         return builtin if os.path.isfile(builtin) else None
 
+    def language_path(self, lang: str) -> list[str]:
+        """Existing directories from a language's config.json "path" (~ expanded, globs allowed).
+
+        They go on PATH only for that language's own work (hooks, doctor,
+        install), never globally: Alire's GNAT directory, for one, also has
+        gcc and g++, which would shadow the system compilers.
+        """
+        dirs = []
+        for pattern in self.definitions.get(lang, {}).get("path", []):
+            dirs += sorted(d for d in glob.glob(os.path.expanduser(pattern)) if os.path.isdir(d))
+        return dirs
+
     def resolve_name(self, name: str) -> str | None:
         """A language's canonical name from its name or abbreviation."""
         name = name.lower()
@@ -251,6 +264,9 @@ def shell_env(project: Project) -> str:
     deps.update({tool: data.get("dependency", "") for tool, data in project.tools.items()})
     out += _emit_case("_dep", {k: v for k, v in deps.items() if v})
     out += _emit_case("_lint_dep", {lang: d["lintDependency"] for lang, d in defs.items() if d.get("lintDependency")})
+    # Raw "path" patterns; _use_lang_path expands them when called, so a
+    # directory an installer just created counts (doctor --fix re-checks).
+    out += _emit_case("_lang_path_patterns", {lang: " ".join(d["path"]) for lang, d in defs.items() if d.get("path")})
     return "\n".join(out) + "\n"
 
 

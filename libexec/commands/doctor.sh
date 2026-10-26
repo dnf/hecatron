@@ -43,8 +43,11 @@ if [ "${#_langs[@]}" -eq 0 ]; then
 fi
 
 # Problems with one language, one per line; nothing when it is healthy.
-_problems() {
+_problems() (
     local _lang="$1" _dep _lint _script
+    # In a subshell: the language's "path" directories, expanded now so a
+    # directory the installer just created counts.
+    _use_lang_path "${_lang}"
     _dep="$(_dep "${_lang}")"
     _lint="$(_lint_dep "${_lang}")"
     if [ -n "${_dep}" ] && ! command -v "${_dep}" >/dev/null 2>&1; then
@@ -57,12 +60,10 @@ _problems() {
     if _script="$(_resolve "${_lang}" doctor.sh)"; then
         (cd "${_ROOT}" && bash "${_script}") || true
     fi
-}
+)
 
 _unhealthy=()
 for _lang in "${_langs[@]}"; do
-    # Only Ada gets Alire's toolchain on PATH (it would shadow the system gcc).
-    if [ "${_lang}" = "ada" ]; then _ada_env; fi
     _found="$(_problems "${_lang}")"
     if [ -n "${_found}" ] && ${_fix}; then
         _installer="$(_resolve "${_lang}" install.sh)"

@@ -209,6 +209,17 @@ first of:
 2. `$HECATRON_HOME/languages/L/F` (hooks under `hooks/`).
 
 `config.json` is merged instead: built-in keys, then the project's keys on top.
+
+A definition's optional `path` lists toolchain directories that aren't on
+PATH in every shell (`~/.cargo/bin` from rustup, `~/.local/bin` from uv,
+`~/.local/share/alire/toolchains/*/bin` for Ada's GNAT), with `~` expanded
+and globs allowed. Existing entries go on PATH only for that language's own
+work (its hooks, doctor checks and the re-check after `--fix`, install and
+uninstall, and dependency detection), and are expanded each time, so a
+directory an installer just created counts. They are never added globally:
+Alire's GNAT directory also holds gcc and g++, which would shadow the system
+compilers other languages build with. (Agreed with the Linux portability work,
+2026-10-26.)
 A project can add a language hecatron doesn't know by giving it a complete
 directory. `hecatron list languages --all` shows where each file comes from.
 
