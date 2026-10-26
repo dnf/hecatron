@@ -22,6 +22,16 @@ jobs:
       - run: cabal build
       - run: cabal test
 
+      - name: Test date library
+        working-directory: date/impl/haskell
+        run: cabal test --test-show-details=direct
+      - name: Test duration library
+        working-directory: duration/impl/haskell
+        run: cabal test --test-show-details=direct
+      - name: Test time library
+        working-directory: time/impl/haskell
+        run: cabal test --test-show-details=direct
+
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests
       # (docs/testing.md).

@@ -22,6 +22,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
       - run: pytest tests/ -v
+      - name: Test date library
+        working-directory: date/impl/python
+        run: PYTHONPATH=src pytest tests/ -v
+      - name: Test duration library
+        working-directory: duration/impl/python
+        run: PYTHONPATH=src pytest tests/ -v
+      - name: Test time library
+        working-directory: time/impl/python
+        run: PYTHONPATH=src pytest tests/ -v
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

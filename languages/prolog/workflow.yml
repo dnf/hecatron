@@ -15,7 +15,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: logtalk-actions/setup-swi-prolog@master
-      - run: swipl -g "run_tests, halt(0)" -t "halt(1)" test_format_age.pl
+      - run: swipl -g "consult('test_format_age.pl'), run_tests, halt(0)" -t "halt(1)"
+      # consult/1 inside -g makes a missing test file an error (exit 2);
+      # passing the file as an argument instead lets plunit's run_tests
+      # report "No tests to run" and exit 0.
+      - name: Test date library
+        working-directory: date/impl/prolog
+        run: swipl -g "consult('test_sayabledate.pl'), run_tests, halt(0)" -t "halt(1)"
+      - name: Test duration library
+        working-directory: duration/impl/prolog
+        run: swipl -g "consult('test_sayableduration.pl'), run_tests, halt(0)" -t "halt(1)"
+      - name: Test time library
+        working-directory: time/impl/prolog
+        run: swipl -g "consult('test_sayabletime.pl'), run_tests, halt(0)" -t "halt(1)"
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

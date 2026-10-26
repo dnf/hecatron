@@ -36,6 +36,18 @@ jobs:
           test -f Pharo.image || { echo "Pharo image download failed"; exit 1; }
       - name: Run tests
         run: pharo --headless Pharo.image st run_tests.st
+      # The component suites reuse the image downloaded into age/impl/pharo;
+      # each run_tests.st loads its sources from the current directory and
+      # exits without saving, so the image stays clean between suites.
+      - name: Test date library
+        working-directory: date/impl/pharo
+        run: pharo --headless ${GITHUB_WORKSPACE}/age/impl/pharo/Pharo.image st run_tests.st
+      - name: Test duration library
+        working-directory: duration/impl/pharo
+        run: pharo --headless ${GITHUB_WORKSPACE}/age/impl/pharo/Pharo.image st run_tests.st
+      - name: Test time library
+        working-directory: time/impl/pharo
+        run: pharo --headless ${GITHUB_WORKSPACE}/age/impl/pharo/Pharo.image st run_tests.st
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

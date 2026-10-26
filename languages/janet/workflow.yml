@@ -23,6 +23,16 @@ jobs:
           sudo make install
       - run: janet test_format_age.janet
 
+      - name: Test date library
+        working-directory: date/impl/janet
+        run: janet test_format_date.janet
+      - name: Test duration library
+        working-directory: duration/impl/janet
+        run: janet test_format_duration.janet
+      - name: Test time library
+        working-directory: time/impl/janet
+        run: janet test_format_time.janet
+
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests
       # (docs/testing.md).

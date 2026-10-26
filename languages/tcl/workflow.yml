@@ -21,6 +21,15 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y tcl${{ matrix.tcl-version }}
       - name: Run tests
         run: tclsh test_format_age.tcl
+      - name: Test date library
+        working-directory: date/impl/tcl
+        run: tclsh test_format_date.tcl
+      - name: Test duration library
+        working-directory: duration/impl/tcl
+        run: tclsh test_format_duration.tcl
+      - name: Test time library
+        working-directory: time/impl/tcl
+        run: tclsh test_format_time.tcl
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

@@ -17,6 +17,15 @@ jobs:
       - run: cmake -B build -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build
       - run: cd build && ctest --output-on-failure
+      - name: Test date library
+        working-directory: date/impl/cpp
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build && cd build && ctest --output-on-failure
+      - name: Test duration library
+        working-directory: duration/impl/cpp
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build && cd build && ctest --output-on-failure
+      - name: Test time library
+        working-directory: time/impl/cpp
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build && cd build && ctest --output-on-failure
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

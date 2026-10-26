@@ -20,6 +20,15 @@ jobs:
           elixir-version: '1.17'
       - run: mix compile --warnings-as-errors
       - run: mix test
+      - name: Test date library
+        working-directory: date/impl/elixir
+        run: mix compile --warnings-as-errors && mix test
+      - name: Test duration library
+        working-directory: duration/impl/elixir
+        run: mix compile --warnings-as-errors && mix test
+      - name: Test time library
+        working-directory: time/impl/elixir
+        run: mix compile --warnings-as-errors && mix test
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

@@ -21,6 +21,15 @@ jobs:
         run: bash --version
       - name: Run tests
         run: bash test_format_age.sh
+      - name: Test date library
+        working-directory: date/impl/bash
+        run: bash test_format_date.sh
+      - name: Test duration library
+        working-directory: duration/impl/bash
+        run: bash test_format_duration.sh
+      - name: Test time library
+        working-directory: time/impl/bash
+        run: bash test_format_time.sh
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

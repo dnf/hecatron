@@ -22,6 +22,15 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y octave
       - run: octave --no-gui --path . test_format_age.m
+      - name: Test date library
+        working-directory: date/impl/octave
+        run: octave --no-gui --path . test_format_date.m
+      - name: Test duration library
+        working-directory: duration/impl/octave
+        run: octave --no-gui --path . test_format_duration.m
+      - name: Test time library
+        working-directory: time/impl/octave
+        run: octave --no-gui --path . test_format_time.m
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

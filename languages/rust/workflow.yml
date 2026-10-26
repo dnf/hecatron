@@ -16,6 +16,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo test
+      - name: Test date library
+        working-directory: date/impl/rust
+        run: cargo test
+      - name: Test duration library
+        working-directory: duration/impl/rust
+        run: cargo test
+      - name: Test time library
+        working-directory: time/impl/rust
+        run: cargo test
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

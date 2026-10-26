@@ -23,6 +23,15 @@ jobs:
       - run: dart pub get
       - run: dart test
       - run: dart analyze
+      - name: Test date library
+        working-directory: date/impl/dart
+        run: dart pub get && dart test
+      - name: Test duration library
+        working-directory: duration/impl/dart
+        run: dart pub get && dart test
+      - name: Test time library
+        working-directory: time/impl/dart
+        run: dart pub get && dart test
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

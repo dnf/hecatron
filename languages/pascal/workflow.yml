@@ -17,6 +17,15 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y fpc
       - run: mkdir -p build && fpc -FEbuild -FUbuild -Fulocales -o"build/test_format_age" test_format_age.pas
       - run: ./build/test_format_age
+      - name: Test date library
+        working-directory: date/impl/pascal
+        run: mkdir -p build && fpc -FEbuild -FUbuild -Fulocales -o"build/test_sayabledate" test_sayabledate.pas && ./build/test_sayabledate
+      - name: Test duration library
+        working-directory: duration/impl/pascal
+        run: mkdir -p build && fpc -FEbuild -FUbuild -Fulocales -o"build/test_sayableduration" test_sayableduration.pas && ./build/test_sayableduration
+      - name: Test time library
+        working-directory: time/impl/pascal
+        run: mkdir -p build && fpc -FEbuild -FUbuild -Fulocales -o"build/test_sayabletime" test_sayabletime.pas && ./build/test_sayabletime
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

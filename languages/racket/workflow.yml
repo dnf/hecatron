@@ -21,6 +21,15 @@ jobs:
         with:
           version: ${{ matrix.racket-version }}
       - run: raco test test/
+      - name: Test date library
+        working-directory: date/impl/racket
+        run: raco test test-format-date.rkt
+      - name: Test duration library
+        working-directory: duration/impl/racket
+        run: raco test test-format-duration.rkt
+      - name: Test time library
+        working-directory: time/impl/racket
+        run: raco test test-format-time.rkt
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

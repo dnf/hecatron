@@ -23,6 +23,15 @@ jobs:
           bundler-cache: true
           working-directory: age/impl/ruby
       - run: bundle exec rake test
+      - name: Test date library
+        working-directory: date/impl/ruby
+        run: bundle install && bundle exec ruby -Ilib test/test_formatter.rb
+      - name: Test duration library
+        working-directory: duration/impl/ruby
+        run: bundle install && bundle exec ruby -Ilib test/test_formatter.rb
+      - name: Test time library
+        working-directory: time/impl/ruby
+        run: bundle install && bundle exec ruby -Ilib test/test_formatter.rb
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

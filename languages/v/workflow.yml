@@ -16,6 +16,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: vlang/setup-v@v1
       - run: v test .
+      - name: Test date library
+        working-directory: date/impl/v
+        run: v test .
+      - name: Test duration library
+        working-directory: duration/impl/v
+        run: v test .
+      - name: Test time library
+        working-directory: time/impl/v
+        run: v test .
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

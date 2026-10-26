@@ -23,6 +23,15 @@ jobs:
           pixi add "mojo==0.26.1.0"
       - name: Run tests
         run: pixi run mojo run -I src tests/test_format_age.mojo
+      - name: Test date library
+        working-directory: date/impl/mojo
+        run: pixi run --manifest-path "${GITHUB_WORKSPACE}/age/impl/mojo/pixi.toml" mojo run -I "${PWD}/src" "${PWD}/tests/test_format_date.mojo"
+      - name: Test duration library
+        working-directory: duration/impl/mojo
+        run: pixi run --manifest-path "${GITHUB_WORKSPACE}/age/impl/mojo/pixi.toml" mojo run -I "${PWD}/src" "${PWD}/tests/test_format_duration.mojo"
+      - name: Test time library
+        working-directory: time/impl/mojo
+        run: pixi run --manifest-path "${GITHUB_WORKSPACE}/age/impl/mojo/pixi.toml" mojo run -I "${PWD}/src" "${PWD}/tests/test_format_time.mojo"
 
   # Check the real CLI against the canonical spec and the Python reference,
   # independently of this language's own tests (docs/testing.md). The CLI

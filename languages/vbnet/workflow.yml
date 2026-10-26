@@ -18,6 +18,15 @@ jobs:
         with:
           dotnet-version: 10.0
       - run: dotnet test
+      - name: Test date library
+        working-directory: date/impl/vbnet
+        run: dotnet test
+      - name: Test duration library
+        working-directory: duration/impl/vbnet
+        run: dotnet test
+      - name: Test time library
+        working-directory: time/impl/vbnet
+        run: dotnet test
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

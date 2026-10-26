@@ -24,6 +24,16 @@ jobs:
       - name: Install testthat
         run: Rscript -e 'install.packages("testthat")'
       - run: Rscript tests/testthat.R
+      # testthat is already installed in the job's library by the step above.
+      - name: Test date library
+        working-directory: date/impl/r
+        run: Rscript tests/testthat.R
+      - name: Test duration library
+        working-directory: duration/impl/r
+        run: Rscript tests/testthat.R
+      - name: Test time library
+        working-directory: time/impl/r
+        run: Rscript tests/testthat.R
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

@@ -25,6 +25,17 @@ jobs:
             --load test/test-formatter.lisp \
             --eval '(sayable-age-test:run-tests)'
 
+      # The component libraries have no .asd; load their files in order.
+      - name: Test date library
+        working-directory: date/impl/lisp
+        run: sbcl --noinform --non-interactive --load package.lisp --load types.lisp --load formatter.lisp --load load-locales.lisp --load test/test-formatter.lisp --eval '(sayable-date-test:run-tests)'
+      - name: Test duration library
+        working-directory: duration/impl/lisp
+        run: sbcl --noinform --non-interactive --load package.lisp --load types.lisp --load formatter.lisp --load load-locales.lisp --load test/test-formatter.lisp --eval '(sayable-duration-test:run-tests)'
+      - name: Test time library
+        working-directory: time/impl/lisp
+        run: sbcl --noinform --non-interactive --load package.lisp --load types.lisp --load formatter.lisp --load load-locales.lisp --load test/test-formatter.lisp --eval '(sayable-time-test:run-tests)'
+
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests
       # (docs/testing.md).

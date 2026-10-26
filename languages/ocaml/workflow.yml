@@ -23,6 +23,15 @@ jobs:
       - run: opam install . --deps-only --with-test --yes
       - run: opam exec -- dune build
       - run: opam exec -- dune runtest
+      - name: Test date library
+        working-directory: date/impl/ocaml
+        run: opam install . --deps-only --with-test --yes && opam exec -- dune build && opam exec -- dune runtest
+      - name: Test duration library
+        working-directory: duration/impl/ocaml
+        run: opam install . --deps-only --with-test --yes && opam exec -- dune build && opam exec -- dune runtest
+      - name: Test time library
+        working-directory: time/impl/ocaml
+        run: opam install . --deps-only --with-test --yes && opam exec -- dune build && opam exec -- dune runtest
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

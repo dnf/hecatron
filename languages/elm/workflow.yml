@@ -19,6 +19,15 @@ jobs:
           node-version: '22'
       - run: npm install -g elm elm-test
       - run: elm-test
+      - name: Test date library
+        working-directory: date/impl/elm
+        run: elm-test
+      - name: Test duration library
+        working-directory: duration/impl/elm
+        run: elm-test
+      - name: Test time library
+        working-directory: time/impl/elm
+        run: elm-test
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

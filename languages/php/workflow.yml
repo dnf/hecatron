@@ -23,6 +23,15 @@ jobs:
           tools: composer
       - run: composer install --no-interaction --prefer-dist
       - run: composer test
+      - name: Test date library
+        working-directory: date/impl/php
+        run: composer install --no-interaction --prefer-dist && composer test
+      - name: Test duration library
+        working-directory: duration/impl/php
+        run: composer install --no-interaction --prefer-dist && composer test
+      - name: Test time library
+        working-directory: time/impl/php
+        run: composer install --no-interaction --prefer-dist && composer test
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

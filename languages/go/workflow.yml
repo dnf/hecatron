@@ -19,6 +19,16 @@ jobs:
           go-version: "1.21"
       - run: go test -v ./...
 
+      - name: Test date library
+        working-directory: date/impl/go
+        run: go test -v ./...
+      - name: Test duration library
+        working-directory: duration/impl/go
+        run: go test -v ./...
+      - name: Test time library
+        working-directory: time/impl/go
+        run: go test -v ./...
+
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests
       # (docs/testing.md).

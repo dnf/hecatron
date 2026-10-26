@@ -16,6 +16,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: mlugg/setup-zig@v2
       - run: zig build test
+      - name: Test date library
+        working-directory: date/impl/zig
+        run: zig build test
+      - name: Test duration library
+        working-directory: duration/impl/zig
+        run: zig build test
+      - name: Test time library
+        working-directory: time/impl/zig
+        run: zig build test
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests

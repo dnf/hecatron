@@ -22,6 +22,15 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
+      - name: Test date library
+        working-directory: date/impl/typescript
+        run: npm install && npm test
+      - name: Test duration library
+        working-directory: duration/impl/typescript
+        run: npm install && npm test
+      - name: Test time library
+        working-directory: time/impl/typescript
+        run: npm install && npm test
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests
