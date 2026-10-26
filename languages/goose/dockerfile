@@ -7,4 +7,6 @@ RUN GOOSE_VERSION="v2026.3" && \
         tar -xzf /tmp/goose.tar.gz -C /opt/goose --strip-components=1 && \
         rm /tmp/goose.tar.gz && \
         ln -sf /opt/goose/goose /usr/local/bin/goose; \
+    else \
+        echo "Skipping Goose: no Linux $(uname -m) release"; \
     fi
