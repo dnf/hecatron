@@ -6,7 +6,9 @@ install_macos() {
     brew_install janet
 }
 install_linux() {
-    # Janet is not in standard apt repos; build from source
+    # Janet is not in standard apt repos; build from source, with the C
+    # toolchain a fresh machine lacks.
+    { has make && has cc; } || apt_install build-essential
     local ver="1.37.1"
     local tmp
     tmp="$(mktemp -d)"

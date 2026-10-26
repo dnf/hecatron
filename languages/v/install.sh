@@ -15,7 +15,11 @@ _install() {
 }
 
 install_macos() { _install; }
-install_linux() { _install; }
+# V bootstraps with make and the system C compiler, which a fresh Linux box lacks.
+install_linux() {
+    { has make && has cc; } || apt_install build-essential
+    _install
+}
 
 deps() { :; }
 
