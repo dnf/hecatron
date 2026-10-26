@@ -65,6 +65,21 @@ repository can use it.
 Hecatron calls each language's own tools (`cargo`, `go`, `gradle`, `uv`...).
 It doesn't build anything itself, and it doesn't know what your code does.
 
+## Hecatron or ad hoc?
+
+For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
+
+| Ad hoc | With hecatron |
+| --- | --- |
+| Setup docs for 10 toolchains × 2 OSes | `hct doctor --fix` |
+| 10 test commands to remember | `hct test`, all in parallel |
+| CI and Dockerfile kept in sync by hand | `hct workflows`, `hct dockerfile`<br>`hct check` catches drift |
+| Each project fixes toolchain rot itself | Fixed once, tested on every supported distribution |
+
+The cost: a young dependency (0.2), bash 4+ and Python 3.9+, and no Windows.
+Skip it for two or three mainstream languages, or if Bazel or Nx already owns
+your toolchains.
+
 ## Quick start
 
 Hecatron needs bash 4 or later and Python 3.9 or later. macOS ships bash 3.2;
@@ -135,6 +150,7 @@ but expect changes before 1.0.
 | --- | --- |
 | [docs/design.md](docs/design.md) | How hecatron works and why: concepts, configuration, commands, and the decisions behind them |
 | [docs/coverage.md](docs/coverage.md) | Which languages install and work on which platforms |
+| [docs/hecatron-vs-ad-hoc.md](docs/hecatron-vs-ad-hoc.md) | A ten-language library maintained with hecatron and without it |
 | [docs/installers.md](docs/installers.md) | How each language's toolchain is installed on macOS and Linux, and toolchains languages share |
 | [docs/adding-a-language.md](docs/adding-a-language.md) | Writing a language definition |
 | [docs/build-conventions.md](docs/build-conventions.md) | Where each language's build artifacts go |
