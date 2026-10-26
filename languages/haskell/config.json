@@ -5,5 +5,8 @@
   "detect": [
     "*.cabal",
     "stack.yaml"
+  ],
+  "path": [
+    "~/.ghcup/bin"
   ]
 }
