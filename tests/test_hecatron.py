@@ -111,10 +111,12 @@ class ProjectModelTest(Fixture):
         os.makedirs(self.path("tools", "v2", "bin"))
         write(self.path(".hecatron", "languages", "go", "config.json"),
               json.dumps({"path": [self.path("tools", "*", "bin"), "~/surely-not-a-real-dir-xyz"]}))
+        # A language whose definition has no "path" at all, independent of the host.
+        write(self.path(".hecatron", "languages", "fixture", "config.json"), json.dumps({"dependency": "bash"}))
         self.configure()
         p = project.load(self.root)
         self.assertEqual(p.language_path("go"), [self.path("tools", "v1", "bin"), self.path("tools", "v2", "bin")])
-        self.assertEqual(p.language_path("rust"), [])
+        self.assertEqual(p.language_path("fixture"), [])
 
     def test_a_project_can_define_a_new_language(self):
         write(self.path(".hecatron", "languages", "brainfuck", "config.json"), json.dumps({"dependency": "bf"}))
