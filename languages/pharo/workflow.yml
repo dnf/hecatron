@@ -41,20 +41,14 @@ jobs:
       # reference, independently of this language's own tests
       # (docs/testing.md).
       - name: Build CLI
-        # Not yet passing: the Pharo date/duration/time libraries and CLI don't load in current Pharo 12 images yet; fixed in the follow-up spec PR.
-        continue-on-error: true
         if: runner.os != 'Windows'
         working-directory: .
         run: (cd cli/impl/pharo && curl -fsSL https://get.pharo.org/64/${{ matrix.pharo-version }} | bash)
-      - name: CLI harness (single REPL process)
-        # Not yet passing: the Pharo date/duration/time libraries and CLI don't load in current Pharo 12 images yet; fixed in the follow-up spec PR.
-        continue-on-error: true
+      - name: CLI REPL conformance and harness (single REPL process)
         if: runner.os != 'Windows'
         working-directory: .
-        run: bash cli/test-harness.sh cli/impl/pharo/sayable
+        run: python3 cli/check-repl.py cli/impl/pharo/sayable && bash cli/test-harness.sh cli/impl/pharo/sayable
       - name: Fuzz against the Python reference
-        # Not yet passing: the Pharo date/duration/time libraries and CLI don't load in current Pharo 12 images yet; fixed in the follow-up spec PR.
-        continue-on-error: true
         if: runner.os != 'Windows'
         working-directory: .
-        run: python3 cli/fuzz.py --langs pharo -n 2000 --invalid-rate 0
+        run: python3 cli/fuzz.py --langs pharo -n 2000

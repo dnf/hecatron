@@ -45,11 +45,11 @@ jobs:
         if: matrix.component == 'age'
         working-directory: .
         run: cli/impl/goose/sayable version
-      - name: CLI harness (single REPL process)
+      - name: CLI REPL conformance and harness (single REPL process)
         if: matrix.component == 'age'
         working-directory: .
-        run: bash cli/test-harness.sh cli/impl/goose/sayable
+        run: python3 cli/check-repl.py cli/impl/goose/sayable && bash cli/test-harness.sh cli/impl/goose/sayable
       - name: Fuzz against the Python reference
         if: matrix.component == 'age'
         working-directory: .
-        run: python3 cli/fuzz.py --langs goose -n 2000 --invalid-rate 0
+        run: python3 cli/fuzz.py --langs goose -n 2000

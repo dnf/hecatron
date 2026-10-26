@@ -30,13 +30,11 @@ jobs:
         if: runner.os != 'Windows'
         working-directory: .
         run: cli/impl/octave/sayable version
-      - name: CLI harness (single REPL process)
+      - name: CLI REPL conformance and harness (single REPL process)
         if: runner.os != 'Windows'
         working-directory: .
-        run: bash cli/test-harness.sh cli/impl/octave/sayable
+        run: python3 cli/check-repl.py cli/impl/octave/sayable && bash cli/test-harness.sh cli/impl/octave/sayable
       - name: Fuzz against the Python reference
         if: runner.os != 'Windows'
-        # Known library bug: date --with-year crashes in sayable_date_new>format_absolute.
-        continue-on-error: true
         working-directory: .
-        run: python3 cli/fuzz.py --langs octave -n 2000 --invalid-rate 0
+        run: python3 cli/fuzz.py --langs octave -n 2000

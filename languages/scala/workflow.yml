@@ -20,3 +20,32 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew test
+
+      # The CLI is compiled with a Scala 3 scalac (the libraries build with
+      # Gradle); same version as the libraries' scala3-library dependency
+      - name: Install scalac
+        if: runner.os != 'Windows'
+        working-directory: .
+        env:
+          SCALA_VERSION: 3.6.4
+        run: |
+          curl -fsSL -o "${RUNNER_TEMP}/scala3.tar.gz" \
+            "https://github.com/scala/scala3/releases/download/${SCALA_VERSION}/scala3-${SCALA_VERSION}.tar.gz"
+          tar -xzf "${RUNNER_TEMP}/scala3.tar.gz" -C "${RUNNER_TEMP}"
+          echo "${RUNNER_TEMP}/scala3-${SCALA_VERSION}/bin" >> "${GITHUB_PATH}"
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: cli/impl/scala/sayable version
+      - name: CLI REPL conformance and harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/check-repl.py cli/impl/scala/sayable && bash cli/test-harness.sh cli/impl/scala/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs scala -n 2000

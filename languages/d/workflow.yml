@@ -29,13 +29,11 @@ jobs:
         if: runner.os != 'Windows' && matrix.dc == 'ldc-latest'
         working-directory: .
         run: bash cli/impl/d/build.sh
-      - name: CLI harness (single REPL process)
+      - name: CLI REPL conformance and harness (single REPL process)
         if: runner.os != 'Windows' && matrix.dc == 'ldc-latest'
         working-directory: .
-        run: bash cli/test-harness.sh cli/impl/d/sayable
+        run: python3 cli/check-repl.py cli/impl/d/sayable && bash cli/test-harness.sh cli/impl/d/sayable
       - name: Fuzz against the Python reference
         if: runner.os != 'Windows' && matrix.dc == 'ldc-latest'
-        # Known library bug: weeks+days off by one across some month ends.
-        continue-on-error: true
         working-directory: .
-        run: python3 cli/fuzz.py --langs d -n 2000 --invalid-rate 0
+        run: python3 cli/fuzz.py --langs d -n 2000

@@ -31,11 +31,11 @@ jobs:
         if: runner.os != 'Windows'
         working-directory: .
         run: opam exec -- cli/impl/ocaml/sayable version
-      - name: CLI harness (single REPL process)
+      - name: CLI REPL conformance and harness (single REPL process)
         if: runner.os != 'Windows'
         working-directory: .
-        run: opam exec -- bash cli/test-harness.sh cli/impl/ocaml/sayable
+        run: opam exec -- python3 cli/check-repl.py cli/impl/ocaml/sayable && opam exec -- bash cli/test-harness.sh cli/impl/ocaml/sayable
       - name: Fuzz against the Python reference
         if: runner.os != 'Windows'
         working-directory: .
-        run: opam exec -- python3 cli/fuzz.py --langs ocaml -n 2000 --invalid-rate 0
+        run: opam exec -- python3 cli/fuzz.py --langs ocaml -n 2000

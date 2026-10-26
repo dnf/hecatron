@@ -25,13 +25,11 @@ jobs:
         if: runner.os != 'Windows'
         working-directory: .
         run: cli/impl/c/sayable version
-      - name: CLI harness (single REPL process)
+      - name: CLI REPL conformance and harness (single REPL process)
         if: runner.os != 'Windows'
         working-directory: .
-        run: bash cli/test-harness.sh cli/impl/c/sayable
+        run: python3 cli/check-repl.py cli/impl/c/sayable && bash cli/test-harness.sh cli/impl/c/sayable
       - name: Fuzz against the Python reference
         if: runner.os != 'Windows'
-        # Known library bug: date --with-year is not implemented in the C library.
-        continue-on-error: true
         working-directory: .
-        run: python3 cli/fuzz.py --langs c -n 2000 --invalid-rate 0
+        run: python3 cli/fuzz.py --langs c -n 2000

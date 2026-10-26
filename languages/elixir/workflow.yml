@@ -28,13 +28,11 @@ jobs:
         if: runner.os != 'Windows'
         working-directory: .
         run: (cd cli/impl/elixir && mix deps.get && mix compile)
-      - name: CLI harness (single REPL process)
+      - name: CLI REPL conformance and harness (single REPL process)
         if: runner.os != 'Windows'
         working-directory: .
-        run: bash cli/test-harness.sh cli/impl/elixir/sayable
+        run: python3 cli/check-repl.py cli/impl/elixir/sayable && bash cli/test-harness.sh cli/impl/elixir/sayable
       - name: Fuzz against the Python reference
         if: runner.os != 'Windows'
-        # Known library bug: since --short drops hours for some locales.
-        continue-on-error: true
         working-directory: .
-        run: python3 cli/fuzz.py --langs elixir -n 2000 --invalid-rate 0
+        run: python3 cli/fuzz.py --langs elixir -n 2000

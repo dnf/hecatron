@@ -29,13 +29,11 @@ jobs:
         if: runner.os != 'Windows'
         working-directory: .
         run: cli/impl/haskell/sayable version
-      - name: CLI harness (single REPL process)
+      - name: CLI REPL conformance and harness (single REPL process)
         if: runner.os != 'Windows'
         working-directory: .
-        run: bash cli/test-harness.sh cli/impl/haskell/sayable
+        run: python3 cli/check-repl.py cli/impl/haskell/sayable && bash cli/test-harness.sh cli/impl/haskell/sayable
       - name: Fuzz against the Python reference
         if: runner.os != 'Windows'
-        # Known library bug: relative --short is wrong for kw.
-        continue-on-error: true
         working-directory: .
-        run: python3 cli/fuzz.py --langs haskell -n 2000 --invalid-rate 0
+        run: python3 cli/fuzz.py --langs haskell -n 2000

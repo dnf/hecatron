@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: logtalk-actions/setup-swi-prolog@master
-      - run: swipl -g "run_tests, halt(0)" -t "halt(1)" tests/test_formatter.pl
+      - run: swipl -g "run_tests, halt(0)" -t "halt(1)" test_format_age.pl
 
       # Check the real CLI against the canonical spec and the Python
       # reference, independently of this language's own tests
@@ -24,13 +24,11 @@ jobs:
         if: runner.os != 'Windows'
         working-directory: .
         run: cli/impl/prolog/sayable version
-      - name: CLI harness (single REPL process)
+      - name: CLI REPL conformance and harness (single REPL process)
         if: runner.os != 'Windows'
         working-directory: .
-        run: bash cli/test-harness.sh cli/impl/prolog/sayable
+        run: python3 cli/check-repl.py cli/impl/prolog/sayable && bash cli/test-harness.sh cli/impl/prolog/sayable
       - name: Fuzz against the Python reference
         if: runner.os != 'Windows'
-        # Known library bug: date --short abbreviates month names for cs, fi, sk, uk.
-        continue-on-error: true
         working-directory: .
-        run: python3 cli/fuzz.py --langs prolog -n 2000 --invalid-rate 0
+        run: python3 cli/fuzz.py --langs prolog -n 2000

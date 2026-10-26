@@ -20,3 +20,31 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew test
+
+      # The CLI is compiled with kotlinc (the libraries build with Gradle)
+      - name: Install kotlinc
+        if: runner.os != 'Windows'
+        working-directory: .
+        env:
+          KOTLIN_VERSION: 2.3.10
+        run: |
+          curl -fsSL -o "${RUNNER_TEMP}/kotlin-compiler.zip" \
+            "https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN_VERSION}/kotlin-compiler-${KOTLIN_VERSION}.zip"
+          unzip -q "${RUNNER_TEMP}/kotlin-compiler.zip" -d "${RUNNER_TEMP}"
+          echo "${RUNNER_TEMP}/kotlinc/bin" >> "${GITHUB_PATH}"
+
+      # Check the real CLI against the canonical spec and the Python
+      # reference, independently of this language's own tests
+      # (docs/testing.md).
+      - name: Build CLI
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: cli/impl/kotlin/sayable version
+      - name: CLI REPL conformance and harness (single REPL process)
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/check-repl.py cli/impl/kotlin/sayable && bash cli/test-harness.sh cli/impl/kotlin/sayable
+      - name: Fuzz against the Python reference
+        if: runner.os != 'Windows'
+        working-directory: .
+        run: python3 cli/fuzz.py --langs kotlin -n 2000

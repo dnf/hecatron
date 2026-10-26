@@ -25,11 +25,11 @@ jobs:
         if: runner.os != 'Windows'
         working-directory: .
         run: cli/impl/pascal/sayable version
-      - name: CLI harness (single REPL process)
+      - name: CLI REPL conformance and harness (single REPL process)
         if: runner.os != 'Windows'
         working-directory: .
-        run: bash cli/test-harness.sh cli/impl/pascal/sayable
+        run: python3 cli/check-repl.py cli/impl/pascal/sayable && bash cli/test-harness.sh cli/impl/pascal/sayable
       - name: Fuzz against the Python reference
         if: runner.os != 'Windows'
         working-directory: .
-        run: python3 cli/fuzz.py --langs pascal -n 2000 --invalid-rate 0
+        run: python3 cli/fuzz.py --langs pascal -n 2000
