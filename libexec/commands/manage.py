@@ -74,7 +74,9 @@ def run_definition_script(project, lang: str, script: str) -> int:
         print(f"{lang}: no {script}", file=sys.stderr)
         return 1
     env = hook_env(project)
-    env["PATH"] = os.pathsep.join(project.language_path(lang) + [env.get("PATH", "")])
+    environment = project.language_env(lang)
+    env.update(environment["vars"])
+    env["PATH"] = os.pathsep.join(environment["path"] + [env.get("PATH", "")])
     return subprocess.run(["bash", path], env=env, cwd=project.root).returncode
 
 
@@ -312,6 +314,10 @@ def cmd_check(args) -> int:
     ok &= write_workflows(project, check=True)
     for problem in workflow_coverage_problems(project):
         print(problem)
+        ok = False
+    for lang, component, source, pinned, wanted in project.version_conflicts():
+        print(f"{lang} in {component}: {source[len('pin:'):]} pins {pinned or 'no version'}, "
+              f"but the project's version is {wanted} (the pin file wins; make them agree)")
         ok = False
     if ok:
         print("Generated files are up to date and every workflow covers every component.")

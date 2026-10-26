@@ -210,10 +210,11 @@ first of:
 
 `config.json` is merged instead: built-in keys, then the project's keys on top.
 
-A definition's optional `path` lists toolchain directories that aren't on
-PATH in every shell (`~/.cargo/bin` from rustup, `~/.local/bin` from uv,
-`~/.local/share/alire/toolchains/*/bin` for Ada's GNAT), with `~` expanded
-and globs allowed. Existing entries go on PATH only for that language's own
+A definition's optional `path` lists toolchain directories that aren't on PATH
+in every shell (`~/.cargo/bin` from rustup, `~/.local/bin` from uv,
+`~/.local/share/alire/toolchains/*/bin` for Ada's GNAT), with `~` expanded and
+globs allowed; an entry can also name the installed version's directory,
+`{home}/bin` (§18). Existing entries go on PATH only for that language's own
 work (its hooks, doctor checks and the re-check after `--fix`, install and
 uninstall, and dependency detection), and are expanded each time, so a
 directory an installer just created counts. They are never added globally:
@@ -534,14 +535,28 @@ surprise.
   through the ecosystem's version manager where it has one (uv, rustup,
   ghcup, .NET's side-by-side SDKs, `openjdk-N` or Temurin, Go's toolchain
   downloads), and never replace a version another project may use.
+- **What's installed.** A definition's optional `installed.sh` prints one
+  `version<TAB>home` line per installed version, offline (each ecosystem
+  already keeps a list: `rustup toolchain list`, `dotnet --list-sdks`, uv's,
+  ghcup's, the JDKs under `/usr/lib/jvm`). The core runs it with the
+  language's static `path` entries on PATH and stdin closed, and treats a
+  failure, or a run over 30 seconds, as nothing installed. A component's
+  installed version is the newest line its spec matches.
 - **Per-language environment.** The `path` mechanism (§7) becomes a
-  per-language environment: for the resolved version it gives PATH entries
-  and variables (`JAVA_HOME`, `DOTNET_ROOT`...), applied wherever `path` is
-  today. It is per component, since components can resolve to different
-  versions: `each-component.sh` applies the component's environment before
-  running its hook, and `hecatron env -c COMPONENT` prints it for a
-  project's own recipes. A version that can't be found leaves the
-  environment unchanged, and the doctor reports it.
+  per-language environment. `path` entries and the new `env` variables may
+  name `{home}`, `{version}`, `{major}` and `{minor}` of the installed
+  version (`"path": ["{home}/bin"]`, `"env": {"JAVA_HOME": "{home}"}`), and
+  are applied wherever `path` was. It is per component, since components can
+  resolve to different versions: `each-component.sh` applies the
+  component's environment before running its hook, and
+  `hecatron env LANG [-c COMPONENT]` prints it as shell exports for a
+  project's own recipes. With no installed version matching (or no
+  `installed.sh`), entries and variables naming one are left out, static
+  entries still apply, and the doctor reports it.
+- **Queries.** `project.py version LANG [COMPONENT]` prints the spec, where it
+  came from and the installed match; `project.py versions LANG` prints each
+  distinct spec the components resolve to with its sources (`-` for a pin
+  file naming no version), so an installer installs each one.
 - **Doctor.** `doctor` checks that the resolved version is installed and is
   the one a language's commands run; `--fix` installs it. A version past its
   upstream end of life is a warning, not a failure.

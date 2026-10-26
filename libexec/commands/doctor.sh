@@ -45,9 +45,10 @@ fi
 # Problems with one language, one per line; nothing when it is healthy.
 _problems() (
     local _lang="$1" _dep _lint _script
-    # In a subshell: the language's "path" directories, expanded now so a
-    # directory the installer just created counts.
-    _use_lang_path "${_lang}"
+    # In a subshell: the language's environment (its version's PATH entries
+    # and variables), worked out now so a toolchain the installer just added
+    # counts.
+    eval "$(python3 "${HECATRON_HOME}/libexec/lib/project.py" env "${_lang}")" || true
     _dep="$(_dep "${_lang}")"
     _lint="$(_lint_dep "${_lang}")"
     if [ -n "${_dep}" ] && ! command -v "${_dep}" >/dev/null 2>&1; then
