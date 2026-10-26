@@ -1,13 +1,13 @@
 # Hecatron design
 
-Status: **draft for review**. This repository was split out of
+Status: **accepted** (decisions in §17). This repository was split out of
 [dnf/sayable](https://github.com/dnf/sayable), where hecatron grew up as its
 `.hecatron/` directory. Nothing here runs standalone yet; this document is the
 plan for turning the extracted scripts into a tool you install once and use in
 any repository:
 
 ```bash
-brew install hecatron          # (initially: brew install dnf/tap/hecatron)
+brew install dnf/tap/hecatron  # later, from homebrew-core: brew install hecatron
 hecatron init                  # set up the current repository
 hecatron doctor --fix          # install and repair the toolchains it needs
 hecatron test                  # every language's suites, in parallel
@@ -155,8 +155,7 @@ change under review.
 
 ## 6. Project configuration
 
-`.hecatron/config.json` (JSON, read with the Python standard library; see
-open question 1):
+`.hecatron/config.json` (JSON, read with the Python standard library):
 
 ```json
 {
@@ -392,17 +391,20 @@ that repository's scripts, exactly like running its justfile or Makefile, so
 the same trust applies. Hecatron never runs hooks on its own (no shell
 integration, no git hooks).
 
-## 17. Open questions
+## 17. Decisions
 
-1. **Config format.** JSON keeps zero dependencies (Python 3.9 on older Macs
-   has no TOML reader). TOML is friendlier to edit. JSON proposed.
-2. **Name for components.** Sayable calls them libraries; other projects may
-   have services or packages. "components" proposed.
-3. **Primary interface.** Proposed: `hecatron` is the interface, and a project
-   justfile can delegate to it. Alternative: hecatron stays a library of
-   scripts behind generated just recipes.
-4. **Default hooks.** Ship conventional defaults (proposed), or require every
-   project to write its hooks?
-5. **Tap name.** `dnf/homebrew-tap` (proposed) or a hecatron-specific tap.
-6. **Language definitions' home.** In this repository (proposed), or a
-   separate repository projects can pin independently of the CLI.
+Settled on 2026-10-26:
+
+1. **Config format: JSON.** `.hecatron/config.json` and `local.json`, read
+   with the Python standard library, so nothing beyond Python 3.9 is needed.
+2. **Name: components.** Config key `components`, path placeholder
+   `{component}`, hook argument `$1` / `HECATRON_COMPONENT`.
+3. **Primary interface: the `hecatron` CLI.** It owns arguments, help and
+   dispatch; a project's justfile may delegate to it (`hecatron init
+   --justfile`).
+4. **Default hooks ship with hecatron.** Each language's standard
+   test/lint/build/clean commands apply unless a project overrides them.
+5. **Tap: `dnf/homebrew-tap`.** `brew install dnf/tap/hecatron` until
+   homebrew-core accepts the formula.
+6. **Language definitions live in this repository**, versioned and released
+   with the CLI.
