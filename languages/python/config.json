@@ -7,6 +7,33 @@
     "setup.py"
   ],
   "path": [
+    "{home}/bin",
     "~/.local/bin"
-  ]
+  ],
+  "version": "=3.15.1",
+  "track": "stable",
+  "pinFiles": [
+    {
+      "file": ".python-version",
+      "format": "python-version"
+    },
+    {
+      "file": ".tool-versions",
+      "format": "tool-versions",
+      "key": "python"
+    },
+    {
+      "file": "mise.toml",
+      "format": "mise",
+      "key": "python"
+    },
+    {
+      "file": ".mise.toml",
+      "format": "mise",
+      "key": "python"
+    }
+  ],
+  "env": {
+    "UV_PYTHON": "{home}/bin/python3"
+  }
 }
