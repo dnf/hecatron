@@ -24,9 +24,6 @@ if ! _hook="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" resolve "${_lang
     exit 1
 fi
 
-# The language's own toolchain directories (config.json "path"), for its hooks only.
-_use_lang_path "${_lang}"
-
 _ran=0
 _failed=()
 while IFS=$'\t' read -r _component _dir; do
@@ -35,7 +32,13 @@ while IFS=$'\t' read -r _component _dir; do
     fi
     _ran=$((_ran + 1))
     echo "=== ${_action} ${_component} (${_lang}) ==="
-    if ! (cd "${_dir}" && HECATRON_COMPONENT="${_component}" HECATRON_LANG="${_lang}" \
+    # The language's environment for this component's version (config.json
+    # "path" and "env", docs/design.md §7, §18), for its hooks only.
+    if ! _env="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" env "${_lang}" "${_component}")"; then
+        _failed+=("${_component}")
+        continue
+    fi
+    if ! (eval "${_env}" && cd "${_dir}" && HECATRON_COMPONENT="${_component}" HECATRON_LANG="${_lang}" \
             bash "${_hook}" "${_component}"); then
         _failed+=("${_component}")
     fi

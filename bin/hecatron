@@ -53,6 +53,7 @@ Generated files:
 Project:
   parallel <name> "job"...   Run your own jobs (just recipes by default) with the live display
   env                        Print shell code for a project's own recipes: eval "\$(hecatron env)"
+  env LANG [-c COMPONENT]    Print a language's environment (its version's PATH and variables)
                              gives HECATRON_* variables, the language lists and helpers
                              (_name, _check, _dep_available, _lang_grid, _ada_env, ...)
   version <version>          Bump versions through each language's version.sh
@@ -96,6 +97,14 @@ case "${_command}" in
     metadata)
         exec bash "${HECATRON_HOME}/libexec/metadata/set.sh" "$@" ;;
     env)
+        # With a language: that language's environment for one component
+        # (docs/design.md §18), e.g. eval "$(hecatron env java -c age)".
+        if [ "$#" -gt 0 ]; then
+            _lang="$1"; shift
+            _component=()
+            if [ "${1:-}" = "-c" ] && [ -n "${2:-}" ]; then _component=("$2"); fi
+            exec python3 "${HECATRON_HOME}/libexec/lib/project.py" env "${_lang}" ${_component[@]+"${_component[@]}"}
+        fi
         printf 'export HECATRON_HOME=%q\n' "${HECATRON_HOME}"
         printf 'export HECATRON_ROOT=%q\n' "${HECATRON_ROOT}"
         printf 'source %q\n' "${HECATRON_HOME}/libexec/lib/helpers.sh"
