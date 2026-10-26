@@ -1,4 +1,6 @@
-# Go
+# Go: the latest release, as install.sh installs it (golangci-lint needs a
+# recent Go)
 RUN ARCH="$(dpkg --print-architecture)" && \
-    curl -fsSL "https://go.dev/dl/go1.21.13.linux-${ARCH}.tar.gz" | tar -C /usr/local -xz
+    VERSION="$(curl -fsSL 'https://go.dev/VERSION?m=text' | head -1)" && \
+    curl -fsSL "https://go.dev/dl/${VERSION}.linux-${ARCH}.tar.gz" | tar -C /usr/local -xz
 ENV PATH="/usr/local/go/bin:${PATH}"
