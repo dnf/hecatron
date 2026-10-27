@@ -46,8 +46,10 @@ except (ValueError, AttributeError):
 # it, into node_pm: Corepack for pnpm and Yarn, which runs the version
 # packageManager names (or its own default) without installing it globally;
 # else the tool itself.
+# shellcheck disable=SC2034 # node_pm is read by the hooks and installers that source this
 node_pm_name=npm
 node_pm=(npm)
+# shellcheck disable=SC2034 # as above
 node_pm_command() {
     node_pm_name="$(node_package_manager)"
     case "${node_pm_name}" in
