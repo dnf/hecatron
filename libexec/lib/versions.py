@@ -238,6 +238,14 @@ def _sdkmanrc(text, key):
     return NOT_PINNED
 
 
+def _python_classifiers(text, key):
+    # The trove classifiers a pyproject.toml, setup.cfg or setup.py lists
+    # ("Programming Language :: Python :: 3.14"): the newest Python the
+    # project says it supports, a line (3.14), not a pin (docs/design.md §18).
+    found = re.findall(r"Programming Language :: Python :: (\d+\.\d+)\b", text)
+    return _plain(newest(found)) if found else NOT_PINNED
+
+
 FORMATS = {
     "python-version": _python_version,
     "nvmrc": _node_version,
@@ -255,6 +263,7 @@ FORMATS = {
     "tool-versions": _tool_versions,
     "mise": _mise,
     "sdkmanrc": _sdkmanrc,
+    "python-classifiers": _python_classifiers,
 }
 
 

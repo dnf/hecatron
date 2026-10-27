@@ -16,6 +16,8 @@ Shell queries:
                                 resolve to, with its sources
     env <lang> [component]      print shell exports for the language's environment
     missing-versions <lang>     print each component whose version isn't installed
+    version-notes <lang>        print each component on the newest version it
+                                supports rather than the default
     tasks <action>              print the project's extra tasks for an action
     task <action> <name>        print one task's command
 """
@@ -250,10 +252,16 @@ class Project:
         """The project's "version"; for a language only the project defines, its definition's."""
         return self._layer(lang, False).get("version")
 
-    def _pin(self, lang: str, component: str):
-        """(spec, source) from the nearest pin file, searching from the
-        component's implementation directory up to the project root."""
-        entries = self._pin_files(lang)
+    def _support_files(self, lang: str) -> list[dict]:
+        """Files saying which versions a component supports, the newest of
+        which it gets when the default is newer (docs/design.md §18)."""
+        return list(self._layer(lang, True).get("supportFiles", [])) + list(self._layer(lang, False).get("supportFiles", []))
+
+    def _pin(self, lang: str, component: str, entries: list[dict] | None = None, kind: str = "pin"):
+        """(spec, source) from the nearest pin file (or other entries),
+        searching from the component's implementation directory up to the
+        project root."""
+        entries = self._pin_files(lang) if entries is None else entries
         if not entries:
             return versions.NOT_PINNED, None
         directory = self.impl_dir(component, lang)
@@ -264,15 +272,17 @@ class Project:
                     with open(path, encoding="utf-8") as f:
                         spec = versions.read_pin(entry["format"], f.read(), entry.get("key"))
                     if spec is not versions.NOT_PINNED:
-                        return spec, "pin:" + os.path.relpath(path, self.root)
+                        return spec, f"{kind}:" + os.path.relpath(path, self.root)
             if os.path.normpath(directory) == os.path.normpath(self.root) or len(directory) <= len(self.root):
                 return versions.NOT_PINNED, None
             directory = os.path.dirname(directory)
 
     def resolve_version(self, lang: str, component: str | None = None) -> dict:
         """The version a component uses: its nearest pin file, else the
-        project's "version", else the definition's default. spec is None
-        when a pin file names no version ("stable"), or nothing gives one."""
+        project's "version", else the definition's default, or the newest
+        line the component says it supports when the default is newer
+        (Python's classifiers). spec is None when a pin file names no version
+        ("stable"), or nothing gives one."""
         component = component or self._first_component(lang)
         default = self.default_version(lang)
         spec, source = self._pin(lang, component)
@@ -280,9 +290,20 @@ class Project:
             spec, source = self._project_version(lang), "project"
             if spec is None:
                 spec, source = default, "default" if default is not None else None
+                if default is not None:
+                    supported, where = self._pin(lang, component, self._support_files(lang), "supports")
+                    if supported not in (None, versions.NOT_PINNED) and self._older_line(supported, default):
+                        spec, source = supported, where
         if spec is not None:
             versions.Spec(spec)
         return {"spec": spec, "source": source, "exact": spec is not None and spec.startswith("=")}
+
+    @staticmethod
+    def _older_line(supported: str, default: str) -> bool:
+        """Whether the line a component supports up to (3.14) is older than
+        the default's (=3.15.1)."""
+        line = versions.Spec(supported).numbers
+        return line < versions.Spec(default).numbers[:len(line)]
 
     def _first_component(self, lang: str) -> str:
         dirs = self.impl_dirs(lang)
@@ -368,6 +389,17 @@ class Project:
             if resolved["spec"] is not None and self.installed_version(lang, component) is None:
                 missing.append((component, resolved["spec"], resolved["source"]))
         return missing
+
+    def version_notes(self, lang: str) -> list[tuple[str, str, str]]:
+        """(component, spec, source) for each component that isn't on the
+        default because of the versions it supports: worth saying, since
+        nothing the project pinned chose it."""
+        notes = []
+        for component in [c for c, _ in self.impl_dirs(lang)] or [self.components[0]]:
+            resolved = self.resolve_version(lang, component)
+            if (resolved["source"] or "").startswith("supports:"):
+                notes.append((component, resolved["spec"], resolved["source"]))
+        return notes
 
     def _static_path(self, lang: str) -> list[str]:
         """"path" entries that need no resolved version."""
@@ -522,6 +554,9 @@ def _query(project: Project, query: str, args: list[str]) -> int:
         print("\t".join([resolved["spec"] or "-", resolved["source"] or "-", *(match or ("-", "-"))]))
     elif query == "missing-versions" and len(args) == 1:
         for component, spec, source in project.missing_versions(args[0]):
+            print(f"{component}\t{spec}\t{source}")
+    elif query == "version-notes" and len(args) == 1:
+        for component, spec, source in project.version_notes(args[0]):
             print(f"{component}\t{spec}\t{source}")
     elif query == "versions" and len(args) == 1:
         for spec, sources in project.versions(args[0]):

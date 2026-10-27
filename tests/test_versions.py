@@ -67,6 +67,13 @@ class PinFormatTest(unittest.TestCase):
         self.assertIsNone(self.read("python-version", "system\n"))
         self.assertIsNone(self.read("rust-toolchain", "stable\n"))
 
+    def test_python_classifiers_give_the_newest_listed_line(self):
+        pyproject = ('classifiers = [\n  "Programming Language :: Python :: 3",\n'
+                     '  "Programming Language :: Python :: 3.9",\n  "Programming Language :: Python :: 3.14",\n'
+                     '  "Programming Language :: Python :: 3.10",\n]\n')
+        self.assertEqual(self.read("python-classifiers", pyproject), "3.14")
+        self.assertIs(self.read("python-classifiers", 'requires-python = ">=3.10"\n'), versions.NOT_PINNED)
+
     def test_rust_toolchain_reads_both_layouts(self):
         self.assertEqual(self.read("rust-toolchain", "1.80.1\n"), "=1.80.1")
         toml = '[toolchain]\nchannel = "1.80.1"\ncomponents = ["clippy"]\n'
@@ -196,6 +203,32 @@ class ResolutionTest(VersionFixture):
         self.assertEqual(self.load().versions("tool"),
                          [("1.8", ["pin:a/tool/.tool-version"]), ("=2.0.0", ["default"])])
 
+    def supports(self, path: str, *lines: str) -> None:
+        self.define(version="=2.0.0", pinFiles=[{"file": ".tool-version", "format": "python-version"}],
+                    supportFiles=[{"file": "pyproject.toml", "format": "python-classifiers"}])
+        write(self.path(path), "".join(f'"Programming Language :: Python :: {line}",\n' for line in lines))
+
+    def test_a_component_gets_the_newest_line_it_supports_when_the_default_is_newer(self):
+        self.supports("a/tool/pyproject.toml", "1.8", "1.9")
+        p = self.load()
+        self.assertEqual(p.resolve_version("tool", "a"),
+                         {"spec": "1.9", "source": "supports:a/tool/pyproject.toml", "exact": False})
+        self.assertEqual(p.resolve_version("tool", "b")["source"], "default")
+        self.assertEqual(p.version_notes("tool"), [("a", "1.9", "supports:a/tool/pyproject.toml")])
+
+    def test_supporting_the_defaults_line_or_newer_keeps_the_default(self):
+        self.supports("a/tool/pyproject.toml", "1.9", "2.0")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "=2.0.0")
+        self.supports("a/tool/pyproject.toml", "2.1")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "=2.0.0")
+
+    def test_a_pin_or_project_version_beats_what_a_component_supports(self):
+        self.supports("a/tool/pyproject.toml", "1.8")
+        write(self.path("a", "tool", ".tool-version"), "2.0\n")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "2.0")
+        self.override(version="1.5")
+        self.assertEqual(self.load().resolve_version("tool", "b")["spec"], "1.5")
+
     def test_check_reports_a_pin_that_disagrees_with_the_project(self):
         self.override(version="1.9")
         write(self.path("a", "tool", ".tool-version"), "1.8\n")
@@ -239,6 +272,15 @@ class DoctorTest(VersionFixture):
         self.installed("1.0.4\t/opt/tool-1.0.4", "2.0.0\t/opt/tool-2.0.0")
         result = self.doctor()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_doctor_says_when_a_component_is_on_the_line_it_supports(self):
+        self.define(version="=2.0.0", dependency="bash",
+                    supportFiles=[{"file": "pyproject.toml", "format": "python-classifiers"}])
+        write(self.path("b", "tool", "pyproject.toml"), '"Programming Language :: Python :: 1.9",\n')
+        self.installed("1.9.2\t/opt/tool-1.9.2", "2.0.0\t/opt/tool-2.0.0")
+        result = self.doctor()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("b: tool 1.9, the newest b/tool/pyproject.toml supports", result.stdout)
 
     def test_the_default_takes_any_version_on_its_release_line(self):
         # A machine with another patch of the default's line needs no second copy.
@@ -408,7 +450,8 @@ class ShippedDefinitionsTest(unittest.TestCase):
             if not os.path.isfile(path):
                 continue
             with open(path, encoding="utf-8") as f:
-                for entry in json.load(f).get("pinFiles", []):
+                config = json.load(f)
+                for entry in config.get("pinFiles", []) + config.get("supportFiles", []):
                     self.assertIn(entry["format"], versions.FORMATS, f"{lang}: {entry}")
 
 
