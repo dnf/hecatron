@@ -9,7 +9,9 @@
 # adds a line sourcing it to the shell startup files, as rustup and uv do:
 # ~/.profile always; ~/.bashrc, ~/.bash_profile, ~/.bash_login, ~/.zshrc and
 # ~/.zshenv where they exist; and fish's conf.d. Run again to update; it
-# never adds a line twice. HECATRON_NO_MODIFY_PATH=1 leaves startup files
+# never adds a line twice. At a release, it also downloads that release's Go
+# binary for this machine, which bin/hecatron then runs (checksum-verified;
+# HECATRON_NO_GO=1 at run time keeps to the scripts). HECATRON_NO_MODIFY_PATH=1 leaves startup files
 # alone.
 #
 # Run from a clone (sourced or not), it uses that clone where it is.
@@ -136,6 +138,47 @@ _hecatron_fetch() {
     fi
 }
 
+# The Go binary for this machine (docs/design.md §19) from the release the
+# install is at, checksum-verified, with the commit it belongs to; bin/hecatron
+# runs it at that commit only. Not at a release (a branch, a clone), an
+# unsupported platform, or a failed download: none, and bin/hecatron runs as
+# before.
+_hecatron_binary() {
+    _hecatron_go="$1/bin/.hecatron-go"
+    rm -f "${_hecatron_go}" "${_hecatron_go}.commit"
+    _hecatron_tag="$(git -C "$1" describe --tags --exact-match 2>/dev/null)" || return 0
+    case "$(uname -s)" in
+        Darwin) _hecatron_os=darwin ;;
+        Linux) _hecatron_os=linux ;;
+        *) return 0 ;;
+    esac
+    case "$(uname -m)" in
+        x86_64 | amd64) _hecatron_arch=amd64 ;;
+        arm64 | aarch64) _hecatron_arch=arm64 ;;
+        *) return 0 ;;
+    esac
+    _hecatron_asset="hecatron-${_hecatron_os}-${_hecatron_arch}"
+    _hecatron_url="${HECATRON_REPO:-https://github.com/dnf/hecatron}/releases/download/${_hecatron_tag}"
+    _hecatron_tmp="$(mktemp -d)" || return 0
+    if _hecatron_retry curl -fsSL -o "${_hecatron_tmp}/${_hecatron_asset}" "${_hecatron_url}/${_hecatron_asset}" &&
+        _hecatron_retry curl -fsSL -o "${_hecatron_tmp}/SHA256SUMS" "${_hecatron_url}/SHA256SUMS"; then
+        _hecatron_want="$(awk -v f="${_hecatron_asset}" '$2 == f {print $1}' "${_hecatron_tmp}/SHA256SUMS")"
+        _hecatron_got="$( (sha256sum "${_hecatron_tmp}/${_hecatron_asset}" 2>/dev/null ||
+            shasum -a 256 "${_hecatron_tmp}/${_hecatron_asset}") | cut -d' ' -f1)"
+        if [ -n "${_hecatron_want}" ] && [ "${_hecatron_want}" = "${_hecatron_got}" ]; then
+            chmod +x "${_hecatron_tmp}/${_hecatron_asset}" &&
+                mv "${_hecatron_tmp}/${_hecatron_asset}" "${_hecatron_go}" &&
+                git -C "$1" rev-parse HEAD > "${_hecatron_go}.commit" &&
+                _hecatron_say "Installed the ${_hecatron_os}-${_hecatron_arch} binary for ${_hecatron_tag}"
+        else
+            _hecatron_say "The ${_hecatron_tag} binary's checksum didn't match; using the scripts instead" >&2
+        fi
+    else
+        _hecatron_say "No ${_hecatron_tag} binary for ${_hecatron_os}-${_hecatron_arch}; using the scripts instead" >&2
+    fi
+    rm -rf "${_hecatron_tmp}"
+}
+
 # ~/.hecatron/env (sh, bash, zsh) and env.fish: put bin/ on PATH once.
 _hecatron_write_env() {
     _hecatron_bin="$1/bin"
@@ -203,6 +246,7 @@ _hecatron_install() {
         _hecatron_fail "${_hecatron_target} has no bin/hecatron"
         return 1
     }
+    _hecatron_binary "${_hecatron_target}"
     _hecatron_write_env "${_hecatron_target}" || return 1
     if [ "${HECATRON_NO_MODIFY_PATH:-0}" != 1 ]; then
         _hecatron_modify_path "${_hecatron_target}" || return 1
@@ -230,10 +274,11 @@ fi
 _hecatron_install
 _hecatron_status=$?
 unset -f _hecatron_say _hecatron_fail _hecatron_retry _hecatron_sudo _hecatron_python_ok _hecatron_macos_clt \
-    _hecatron_linux_packages _hecatron_prerequisites _hecatron_script_dir _hecatron_fetch _hecatron_write_env \
+    _hecatron_linux_packages _hecatron_prerequisites _hecatron_script_dir _hecatron_fetch _hecatron_binary _hecatron_write_env \
     _hecatron_add_line _hecatron_modify_path _hecatron_install
 unset _hecatron_src _hecatron_dir _hecatron_repo _hecatron_version _hecatron_bin _hecatron_file \
     _hecatron_line _hecatron_env_line _hecatron_rc _hecatron_here _hecatron_target _hecatron_sourced \
-    _hecatron_flag _hecatron_label _hecatron_missing _hecatron_try
+    _hecatron_flag _hecatron_label _hecatron_missing _hecatron_try _hecatron_go _hecatron_tag _hecatron_os \
+    _hecatron_arch _hecatron_asset _hecatron_url _hecatron_tmp _hecatron_want _hecatron_got
 # Sourced: hand back the status without leaving the user's shell; run: exit with it.
 return "${_hecatron_status}" 2>/dev/null || exit "${_hecatron_status}"

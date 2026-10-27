@@ -1016,6 +1016,15 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
 
 ### Migration
 
+**Shipping the binary (done).** The release workflow
+(`.github/workflows/release.yml`) builds the binary for macOS, Linux and
+Windows on x86_64 and arm64 when a release is published and attaches it with
+`SHA256SUMS`. `install.sh`, at a release, downloads the one for its machine,
+checks its checksum and records the commit it belongs to; `bin/hecatron`
+runs it only at that commit, so a clone on a branch, a platform without a
+binary or a failed download keeps to the scripts. The binary runs the
+commands it hasn't ported through the scripts, as `bin/hecatron` would.
+
 1. This design and a prototype of the schema on Go, Rust, Python, Java and
    Elixir (#72).
 2. The Go core (#73–#75) runs today's shell definitions unchanged on macOS

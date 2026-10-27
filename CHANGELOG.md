@@ -6,6 +6,15 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **A fast binary:** installing a release also installs the Go core for
+  your machine (macOS and Linux, x86_64 and arm64), checksum-verified, and
+  `hct` runs it: `--version` and `list` answer in about a millisecond
+  (80 ms before, on a 51-language project), and help, `list`, `env` and the
+  run commands no longer depend on the system's bash (macOS's 3.2). The
+  run commands take `--output human|agent|json|ci` (or `HECATRON_OUTPUT`):
+  agent output is a summary line and only the failures with their key
+  error lines; exit status 3 means a toolchain is missing. The rest still
+  runs through the scripts. `HECATRON_NO_GO=1` keeps to the scripts.
 - **Instructions for AI agents:** `hct init` writes a short section to
   `AGENTS.md` (and has an existing `CLAUDE.md` load it); `--no-agents` skips
   it. `hct help agents` prints a compact reference written for agents.

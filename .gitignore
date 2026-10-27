@@ -2,3 +2,5 @@ __pycache__/
 .logs/
 /hct
 /hct.exe
+/bin/.hecatron-go
+/bin/.hecatron-go.commit

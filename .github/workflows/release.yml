@@ -1,0 +1,51 @@
+name: Release binaries
+
+# Build the Go binary (docs/design.md §19) for every platform and attach it,
+# with SHA256SUMS, to a published release; install.sh downloads the one for
+# its machine. On demand, for a release that's already published.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The release's tag (vX.Y.Z)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  binaries:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build for each platform
+        run: |
+          mkdir dist
+          for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+            os="${target%/*}"
+            arch="${target#*/}"
+            suffix=""
+            [ "${os}" = windows ] && suffix=".exe"
+            CGO_ENABLED=0 GOOS="${os}" GOARCH="${arch}" \
+              go build -trimpath -ldflags "-s -w" -o "dist/hecatron-${os}-${arch}${suffix}" ./cmd/hecatron
+          done
+          (cd dist && sha256sum hecatron-* > SHA256SUMS)
+          cat dist/SHA256SUMS
+      - name: Smoke-test the Linux binary
+        run: |
+          dist/hecatron-linux-amd64 --version
+          HECATRON_HOME="${PWD}" dist/hecatron-linux-amd64 help | head -1
+      - name: Attach to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${TAG}" dist/* --clobber
