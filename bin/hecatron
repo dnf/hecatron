@@ -59,6 +59,9 @@ Project:
   version <version>          Bump versions through each language's version.sh
   metadata                   Update package metadata through metadata.sh hooks
 
+Hecatron itself:
+  self-test                  Check hecatron's own code: shellcheck and the unit tests
+
 Run 'hecatron <command> help' for a command's options.
 hecatron $(_version)
 EOF
@@ -71,6 +74,29 @@ case "${_command}" in
     help|-h|--help) _usage; exit 0 ;;
     --version|-V|version-of-hecatron) _version; exit 0 ;;
 esac
+
+# What hecatron runs on: the bash and Python 3 that current macOS and Linux
+# ship (bash 3.2 or later, Python 3.9 or later). Say how to get them rather
+# than failing somewhere later.
+if [ "${BASH_VERSINFO[0]}" -lt 3 ] || { [ "${BASH_VERSINFO[0]}" -eq 3 ] && [ "${BASH_VERSINFO[1]}" -lt 2 ]; }; then
+    echo "hecatron: needs bash 3.2 or later (this is ${BASH_VERSION})" >&2
+    exit 1
+fi
+if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 9))' 2>/dev/null; then
+    if command -v python3 >/dev/null 2>&1; then
+        echo "hecatron: needs Python 3.9 or later; python3 is $(python3 -V 2>&1 | sed 's/^Python //')." >&2
+    else
+        echo "hecatron: needs Python 3.9 or later, and there is no python3 on PATH." >&2
+    fi
+    echo "  macOS:          xcode-select --install   (or: brew install python)" >&2
+    echo "  Debian, Ubuntu: sudo apt-get install python3" >&2
+    echo "  Fedora:         sudo dnf install python3" >&2
+    exit 1
+fi
+
+if [ "${_command}" = "self-test" ]; then
+    exec bash "${HECATRON_HOME}/libexec/commands/self-test.sh" "$@"
+fi
 
 # Every command but init runs inside a project; find it (like git).
 if [ "${_command}" != "init" ] && [ "${_command}" != "banner" ]; then

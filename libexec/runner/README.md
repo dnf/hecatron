@@ -7,7 +7,7 @@ A bash script that runs jobs (hecatron commands, or just recipes when run standa
 `run-parallel.sh` takes a list of commands, runs them concurrently, and renders a live-updating bar chart as they complete. In slot-based mode (`-j N`), it adds swim lane timelines, error-first priority, and duration prediction from run history.
 
 **Design goals:**
-- Zero dependencies beyond bash 4+ and perl (for sub-second timing)
+- Zero dependencies beyond bash 3.2+ and perl (for sub-second timing)
 - Single-file, self-contained — no external libraries or frameworks
 - Works in both interactive terminals and CI/piped environments
 - Handles "not installed" entries gracefully (the `skip:` protocol)
@@ -206,7 +206,7 @@ The justfile recipes parse `-j`, `-n`, and `-s` from their own arguments and for
 
 | Requirement        | Purpose                                  | Required |
 | ------------------ | ---------------------------------------- | -------- |
-| bash 4+            | Associative-style arrays, `${!arr[@]}`   | Yes      |
+| bash 3.2+          | The script itself (macOS's /bin/bash)    | Yes      |
 | perl (Time::HiRes) | Sub-second timing (decisecond precision) | Yes      |
 | tput               | Terminal width detection, cursor control | No       |
 
