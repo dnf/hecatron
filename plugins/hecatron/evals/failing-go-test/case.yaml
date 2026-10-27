@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: failing-go-test
+description: A Go module whose test expects the wrong sum; the agent should run it through hct and find that the test, not the code, is wrong.
+context:
+  scaffold_script: scaffold.sh
