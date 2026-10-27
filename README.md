@@ -42,8 +42,17 @@ Hecatron runs on the bash and Python 3 that current macOS and Linux ship (bash
 Line Tools (`xcode-select --install`); hecatron says so if it's missing.
 
 ```bash
-git clone https://github.com/dnf/hecatron ~/.hecatron
-export PATH="$HOME/.hecatron/bin:$PATH"     # add to your shell profile
+curl -fsSL https://raw.githubusercontent.com/dnf/hecatron/main/install.sh | sh
+```
+
+This installs the latest release into `~/.hecatron` and adds it to your
+shell's startup files (bash, zsh and fish), so new shells have `hct`; it
+prints the one line that puts it on PATH in the current shell. Run it again
+to update. From a clone instead, source the installer, which also sets up the
+shell you're in:
+
+```bash
+git clone https://github.com/dnf/hecatron ~/.hecatron && . ~/.hecatron/install.sh
 ```
 
 ## Quick start
@@ -164,8 +173,7 @@ expect changes before 1.0. Changes are listed in
 - **Platforms:** macOS (Apple Silicon and Intel) and Linux (Debian and
   Ubuntu, x86_64 and arm64). Windows isn't planned; installers and hooks are
   bash.
-- **Next:** a one-line installer and a GitHub Action for CI, and versions for
-  Ruby, PHP and .NET.
+- **Next:** a GitHub Action for CI, and versions for Ruby, PHP and .NET.
 
 ## Documentation
 

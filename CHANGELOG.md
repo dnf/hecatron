@@ -6,6 +6,9 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **An installer:** `curl -fsSL …/install.sh | sh` installs the latest
+  release into `~/.hecatron` and adds it to bash, zsh and fish startup files;
+  sourced from a clone, it also sets up the current shell. Rerun to update.
 - **Default hooks for every language.** A conventional project needs no hook
   files: each language's test, lint, build and clean commands are chosen from
   the build files present (#36).

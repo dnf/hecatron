@@ -39,3 +39,31 @@ jobs:
           git config --global user.name CI
           bash --version | head -1
           python3 -m unittest discover -s tests
+
+  # hecatron's own installer (install.sh): on Linux in a throwaway container,
+  # where it may edit the user's startup files, and on macOS, where the login
+  # shell is zsh and sh is bash 3.2, in a temporary HOME.
+  installer-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: install.sh in a container
+        run: tests/docker/run.sh ubuntu:24.04 bash /hecatron/tests/installer/check.sh
+
+  installer-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: curl | sh, as a new zsh user
+        run: |
+          export HOME="$(mktemp -d)" SHELL=/bin/zsh HECATRON_REPO="$PWD"
+          git config --global --add safe.directory "*"
+          sh < install.sh
+          grep -F '.hecatron/env' "$HOME/.zshrc" "$HOME/.profile"
+          zsh -ic 'command -v hct' | grep -F "$HOME/.hecatron/bin/hct"
+          bash -lc 'command -v hct' | grep -F "$HOME/.hecatron/bin/hct"
+          zsh -ic 'hct --version'
