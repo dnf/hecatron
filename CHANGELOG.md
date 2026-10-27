@@ -6,6 +6,26 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **An Agent Skill for hecatron:** AI agents that read Agent Skills learn
+  hecatron without the docs: first steps, the test-lint-format loop, exit
+  statuses, asking before installs, and what to do when something fails.
+  In Claude Code: `/plugin install hecatron --marketplace dnf/hecatron`; in
+  claude.ai, upload the release's `hecatron-skill.zip`.
+- **More of hecatron runs in the binary, and faster:** toolchain version
+  resolution and each language's environment (`hct test` across 8
+  languages × 3 components: 0.28 s of setup to 0.07 s), `init` and the
+  other project commands (`check`, `add`, `remove` under 10 ms), and
+  `doctor`'s checks (1.6 s to 0.6 s for 8 languages). Same output as
+  before, checked byte for byte.
+- **macOS fixes:** Ruby installs when Homebrew's ruby-build lags (it uses
+  ruby-build's repository, as on Linux); Fortran's doctor checks gfortran,
+  so `--fix` installs it; Scala's smoke test uses Scala CLI's flag; Ada sets
+  `SDKROOT` from `xcrun`, so GNAT links when the Command Line Tools are
+  newer than the selected Xcode.
+- **Elixir on Linux installs Erlang's development files,** so dependencies
+  that compile Erlang sources (leex, yecc) build.
+- **OCaml installs every opam package's dependencies,** for a repository
+  with several `.opam` files too.
 - **`hct skill install`:** puts hecatron's Agent Skill where an agent finds
   it: `~/.claude/skills` (the default), the repository's `.claude/skills`
   (`--project`, to commit) or another agent's skills folder (`--dir`).
