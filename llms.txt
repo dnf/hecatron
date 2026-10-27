@@ -1,6 +1,6 @@
 # hecatron
 
-> Tools for polyglot repositories: the same commands (hct test, lint, build, format, deps, audit, outdated) install, check and run every language's own toolchain, in 54 languages.
+> Tools for polyglot repositories: the same commands (hct test, lint, build, format, deps, audit, outdated) install, check and run every language's own toolchain, in 54 languages. <!-- language-count -->
 
 - [Reference for AI agents](https://raw.githubusercontent.com/dnf/hecatron/main/docs/agents.md): commands, results, configuration and overrides, in brief; `hct help agents` prints the installed version's
 - [README](https://raw.githubusercontent.com/dnf/hecatron/main/README.md): what hecatron is, installing it, a quick start
