@@ -1,4 +1,4 @@
-# Smoke test for javascript: run a hello world with Node.js in a scratch directory.
+# Smoke test for javascript: run a small program with Node.js in a scratch directory.
 # shellcheck shell=bash
 set -euo pipefail
 mkdir hello && cd hello && npm init -y >/dev/null

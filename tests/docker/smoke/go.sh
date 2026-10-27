@@ -1,4 +1,4 @@
-# Smoke test for go: build and run a hello world in a scratch directory.
+# Smoke test for go: build and run a small program in a scratch directory.
 # shellcheck shell=bash
 set -euo pipefail
 mkdir hello && cd hello && go mod init hello >/dev/null 2>&1

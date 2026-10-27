@@ -101,7 +101,8 @@ It doesn't build anything itself, and it doesn't know what your code does.
 
 - **Every language, every week,** on fresh Ubuntu 24.04, Ubuntu 26.04 and
   Debian 13 machines (x86_64 and arm64) and on macOS (Apple Silicon and
-  Intel): install, doctor and reinstall, and for 29 languages a hello world.
+  Intel): install, doctor and reinstall, then a smoke test that builds and
+  runs a small program with the new toolchain.
   [docs/coverage.md](docs/coverage.md) has the matrix.
 - **Real projects.** [sayable](https://github.com/dnf/sayable) runs all 51 of
   its languages through hecatron. On a fresh machine,
