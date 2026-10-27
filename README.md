@@ -198,8 +198,8 @@ agents alike. Changes to how hecatron works start in
 Hecatron comes from the Hecatoncheires, the "hundred-handed ones" of Greek
 myth (*hekaton*, a hundred, and *cheir*, a hand). Hesiod tells of three
 brothers, Briareus, Cottus and Gyges, each with a hundred hands and fifty
-heads, who turned the war against the Titans by hurling boulders a hundred at
-a time. A repository in a dozen languages needs that many hands: one for each
+heads, who turned the war against the Titans by hurling three hundred boulders
+at once. A repository in a dozen languages needs that many hands: one for each
 toolchain, package manager, test runner and CI job, all working at once.
 
 The logo draws on another figure from the same myths: Hecate, goddess of
