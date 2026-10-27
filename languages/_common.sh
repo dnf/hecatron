@@ -22,10 +22,15 @@ ROOT="${HECATRON_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
 log() { echo "==> $*"; }
 
-# Each component's directory for a language, one per line: the project's
-# HECATRON_IMPL_PATH template (e.g. {component}/impl/{lang}) filled in for each
-# of HECATRON_COMPONENTS.
+# Each component's directory for a language, one per line, as hecatron
+# resolves it (a language's own implPath and directory names); outside a
+# hecatron run, the HECATRON_IMPL_PATH template (e.g. {component}/impl/{lang})
+# filled in for each of HECATRON_COMPONENTS. Nothing outside a project.
 impl_dirs() {
+    if [ -n "${HECATRON_HOME:-}" ]; then
+        (cd "${ROOT}" && python3 "${HECATRON_HOME}/libexec/lib/project.py" impl-dirs "$1" </dev/null 2>/dev/null) | cut -f2
+        return 0
+    fi
     local _component _relative
     for _component in ${HECATRON_COMPONENTS:-.}; do
         _relative="${HECATRON_IMPL_PATH:-{lang\}}"

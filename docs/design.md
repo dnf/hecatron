@@ -188,6 +188,7 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `project` | Name used in banners, Docker image tags and messages | directory name |
 | `components` | Component names, in order | `["."]` (one, unnamed) |
 | `implPath` | Where a component's code in a language lives | `{lang}` with one component, else `{component}/{lang}` |
+| `implPaths` | A language's own `implPath`, for one kept elsewhere (`{"csharp": "dotnet"}`) | `{}` |
 | `languages` | Languages the project implements (was `added.json`) | `[]` |
 | `tools` | Non-language dependencies, as `{ "dependency": "<command>" }` | `{}` |
 | `generated.dockerfile` | Where `hecatron dockerfile` writes; omit for none | none |
@@ -303,14 +304,25 @@ directory):
 
 1. Refuses if `dir` isn't inside a git repository, and is a no-op on an
    already initialised project unless `--force`.
-2. Detects languages from their manifests and sources: `go.mod` → go,
-   `Cargo.toml` → rust, `package.json` + `tsconfig.json` → typescript,
-   `pyproject.toml` → python, `*.cabal` → haskell, and so on (each
-   definition's `config.json` gains a `detect` list of globs).
-3. Detects components: if the detected manifests sit at paths that share a
-   pattern (`age/impl/go`, `date/impl/go`), it proposes `components` and
-   `implPath`; otherwise it assumes one component. `--components` and
-   `--impl-path` set them explicitly.
+2. Detects languages from their build files: `go.mod` → go, `Cargo.toml` →
+   rust, `tsconfig.json` → typescript, `pyproject.toml` → python, `*.cabal` →
+   haskell, and so on (a definition's `detect` globs). A language with no
+   build file is detected from its sources (`detectSources`, such as `*.c`),
+   and a hit is dropped where one of the definition's `detectUnless` files
+   sits beside it (`package.json` is JavaScript unless a `tsconfig.json`
+   makes it TypeScript). Examples, tests, docs and vendored code
+   (`examples/`, `tests/`, `fixtures/`, `third_party/`, `vendor/`,
+   `node_modules/` and the like) are skipped: a language found only there
+   isn't added, and init says so.
+3. Detects the layout. A language's directory may carry any of its
+   definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If the
+   directories share a pattern with one part varying (`age/impl/go`,
+   `date/impl/go`), it proposes `components` and `implPath`; otherwise one
+   component, at the pattern under `sdks/`, `sdk/`, `lib/`, `lang/`,
+   `bindings/`, `ffi/`, `packages/` or the root if there is one, else the
+   pattern covering most languages. A language whose directory doesn't fit
+   gets its own entry in `implPaths`. `--components` and `--impl-path` set
+   the layout explicitly.
 4. Writes `.hecatron/config.json`, adds `.hecatron/local.json` and the log
    directory to `.gitignore`.
 5. Writes no hooks: defaults apply until the project adds its own. `--hooks`

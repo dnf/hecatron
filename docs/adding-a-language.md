@@ -11,7 +11,7 @@ combine.
 
 | File | Purpose | Required |
 | --- | --- | --- |
-| `config.json` | `abbreviation`, `dependency` (the command that proves the toolchain is installed), optional `lintDependency`, `detect` (manifest globs `hecatron init` looks for), optional `path` (toolchain directories to put on PATH for this language only, e.g. `["~/.cargo/bin"]`), and optional `unsupported` (platforms with no toolchain upstream, e.g. `["linux-aarch64"]`, shown as – in the [coverage matrix](coverage.md)) | Yes |
+| `config.json` | `abbreviation`, `dependency` (the command that proves the toolchain is installed), optional `lintDependency`, `detect` (build-file globs `hecatron init` looks for), optional `detectSources` (source globs, used only where no build file is found), optional `detectUnless` (files that, beside a hit, mean another language), optional `dirNames` (other names the language's directory goes by, e.g. `["dotnet", "netstd"]` for C#), optional `path` (toolchain directories to put on PATH for this language only, e.g. `["~/.cargo/bin"]`), and optional `unsupported` (platforms with no toolchain upstream, e.g. `["linux-aarch64"]`, shown as – in the [coverage matrix](coverage.md)) | Yes |
 | `install.sh` | Install the toolchain on macOS and Linux; idempotent, and repairs what `doctor.sh` detects | Yes |
 | `uninstall.sh` | Remove the toolchain (a no-op with a message when other languages share it) | Yes |
 | `doctor.sh` | Detect a toolchain that is installed but broken, one `problem` per issue | No |

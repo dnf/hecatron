@@ -301,7 +301,7 @@ def workflow_coverage_problems(project) -> list[str]:
         with open(source, encoding="utf-8") as f:
             text = f.read()
         # A matrix over components (`${{ matrix.component }}` in the path) covers them all.
-        matrix_path = project.impl_path.replace("{component}", "${{ matrix.component }}").replace("{lang}", lang)
+        matrix_path = project.impl_template(lang).replace("{component}", "${{ matrix.component }}").replace("{lang}", lang)
         if matrix_path in text and all(c in text for c in project.components):
             continue
         for component, directory in project.impl_dirs(lang):
@@ -340,54 +340,166 @@ def cmd_banner(args) -> int:
 # -- init -----------------------------------------------------------------------
 
 
-def detect_languages(root: str) -> dict[str, set[str]]:
-    """Language → directories holding one of its `detect` manifests (tracked files only)."""
+# Trees holding code that isn't the project's own implementation: vendored
+# dependencies, samples, tests and docs. A language found only there isn't
+# added, and no language's directory is placed there.
+SKIPPED_DIRS = {"benchmarks", "demo", "demos", "doc", "docs", "example", "examples", "external", "fixtures",
+                "node_modules", "sample", "samples", "test", "testdata", "tests", "third_party", "tutorial",
+                "tutorials", "vendor"}
+
+# Where projects keep per-language code; when layouts disagree, one under
+# these (or at the root) beats one covering more languages (Beam's sdks/{lang}
+# over learning/katas/{lang}).
+PREFERRED_PARENTS = {"bindings", "ffi", "lang", "lib", "packages", "sdk", "sdks"}
+
+
+def _detection_definitions() -> dict[str, dict]:
     defs = {}
     for lang in sorted(os.listdir(projectlib.BUILTIN_LANGUAGES)):
         cfg = os.path.join(projectlib.BUILTIN_LANGUAGES, lang, "config.json")
         if os.path.isfile(cfg):
             with open(cfg, encoding="utf-8") as f:
-                defs[lang] = json.load(f).get("detect", [])
+                defs[lang] = json.load(f)
+    return defs
+
+
+def dir_names(defs: dict[str, dict]) -> dict[str, list[str]]:
+    """Language → the names its directory goes by, its own first."""
+    return {lang: [lang] + [n for n in d.get("dirNames", []) if n != lang] for lang, d in defs.items()}
+
+
+def _is_skipped(directory: str) -> bool:
+    return any(part in SKIPPED_DIRS for part in directory.split("/"))
+
+
+def tracked_files(root: str) -> list[str]:
     try:
-        files = subprocess.run(["git", "ls-files"], cwd=root, capture_output=True, text=True,
-                               check=True).stdout.splitlines()
+        return subprocess.run(["git", "ls-files"], cwd=root, capture_output=True, text=True,
+                              check=True).stdout.splitlines()
     except (OSError, subprocess.CalledProcessError):
-        files = []
-    found: dict[str, set[str]] = {}
+        return []
+
+
+def tracked_dirs(root: str) -> set[str]:
+    """Every directory holding a tracked file, at any depth."""
+    dirs = set()
+    for path in tracked_files(root):
+        directory = os.path.dirname(path)
+        while directory and directory not in dirs:
+            dirs.add(directory)
+            directory = os.path.dirname(directory)
+    return dirs
+
+
+def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[dict[str, set[str]], set[str]]:
+    """(found, skipped_only). found maps a language to the directories holding
+    one of its build files ("detect"), or, for a language with none, its
+    sources ("detectSources"); a hit is dropped where one of its
+    "detectUnless" files sits beside it (package.json is JavaScript unless a
+    tsconfig.json says TypeScript). skipped_only names the languages found
+    only under SKIPPED_DIRS. Tracked files only."""
+    defs = _detection_definitions() if defs is None else defs
+    files = tracked_files(root)
+    by_dir: dict[str, set[str]] = {}
     for path in files:
-        base = os.path.basename(path)
-        for lang, patterns in defs.items():
-            if any(fnmatch.fnmatch(base, pattern) for pattern in patterns):
-                found.setdefault(lang, set()).add(os.path.dirname(path) or ".")
-    return found
+        by_dir.setdefault(os.path.dirname(path) or ".", set()).add(os.path.basename(path))
+
+    def hits(patterns: list[str], unless: list[str]) -> set[str]:
+        return {directory for directory, names in by_dir.items()
+                if any(fnmatch.fnmatch(name, pattern) for name in names for pattern in patterns)
+                and not any(fnmatch.fnmatch(name, pattern) for name in names for pattern in unless)}
+
+    found: dict[str, set[str]] = {}
+    skipped_only: set[str] = set()
+    for lang, d in defs.items():
+        unless = d.get("detectUnless", [])
+        directories = hits(d.get("detect", []), unless)
+        kept = {directory for directory in directories if not _is_skipped(directory)}
+        if not kept and d.get("detectSources"):
+            directories = hits(d["detectSources"], unless)
+            kept = {directory for directory in directories if not _is_skipped(directory)}
+        if kept:
+            found[lang] = kept
+        elif directories:
+            skipped_only.add(lang)
+    return found, skipped_only
 
 
-def infer_layout(found: dict[str, set[str]]) -> tuple[list[str], str]:
-    """Components and implPath from where each language's manifests sit.
+def _language_roots(directories: set[str], names: list[str]) -> set[str]:
+    """Each directory cut at the first part naming the language (age/impl/c,
+    not age/impl/c/src)."""
+    roots = set()
+    for directory in directories:
+        parts = directory.split("/")
+        for i, part in enumerate(parts):
+            if part in names:
+                roots.add("/".join(parts[:i + 1]))
+                break
+    return roots
+
+
+def _as_template(root: str) -> str:
+    parts = root.split("/")
+    return "/".join(parts[:-1] + ["{lang}"])
+
+
+def _preference(path: str) -> tuple[int, int]:
+    """Lower is better: under a PREFERRED_PARENTS directory or at the root
+    first, then shallower."""
+    parts = path.split("/")
+    preferred = len(parts) == 1 or any(part in PREFERRED_PARENTS for part in parts[:-1])
+    return (0 if preferred else 1, len(parts))
+
+
+def _own_directory(directories: set[str]) -> str:
+    """A language's directory when none is named after it: the shallowest
+    directory holding its files, or the common parent of several equally
+    shallow ones."""
+    depth = min(len(d.split("/")) for d in directories)
+    shallowest = sorted(d for d in directories if len(d.split("/")) == depth)
+    common = os.path.commonpath(shallowest) if len(shallowest) > 1 else shallowest[0]
+    return common or "."
+
+
+def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None = None,
+                 directories: set[str] | None = None) -> tuple[list[str], str, dict[str, str]]:
+    """Components, implPath and per-language implPaths from where each
+    language's files sit.
 
     `age/impl/go` and `date/impl/go` give components [age, date] and implPath
-    `{component}/impl/{lang}`; `go/` and `rust/` give one component at `{lang}`.
+    `{component}/impl/{lang}`; `go/` and `rust/` give one component at
+    `{lang}`. A directory may carry any of a language's names (dotnet/ for C#).
+    With one component, a language whose directory doesn't fit the shared
+    implPath gets its own entry in implPaths, unless the shared one names a
+    directory in the repository (`directories`): Thrift's lib/go, whose
+    go.mod is at the root.
     """
+    names = names or {}
+    roots = {lang: _language_roots(dirs, names.get(lang, [lang])) for lang, dirs in found.items()}
     templates: dict[str, set[str]] = {}
-    for lang, directories in found.items():
-        for directory in directories:
-            parts = directory.split("/")
-            if lang in parts:
-                # A language's root is the path up to its own name (age/impl/c, not age/impl/c/src).
-                index = parts.index(lang)
-                templates.setdefault("/".join(parts[:index] + ["{lang}"]), set()).add(lang)
+    for lang, lang_roots in roots.items():
+        for root in lang_roots:
+            templates.setdefault(_as_template(root), set()).add(lang)
     if not templates:
-        return ["."], "."
-    if len(templates) == 1:
-        return ["."], next(iter(templates))
+        return ["."], ".", {}
     split = [t.split("/") for t in templates]
-    if len({len(parts) for parts in split}) == 1:
+    if len(templates) > 1 and len({len(parts) for parts in split}) == 1:
         varying = [i for i in range(len(split[0])) if len({parts[i] for parts in split}) > 1]
         if len(varying) == 1:
             i = varying[0]
             pattern = split[0][:i] + ["{component}"] + split[0][i + 1:]
-            return sorted({parts[i] for parts in split}), "/".join(pattern)
-    return ["."], max(templates, key=lambda t: len(templates[t]))
+            return sorted({parts[i] for parts in split}), "/".join(pattern), {}
+    template = min(templates, key=lambda t: (_preference(t), -len(templates[t]), t))
+    overrides = {}
+    for lang, dirs in sorted(found.items()):
+        lang_names = names.get(lang, [lang])
+        fitting = [template.replace("{lang}", name) for name in lang_names
+                   if template.replace("{lang}", name) in roots[lang] | (directories or set())]
+        if fitting:
+            continue
+        overrides[lang] = (min(roots[lang], key=lambda r: (_preference(r), r)) if roots[lang]
+                           else _own_directory(dirs))
+    return ["."], template, overrides
 
 
 JUSTFILE = """\
@@ -424,18 +536,22 @@ def cmd_init(args) -> int:
     if os.path.isfile(config_path) and not args.force:
         print(f"{os.path.relpath(config_path)} already exists (use --force to overwrite).")
         return 0
-    found = detect_languages(root)
-    components, impl_path = infer_layout(found)
+    defs = _detection_definitions()
+    found, skipped_only = detect_languages(root, defs)
+    components, impl_path, impl_paths = infer_layout(found, dir_names(defs), tracked_dirs(root))
     if args.components:
         components = [c for c in args.components.split(",") if c]
     if args.impl_path:
-        impl_path = args.impl_path
+        impl_path, impl_paths = args.impl_path, {}
     languages = sorted(args.languages.split(",")) if args.languages else sorted(found)
     config = {"schema": projectlib.SCHEMA, "hecatron": f">={projectlib.hecatron_version()}",
               "project": os.path.basename(root), "components": components, "implPath": impl_path,
               "languages": languages, "tools": {}, "generated": {}, "logs": ".logs"}
     if components == ["."]:
         del config["components"]
+    impl_paths = {lang: path for lang, path in impl_paths.items() if lang in languages}
+    if impl_paths:
+        config["implPaths"] = impl_paths
     projectlib._write_json(config_path, config)
     ignore_path = os.path.join(root, ".gitignore")
     existing = open(ignore_path, encoding="utf-8").read() if os.path.isfile(ignore_path) else ""
@@ -449,6 +565,10 @@ def cmd_init(args) -> int:
     print(f"Initialised {root}")
     print(f"  languages:  {', '.join(languages) or '(none detected; add with hecatron add <lang>)'}")
     print(f"  components: {', '.join(components)}   implPath: {impl_path}")
+    for lang, path in sorted(impl_paths.items()):
+        print(f"  {lang} lives in {path} (implPaths)")
+    if skipped_only:
+        print(f"  not added, found only in examples, tests or vendored code: {', '.join(sorted(skipped_only))}")
     print("Next: hecatron doctor   (checks each language's toolchain)")
     return 0
 
