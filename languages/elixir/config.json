@@ -148,5 +148,21 @@
         }
       ]
     }
+  },
+  "install": {
+    "requires": [
+      "erlang"
+    ],
+    "packages": {
+      "apt": [
+        "elixir"
+      ],
+      "brew": [
+        "elixir"
+      ],
+      "scoop": [
+        "elixir"
+      ]
+    }
   }
 }
