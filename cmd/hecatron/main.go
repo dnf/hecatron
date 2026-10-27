@@ -37,6 +37,7 @@ type cli struct {
 	project *project.Project // nil when the Go model can't read the project
 
 	pythonChecked bool
+	ci            string // workflows --ci: the CI system to generate for
 }
 
 func run(argv []string) int {

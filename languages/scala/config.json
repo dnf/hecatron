@@ -22,5 +22,47 @@
   "formatting": "sbt-scalafmt, Spotless",
   "notes": {
     "formatting": "Only when the build applies one; hecatron runs it through the build."
-  }
+  },
+  "cache": {
+    "dependencies": [
+      "~/.cache/coursier",
+      "~/.ivy2/cache",
+      "~/.sbt",
+      "~/.m2/repository"
+    ],
+    "lockFiles": [
+      "build.sbt",
+      "project/build.properties",
+      "project/plugins.sbt"
+    ]
+  },
+  "dependabot": [
+    {
+      "ecosystem": "sbt",
+      "files": [
+        "build.sbt"
+      ]
+    },
+    {
+      "ecosystem": "maven",
+      "files": [
+        "pom.xml"
+      ]
+    },
+    {
+      "ecosystem": "gradle",
+      "files": [
+        "build.gradle",
+        "build.gradle.kts",
+        "settings.gradle",
+        "settings.gradle.kts"
+      ]
+    }
+  ],
+  "renovate": [
+    "sbt",
+    "maven",
+    "gradle",
+    "gradle-wrapper"
+  ]
 }

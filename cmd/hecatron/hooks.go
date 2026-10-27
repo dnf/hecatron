@@ -45,6 +45,9 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 			if len(wanted) > 0 && !contains(wanted, dir.Component) {
 				continue
 			}
+			if ctx.Err() != nil {
+				break // stopped: its time limit, or Ctrl-C
+			}
 			component := runner.Component{Name: dir.Component, Dir: dir.Dir}
 			fmt.Fprintf(out, "=== %s %s (%s) ===\n", action, dir.Component, lang)
 			env, ok := r.languageEnv(ctx, out, base, lang, dir.Component)
@@ -216,8 +219,9 @@ func runHook(ctx context.Context, out io.Writer, dir string, env []string, hook,
 // stopped by a signal).
 func runCommand(cmd *exec.Cmd, out io.Writer) int {
 	cmd.Stdout, cmd.Stderr = out, out
-	runner.Supervise(cmd)
+	stopped := runner.Supervise(cmd)
 	err := cmd.Run()
+	stopped()
 	var exit *exec.ExitError
 	switch {
 	case err == nil:

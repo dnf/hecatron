@@ -19,5 +19,13 @@
     "GPRbuild"
   ],
   "testing": "Alire, GPRbuild test projects",
-  "linting": null
+  "linting": null,
+  "cache": {
+    "dependencies": [
+      "~/.local/share/alire"
+    ],
+    "lockFiles": [
+      "alire.toml"
+    ]
+  }
 }

@@ -90,5 +90,17 @@
   ],
   "notes": {
     "formatting": "Only when one is in the project's Gemfile."
-  }
+  },
+  "cache": {
+    "dependencies": [
+      "~/.local/share/gem"
+    ],
+    "lockFiles": [
+      "Gemfile.lock"
+    ]
+  },
+  "dependabot": "bundler",
+  "renovate": [
+    "bundler"
+  ]
 }

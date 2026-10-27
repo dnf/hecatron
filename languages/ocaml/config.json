@@ -20,5 +20,15 @@
   "formatting": "ocamlformat",
   "notes": {
     "formatting": "Only when the project has a `.ocamlformat`."
+  },
+  "cache": {
+    "dependencies": [
+      "~/.opam"
+    ],
+    "lockFiles": [
+      "*.opam",
+      "*.opam.locked",
+      "dune-project"
+    ]
   }
 }

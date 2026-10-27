@@ -27,6 +27,12 @@ system of its own. `hct` and `hecatron` are the same command.
 | Validate config and generated files | `hct check` | |
 | A language's environment in a shell | `eval "$(hct env LANG)"` | The PATH and variables its commands run with |
 
+- `--changed [REF]` (`test`, `lint`, `build`, `format`, `deps`): only the
+  languages and components whose files changed since the merge base with
+  `REF` (default: the default branch; in CI, the pull request's base),
+  uncommitted and untracked files included. Its first line says what it
+  compared, what runs and why; nothing changed that hecatron runs: that
+  line, exit 0. Needs the binary.
 - Targets: language names or abbreviations (`go`, `rs`, `ts`), or a
   project task named in config.json `tasks`.
 - `-c COMPONENT` (repeatable): one component only. `-j N`: concurrency.
@@ -50,6 +56,10 @@ system of its own. `hct` and `hecatron` are the same command.
   `--output json` gives one JSON document. Its exit status 3 means a
   failure whose language command (`go`, `cargo`...) isn't on PATH:
   install the toolchain (ask first, below).
+- A job that runs far longer than it usually does is stopped and reported
+  as timed out (`TIMEOUT` in agent output), with its limit: by default 5×
+  its usual time, at least 10 minutes. `--timeout 30m` (or
+  `HECATRON_TIMEOUT`) sets one for every job; `--timeout 0` none.
 - "no <action> command for <dir>": the default hook found no build file it
   knows there; write a hook (below).
 
@@ -73,6 +83,7 @@ saves that.
 | `implPath` | Where a component's code in a language is: `{component}`, `{lang}` placeholders |
 | `implPaths` | One language's own path (`{"csharp": "dotnet"}`) |
 | `tasks` | Extra jobs per action, run from the root: `{"test": {"codegen": "make gen-test"}}` |
+| `taskPaths` | Paths a task depends on, for `--changed`: `{"codegen": ["codegen/", "*.proto"]}` |
 | `lint.format` | `false` (or `{"lang": false}`) turns off lint's format check |
 | `audit.ignore` | Accepted vulnerabilities: `{"id", "reason", "until"}` each |
 | `logs` | Log directory |

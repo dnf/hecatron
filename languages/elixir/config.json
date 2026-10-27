@@ -187,5 +187,21 @@
       "regex": "^\\s*error: (?P<message>.+)$",
       "next": "^\\s*(?:\u2514\u2500 )?(?P<file>[^\\s:]+\\.exs?):(?P<line>\\d+)(?::(?P<col>\\d+))?"
     }
+  ],
+  "cache": {
+    "toolchain": [
+      "~/.mix"
+    ],
+    "dependencies": [
+      "~/.hex",
+      "deps"
+    ],
+    "lockFiles": [
+      "mix.lock"
+    ]
+  },
+  "dependabot": "mix",
+  "renovate": [
+    "mix"
   ]
 }

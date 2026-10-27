@@ -17,5 +17,14 @@
   ],
   "testing": "crystal spec",
   "linting": "crystal tool format",
-  "formatting": "crystal tool format"
+  "formatting": "crystal tool format",
+  "cache": {
+    "dependencies": [
+      "~/.cache/shards",
+      "lib"
+    ],
+    "lockFiles": [
+      "shard.lock"
+    ]
+  }
 }

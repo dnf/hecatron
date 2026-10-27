@@ -238,5 +238,40 @@
   ],
   "notes": {
     "formatting": "Black only where the project configures it; otherwise Ruff."
-  }
+  },
+  "cache": {
+    "toolchain": [
+      "~/.local/share/uv/python"
+    ],
+    "dependencies": [
+      "~/.cache/uv"
+    ],
+    "lockFiles": [
+      "uv.lock",
+      "requirements*.txt",
+      "pyproject.toml"
+    ]
+  },
+  "dependabot": [
+    {
+      "ecosystem": "uv",
+      "files": [
+        "uv.lock"
+      ]
+    },
+    {
+      "ecosystem": "pip",
+      "unless": [
+        "uv.lock"
+      ]
+    }
+  ],
+  "renovate": [
+    "pep621",
+    "pip_requirements",
+    "pip_setup",
+    "setup-cfg",
+    "pipenv",
+    "poetry"
+  ]
 }

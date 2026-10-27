@@ -13,5 +13,13 @@
   ],
   "testing": "v test",
   "linting": "v fmt, v vet",
-  "formatting": "v fmt"
+  "formatting": "v fmt",
+  "cache": {
+    "dependencies": [
+      "~/.vmodules"
+    ],
+    "lockFiles": [
+      "v.mod"
+    ]
+  }
 }

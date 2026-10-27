@@ -37,6 +37,23 @@ minor version can change behaviour. Numbers are
   uncommitted changes; then the commands worth running next, marking those
   that install something. `--output human|agent|json`, chosen as for
   `hct test`. Needs the binary that releases ship (#121).
+- **GitLab CI and caching in generated CI:** `hct workflows` writes a
+  `.gitlab-ci.yml` with a job per language (install, test and lint through
+  `hct`) when `generated.ci` is `"gitlab"` (or `["github", "gitlab"]`, or
+  with `--ci gitlab`), and `hct check` fails when it falls behind. With
+  `"ci": {"cache": true}` the generated GitHub workflows and GitLab jobs
+  cache each language's toolchain (keyed on its pin files and hecatron's
+  version) and dependencies (keyed on its lock files); each definition
+  lists the directories in its new `cache` key. Off by default, so existing
+  workflows don't change. Needs the binary (#102).
+- **Dependabot and Renovate configuration:** with `generated.dependabot`
+  (or `generated.renovate`), `hct workflows` writes `.github/dependabot.yml`
+  with an `updates` entry for each package ecosystem and component
+  directory (`renovate.json` with the managers and paths), merging the
+  project's `dependabot` (or `renovate`) settings, and `hct check` fails
+  when a language or component was added without regenerating it. Each
+  definition names its ecosystems in new `dependabot` and `renovate` keys.
+  Needs the binary (#103).
 
 ## 0.4.0 (2026-10-27)
 

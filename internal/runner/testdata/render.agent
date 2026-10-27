@@ -1,7 +1,9 @@
-hct test: 2 passed, 2 failed, 2 skipped (4m31s)
+hct test: 3 passed, 2 failed, 1 timed out, 2 skipped (4m31s)
 FAIL go (go/) exit 1, 12s, log .logs/test/go.log
   --- FAIL: TestAdd (0.00s)
   calc_test.go:7: Add(2, 3) = -1, want 5
 FAIL php (php/) toolchain not found, 1m01s, log .logs/test/php.log
   bash: line 1: php: command not found
-Rerun: hct test go php
+TIMEOUT kotlin (kotlin/) stopped at its 10m limit (the 10m minimum (5× its median 1m10s over 5 passing runs is less)), 10m00s, log .logs/test/kotlin.log
+  > Task :test
+Rerun: hct test go php kotlin

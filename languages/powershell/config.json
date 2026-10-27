@@ -19,5 +19,10 @@
     "PowerShell modules"
   ],
   "testing": "Pester",
-  "linting": "PSScriptAnalyzer"
+  "linting": "PSScriptAnalyzer",
+  "cache": {
+    "toolchain": [
+      "~/.local/share/powershell/Modules"
+    ]
+  }
 }

@@ -138,14 +138,17 @@ func (l *Live) draw() {
 			text, code = fmt.Sprintf("  - %-*s      - not installed", labelW, r.Label), "2"
 		case l.ended[i]:
 			done++
-			mark, c := "✓", "32"
-			if r.Status == Failed {
+			mark, c, note := "✓", "32", ""
+			if r.Unsuccessful() {
 				mark, c = "✗", "31"
 				failed++
 			}
+			if r.Status == TimedOut {
+				note = " timed out"
+			}
 			start := Deciseconds(l.started[i])
-			text, code = fmt.Sprintf("  %s %-*s %6s %s", mark, labelW, r.Label, formatDeciseconds(Deciseconds(r.Duration)),
-				bar(start, start+Deciseconds(r.Duration), total, maxBar)), c
+			text, code = fmt.Sprintf("  %s %-*s %6s %s%s", mark, labelW, r.Label, formatDeciseconds(Deciseconds(r.Duration)),
+				bar(start, start+Deciseconds(r.Duration), total, maxBar), note), c
 		case l.started[i] >= 0:
 			running++
 			start := Deciseconds(l.started[i])
