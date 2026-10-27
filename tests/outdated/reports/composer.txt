@@ -1,0 +1,18 @@
+{
+    "locked": [
+        {
+            "name": "psr/log",
+            "direct-dependency": true,
+            "homepage": "https://github.com/php-fig/log",
+            "source": "https://github.com/php-fig/log/tree/1.1.3",
+            "version": "1.1.3",
+            "release-age": "6 years old",
+            "release-date": "2020-03-23T09:12:05+00:00",
+            "latest": "3.0.2",
+            "latest-status": "update-possible",
+            "latest-release-date": "2024-09-11T13:17:53+00:00",
+            "description": "Common interface for logging libraries",
+            "abandoned": false
+        }
+    ]
+}

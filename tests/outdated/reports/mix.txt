@@ -1,0 +1,4 @@
+Dependency  Only  Current  Latest  Status               
+jason             1.2.2    1.4.5   Update not possible  
+
+Run `mix hex.outdated APP` to see requirements for a specific dependency.

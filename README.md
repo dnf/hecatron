@@ -115,6 +115,12 @@ hct test go       # one language
   --enforce-lockfile`, `mix deps.get`...), so CI can fetch once and fail on
   a lock file that's out of date. Tests and builds still fetch what's
   missing themselves, the same way.
+- **What's out of date.** `hct outdated` lists every component's direct
+  dependencies with a newer release, from each ecosystem's own report
+  (`npm outdated`, `uv tree --outdated`, `go list -u -m`, Cargo, `bundle
+  outdated`, `composer outdated`, `dotnet list package --outdated`, Hex,
+  pub, Maven's versions plugin), as a table or `--json`; `--fail` makes it
+  a CI check ([docs/outdated.md](docs/outdated.md)).
 - **One formatter per language.** `hct format` rewrites each component's
   code with its language's formatter and the project's own configuration
   (gofmt, rustfmt, Ruff, `dotnet format`, `mix format`, `dart format`, and
@@ -244,6 +250,7 @@ expect changes before 1.0. Changes are listed in
 | [docs/languages.md](docs/languages.md) | Every language: its home, what it's for, and how hecatron builds, tests and lints it |
 | [docs/coverage.md](docs/coverage.md) | Which languages install and work on which platforms |
 | [docs/audit.md](docs/audit.md) | `hct audit`: each language's dependency auditor, severities, accepted risks, CI |
+| [docs/outdated.md](docs/outdated.md) | `hct outdated`: each language's report of newer dependency versions, `--json`, `--fail` |
 | [docs/format.md](docs/format.md) | `hct format`: each language's formatter, `--check`, and the format check in `hct lint` |
 | [docs/hecatron-vs-ad-hoc.md](docs/hecatron-vs-ad-hoc.md) | A ten-language library maintained with hecatron and without it |
 | [docs/installers.md](docs/installers.md) | How each language's toolchain is installed on macOS and Linux, and toolchains languages share |
