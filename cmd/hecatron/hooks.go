@@ -38,6 +38,12 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 			return runner.Outcome{ExitCode: 1}
 		}
 		dependency, _ := r.project.Dependency(lang)
+		// Lint needs the linter too (golangci-lint, Clippy...): without it,
+		// the toolchain is as missing as without the compiler.
+		lintDependency := ""
+		if action == "lint" {
+			lintDependency, _ = r.project.LintDependency(lang)
+		}
 		base := r.environment()
 		var outcome runner.Outcome
 		var failed []string
@@ -52,9 +58,13 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 			fmt.Fprintf(out, "=== %s %s (%s) ===\n", action, dir.Component, lang)
 			env, ok := r.languageEnv(ctx, out, base, lang, dir.Component)
 			if ok {
-				if dependency != "" {
-					_, found := lookPath(dependency, getenv(env, "PATH"))
-					component.ToolchainMissing = !found
+				for _, command := range []string{dependency, lintDependency} {
+					if command == "" {
+						continue
+					}
+					if _, found := lookPath(command, getenv(env, "PATH")); !found {
+						component.ToolchainMissing = true
+					}
 				}
 				checked, err := os.CreateTemp("", "hecatron-format-checked")
 				if err != nil {

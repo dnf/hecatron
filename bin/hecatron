@@ -26,7 +26,8 @@ _go="${HECATRON_HOME}/bin/.hecatron-go"
 if [ -z "${HECATRON_NO_GO:-}" ] && [ -x "${_go}" ] && [ -f "${_go}.commit" ] && [ -f "${HECATRON_HOME}/.git/HEAD" ]; then
     read -r _head < "${HECATRON_HOME}/.git/HEAD" || true
     read -r _built < "${_go}.commit" || true
-    if [ -n "${_built:-}" ] && [ "${_head:-}" = "${_built}" ]; then
+    # "dev": built from this checkout by hecatron self-build, for any branch.
+    if [ "${_built:-}" = dev ] || { [ -n "${_built:-}" ] && [ "${_head:-}" = "${_built}" ]; }; then
         exec "${_go}" "$@"
     fi
 fi
@@ -82,6 +83,7 @@ Project:
 
 Hecatron itself:
   self-test                  Check hecatron's own code: shellcheck and the unit tests
+  self-build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
 
 Run 'hecatron <command> help' for a command's options, and 'hecatron help agents'
@@ -121,6 +123,9 @@ fi
 
 if [ "${_command}" = "self-test" ]; then
     exec bash "${HECATRON_HOME}/libexec/commands/self-test.sh" "$@"
+fi
+if [ "${_command}" = "self-build" ]; then
+    exec bash "${HECATRON_HOME}/libexec/commands/self-build.sh" "$@"
 fi
 
 # Every command but init and banner runs inside a project; each finds it

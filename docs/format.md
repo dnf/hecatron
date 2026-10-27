@@ -25,6 +25,20 @@ language or some, in `.hecatron/config.json`:
 "lint": {"format": {"haskell": false, "cpp": false}}
 ```
 
+Files the formatter must leave alone, such as a fixture misformatted on
+purpose or generated code, are listed in `"format": {"exclude": [...]}`,
+relative to the project root, a trailing `/` meaning everything below:
+
+```json
+"format": {"exclude": ["tests/fixtures/", "proto/*.pb.go"]}
+```
+
+`hct format` and the check skip them where hecatron hands the formatter the
+list of files (gofmt, clang-format, swift-format, Ormolu, perltidy...).
+Formatters that find their files themselves (`cargo fmt`, Prettier, `mix
+format`, `dotnet format`...) follow their own ignore files instead
+(`.prettierignore`, `.formatter.exs`, rustfmt's `ignore`...).
+
 `hct check` fails on any other value. Languages whose linter already
 checked formatting before `hct format` existed (the ones listed above, and
 Crystal, Gleam, V, Zig, Mojo, F#, Swift, and OCaml and Elixir where they

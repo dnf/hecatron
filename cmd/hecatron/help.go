@@ -59,6 +59,7 @@ Project:
 
 Hecatron itself:
   self-test                  Check hecatron's own code: shellcheck and the unit tests
+  self-build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
 
 Run 'hecatron <command> help' for a command's options, and 'hecatron help agents'

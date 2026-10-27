@@ -69,6 +69,8 @@ func run(argv []string) int {
 		return c.outdatedTool()
 	case "self-test":
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
+	case "self-build":
+		return c.delegate(bashScript("libexec/commands/self-build.sh"))
 	}
 	implementation, known := delegated[c.command]
 	if !known {

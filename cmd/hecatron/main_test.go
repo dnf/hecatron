@@ -19,6 +19,9 @@ import (
 var binary string // the Go hecatron, built once for the tests
 
 func TestMain(m *testing.M) {
+	// bin/hecatron is the scripts these tests compare the binary with; a
+	// binary from hecatron self-build in the checkout mustn't stand in.
+	os.Setenv("HECATRON_NO_GO", "1")
 	dir, err := os.MkdirTemp("", "hecatron-test")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
