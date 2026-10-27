@@ -1,0 +1,278 @@
+{
+ "results": [
+  {
+   "source": {
+    "path": "/project/java/pom.xml",
+    "type": "lockfile"
+   },
+   "packages": [
+    {
+     "package": {
+      "name": "org.apache.logging.log4j:log4j-core",
+      "version": "2.14.1",
+      "ecosystem": "Maven",
+      "purl": "pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1"
+     },
+     "groups": [
+      {
+       "ids": [
+        "GHSA-3pxv-7cmr-fjr4"
+       ],
+       "aliases": [
+        "CVE-2026-34480",
+        "GHSA-3pxv-7cmr-fjr4"
+       ],
+       "max_severity": "6.9"
+      },
+      {
+       "ids": [
+        "GHSA-6hg6-v5c8-fphq"
+       ],
+       "aliases": [
+        "CVE-2026-34477",
+        "GHSA-6hg6-v5c8-fphq"
+       ],
+       "max_severity": "6.3"
+      },
+      {
+       "ids": [
+        "GHSA-7rjr-3q55-vv33"
+       ],
+       "aliases": [
+        "CVE-2021-45046",
+        "GHSA-7rjr-3q55-vv33"
+       ],
+       "max_severity": "9.0"
+      },
+      {
+       "ids": [
+        "GHSA-8489-44mv-ggj8"
+       ],
+       "aliases": [
+        "CVE-2021-44832",
+        "GHSA-8489-44mv-ggj8"
+       ],
+       "max_severity": "6.6"
+      },
+      {
+       "ids": [
+        "GHSA-h383-gmxw-35v2"
+       ],
+       "aliases": [
+        "CVE-2026-34479",
+        "GHSA-h383-gmxw-35v2"
+       ],
+       "max_severity": "6.9"
+      },
+      {
+       "ids": [
+        "GHSA-jfh8-c2jp-5v3q"
+       ],
+       "aliases": [
+        "CVE-2021-44228",
+        "GHSA-jfh8-c2jp-5v3q"
+       ],
+       "max_severity": "10.0"
+      },
+      {
+       "ids": [
+        "GHSA-p6xc-xr62-6r2g"
+       ],
+       "aliases": [
+        "CVE-2021-45105",
+        "GHSA-p6xc-xr62-6r2g"
+       ],
+       "max_severity": "8.6"
+      },
+      {
+       "ids": [
+        "GHSA-vc5p-v9hr-52mj"
+       ],
+       "aliases": [
+        "CVE-2025-68161",
+        "GHSA-vc5p-v9hr-52mj"
+       ],
+       "max_severity": "6.3"
+      }
+     ],
+     "vulnerabilities": [
+      {
+       "id": "GHSA-3pxv-7cmr-fjr4",
+       "aliases": [
+        "CVE-2026-34480"
+       ],
+       "summary": "Apache Log4j Core: Silent log event loss in XmlLayout due to unescaped XML 1.0 forbidden characters",
+       "severity": [
+        {
+         "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:N/SC:N/SI:L/SA:N",
+         "type": "CVSS_V4"
+        }
+       ],
+       "database_specific": {
+        "severity": "MODERATE"
+       }
+      },
+      {
+       "id": "GHSA-6hg6-v5c8-fphq",
+       "aliases": [
+        "CVE-2026-34477"
+       ],
+       "summary": "Apache Log4j Core: `verifyHostName` attribute silently ignored in TLS configuration",
+       "severity": [
+        {
+         "score": "CVSS:4.0/AV:N/AC:H/AT:N/PR:N/UI:N/VC:L/VI:N/VA:N/SC:N/SI:L/SA:N",
+         "type": "CVSS_V4"
+        }
+       ],
+       "database_specific": {
+        "severity": "MODERATE"
+       }
+      },
+      {
+       "id": "GHSA-7rjr-3q55-vv33",
+       "aliases": [
+        "CVE-2021-45046"
+       ],
+       "summary": "Incomplete fix for Apache Log4j vulnerability",
+       "severity": [
+        {
+         "score": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H",
+         "type": "CVSS_V3"
+        }
+       ],
+       "database_specific": {
+        "severity": "CRITICAL"
+       }
+      },
+      {
+       "id": "GHSA-8489-44mv-ggj8",
+       "aliases": [
+        "CVE-2021-44832"
+       ],
+       "summary": "Improper Input Validation and Injection in Apache Log4j2",
+       "severity": [
+        {
+         "score": "CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:H/A:H",
+         "type": "CVSS_V3"
+        }
+       ],
+       "database_specific": {
+        "severity": "MODERATE"
+       }
+      },
+      {
+       "id": "GHSA-h383-gmxw-35v2",
+       "aliases": [
+        "CVE-2026-34479"
+       ],
+       "summary": "Apache Log4j 1 to Log4j 2 bridge: silent log event loss in Log4j1XmlLayout due to unescaped XML 1.0 forbidden characters",
+       "severity": [
+        {
+         "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:N/SC:N/SI:L/SA:N",
+         "type": "CVSS_V4"
+        }
+       ],
+       "database_specific": {
+        "severity": "MODERATE"
+       }
+      },
+      {
+       "id": "GHSA-jfh8-c2jp-5v3q",
+       "aliases": [
+        "CVE-2021-44228"
+       ],
+       "summary": "Remote code injection in Log4j",
+       "severity": [
+        {
+         "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H/E:H",
+         "type": "CVSS_V3"
+        }
+       ],
+       "database_specific": {
+        "severity": "CRITICAL"
+       }
+      },
+      {
+       "id": "GHSA-p6xc-xr62-6r2g",
+       "aliases": [
+        "CVE-2021-45105"
+       ],
+       "summary": "Apache Log4j2 vulnerable to Improper Input Validation and Uncontrolled Recursion",
+       "severity": [
+        {
+         "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:N/A:H",
+         "type": "CVSS_V3"
+        }
+       ],
+       "database_specific": {
+        "severity": "HIGH"
+       }
+      },
+      {
+       "id": "GHSA-vc5p-v9hr-52mj",
+       "aliases": [
+        "CVE-2025-68161"
+       ],
+       "summary": "Apache Log4j does not verify the TLS hostname in its Socket Appender",
+       "severity": [
+        {
+         "score": "CVSS:4.0/AV:N/AC:H/AT:N/PR:N/UI:N/VC:L/VI:N/VA:N/SC:N/SI:L/SA:N",
+         "type": "CVSS_V4"
+        }
+       ],
+       "database_specific": {
+        "severity": "MODERATE"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "source": {
+    "path": "/project/java/pom.xml",
+    "type": "unknown"
+   },
+   "packages": [
+    {
+     "package": {
+      "name": "org.apache.logging.log4j:log4j-api",
+      "version": "2.14.1",
+      "ecosystem": "Maven",
+      "purl": "pkg:maven/org.apache.logging.log4j/log4j-api@2.14.1"
+     },
+     "groups": [
+      {
+       "ids": [
+        "GHSA-qv9r-c865-cp47"
+       ],
+       "aliases": [
+        "CVE-2026-49844",
+        "GHSA-qv9r-c865-cp47"
+       ],
+       "max_severity": "6.3"
+      }
+     ],
+     "vulnerabilities": [
+      {
+       "id": "GHSA-qv9r-c865-cp47",
+       "aliases": [
+        "CVE-2026-49844"
+       ],
+       "summary": "Apache Log4j API: Improper encoding of non-finite floating-point values during MapMessage JSON serialization",
+       "severity": [
+        {
+         "score": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:N/VI:N/VA:N/SC:N/SI:L/SA:N",
+         "type": "CVSS_V4"
+        }
+       ],
+       "database_specific": {
+        "severity": "MODERATE"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

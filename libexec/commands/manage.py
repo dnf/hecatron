@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.join(HOME, "libexec", "codegen"))
 import project as projectlib  # noqa: E402
 from banner import make_banner  # noqa: E402
 import dockerfile as dockerfilelib  # noqa: E402
+import audit as auditlib  # noqa: E402
 
 
 def die(message: str, status: int = 1) -> None:
@@ -326,7 +327,10 @@ def cmd_check(args) -> int:
         print("Generated files are up to date and every workflow covers every component.")
     else:
         print("Run 'hecatron dockerfile' / 'hecatron workflows' to regenerate.", file=sys.stderr)
-    return 0 if ok else 1
+    config_problems = auditlib.config_problems(project.config)
+    for problem in config_problems:
+        print(f".hecatron/config.json: {problem}")
+    return 0 if ok and not config_problems else 1
 
 
 def cmd_banner(args) -> int:

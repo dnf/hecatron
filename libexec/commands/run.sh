@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hecatron test|lint|build|clean|rebuild|retest [-j N] [-s MODE] [-c COMPONENT]... [target ...]
+# hecatron test|lint|build|clean|rebuild|retest|audit [-j N] [-s MODE] [-c COMPONENT]... [target ...]
 #
 # With targets, runs each one in turn, streaming its output and saving it to
 # <logs>/<action>/<target>.log. A target is a language (every component), a
@@ -21,8 +21,11 @@ for _a in "$@"; do
     if [ "${_prev}" = "-j" ]; then _jflag="${_a}"; _prev=""; continue; fi
     if [ "${_prev}" = "-s" ]; then _sflag="${_a}"; _prev=""; continue; fi
     if [ "${_prev}" = "-c" ]; then _components+=("${_a}"); _prev=""; continue; fi
+    if [ "${_prev}" = "--fail-on" ]; then export HECATRON_AUDIT_FAIL_ON="${_a}"; _prev=""; continue; fi
     case "${_a}" in
         -j|-s|-c) _prev="${_a}" ;;
+        --fail-on) [ "${_action}" = audit ] && _prev="${_a}" || _targets+=("${_a}") ;;
+        --fail-on=*) export HECATRON_AUDIT_FAIL_ON="${_a#--fail-on=}" ;;
         --component=*) _components+=("${_a#--component=}") ;;
         *) _targets+=("${_a}") ;;
     esac
@@ -45,6 +48,7 @@ _describe() {
         clean) echo "Remove each language's build artifacts for every component (keeps installed dependencies)" ;;
         rebuild) echo "Clean, then build" ;;
         retest) echo "Clean, then test" ;;
+        audit) echo "Check each language's dependencies for known vulnerabilities in every component" ;;
     esac
 }
 
@@ -55,6 +59,7 @@ _action_langs() {
         lint) echo "${_LINT_LANGS}" ;;
         build|rebuild) echo "${_COMPILED_LANGS}" ;;
         clean) echo "${_CLEAN_LANGS}" ;;
+        audit) echo "${_AUDIT_LANGS}" ;;
     esac
 }
 
@@ -78,7 +83,14 @@ _usage() {
         "Flags:" \
         "  -j VALUE   Concurrency: integer, percentage (default 50%), or 'unlimited'" \
         "  -s MODE    Display: scroll (default), full, or zoom" \
-        "  -c NAME    Only this component (repeatable); components: ${HECATRON_COMPONENTS}" \
+        "  -c NAME    Only this component (repeatable); components: ${HECATRON_COMPONENTS}"
+    if [ "${_action}" = "audit" ]; then
+        printf '%s\n' \
+            "  --fail-on SEVERITY" \
+            "             Fail on a finding at or above critical, high (default), moderate or low;" \
+            "             a project sets its own with \"audit\": {\"failOn\": ...} (docs/audit.md)"
+    fi
+    printf '%s\n' \
         "" \
         "Examples:" \
         "  hecatron ${_action}               Everything, in parallel" \
@@ -160,6 +172,7 @@ _run_target() {
         lint) echo "${name} has no separate linter: its build treats warnings as errors (hecatron test ${name})" ;;
         build) echo "No build step for: ${name}" ;;
         clean) echo "No build artifacts for: ${name}" ;;
+        audit) echo "Nothing to audit for: ${name} (hecatron has no auditor for its dependencies)" ;;
         *) echo "error: ${name} has no ${_action} hook (.hecatron/languages/${name}/${_action}.sh)" >&2; return 1 ;;
     esac
 }

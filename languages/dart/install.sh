@@ -72,3 +72,5 @@ deps() { each_impl dart _pub_get; }
 log "Installing Dart..."
 "install_${OS}"
 deps
+# The dependency auditor hecatron audit uses for this language.
+osv_scanner_install

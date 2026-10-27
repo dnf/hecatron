@@ -56,3 +56,5 @@ deps() {
 log "Installing Haskell..."
 "install_${OS}"
 deps
+# The dependency auditor hecatron audit uses for this language.
+osv_scanner_install
