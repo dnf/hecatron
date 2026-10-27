@@ -36,8 +36,7 @@ project path from its own location.
 ## Checks
 
 ```bash
-bash libexec/lint/shellcheck.sh
-python3 -m unittest discover -s tests
+bin/hecatron self-test    # shellcheck (zero warnings), then the unit tests
 ```
 
 ## Conventions
