@@ -74,6 +74,13 @@ class JvmTest(unittest.TestCase):
               "distributionUrl=https\\://services.gradle.org/distributions/gradle-5.2.1-bin.zip\n")
         self.assertIsNone(jvm.ceiling(self.component))
 
+    def test_a_project_of_a_multi_project_build_runs_the_wrapper_above(self):
+        write(os.path.join(self.root, "gradlew"), "#!/bin/sh\n")
+        write(os.path.join(self.root, "gradle", "wrapper", "gradle-wrapper.properties"),
+              "distributionUrl=https\\://services.gradle.org/distributions/gradle-8.14.3-bin.zip\n")
+        self.assertIsNone(jvm.ceiling(self.component))
+        self.assertEqual(jvm.ceiling(self.component, self.root)[0], 21)
+
     def test_an_old_kotlin_compiler(self):
         write(os.path.join(self.component, "pom.xml"),
               "<properties><kotlin.version>2.1.0</kotlin.version></properties>\n")

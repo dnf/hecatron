@@ -4,7 +4,7 @@ files, for the JVM languages' installers and hooks.
     jvm.py toolchains <dir> <root>   the JDK feature versions the build asks
                                      Gradle or Maven to find (its toolchains),
                                      one per line
-    jvm.py ceiling <dir>             the newest LTS JDK the build's own tools
+    jvm.py ceiling <dir> [<root>]    the newest LTS JDK the build's own tools
                                      run on, with why, when that is older
                                      than the current LTS; nothing otherwise
 
@@ -95,9 +95,16 @@ def toolchains(directory: str, root: str) -> list[int]:
     return sorted(n for n in wanted if n >= 8)
 
 
-def _gradle_wrapper(directory: str) -> str | None:
-    if not os.path.isfile(os.path.join(directory, "gradlew")):
-        return None
+def _gradle_wrapper(directory: str, root: str | None = None) -> str | None:
+    """The Gradle version of the wrapper the hooks run: the directory's
+    gradlew, else the nearest one above it within the project (a project of
+    a multi-project build runs its root's)."""
+    directory = os.path.abspath(directory)
+    top = os.path.abspath(root) if root else directory
+    while not os.path.isfile(os.path.join(directory, "gradlew")):
+        if directory == top or not directory.startswith(top):
+            return None
+        directory = os.path.dirname(directory)
     text = _read(os.path.join(directory, "gradle", "wrapper", "gradle-wrapper.properties"))
     match = re.search(r"distributionUrl=.*gradle-(\d+(?:\.\d+)*)", text)
     return match.group(1) if match else None
@@ -132,9 +139,9 @@ def _newest_lts(table, version: str) -> int:
     return LTS[0] if table is _GRADLE_RUNS_ON else table[-1][-1]
 
 
-def ceiling(directory: str) -> tuple[int, str] | None:
+def ceiling(directory: str, root: str | None = None) -> tuple[int, str] | None:
     limits = []
-    gradle = _gradle_wrapper(directory)
+    gradle = _gradle_wrapper(directory, root)
     if gradle:
         limits.append((_newest_lts(_GRADLE_RUNS_ON, gradle), f"its Gradle wrapper is Gradle {gradle}"))
     kotlin = _kotlin(directory)
@@ -149,8 +156,8 @@ def main(argv: list[str]) -> int:
         for feature in toolchains(argv[1], argv[2]):
             print(feature)
         return 0
-    if len(argv) == 2 and argv[0] == "ceiling":
-        found = ceiling(argv[1])
+    if len(argv) in (2, 3) and argv[0] == "ceiling":
+        found = ceiling(argv[1], argv[2] if len(argv) == 3 else None)
         if found:
             print(f"{found[0]}\t{found[1]}")
         return 0

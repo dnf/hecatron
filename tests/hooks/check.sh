@@ -22,10 +22,19 @@ if [ "$#" -eq 2 ]; then _names=("$2"); else mapfile -t _names < <(ls "${_fixture
 _failed=0
 for _fixture in "${_names[@]}"; do
     _project="$(mktemp -d)"
-    cp -R "${_fixtures}/${_fixture}" "${_project}/${_lang}"
     # The fixture is the language's directory whatever its files are, also
-    # for languages with no manifest for init to detect (detect: []).
-    (cd "${_project}" && git init -q && git add -A && hecatron init --impl-path '{lang}' >/dev/null && hecatron add "${_lang}" >/dev/null)
+    # for languages with no manifest for init to detect (detect: []); or,
+    # with an impl-path file naming the language's directory in it, the
+    # whole project (a build file above the language's directory).
+    _impl_path="{lang}"
+    if [ -f "${_fixtures}/${_fixture}/impl-path" ]; then
+        cp -R "${_fixtures}/${_fixture}/." "${_project}/"
+        _impl_path="$(cat "${_project}/impl-path")"
+        rm "${_project}/impl-path"
+    else
+        cp -R "${_fixtures}/${_fixture}" "${_project}/${_lang}"
+    fi
+    (cd "${_project}" && git init -q && git add -A && hecatron init --impl-path "${_impl_path}" >/dev/null && hecatron add "${_lang}" >/dev/null)
     echo "### ${_lang}/${_fixture}: install"
     (cd "${_project}" && hecatron install "${_lang}" && hecatron doctor "${_lang}") || _failed=1
     _results=""

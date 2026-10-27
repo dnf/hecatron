@@ -428,11 +428,30 @@ jvm_build_tools_missing() {
         { [ -f "${_dir}/pom.xml" ] && [ ! -x "${_dir}/mvnw" ]; } && _maven=1
         { { [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ]; } && [ ! -x "${_dir}/gradlew" ]; } && _gradle=1
         [ -f "${_dir}/build.sbt" ] && _sbt=1
+        _gradle_project_above "${_dir}" && _gradle=1
     done < <(impl_dirs "$1")
     if [ "${_maven}" -eq 1 ] && ! _maven_current; then echo maven; fi
     if [ "${_gradle}" -eq 1 ] && ! has gradle; then echo gradle; fi
     if [ "${_sbt}" -eq 1 ] && ! has sbt; then echo sbt; fi
     return 0
+}
+# Whether a directory with no build file of its own is a project of a Gradle
+# build above it, in the project, without a wrapper (the hooks run Gradle
+# from the directory, and it finds the settings itself).
+_gradle_project_above() {
+    local _dir="$1" _root
+    [ -f "${_dir}/pom.xml" ] || [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ] ||
+        [ -f "${_dir}/build.sbt" ] && return 1
+    _root="$(cd "${ROOT}" && pwd -P)"
+    _dir="$(cd "${_dir}" && pwd -P)"
+    while [ "${_dir}" != "${_root}" ] && [ "${_dir}" != / ]; do
+        _dir="$(dirname "${_dir}")"
+        if [ -f "${_dir}/settings.gradle" ] || [ -f "${_dir}/settings.gradle.kts" ]; then
+            [ ! -x "${_dir}/gradlew" ]
+            return
+        fi
+    done
+    return 1
 }
 jvm_build_tools() {
     local _missing
@@ -463,7 +482,7 @@ jvm_jdks_missing() {
         while IFS= read -r _feature; do
             grep -qx "${_feature}" <<<"${_installed}" || echo "${_feature}"
         done < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" toolchains "${_dir}" "${ROOT}")
-        IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling "${_dir}") || continue
+        IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling "${_dir}" "${ROOT}") || continue
         [ -n "$(awk -v ceiling="${_ceiling}" '$1 <= ceiling' <<<"${_installed}")" ] || echo "${_ceiling}"
     done < <(impl_dirs "$1") | sort -un
 }
