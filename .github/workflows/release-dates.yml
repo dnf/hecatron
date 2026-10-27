@@ -1,12 +1,13 @@
-name: Release dates
+name: Weekly updates
 
-# Regenerate the release-date tables (languages/<lang>/releases.json) that
-# version resolution reads for old checkouts (docs/design.md §18), and open
-# or update a pull request when a language has new releases. Weekly, and on
-# demand.
-#
-# A pull request opened with the workflow's token doesn't start CI, so the
-# self-test runs here first; close and reopen the pull request to run CI on it.
+# Weekly, and on demand:
+# - Regenerate the release-date tables (languages/<lang>/releases.json) that
+#   version resolution reads for old checkouts (docs/design.md §18), and open
+#   or update a pull request when a language has new releases. A pull request
+#   opened with the workflow's token doesn't start CI, so the self-test runs
+#   here first; close and reopen the pull request to run CI on it.
+# - Check every external link in the docs, and keep one issue open listing
+#   those that don't work, closed again once they all do.
 
 on:
   schedule:
@@ -68,4 +69,40 @@ jobs:
           else
             echo "::error::Couldn't open the pull request. Allow GitHub Actions to create pull requests (Settings > Actions > General), or open it by hand: https://github.com/${GITHUB_REPOSITORY}/compare/main...${BRANCH}"
             exit 1
+          fi
+
+  links:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    env:
+      TITLE: Broken links in the docs
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the links
+        id: check
+        run: |
+          if python3 libexec/maintenance/check_links.py --markdown > "${RUNNER_TEMP}/links.md"; then
+            echo "broken=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "broken=true" >> "${GITHUB_OUTPUT}"
+          fi
+          cat "${RUNNER_TEMP}/links.md" >> "${GITHUB_STEP_SUMMARY}"
+      - name: Open, update or close the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BROKEN: ${{ steps.check.outputs.broken }}
+        run: |
+          issue="$(gh issue list --state open --search "in:title \"${TITLE}\"" --json number,title \
+            --jq "map(select(.title == env.TITLE)) | .[0].number // empty")"
+          if [ "${BROKEN}" = "true" ]; then
+            printf '\n\nChecked %s by the Weekly updates workflow; it updates this issue each week and closes it once every link works.\n' "$(date -u +%Y-%m-%d)" >> "${RUNNER_TEMP}/links.md"
+            if [ -n "${issue}" ]; then
+              gh issue edit "${issue}" --body-file "${RUNNER_TEMP}/links.md"
+            else
+              gh issue create --title "${TITLE}" --label documentation --body-file "${RUNNER_TEMP}/links.md"
+            fi
+          elif [ -n "${issue}" ]; then
+            gh issue close "${issue}" --comment "Every link works again as of $(date -u +%Y-%m-%d)."
           fi
