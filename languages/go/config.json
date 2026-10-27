@@ -6,6 +6,30 @@
     "go.mod"
   ],
   "path": [
+    "{home}/bin",
     "~/.local/bin"
+  ],
+  "version": "=1.27.3",
+  "track": "stable",
+  "pinFiles": [
+    {
+      "file": "go.mod",
+      "format": "go-mod-toolchain"
+    },
+    {
+      "file": ".tool-versions",
+      "format": "tool-versions",
+      "key": "golang"
+    },
+    {
+      "file": "mise.toml",
+      "format": "mise",
+      "key": "go"
+    },
+    {
+      "file": ".mise.toml",
+      "format": "mise",
+      "key": "go"
+    }
   ]
 }
