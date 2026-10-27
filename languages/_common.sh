@@ -125,6 +125,17 @@ perl_tools_missing() {
     return 0
 }
 
+# For Elm's installer and doctor: whether a component configures elm-review
+# (review/elm.json) and it isn't installed.
+elm_review_missing() {
+    local _dir
+    has elm-review && return 1
+    while IFS= read -r _dir; do
+        [ -f "${_dir}/review/elm.json" ] && return 0
+    done < <(impl_dirs elm)
+    return 1
+}
+
 # For the JVM languages' installers: Maven where a component builds with a
 # pom.xml and ships no ./mvnw, Gradle where it builds with build.gradle(.kts)
 # and ships no ./gradlew (the default hooks run the wrapper when there is one),
