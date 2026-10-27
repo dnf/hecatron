@@ -4,7 +4,14 @@
   "lintDependency": null,
   "detect": [
     "Makefile.PL",
-    "cpanfile",
+    "Build.PL",
+    "cpanfile"
+  ],
+  "detectSources": [
     "*.pm"
+  ],
+  "dirNames": [
+    "perl",
+    "perl5"
   ]
 }

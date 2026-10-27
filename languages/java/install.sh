@@ -1,43 +1,95 @@
 #!/usr/bin/env bash
-# Install OpenJDK 17 (shared by Java, Kotlin, Scala, Groovy)
+# Install a JDK (shared by Java, Kotlin, Scala, Groovy): Eclipse Temurin, the
+# default version and every version the project's components need, side by
+# side.
 source "$(dirname "$0")/../_common.sh"
 
+# Where JDKs go: the directories the platform's own tools look in
+# (/usr/libexec/java_home on macOS, update-java-alternatives and installed.sh
+# on Linux). macOS's per-user one needs no sudo.
+if [ "${OS}" = "macos" ]; then
+    _jvm_root="${HOME}/Library/Java/JavaVirtualMachines"
+    _sudo=""
+    _api_os="mac"
+else
+    _jvm_root="/usr/lib/jvm"
+    _sudo="${SUDO}"
+    _api_os="linux"
+fi
+case "$(uname -m)" in
+    x86_64) _api_arch="x64" ;;
+    *) _api_arch="aarch64" ;;
+esac
+
+# macOS always has a /usr/bin/java stub; it works once java_home finds a JDK.
 install_macos() {
-    brew_install openjdk@17
-    # Make Java 17 available to /usr/libexec/java_home
-    OPENJDK_PATH="$(brew --prefix openjdk@17)/libexec/openjdk.jdk"
-    JVM_DIR="/Library/Java/JavaVirtualMachines/openjdk-17.jdk"
-    if [ -d "$OPENJDK_PATH" ] && [ ! -e "$JVM_DIR" ]; then
-        log "Symlinking OpenJDK 17 (requires sudo)..."
-        $SUDO ln -sfn "$OPENJDK_PATH" "$JVM_DIR" || \
-            echo "   Skipped (run manually: sudo ln -sfn $OPENJDK_PATH $JVM_DIR)"
-    fi
+    /usr/libexec/java_home >/dev/null 2>&1 || _install_jdk "=$(default_version)"
 }
-
-# The distribution's OpenJDK 17, else Eclipse Temurin 17 from Adoptium's
-# repository, for distributions that no longer package 17 (Debian 13).
+# The default JDK, linked into /usr/local/bin, which every shell has on PATH,
+# when there is no java at all.
 install_linux() {
-    if apt_has openjdk-17-jdk-headless; then
-        apt_install openjdk-17-jdk-headless
-    else
-        _add_adoptium_source
-        apt_install temurin-17-jdk
+    has java && return
+    _install_jdk "=$(default_version)"
+    local tool
+    for tool in "${_jvm_root}/temurin-$(default_version)"/bin/*; do
+        $SUDO ln -sfn "${tool}" "/usr/local/bin/$(basename "${tool}")"
+    done
+}
+
+# Adoptium's general-availability releases of a feature version (the spec's
+# first component), as "version<TAB>link<TAB>sha256", version without the
+# build ("25.0.5" for jdk-25.0.5+8).
+_releases() {
+    local feature="${1#=}"
+    curl -fsSL "https://api.adoptium.net/v3/assets/feature_releases/${feature%%.*}/ga?os=${_api_os}&architecture=${_api_arch}&image_type=jdk&jvm_impl=hotspot&page_size=100" |
+        python3 -c '
+import json, sys
+for release in json.load(sys.stdin):
+    package = release["binaries"][0]["package"]
+    version = release["release_name"].removeprefix("jdk-").split("+")[0]
+    print(version + "\t" + package["link"] + "\t" + package["checksum"])
+'
+}
+_sha256() { if has sha256sum; then sha256sum "$1"; else shasum -a 256 "$1"; fi | cut -d' ' -f1; }
+_install_jdk() {
+    local releases version link checksum archive home
+    releases="$(_releases "$1")"
+    version="$(cut -f1 <<<"${releases}" | newest_match "$1")"
+    if [ -z "${version}" ]; then
+        echo "No Temurin JDK release matches ${1#=}" >&2
+        return 1
     fi
-}
-_add_adoptium_source() {
-    local keyring="/etc/apt/keyrings/adoptium.asc" codename
-    [ -f /etc/apt/sources.list.d/adoptium.list ] && return
-    codename="$(. /etc/os-release && echo "${VERSION_CODENAME}")"
-    log "Adding Adoptium's apt repository for ${codename}..."
-    $SUDO install -d -m 0755 "$(dirname "${keyring}")"
-    curl -fsSL https://packages.adoptium.net/artifactory/api/gpg/key/public | $SUDO tee "${keyring}" >/dev/null
-    echo "deb [signed-by=${keyring}] https://packages.adoptium.net/artifactory/deb ${codename} main" |
-        $SUDO tee /etc/apt/sources.list.d/adoptium.list >/dev/null
-    $SUDO apt-get update -qq
+    link="$(awk -F'\t' -v version="${version}" '$1 == version {print $2; exit}' <<<"${releases}")"
+    checksum="$(awk -F'\t' -v version="${version}" '$1 == version {print $3; exit}' <<<"${releases}")"
+    home="${_jvm_root}/temurin-${version}"
+    [ "${OS}" = "macos" ] && home="${home}.jdk"
+    archive="$(mktemp)"
+    log "Downloading Temurin JDK ${version}..."
+    curl -fsSL -o "${archive}" "${link}"
+    if [ "$(_sha256 "${archive}")" != "${checksum}" ]; then
+        echo "Checksum mismatch for ${link}" >&2
+        return 1
+    fi
+    ${_sudo} mkdir -p "${_jvm_root}"
+    ${_sudo} rm -rf "${home}"
+    ${_sudo} mkdir "${home}"
+    ${_sudo} tar -C "${home}" --strip-components=1 -xzf "${archive}"
+    rm -f "${archive}"
 }
 
-deps() { jvm_build_tools java; }
+_install_versions() {
+    local specs spec
+    specs="$(missing_versions java)"
+    while IFS= read -r spec; do
+        [ -n "${spec}" ] || continue
+        _install_jdk "${spec}"
+    done <<<"${specs}"
+}
+deps() {
+    _install_versions
+    jvm_build_tools java
+}
 
-log "Installing Java (OpenJDK 17)..."
+log "Installing Java (Temurin JDK)..."
 "install_${OS}"
 deps

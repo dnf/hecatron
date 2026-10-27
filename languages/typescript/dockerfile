@@ -1,4 +1,16 @@
-# Node.js 22 via NodeSource
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && rm -rf /var/lib/apt/lists/*
+# Node.js: each version the components use, the official build in
+# /opt/node/<version>, as install.sh installs it; the default version
+# (config.json), installed first, is linked into /usr/local/bin. A prefix
+# resolves to its newest release.
+# each-version
+RUN V="{version}" && \
+    if [ -z "{exact}" ]; then V="$(curl -fsSL https://nodejs.org/dist/index.json | python3 -c 'import json, sys; p = sys.argv[1].split("."); vs = [r["version"][1:] for r in json.load(sys.stdin) if r["version"][1:].split(".")[:len(p)] == p]; print(max(vs, key=lambda v: [int(x) for x in v.split(".")]))' "${V}")"; fi && \
+    if [ ! -d "/opt/node/${V}" ]; then \
+      mkdir -p "/opt/node/${V}" && \
+      curl -fsSL "https://nodejs.org/dist/v${V}/node-v${V}-linux-$(dpkg --print-architecture | sed 's/amd64/x64/').tar.xz" | \
+        tar -C "/opt/node/${V}" --strip-components=1 -xJ; \
+    fi && \
+    if [ ! -e /usr/local/bin/node ]; then \
+      for tool in node npm npx corepack; do ln -s "/opt/node/${V}/bin/${tool}" "/usr/local/bin/${tool}"; done; \
+    fi
+# end-each-version

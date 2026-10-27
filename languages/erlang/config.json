@@ -4,5 +4,9 @@
   "lintDependency": null,
   "detect": [
     "rebar.config"
+  ],
+  "dirNames": [
+    "erlang",
+    "erl"
   ]
 }

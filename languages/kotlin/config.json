@@ -2,7 +2,12 @@
   "abbreviation": "kt",
   "dependency": "java",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.kt"
+  ],
+  "dirNames": [
+    "kotlin",
+    "kt"
   ]
 }

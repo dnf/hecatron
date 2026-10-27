@@ -4,5 +4,9 @@
   "lintDependency": null,
   "detect": [
     "Project.toml"
+  ],
+  "dirNames": [
+    "julia",
+    "jl"
   ]
 }

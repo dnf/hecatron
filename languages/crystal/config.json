@@ -4,5 +4,9 @@
   "lintDependency": null,
   "detect": [
     "shard.yml"
+  ],
+  "dirNames": [
+    "crystal",
+    "cr"
   ]
 }

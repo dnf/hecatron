@@ -6,6 +6,10 @@
     "*.cabal",
     "stack.yaml"
   ],
+  "dirNames": [
+    "haskell",
+    "hs"
+  ],
   "path": [
     "~/.ghcup/bin"
   ]

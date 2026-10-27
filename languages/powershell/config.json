@@ -3,7 +3,13 @@
   "dependency": "pwsh",
   "lintDependency": null,
   "detect": [
-    "*.psd1",
+    "*.psd1"
+  ],
+  "detectSources": [
     "*.psm1"
+  ],
+  "dirNames": [
+    "powershell",
+    "pwsh"
   ]
 }

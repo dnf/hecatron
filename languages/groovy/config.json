@@ -2,7 +2,8 @@
   "abbreviation": "gy",
   "dependency": "java",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.groovy"
   ]
 }
