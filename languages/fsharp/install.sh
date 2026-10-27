@@ -1,13 +1,7 @@
 #!/usr/bin/env bash
-# Install .NET SDK (F#) — shares .NET SDK with C#
+# Install the .NET SDK (F#): C#'s installer, which F# shares, with F#'s
+# components' versions.
 source "$(dirname "$0")/../_common.sh"
 
-install_macos() { brew_install dotnet; }
-# The .NET SDK is C#'s; its installer knows where each distribution gets it.
-install_linux() { bash "$(dirname "$0")/../csharp/install.sh"; }
-
-deps() { :; }
-
 log "Installing F#..."
-"install_${OS}"
-deps
+bash "$(dirname "$0")/../csharp/install.sh" fsharp

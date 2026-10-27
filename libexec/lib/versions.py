@@ -149,6 +149,26 @@ def _rust_toolchain(text, key):
     return _plain(_first_line(text), exact=True)
 
 
+# How many leading parts of global.json's sdk.version each rollForward policy
+# keeps. The SDK accepts any version at or above the one named within that
+# scope, and the newest release there always qualifies. "patch", the default,
+# keeps the feature band (10.0.1xx), which a prefix can't name, so the
+# version stays as written. Under "major" and "latestMajor" the newest release
+# of the named major qualifies too, so that's what a component needs, though
+# the SDK may run a newer major's.
+_ROLL_FORWARD_PARTS = {
+    "disable": None,
+    "patch": 3,
+    "latestPatch": 3,
+    "feature": 2,
+    "latestFeature": 2,
+    "minor": 1,
+    "latestMinor": 1,
+    "major": 1,
+    "latestMajor": 1,
+}
+
+
 def _global_json(text, key):
     try:
         sdk = json.loads(text).get("sdk") or {}
@@ -156,7 +176,32 @@ def _global_json(text, key):
         return None
     if "version" not in sdk:
         return NOT_PINNED
-    return _plain(sdk["version"], exact=sdk.get("rollForward") == "disable")
+    policy = sdk.get("rollForward", "patch")
+    if policy == "disable" or policy not in _ROLL_FORWARD_PARTS:
+        return _plain(sdk["version"], exact=policy == "disable")
+    spec = _plain(sdk["version"])
+    # A pre-release (11.0.100-rc.1...) is named in full: its line has no
+    # release yet.
+    if spec is None or "-" in spec:
+        return spec
+    return ".".join(spec.split(".")[:_ROLL_FORWARD_PARTS[policy]])
+
+
+def _composer_json(text, key):
+    # config.platform.php is the PHP version Composer resolves dependencies
+    # for, so the project's tools expect it: the newest release on its line.
+    # The require constraint on php ("^8.1") isn't a pin: it's the range a
+    # library supports, which the default normally falls in, so a component
+    # keeps the default (the PHP doctor checks the constraint holds).
+    try:
+        config = json.loads(text).get("config") or {}
+        value = (config.get("platform") or {}).get("php")
+    except (json.JSONDecodeError, AttributeError):
+        return NOT_PINNED
+    if value is None:
+        return NOT_PINNED
+    spec = _plain(str(value))
+    return ".".join(spec.split(".")[:2]) if spec else None
 
 
 def _go_mod_toolchain(text, key):
@@ -198,6 +243,8 @@ FORMATS = {
     "nvmrc": _node_version,
     "node-version": _node_version,
     "ruby-version": _ruby_version,
+    "php-version": _python_version,
+    "composer-json": _composer_json,
     "swift-version": _python_version,
     "java-version": _java_version,
     "rust-toolchain": _rust_toolchain,
