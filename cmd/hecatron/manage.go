@@ -468,6 +468,7 @@ func (c *cli) check() (int, bool) {
 	if err != nil {
 		return 0, false
 	}
+	problems = append(problems, p.LicensesProblems()...)
 	var out strings.Builder
 	ok, err := writeGenerated(dockerfiles, true, &out)
 	if err != nil {
