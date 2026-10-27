@@ -1,0 +1,2 @@
+# Objective-C: GCC's Objective-C and GNUstep Base, which Debian and Ubuntu build with GCC
+# apt: build-essential cmake gobjc gnustep-make libgnustep-base-dev

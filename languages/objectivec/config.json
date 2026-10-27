@@ -1,0 +1,18 @@
+{
+  "abbreviation": "objc",
+  "dependency": "cc",
+  "lintDependency": null,
+  "detect": [
+    "*.xcodeproj",
+    "*.podspec"
+  ],
+  "detectSources": [
+    "*.m",
+    "*.mm"
+  ],
+  "dirNames": [
+    "objectivec",
+    "objective-c",
+    "objc"
+  ]
+}

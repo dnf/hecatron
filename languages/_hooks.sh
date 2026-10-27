@@ -174,3 +174,26 @@ cmake_build() {
     run cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
     run cmake --build build --parallel
 }
+
+# Objective-C: xcodebuild for an Xcode project on macOS (untested: no macOS
+# here; it acts on the project's default scheme and target), GNUstep make for
+# a GNUmakefile that includes GNUstep's common.make (which needs
+# GNUSTEP_MAKEFILES, from gnustep-config), else CMake, Meson or make as for C.
+objc_hook() {
+    if exists '*.xcodeproj' && has xcodebuild; then
+        case "$1" in
+            test) run xcodebuild test ;;
+            build) run xcodebuild build ;;
+            clean) run xcodebuild clean ;;
+            lint) skip "xcodebuild has no standard lint action" ;;
+        esac
+        return
+    fi
+    if is_gnustep_make && [ -z "${GNUSTEP_MAKEFILES:-}" ]; then
+        has gnustep-config || unknown "the GNUmakefile uses GNUstep make, and gnustep-config is not installed"
+        GNUSTEP_MAKEFILES="$(gnustep-config --variable=GNUSTEP_MAKEFILES)"
+        export GNUSTEP_MAKEFILES
+    fi
+    native_hook "$1"
+}
+is_gnustep_make() { [ -f GNUmakefile ] && grep -q 'GNUSTEP_MAKEFILES' GNUmakefile; }
