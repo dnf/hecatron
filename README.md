@@ -7,6 +7,13 @@
 
 <p align="center"><strong>Tools for polyglot repositories.</strong></p>
 
+<p align="center">
+  <a href="https://github.com/dnf/hecatron/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/dnf/hecatron/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/dnf/hecatron/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/dnf/hecatron?sort=semver"></a>
+  <a href="docs/coverage.md"><img alt="Languages" src="https://img.shields.io/badge/languages-54-3B5BFF"></a>
+  <a href="LICENSE.md"><img alt="License: MIT" src="https://img.shields.io/github/license/dnf/hecatron"></a>
+</p>
+
 Hecatron installs, checks and repairs the toolchains of every language in a
 repository, runs each language's tests, linters and builds in parallel, and
 keeps the CI workflows and Dockerfile that cover them in sync. It is for
@@ -14,56 +21,85 @@ repositories where one project is implemented in many programming languages.
 
 ## Why
 
-A useful library ought to exist in every language its users write. Usually it
-doesn't: there's a reference implementation in one language, ports by other
-people that lag behind it, and bindings to a native library that are awkward
-to install and feel foreign in the language that calls them. Writing and
-maintaining a native, idiomatic implementation per language used to need a
-team fluent in each one, so almost nobody did it.
+A useful library ought to exist in every language its users write. AI coding
+agents now make that affordable: one person can ship the same library natively
+in a dozen or fifty languages, and the best place for those implementations is
+one repository, where a fix lands everywhere in one pull request and every
+language runs the same shared tests ([more](docs/why-one-repository.md)).
 
-AI coding agents change that cost. An agent can write, port and maintain an
-implementation in a language its human maintainer doesn't know, so one person
-can ship the same library natively in a dozen or fifty languages. Once
-implementations are cheap, the best place for them is **one repository**:
+What's left is the infrastructure, and it grows with every language: a
+toolchain to install and keep working, test, lint and build commands, CI jobs
+and Dockerfile lines, each different. With fifty languages, keeping that
+working becomes the job. Hecatron does that job. It grew up inside
+[sayable](https://github.com/dnf/sayable), a set of formatting libraries in 51
+languages, and was split out so any polyglot repository can use it.
 
-- **One change lands everywhere.** A bug fix or a new feature is one pull
-  request across every language, not fifty, and no implementation drifts.
-- **One specification and one test suite.** Shared test data defines the
-  behaviour, and every language's tests run against it.
-- **Agents see everything.** An agent porting a change reads the
-  implementation it's porting from, in the same checkout.
-- **Users get native packages.** Each language publishes to its own registry
-  (crates.io, PyPI, npm, Maven Central...) with an API that feels native, not
-  a wrapper around someone else's runtime.
+## Install
 
-What's left is the infrastructure, and it grows with every language. Each one
-has a toolchain to install, and toolchains break in their own ways: a linter
-built with an older compiler, a virtualenv that moved, a Homebrew formula
-left unlinked. Each has its own test, lint and build commands, CI jobs and
-Dockerfile lines. With fifty languages, keeping that working becomes the job.
+Hecatron runs on the bash and Python 3 that current macOS and Linux ship (bash
+3.2 or later, Python 3.9 or later). On macOS, `python3` comes with the Command
+Line Tools (`xcode-select --install`); hecatron says so if it's missing.
 
-Hecatron does that job. It grew up inside
-[sayable](https://github.com/dnf/sayable), a set of human-friendly formatting
-libraries implemented in 51 languages, and was split out so any polyglot
-repository can use it.
+```bash
+git clone https://github.com/dnf/hecatron ~/.hecatron
+export PATH="$HOME/.hecatron/bin:$PATH"     # add to your shell profile
+```
+
+## Quick start
+
+```bash
+cd your-repo
+hct init          # detects each language and where its code lives, writes .hecatron/config.json
+hct doctor --fix  # installs and repairs every language's toolchain
+hct test          # every language's tests, in parallel
+hct test go       # one language
+```
+
+`hct` is short for `hecatron`. `hct help` lists every command, and
+`hct <command> help` its options.
 
 ## What it does
 
-- **Toolchains.** `hecatron doctor` checks that every language's toolchain is
-  installed and actually works; `--fix` runs its installer, which is
-  idempotent and repairs the broken states the doctor finds. Installers cover
-  macOS and Linux (Debian and Ubuntu).
-- **Running.** `hecatron test`, `lint`, `build` and `clean` run each
-  language's project hooks for every component, or for every language at once
-  in parallel with a live progress display and per-language logs.
-- **Generated files.** `hecatron workflows` writes one CI workflow per
-  language, and `hecatron dockerfile` a Dockerfile with every toolchain, each
-  with a DO NOT EDIT banner; `hecatron check` verifies they're current.
-- **Project management.** `hecatron add`, `remove`, `enable` and `disable`
-  languages; `list` shows where each language's files come from.
+- **Toolchains that keep working.** `hct doctor` checks that every language's
+  toolchain is installed and actually works; `--fix` runs its installer,
+  which is idempotent and repairs the broken states the doctor finds (a
+  linter built with an older compiler, a moved virtualenv, an unlinked
+  Homebrew formula).
+- **The right version for each component.** For Python, Go, Rust, Node.js and
+  Java, a pinned default, or the version a component asks for in its
+  ecosystem's own file (`.python-version`, `go.mod`, `rust-toolchain.toml`,
+  `.nvmrc`, `.java-version`, `.tool-versions`, `mise.toml`...). Versions are
+  installed side by side, and each component runs with its own.
+- **No hook files for conventional projects.** Default test, lint, build and
+  clean commands for all 54 languages, chosen from the build files present
+  (`pom.xml` → Maven, `Cargo.toml` → Cargo, `CMakeLists.txt` → CMake and
+  CTest...). A project overrides any of them with its own script.
+- **Everything at once.** `hct test`, `lint`, `build` and `clean` run every
+  language in parallel with a live display and a log per language.
+- **Generated CI and Dockerfile.** `hct workflows` writes one CI workflow per
+  language and `hct dockerfile` an image with every toolchain (and, for the
+  languages with versions, each version the components use); `hct check`
+  fails when either falls behind.
+- **Finds your layout.** `hct init` recognises the directory names real
+  projects use (`dotnet/` for C#, `javascript/`, `lib/py`...) and skips
+  examples, tests and vendored code.
 
 Hecatron calls each language's own tools (`cargo`, `go`, `gradle`, `uv`...).
 It doesn't build anything itself, and it doesn't know what your code does.
+
+## Tested
+
+- **Every language, every week,** on fresh Ubuntu 24.04, Ubuntu 26.04 and
+  Debian 13 machines (x86_64 and arm64) and on macOS (Apple Silicon and
+  Intel): install, doctor and reinstall, and for 29 languages a hello world.
+  [docs/coverage.md](docs/coverage.md) has the matrix.
+- **Real projects.** [sayable](https://github.com/dnf/sayable) runs all 51 of
+  its languages through hecatron. On a fresh machine,
+  [cucumber/tag-expressions](https://github.com/cucumber/tag-expressions)
+  (9 languages) and
+  [cucumber/cucumber-expressions](https://github.com/cucumber/cucumber-expressions)
+  (8) pass every language's own test suite with `hct init`, `hct install`
+  and `hct test`, and no configuration.
 
 ## Hecatron or ad hoc?
 
@@ -76,28 +112,17 @@ For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
 | CI and Dockerfile kept in sync by hand | `hct workflows`, `hct dockerfile`<br>`hct check` catches drift |
 | Each project fixes toolchain rot itself | Fixed once, tested on every supported distribution |
 
-## Quick start
+## Compared with other tools
 
-Hecatron runs on the bash and Python 3 that current macOS and Linux ship (bash
-3.2 or later, Python 3.9 or later). On macOS, `python3` comes with the Command
-Line Tools (`xcode-select --install`); hecatron says so if it's missing.
-
-```bash
-git clone https://github.com/dnf/hecatron && export PATH="$PWD/hecatron/bin:$PATH"
-
-cd your-repo
-hecatron init          # detects languages from tracked manifests, writes .hecatron/config.json
-hecatron doctor        # checks each toolchain; --fix installs and repairs
-hecatron test          # every language's tests, in parallel
-hct test go -c api     # one language, one component (hct is the short form)
-```
-
-`hecatron help` lists every command, and `hecatron <command> help` its options.
+| Tool | What it does | Next to hecatron |
+| --- | --- | --- |
+| [mise](https://mise.jdx.dev), [asdf](https://asdf-vm.com) | Install and switch tool versions | Hecatron also installs versions, and reads `.tool-versions` and `mise.toml`, but its job is the whole loop: repairing toolchains, running every language's tests and lints, and generating CI |
+| [Nx](https://nx.dev), [Bazel](https://bazel.build), [moon](https://moonrepo.dev), [Pants](https://www.pantsbuild.org) | A build graph across the repository: dependencies between targets, caching, building only what changed | Hecatron has no build graph or cache; it runs each language's own build tool. It fits one library implemented separately per language; a repository whose parts depend on each other across languages is those tools' ground |
+| [devbox](https://www.jetify.com/devbox), [Nix](https://nixos.org) | Reproducible environments from Nix packages | Hecatron uses each ecosystem's own installers (official releases, rustup, uv, apt, Homebrew) and checks that they work, without Nix |
 
 ## Configuring a project
 
-A project keeps its hecatron configuration in `.hecatron/`, committed with the
-code:
+`hct init` writes `.hecatron/config.json`, committed with the code:
 
 ```json
 {
@@ -109,12 +134,12 @@ code:
 }
 ```
 
-Each language's project hooks live in `.hecatron/languages/<lang>/`:
-`test.sh`, `lint.sh`, `build.sh` and `clean.sh`. Each runs once per component,
-from that component's directory for the language. A project can also override
-any file of a built-in language definition there, or define a language
-hecatron doesn't know. [docs/design.md](docs/design.md) describes the full
-configuration.
+A project can override any default hook with its own
+`.hecatron/languages/<lang>/test.sh` (or `lint.sh`, `build.sh`, `clean.sh`),
+run once per component from that component's directory for the language. It
+can also override any file of a built-in language definition there, or define
+a language hecatron doesn't know. [docs/design.md](docs/design.md) describes
+the full configuration.
 
 ## Languages
 
@@ -131,20 +156,21 @@ Adding another is a directory of small scripts; see
 
 ## Status
 
-Hecatron is early: version 0.1. The command works and runs sayable's checks,
-but expect changes before 1.0.
+Hecatron is young: version 0.2. It works and runs sayable's checks, but
+expect changes before 1.0. Changes are listed in
+[CHANGELOG.md](CHANGELOG.md).
 
 - **Platforms:** macOS (Apple Silicon and Intel) and Linux (Debian and
-  Ubuntu). Windows isn't planned; installers and hooks are bash.
-- **Installing:** from a clone, as above. A Homebrew tap and a GitHub Action
-  for CI are planned.
-- **Next:** default hooks, so a conventionally laid-out project needs no hook
-  files, and per-language toolchain versions a project can choose.
+  Ubuntu, x86_64 and arm64). Windows isn't planned; installers and hooks are
+  bash.
+- **Next:** a one-line installer and a GitHub Action for CI, and versions for
+  Ruby, PHP and .NET.
 
 ## Documentation
 
 | Document | Contents |
 | --- | --- |
+| [docs/why-one-repository.md](docs/why-one-repository.md) | Why one library in many languages belongs in one repository |
 | [docs/design.md](docs/design.md) | How hecatron works and why: concepts, configuration, commands, and the decisions behind them |
 | [docs/coverage.md](docs/coverage.md) | Which languages install and work on which platforms |
 | [docs/hecatron-vs-ad-hoc.md](docs/hecatron-vs-ad-hoc.md) | A ten-language library maintained with hecatron and without it |
@@ -153,32 +179,17 @@ but expect changes before 1.0.
 | [docs/build-conventions.md](docs/build-conventions.md) | Where each language's build artifacts go |
 | [libexec/runner/README.md](libexec/runner/README.md) | The parallel runner and its live display |
 
+## Getting help
+
+Questions, bugs and ideas go to
+[GitHub issues](https://github.com/dnf/hecatron/issues). For a security
+problem, see [SECURITY.md](SECURITY.md).
+
 ## Contributing
 
-Issues and pull requests are welcome. Before sending a change, run
-`hct self-test`, which runs ShellCheck (zero warnings) and the unit tests.
-
-[CLAUDE.md](CLAUDE.md) has the conventions the code follows (shell style,
-idempotent installers, generic language definitions), for people and coding
-agents alike. Changes to how hecatron works start in
-[docs/design.md](docs/design.md).
-
-## Repository layout
-
-| Path | Contents |
-| --- | --- |
-| [`bin/hecatron`](bin/hecatron), [`bin/hct`](bin/hct) | The command |
-| [`languages/<lang>/`](languages/) | Language definitions: `config.json`, `install.sh`, `uninstall.sh`, `doctor.sh`, Dockerfile snippet, and default `hooks/` |
-| [`languages/_common.sh`](languages/_common.sh) | Shared installer helpers |
-| [`libexec/lib/`](libexec/lib/) | The project model (`project.py`), shell helpers, per-component dispatch |
-| [`libexec/commands/`](libexec/commands/) | The commands (`run.sh` for test/lint/build/clean, `manage.py` for configuration, `self-test.sh`) |
-| [`libexec/runner/`](libexec/runner/) | The parallel runner and its docs |
-| [`libexec/codegen/`](libexec/codegen/) | DO NOT EDIT banners and the Dockerfile generator |
-| [`libexec/`](libexec/)`{metadata,onboarding,bootstrap,lint}/` | Metadata updates, onboarding, machine bootstrap, shellcheck |
-| [`tests/`](tests/) | Unit and command tests against fixture repositories, and the Docker install tests |
-| [`docs/`](docs/) | Design, installers, adding a language, build conventions |
-| [`assets/logo/`](assets/logo/) | The logo, favicons and social preview, and the script that builds them |
-| [`examples/sayable/`](examples/sayable/) | Sayable's project hooks, CI workflow templates and config at the time of the split |
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has
+the checks to run (`hct self-test`), the conventions the code follows, and a
+map of the repository.
 
 ## Acknowledgements
 
