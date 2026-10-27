@@ -3,7 +3,7 @@
   "homepage": "https://fortran-lang.org",
   "summary": "The original high-performance numerical language, still current.",
   "abbreviation": "ft",
-  "dependency": "cmake",
+  "dependency": "gfortran",
   "lintDependency": null,
   "detect": [
     "fpm.toml"
