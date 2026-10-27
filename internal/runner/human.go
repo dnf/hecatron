@@ -61,7 +61,7 @@ func WriteChart(w io.Writer, r *Report, slotMode bool, width int) {
 	maxBar := max(width-prefixW, 10)
 	longest := int64(1)
 	for _, result := range r.Results {
-		if result.Status == Passed || result.Status == Failed {
+		if result.Ran() {
 			longest = max(longest, Deciseconds(result.Duration))
 		}
 	}
@@ -77,11 +77,14 @@ func WriteChart(w io.Writer, r *Report, slotMode bool, width int) {
 		default:
 			ds := Deciseconds(result.Duration)
 			bar := min(max(int(ds*int64(maxBar)/longest), 1), maxBar)
-			mark := "✓"
-			if result.Status == Failed {
+			mark, note := "✓", ""
+			switch result.Status {
+			case Failed:
 				mark = "✗"
+			case TimedOut:
+				mark, note = "✗", " timed out ("+FormatLimit(result.Limit.Duration)+" limit: "+result.Limit.Describe()+")"
 			}
-			fmt.Fprintf(w, "  %s %-*s %6s %s\n", mark, labelW, result.Label, formatDeciseconds(ds), strings.Repeat("█", bar))
+			fmt.Fprintf(w, "  %s %-*s %6s %s%s\n", mark, labelW, result.Label, formatDeciseconds(ds), strings.Repeat("█", bar), note)
 		}
 	}
 }
@@ -114,7 +117,7 @@ func writeAxis(w io.Writer, longest int64, prefixW, maxBar int) {
 // WriteTally writes the passed count, the log directory and each failed
 // job's log, as run-parallel.sh ends.
 func WriteTally(w io.Writer, r *Report) {
-	passed, failed, _ := r.counts()
+	passed, failed, timedOut, _ := r.counts()
 	notInstalled, disabled := 0, 0
 	for _, result := range r.Results {
 		switch result.Status {
@@ -125,20 +128,23 @@ func WriteTally(w io.Writer, r *Report) {
 		}
 	}
 	extra := ""
+	if timedOut > 0 {
+		extra += fmt.Sprintf(", %d timed out", timedOut)
+	}
 	if notInstalled > 0 {
 		extra += fmt.Sprintf(", %d not installed", notInstalled)
 	}
 	if disabled > 0 {
 		extra += fmt.Sprintf(", %d disabled", disabled)
 	}
-	fmt.Fprintf(w, "\n%d/%d passed%s (%s wall time)\nLogs: %s/\n", passed, passed+failed, extra,
+	fmt.Fprintf(w, "\n%d/%d passed%s (%s wall time)\nLogs: %s/\n", passed, passed+failed+timedOut, extra,
 		formatDeciseconds(Deciseconds(r.Wall)), r.LogDir)
-	if failed == 0 {
+	if failed+timedOut == 0 {
 		return
 	}
 	fmt.Fprintln(w)
 	for _, result := range r.Results {
-		if result.Status != Failed {
+		if !result.Unsuccessful() {
 			continue
 		}
 		fmt.Fprintf(w, "=== %s ===\n", result.Label)

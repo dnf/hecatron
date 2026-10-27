@@ -198,6 +198,7 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `ci.image` | The image GitLab jobs run in (binary only) | `ubuntu:24.04` |
 | `lint.format` | Whether `hecatron lint` runs each language's format check: `false`, or per language (`{"haskell": false}`) | `true` |
 | `tasks` | Extra named jobs per action (`test`, `lint`, ...): shell commands run from the root, in parallel with the languages and by name (`hecatron test codegen`) | `{}` |
+| `taskPaths` | Per task name, the paths whose changes it depends on, for `--changed` (`{"codegen": ["codegen/", "*.proto"]}`); a task without runs on any change | `{}` |
 | `metadata` | JSON file `hecatron metadata` reads (name, description, author, license, repository) | none |
 | `logs` | Log directory for runs | `.logs` |
 
@@ -1103,6 +1104,26 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
   component, a bad `-j`, `-s` or `--output`) exit 2; run-parallel.sh's `-j`
   and `-s` errors exited 1.
 - `rebuild` and `retest` keep `-c` for both steps (run.sh drops it).
+- **Time limits** (#124): each job's limit is 5× the median of its last 10
+  passing runs in `history.log`, at least 10 minutes, none without one;
+  `--timeout` or `HECATRON_TIMEOUT` sets one for every job, `0` none. At the
+  limit the job's process group is stopped (SIGTERM, then SIGKILL after five
+  seconds), and on Linux the processes carrying its token
+  (`HECATRON_JOB_TOKENS`) that left the group; the job is "timed out",
+  apart from failed, in every format, with its limit and its source, and
+  the run exits 1. Only the Go runner has them (docs/runner.md).
+- **`--changed [ref]`** (#91, #99; `internal/changed`) runs only what the
+  files changed since the merge base with `ref` (else the pull request's
+  base in CI, else the default branch) touch, uncommitted and untracked
+  files included: a file in a language's directory selects it and the
+  component; a hook selects its language; the rest of `.hecatron/`
+  everything; a build or version file above components (a definition's
+  `detect`, `sharedBuildFiles`, `pinFiles`, `supportFiles`, or a known
+  shared build, workspace or lock file) the components below it. Project
+  tasks run when a file matches their `taskPaths`, else on any change. No
+  base to measure from (a shallow clone, a CI run outside a pull request)
+  runs everything with a note; nothing is fetched. The rules and the base
+  are said in one line first. Only the Go runner has it (docs/runner.md).
 
 ### Migration
 
