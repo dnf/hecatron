@@ -10,6 +10,34 @@
     "rs"
   ],
   "path": [
+    "{home}/bin",
     "~/.cargo/bin"
+  ],
+  "version": "=1.99.1",
+  "track": "stable",
+  "pinFiles": [
+    {
+      "file": "rust-toolchain.toml",
+      "format": "rust-toolchain-toml"
+    },
+    {
+      "file": "rust-toolchain",
+      "format": "rust-toolchain"
+    },
+    {
+      "file": ".tool-versions",
+      "format": "tool-versions",
+      "key": "rust"
+    },
+    {
+      "file": "mise.toml",
+      "format": "mise",
+      "key": "rust"
+    },
+    {
+      "file": ".mise.toml",
+      "format": "mise",
+      "key": "rust"
+    }
   ]
 }

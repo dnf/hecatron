@@ -170,6 +170,14 @@ class InitTest(Fixture):
         self.assertEqual(manage.infer_layout(found, {"ruby": ["ruby", "rb"]}, {"lib", "lib/go", "lib/java", "lib/rb"}),
                          (["."], "lib/{lang}", {}))
 
+    def test_a_directory_another_language_was_found_in_isnt_borrowed(self):
+        # Cucumber messages: javascript/ is TypeScript's (it has a tsconfig.json),
+        # so JavaScript's package.json in jsonschema/ gets its own path.
+        found = {"go": {"go"}, "java": {"java"}, "typescript": {"javascript"}, "javascript": {"jsonschema"}}
+        self.assertEqual(manage.infer_layout(found, {"javascript": ["javascript", "js"]},
+                                             {"go", "java", "javascript", "jsonschema"}),
+                         (["."], "{lang}", {"javascript": "jsonschema", "typescript": "javascript"}))
+
     def detect(self, files: dict[str, str], defs: dict[str, dict]):
         for path, content in files.items():
             write(self.path(path), content)
@@ -288,6 +296,28 @@ class LanguageDirectoryTest(Fixture):
         os.makedirs(self.path("c"))
         os.makedirs(self.path("c_glib"))
         self.assertEqual(project.load(self.root).impl_dirs("c"), [(".", self.path("c"))])
+
+    def test_a_directory_holding_a_detect_unless_file_isnt_the_languages(self):
+        self.configure(languages=["javascript", "typescript"], implPath="{lang}")
+        write(self.path(".hecatron", "languages", "javascript", "config.json"),
+              json.dumps({"dirNames": ["js"], "detectUnless": ["tsconfig.json"]}))
+        write(self.path("javascript", "tsconfig.json"), "{}")
+        write(self.path("js", "package.json"), "{}")
+        self.assertEqual(project.load(self.root).impl_dirs("javascript"), [(".", self.path("js"))])
+
+    def test_a_language_whose_only_directory_holds_a_detect_unless_file_has_none(self):
+        self.configure(languages=["javascript"], implPath="{lang}")
+        write(self.path(".hecatron", "languages", "javascript", "config.json"),
+              json.dumps({"detectUnless": ["tsconfig.json"]}))
+        write(self.path("javascript", "tsconfig.json"), "{}")
+        self.assertEqual(project.load(self.root).impl_dirs("javascript"), [])
+
+    def test_an_implpaths_entry_is_taken_as_written(self):
+        self.configure(languages=["javascript"], implPaths={"javascript": "web"})
+        write(self.path(".hecatron", "languages", "javascript", "config.json"),
+              json.dumps({"detectUnless": ["tsconfig.json"]}))
+        write(self.path("web", "tsconfig.json"), "{}")
+        self.assertEqual(project.load(self.root).impl_dirs("javascript"), [(".", self.path("web"))])
 
     def test_impl_paths_override_the_template_for_one_language(self):
         self.configure(languages=["go", "typescript"], components=["a", "b"], implPath="{component}/{lang}",

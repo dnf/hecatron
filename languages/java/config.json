@@ -7,5 +7,44 @@
   ],
   "detectSources": [
     "*.java"
-  ]
+  ],
+  "path": [
+    "{home}/bin"
+  ],
+  "version": "=25.0.5",
+  "track": "lts",
+  "releaseLine": 1,
+  "pinFiles": [
+    {
+      "file": ".java-version",
+      "format": "java-version"
+    },
+    {
+      "file": ".sdkmanrc",
+      "format": "sdkmanrc",
+      "key": "java"
+    },
+    {
+      "file": "gradle/gradle-daemon-jvm.properties",
+      "format": "gradle-daemon-jvm"
+    },
+    {
+      "file": ".tool-versions",
+      "format": "tool-versions",
+      "key": "java"
+    },
+    {
+      "file": "mise.toml",
+      "format": "mise",
+      "key": "java"
+    },
+    {
+      "file": ".mise.toml",
+      "format": "mise",
+      "key": "java"
+    }
+  ],
+  "env": {
+    "JAVA_HOME": "{home}"
+  }
 }
