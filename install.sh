@@ -59,7 +59,8 @@ _hecatron_linux_packages() {
     _hecatron_say "Installing what hecatron needs:${_hecatron_missing}..."
     # shellcheck disable=SC2086 # one word per package
     if command -v apt-get >/dev/null 2>&1; then
-        _hecatron_sudo apt-get update -qq && _hecatron_sudo apt-get install -y -qq ${_hecatron_missing} ca-certificates
+        _hecatron_sudo apt-get -o Acquire::Retries=3 update -qq &&
+            _hecatron_sudo apt-get -o Acquire::Retries=3 install -y -qq ${_hecatron_missing} ca-certificates
     elif command -v dnf >/dev/null 2>&1; then
         _hecatron_sudo dnf install -y -q ${_hecatron_missing}
     elif command -v zypper >/dev/null 2>&1; then
@@ -101,26 +102,37 @@ _hecatron_script_dir() {
     fi
 }
 
+# A network command, tried up to three times: a transient failure shouldn't
+# end the install.
+_hecatron_retry() {
+    _hecatron_try=1
+    until "$@"; do
+        [ "${_hecatron_try}" -ge 3 ] && return 1
+        _hecatron_say "That failed; trying again in $((_hecatron_try * 5)) s..." >&2
+        sleep $((_hecatron_try * 5))
+        _hecatron_try=$((_hecatron_try + 1))
+    done
+}
+
 # Clone, or bring an existing install to the requested version.
 _hecatron_fetch() {
     _hecatron_dir="$1"
     _hecatron_repo="${HECATRON_REPO:-https://github.com/dnf/hecatron}"
     _hecatron_version="${HECATRON_VERSION:-}"
     if [ -z "${_hecatron_version}" ]; then
-        _hecatron_version="$(git ls-remote --tags --refs "${_hecatron_repo}" 'v*' 2>/dev/null |
+        _hecatron_version="$(_hecatron_retry git ls-remote --tags --refs "${_hecatron_repo}" 'v*' 2>/dev/null |
             sed 's|.*refs/tags/||' | sort -t. -k1,1 -k2,2n -k3,3n | tail -1)"
         [ -n "${_hecatron_version}" ] || _hecatron_version="main"
     fi
     if [ -d "${_hecatron_dir}/.git" ]; then
         _hecatron_say "Updating ${_hecatron_dir} to ${_hecatron_version}..."
-        git -C "${_hecatron_dir}" fetch --quiet --tags --force "${_hecatron_repo}" "${_hecatron_version}" &&
+        _hecatron_retry git -C "${_hecatron_dir}" fetch --quiet --tags --force "${_hecatron_repo}" "${_hecatron_version}" &&
             git -C "${_hecatron_dir}" checkout --quiet --force FETCH_HEAD
     elif [ -e "${_hecatron_dir}" ]; then
         _hecatron_fail "${_hecatron_dir} exists and isn't a hecatron clone; move it or set HECATRON_INSTALL_DIR"
     else
         _hecatron_say "Installing hecatron ${_hecatron_version} into ${_hecatron_dir}..."
-        git clone --quiet --branch "${_hecatron_version}" "${_hecatron_repo}" "${_hecatron_dir}" 2>/dev/null ||
-            git clone --quiet "${_hecatron_repo}" "${_hecatron_dir}"
+        _hecatron_retry git clone --quiet --branch "${_hecatron_version}" "${_hecatron_repo}" "${_hecatron_dir}"
     fi
 }
 
@@ -217,11 +229,11 @@ fi
 
 _hecatron_install
 _hecatron_status=$?
-unset -f _hecatron_say _hecatron_fail _hecatron_sudo _hecatron_python_ok _hecatron_macos_clt \
+unset -f _hecatron_say _hecatron_fail _hecatron_retry _hecatron_sudo _hecatron_python_ok _hecatron_macos_clt \
     _hecatron_linux_packages _hecatron_prerequisites _hecatron_script_dir _hecatron_fetch _hecatron_write_env \
     _hecatron_add_line _hecatron_modify_path _hecatron_install
 unset _hecatron_src _hecatron_dir _hecatron_repo _hecatron_version _hecatron_bin _hecatron_file \
     _hecatron_line _hecatron_env_line _hecatron_rc _hecatron_here _hecatron_target _hecatron_sourced \
-    _hecatron_flag _hecatron_label _hecatron_missing
+    _hecatron_flag _hecatron_label _hecatron_missing _hecatron_try
 # Sourced: hand back the status without leaving the user's shell; run: exit with it.
 return "${_hecatron_status}" 2>/dev/null || exit "${_hecatron_status}"

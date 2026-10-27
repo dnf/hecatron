@@ -11,6 +11,12 @@ _hook_action="$(basename "$0" .sh)"
 
 has() { command -v "$1" &>/dev/null; }
 
+# Downloads retry transient failures, as in the installers (_common.sh).
+curl() {
+    command curl --retry 4 --retry-delay 3 --retry-connrefused --connect-timeout 30 \
+        --speed-limit 1024 --speed-time 60 "$@"
+}
+
 # Whether any file matches a glob in this directory, e.g. `exists '*.csproj'`.
 exists() {
     local _match
