@@ -635,6 +635,8 @@ AGENTS_SECTION = f"""{AGENTS_BEGIN}
 This repository uses [hecatron](https://github.com/dnf/hecatron): the same
 commands for every language. `hct help agents` is a compact reference.
 
+- Start with `hct status`: each language, its toolchain, its last runs and
+  what changed, and what to run next.
 - `hct test`, `hct lint`, `hct build`: every language; name one to run only
   it (`hct test go`). `hct format` fixes formatting; `hct deps` fetches
   dependencies.
