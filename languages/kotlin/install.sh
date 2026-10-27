@@ -14,7 +14,7 @@ install_linux() {
     fi
 }
 
-deps() { :; }
+deps() { jvm_build_tools kotlin; }
 
 log "Installing Kotlin (JDK 17)..."
 "install_${OS}"

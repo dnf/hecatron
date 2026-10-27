@@ -101,6 +101,47 @@ apt_has() {
     [[ "${policy}" == *"Candidate: "[!\(]* ]]
 }
 
+# For the JVM languages' installers: Maven where a component builds with a
+# pom.xml and ships no ./mvnw, and Gradle where it builds with build.gradle(.kts)
+# and ships no ./gradlew (the default hooks run the wrapper when there is one).
+_JVM_GRADLE_VERSION="9.8.2"
+# The build tools a language's components need and lack, one per line.
+jvm_build_tools_missing() {
+    local _dir _maven=0 _gradle=0
+    while IFS= read -r _dir; do
+        { [ -f "${_dir}/pom.xml" ] && [ ! -x "${_dir}/mvnw" ]; } && _maven=1
+        { { [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ]; } && [ ! -x "${_dir}/gradlew" ]; } && _gradle=1
+    done < <(impl_dirs "$1")
+    if [ "${_maven}" -eq 1 ] && ! has mvn; then echo maven; fi
+    if [ "${_gradle}" -eq 1 ] && ! has gradle; then echo gradle; fi
+    return 0
+}
+jvm_build_tools() {
+    local _missing
+    _missing="$(jvm_build_tools_missing "$1")"
+    if [[ "${_missing}" == *maven* ]]; then
+        log "Installing Maven..."
+        if [ "${OS}" = "macos" ]; then brew_install maven; else apt_install maven; fi
+    fi
+    if [[ "${_missing}" == *gradle* ]]; then
+        if [ "${OS}" = "macos" ]; then brew_install gradle; else _install_gradle; fi
+    fi
+}
+# Gradle's own distribution: distributions' Gradle is years old.
+_install_gradle() {
+    local _root="/opt/gradle/gradle-${_JVM_GRADLE_VERSION}" _zip
+    if [ ! -x "${_root}/bin/gradle" ]; then
+        has unzip || apt_install unzip
+        log "Downloading Gradle ${_JVM_GRADLE_VERSION}..."
+        _zip="$(mktemp)"
+        curl -fsSL -o "${_zip}" "https://services.gradle.org/distributions/gradle-${_JVM_GRADLE_VERSION}-bin.zip"
+        $SUDO mkdir -p /opt/gradle
+        $SUDO unzip -q -o "${_zip}" -d /opt/gradle
+        rm -f "${_zip}"
+    fi
+    $SUDO ln -sfn "${_root}/bin/gradle" /usr/local/bin/gradle
+}
+
 # For a definition's releases.sh: the latest release of each of a product's
 # release lines from endoflife.date, newest first, as "version<TAB>flags",
 # where flags lists "lts" (a long-term support line as of today) and "eol"

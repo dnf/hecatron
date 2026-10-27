@@ -36,7 +36,7 @@ _add_adoptium_source() {
     $SUDO apt-get update -qq
 }
 
-deps() { :; }
+deps() { jvm_build_tools java; }
 
 log "Installing Java (OpenJDK 17)..."
 "install_${OS}"
