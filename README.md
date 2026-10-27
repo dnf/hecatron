@@ -22,11 +22,20 @@ repositories where one project is implemented in many programming languages.
 
 ## Why
 
-A useful library ought to exist in every language its users write. AI coding
-agents now make that affordable: one person can ship the same library natively
-in a dozen or fifty languages, and the best place for those implementations is
-one repository, where a fix lands everywhere in one pull request and every
-language runs the same shared tests ([more](docs/why-one-repository.md)).
+Historically, a library has existed in one language, or at most a handful.
+That was never a decision about where it belonged; it was a cost. Porting a
+library takes time, and keeping the ports in sync with the original takes
+time every release after, so most libraries never get ported, and the ports
+that exist lag behind. That's why learning a new language has also meant
+learning a new ecosystem of libraries: the date library, the parser, the
+client you rely on in one language usually isn't there in the next.
+
+It doesn't have to be that way any more. AI coding agents make writing and
+maintaining an implementation in another language cheap, so one person can
+ship the same library natively in a dozen or fifty languages. The best place
+for those implementations is one repository, where a fix lands everywhere in
+one pull request and every language runs the same shared tests
+([more](docs/why-one-repository.md)).
 
 What's left is the infrastructure, and it grows with every language: a
 toolchain to install and keep working, test, lint and build commands, CI jobs
