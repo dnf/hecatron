@@ -179,19 +179,45 @@ bundle_needs_user_path() {
 
 # For Perl's installer and doctor: the tools its components need and lack,
 # one per line (make for Makefile.PL, Module::Build for Build.PL, and
-# Perl::Critic where .perlcriticrc configures it).
+# Perl::Critic where .perlcriticrc configures it), and the modules a
+# Makefile.PL written with Module::Install needs before it can run: Module::Install
+# itself and the configure_requires it names (its extensions, such as
+# Module::Install::ReadmeFromPod), which a release bundles in inc/ but a
+# checkout doesn't.
 perl_tools_missing() {
-    local _dir _make=0 _build=0 _critic=0
+    local _dir _make=0 _build=0 _critic=0 _modules="" _module
     while IFS= read -r _dir; do
         [ -f "${_dir}/Makefile.PL" ] && _make=1
         [ -f "${_dir}/Build.PL" ] && _build=1
         [ -f "${_dir}/.perlcriticrc" ] && _critic=1
+        grep -qs 'inc::Module::Install' "${_dir}/Makefile.PL" || continue
+        _modules="${_modules} Module::Install $(sed -n \
+            "s/^[[:space:]]*configure_requires[[:space:]]*(*[[:space:]]*['\"]\([A-Za-z0-9_:]*\)['\"].*/\1/p" "${_dir}/Makefile.PL")"
     done < <(impl_dirs perl)
+    for _module in $(echo "${_modules}" | xargs -n1 2>/dev/null | sort -u); do
+        perl_has_module "${_module}" || echo "${_module}"
+    done
     if [ "${_make}" -eq 1 ] && ! has make; then echo make; fi
-    if [ "${_build}" -eq 1 ] && ! perl -MModule::Build -e 1 2>/dev/null; then echo Module::Build; fi
+    if [ "${_build}" -eq 1 ] && ! perl_has_module Module::Build; then echo Module::Build; fi
     if [ "${_critic}" -eq 1 ] && ! has perlcritic; then echo Perl::Critic; fi
     return 0
 }
+# (require, not -M: Module::Install's import dies outside a Makefile.PL.)
+perl_has_module() { perl -e "require $1" 2>/dev/null; }
+
+# For Dart's installer and doctor: whether a component is a Flutter package
+# (its pubspec.yaml depends on the Flutter SDK, which `dart pub` refuses) and
+# flutter isn't installed. The Dart hooks run flutter for these (dart_tool).
+flutter_missing() {
+    local _dir
+    has flutter && return 1
+    while IFS= read -r _dir; do
+        is_flutter_package "${_dir}" && return 0
+    done < <(impl_dirs dart)
+    return 1
+}
+# (dependencies: flutter: sdk: flutter, or inline, flutter: { sdk: flutter })
+is_flutter_package() { grep -qsE 'sdk:[[:space:]]*flutter([^[:alnum:]_]|$)' "$1/pubspec.yaml"; }
 
 # For Elm's installer and doctor: whether a component configures elm-review
 # (review/elm.json) and it isn't installed.
@@ -226,60 +252,161 @@ dotnet_runtimes_missing() {
 }
 
 # For the native languages' installers (C, C++, Objective-C): the libraries a
-# component's CMake build looks for with find_package(), as distribution
-# packages, for the common ones. A name not in the table is left to the
-# project (its README, or a vcpkg or Conan manifest).
+# component's CMake build looks for, as distribution packages, for the common
+# ones. A name is a find_package() name, or a pkg-config module (from
+# pkg_check_modules() or pkg_search_module()) as "pkg-config:<module>". A name
+# not in the table is left to the project (its README, or a vcpkg or Conan
+# manifest), except that on Debian and Ubuntu a pkg-config module <name> is
+# looked for as lib<name>-dev, the usual package for it. Abseil is left out:
+# projects built on it track its LTS releases and fetch the one they need when
+# none is found, and a distribution's older one would be found first (and
+# fail: protobuf links absl::absl_check, which Ubuntu 24.04's lacks).
 _cmake_package() {
-    local _name="$1"
+    local _name="${1#pkg-config:}"
     if [ "${OS}" = "macos" ]; then
         case "${_name}" in
-            GTest | GMock) echo googletest ;;
+            GTest | GMock | gtest | gmock | gtest_main) echo googletest ;;
             yaml-cpp) echo yaml-cpp ;;
             nlohmann_json) echo nlohmann-json ;;
             Boost) echo boost ;;
             fmt) echo fmt ;;
             spdlog) echo spdlog ;;
             Catch2) echo catch2 ;;
+            doctest) echo doctest ;;
             benchmark) echo google-benchmark ;;
             Protobuf | protobuf) echo protobuf ;;
-            OpenSSL) echo openssl ;;
-            CURL) echo curl ;;
+            re2) echo re2 ;;
+            ICU | icu-uc | icu-i18n) echo icu4c ;;
+            OpenSSL | openssl | libssl) echo openssl ;;
+            CURL | libcurl) echo curl ;;
             PkgConfig) echo pkgconf ;;
+            GLIB | glib-2.0 | gobject-2.0 | gio-2.0 | gio-unix-2.0) echo glib ;;
+            jansson) echo jansson ;;
+            Snappy | snappy) echo snappy ;;
+            zstd | ZSTD | libzstd) echo zstd ;;
+            lz4 | LZ4 | liblz4) echo lz4 ;;
+            LibLZMA | liblzma) echo xz ;;
+            Libevent | libevent) echo libevent ;;
+            JsonCpp | jsoncpp) echo jsoncpp ;;
+            libuv) echo libuv ;;
+            FLEX) echo flex ;;
+            BISON) echo bison ;;
         esac
     else
         case "${_name}" in
-            GTest | GMock) echo "libgtest-dev libgmock-dev" ;;
+            GTest | GMock | gtest | gmock | gtest_main) echo "libgtest-dev libgmock-dev" ;;
             yaml-cpp) echo libyaml-cpp-dev ;;
             nlohmann_json) echo nlohmann-json3-dev ;;
             Boost) echo libboost-all-dev ;;
             fmt) echo libfmt-dev ;;
             spdlog) echo libspdlog-dev ;;
             Catch2) echo catch2 ;;
+            doctest) echo doctest-dev ;;
             benchmark) echo libbenchmark-dev ;;
             Protobuf | protobuf) echo "libprotobuf-dev protobuf-compiler" ;;
-            OpenSSL) echo libssl-dev ;;
-            CURL) echo libcurl4-openssl-dev ;;
-            ZLIB) echo zlib1g-dev ;;
+            re2) echo libre2-dev ;;
+            ICU | icu-uc | icu-i18n) echo libicu-dev ;;
+            OpenSSL | openssl | libssl) echo libssl-dev ;;
+            CURL | libcurl) echo libcurl4-openssl-dev ;;
+            ZLIB | zlib) echo zlib1g-dev ;;
             PkgConfig) echo pkg-config ;;
+            GLIB | glib-2.0 | gobject-2.0 | gio-2.0 | gio-unix-2.0) echo libglib2.0-dev ;;
+            Snappy | snappy) echo libsnappy-dev ;;
+            zstd | ZSTD) echo libzstd-dev ;;
+            lz4 | LZ4) echo liblz4-dev ;;
+            BZip2) echo libbz2-dev ;;
+            Libevent) echo libevent-dev ;;
+            JsonCpp | jsoncpp) echo libjsoncpp-dev ;;
+            libuv) echo libuv1-dev ;;
+            CyrusSASL) echo libsasl2-dev ;;
+            FLEX) echo flex ;;
+            BISON) echo bison ;;
             Threads) ;;
+            liblzma | LibLZMA) echo liblzma-dev ;;
+            lib*) if [ "$1" != "${_name}" ]; then echo "${_name}-dev"; fi ;;
+            *) if [ "$1" != "${_name}" ]; then echo "lib${_name}-dev"; fi ;;
         esac
     fi
 }
-# The find_package() names in a language's components' CMake files.
+# The directory a component's CMake build configures from: its own, or, when
+# its CMakeLists.txt calls no project() (a subdirectory that a parent's
+# add_subdirectory() pulls in, which can't be configured alone), the nearest
+# one above it in the project whose CMakeLists.txt does. The native hooks
+# configure from the same directory (cmake_source_dir in _hooks.sh).
+cmake_project_dir() {
+    local _dir="$1"
+    while [ -f "$1/CMakeLists.txt" ] && ! _cmake_has_project "${_dir}"; do
+        if [ "${_dir}" = "${ROOT}" ] || [ "${_dir}" = / ]; then
+            echo "$1"
+            return 0
+        fi
+        _dir="$(dirname "${_dir}")"
+    done
+    echo "${_dir}"
+}
+_cmake_has_project() { grep -qiE '^[[:space:]]*project[[:space:]]*\(' "$1/CMakeLists.txt" 2>/dev/null; }
+# What a language's components' CMake builds look for, one name per line (see
+# _cmake_package): find_package() names, pkg-config modules, and the packages
+# behind a few headers that builds look for by hand (find_path(... gtest/gtest.h)).
+# Fetched or vendored dependencies and configured build trees aren't searched.
 cmake_find_packages() {
     local _dir
     while IFS= read -r _dir; do
-        find "${_dir}" -maxdepth 3 \( -name build -o -name 'build-*' -o -name third_party -o -name external \) -prune -o \
+        echo "${_dir}"
+        cmake_project_dir "${_dir}"
+    done < <(impl_dirs "$1") | sort -u | while IFS= read -r _dir; do
+        find "${_dir}" -maxdepth 3 \( -name _deps -o -name CMakeFiles -o -name third_party -o -name external \
+            -o -type d -exec test -f '{}/CMakeCache.txt' \; \) -prune -o \
             \( -name CMakeLists.txt -o -name '*.cmake' \) -type f -print 2>/dev/null
-    done < <(impl_dirs "$1") |
-        xargs -r sed -n 's/.*find_package[[:space:]]*([[:space:]]*\([A-Za-z0-9_+-]*\).*/\1/p' 2>/dev/null | sort -u
+    done | sort -u | python3 -c '
+import os, re, sys
+HEADERS = {r"gtest/gtest\.h": "GTest", r"gmock/gmock\.h": "GMock", r"re2/re2\.h": "re2",
+           r"unicode/\w+\.h": "ICU", r"google/protobuf/\w+\.h": "Protobuf"}
+names = set()
+paths = sys.stdin.read().splitlines()
+seen = set()
+while paths:
+    path = os.path.normpath(paths.pop())
+    if path in seen:
+        continue
+    seen.add(path)
+    try:
+        text = re.sub(r"#[^\n]*", "", open(path, errors="replace").read())
+    except OSError:
+        continue
+    # A file include()d by path, as from a shared tools directory outside the component.
+    for included in re.findall(r"include\s*\(\s*\"?([^\s)\"]+\.cmake)", text, re.I):
+        included = re.sub(r"\$\{CMAKE_CURRENT_(?:SOURCE|LIST)_DIR\}", os.path.dirname(path), included)
+        if "$" not in included:
+            paths.append(os.path.join(os.path.dirname(path), included))
+    names.update(re.findall(r"find_package\s*\(\s*([A-Za-z0-9_+-]+)", text, re.I))
+    # A find module (FindFoo.cmake) looks for what find_package(Foo) names.
+    if re.fullmatch(r"Find.+\.cmake", os.path.basename(path)):
+        continue
+    for call in re.findall(r"pkg_(?:check|search)_modules?\s*\(\s*\S+\s+([^)]*)\)", text, re.I):
+        for word in call.split():
+            module = re.split(r"[<>=]", word)[0]
+            if re.fullmatch(r"[A-Za-z0-9_.+-]+", module) and not module.isupper():
+                names.add("pkg-config:" + module)
+    names.update(name for header, name in HEADERS.items() if re.search(header, text))
+print("\n".join(sorted(names)))
+'
 }
 cmake_dependencies() {
-    local _name _packages=""
+    local _name _package _packages=""
     while IFS= read -r _name; do
         [ -n "${_name}" ] && _packages="${_packages} $(_cmake_package "${_name}")"
     done < <(cmake_find_packages "$1")
     _packages="$(echo "${_packages}" | xargs -n1 2>/dev/null | sort -u | xargs 2>/dev/null)"
+    # Distributions name and split packages differently, and a lib<name>-dev
+    # guess may name none: install the ones there are.
+    if [ "${OS}" = "linux" ] && [ -n "${_packages}" ]; then
+        local _available=""
+        for _package in ${_packages}; do
+            if apt_has "${_package}"; then _available="${_available} ${_package}"; fi
+        done
+        _packages="${_available# }"
+    fi
     [ -n "${_packages}" ] || return 0
     log "Installing the libraries the CMake builds look for: ${_packages}"
     # shellcheck disable=SC2086 # one word per package
@@ -328,6 +455,7 @@ _gradle_project_above() {
 }
 jvm_build_tools() {
     local _missing
+    jvm_jdks "$1"
     _missing="$(jvm_build_tools_missing "$1")"
     if [[ "${_missing}" == *maven* ]]; then
         if [ "${OS}" = "macos" ]; then brew_install maven; else _install_maven; fi
@@ -338,6 +466,32 @@ jvm_build_tools() {
     if [[ "${_missing}" == *sbt* ]]; then
         if [ "${OS}" = "macos" ]; then brew_install sbt; else _install_sbt; fi
     fi
+}
+# The JDKs (feature versions) a language's components' builds need besides
+# the one they run on, and that aren't installed, one per line: the ones
+# their Gradle or Maven toolchains name, which Gradle and Maven find among the
+# installed JDKs, and, for a build whose Gradle wrapper or Kotlin compiler
+# predates the default JDK, the newest LTS JDK it runs on, which the hooks
+# run it on (jvm_select_jdk in _hooks.sh). See libexec/lib/jvm.py.
+jvm_jdks_missing() {
+    [ -n "${HECATRON_HOME:-}" ] || return 0
+    local _dir _installed _feature _ceiling _why
+    _installed="$(bash "${HECATRON_HOME}/languages/java/installed.sh" 2>/dev/null | cut -f1 |
+        sed 's/^1\.\([0-9]*\).*/\1/; s/[^0-9].*//' | sort -un)"
+    while IFS= read -r _dir; do
+        while IFS= read -r _feature; do
+            grep -qx "${_feature}" <<<"${_installed}" || echo "${_feature}"
+        done < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" toolchains "${_dir}" "${ROOT}")
+        IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling "${_dir}" "${ROOT}") || continue
+        [ -n "$(awk -v ceiling="${_ceiling}" '$1 <= ceiling' <<<"${_installed}")" ] || echo "${_ceiling}"
+    done < <(impl_dirs "$1") | sort -un
+}
+jvm_jdks() {
+    local _jdks
+    _jdks="$(jvm_jdks_missing "$1")"
+    [ -n "${_jdks}" ] || return 0
+    # shellcheck disable=SC2086 # one feature version per word
+    bash "${HECATRON_HOME}/languages/java/install.sh" ${_jdks}
 }
 # A Maven of 3.9 or later on PATH.
 _maven_current() {

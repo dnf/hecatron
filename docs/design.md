@@ -639,6 +639,20 @@ surprise.
   component), which `hecatron workflows` fills in, and `hecatron check`
   fails when a generated file is behind its versions.
 
+### JDKs a build needs besides its own
+
+A JVM build can need JDKs besides the one its component resolves to, and
+neither is a version choice, so neither is a pin file:
+`libexec/lib/jvm.py` reads them from the build files. **Toolchains** a
+Gradle build (`JavaLanguageVersion.of(17)`, `jvmToolchain(17)`) or Maven's
+toolchains plugin (`select-jdk-toolchain`'s `[11,12)`) names are installed
+side by side, and Gradle and Maven find them themselves. A **ceiling**
+comes from a tool that predates newer JDKs and fails to start on them: a
+Gradle wrapper older than 9.1 or a Kotlin compiler older than 2.3 runs on
+the newest LTS JDK it supports, which the JVM installers install and the
+hooks run the build on (`JAVA_HOME`), saying so. The doctor reports either
+when missing.
+
 ### Later
 
 `version` may become a list, so a library can test against its oldest and

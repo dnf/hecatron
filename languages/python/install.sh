@@ -10,8 +10,13 @@ install_macos() {
     brew_install python
     _install_uv
 }
+# A dependency with no wheel for this platform or Python version builds from
+# its source distribution, which for a C extension needs a C compiler (the
+# Pythons uv installs bring their own headers, and maturin fetches Rust for a
+# Rust extension itself).
 install_linux() {
     apt_install python3 python3-venv
+    has cc || apt_install build-essential
     _install_uv
 }
 _install_uv() {

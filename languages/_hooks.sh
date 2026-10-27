@@ -454,7 +454,7 @@ module_build_configure() { [ -x Build ] || run perl Build.PL; }
 # Dart: the flutter tool for a package on the Flutter SDK, else dart; and
 # the package's dependencies first, when they aren't fetched yet.
 dart_tool() {
-    if grep -qE '^[[:space:]]+sdk:[[:space:]]*flutter' pubspec.yaml; then echo flutter; else echo dart; fi
+    if grep -qE 'sdk:[[:space:]]*flutter([^[:alnum:]_]|$)' pubspec.yaml; then echo flutter; else echo dart; fi
 }
 dart_deps() {
     if [ ! -f .dart_tool/package_config.json ]; then run "$(dart_tool)" pub get; fi
@@ -509,6 +509,7 @@ jvm_hook() {
             unknown "no pom.xml, build.gradle(.kts) or build.sbt here or below, no Gradle settings above, and no Makefile above with a target for $(basename "$(pwd)")"
         fi
     fi
+    jvm_select_jdk
     if [ -f pom.xml ]; then
         case "$1" in
             test) maven test ;;
@@ -534,6 +535,31 @@ jvm_hook() {
         unknown "no pom.xml, build.gradle(.kts) or build.sbt"
     fi
 }
+
+# A build whose Gradle wrapper or Kotlin compiler predates the JDK it would
+# run on fails to start on it, so it runs on the newest installed JDK it
+# supports instead (libexec/lib/jvm.py; the JVM installers install one).
+jvm_select_jdk() {
+    [ -n "${HECATRON_HOME:-}" ] || return 0
+    local _ceiling="" _why _current _version _home
+    IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling . "${HECATRON_ROOT:-.}") || true
+    [ -n "${_ceiling}" ] || return 0
+    _current="$(java_feature "$( (java -version 2>&1 || true) | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -1)")"
+    { [ -n "${_current}" ] && [ "${_current}" -le "${_ceiling}" ]; } && return 0
+    while IFS=$'\t' read -r _version _home; do
+        [ "$(java_feature "${_version}")" -le "${_ceiling}" ] && break
+        _home=""
+    done < <(bash "${HECATRON_HOME}/languages/java/installed.sh" 2>/dev/null | sort -t. -k1,1nr -k2,2nr -k3,3nr)
+    if [ -z "${_home:-}" ]; then
+        echo "warning: ${_why}, which runs on JDK ${_ceiling} at the newest, and no such JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
+        return 0
+    fi
+    echo "Using JDK ${_version} (${_home}): ${_why}, which runs on JDK ${_ceiling} at the newest."
+    export JAVA_HOME="${_home}"
+    export PATH="${_home}/bin:${PATH}"
+}
+# A Java version's feature release: 1.8.0_412 is 8, 21.0.2 is 21.
+java_feature() { echo "$1" | sed 's/^1\.\([0-9]*\).*/\1/; s/[^0-9].*//'; }
 
 # Clojure: the Clojure CLI (deps.edn) or Leiningen (project.clj). The CLI
 # runs the :test alias as a function (-X, :exec-fn) or a main (-M,
@@ -597,7 +623,7 @@ native_hook() {
             test)
                 cmake_build
                 cmake_enable_tests
-                run ctest --test-dir build --output-on-failure --no-tests=error ;;
+                cmake_test ;;
             build) cmake_build ;;
             clean) run rm -rf build ;;
             lint) skip "no standard linter for CMake builds" ;;
@@ -699,23 +725,149 @@ meson_setup() { [ -d build ] || run meson setup build; }
 
 # Many projects build their tests only when asked, through an option of their
 # own (FOO_BUILD_TESTS, ENABLE_TESTING...) that defaults to off: turn on the
-# boolean cache options that name tests, then build again.
+# boolean cache options that name tests, then build again. Only the project's
+# own options: a dependency fetched into the build tree (FetchContent) brings
+# options of its own, whose tests need what the project never set up for
+# them. Not the ones that run tests under valgrind or need large memory. An
+# option can need setup the project documents (a path to another library):
+# when configuring with them all fails, each is tried alone, and the ones
+# that fail stay off.
 cmake_enable_tests() {
-    local _options=() _option
+    local _options=() _option _kept=() _source
+    _source="$(cmake_source_dir)"
     while IFS= read -r _option; do
-        [ -n "${_option}" ] && _options+=("-D${_option}=ON")
+        [ -n "${_option}" ] && _options+=("${_option}")
     done < <(cmake -N -LA build 2>/dev/null |
         sed -n 's/^\([A-Za-z0-9_]*\(TEST\|TESTS\|TESTING\)[A-Za-z0-9_]*\):BOOL=OFF$/\1/p' |
-        grep -Eiv 'COVERAGE|FUZZ|BENCH|INSTALL|DISABLE|SKIP|(^|_)NO_' || true)
+        grep -Eiv 'COVERAGE|FUZZ|BENCH|INSTALL|DISABLE|SKIP|(^|_)NO_|MEMCHECK|VALGRIND|LARGE_MEMORY' |
+        cmake_own_options "${_source}" || true)
     [ "${#_options[@]}" -gt 0 ] || return 0
-    run cmake -S . -B build "${_options[@]}"
-    run cmake --build build --parallel
+    if ! run cmake -S "${_source}" -B build "${_options[@]/%/=ON}"; then
+        echo "Configuring with ${_options[*]} failed: leaving them off."
+        run cmake -S "${_source}" -B build "${_options[@]/%/=OFF}"
+        if [ "${#_options[@]}" -gt 1 ]; then
+            echo "Trying each alone."
+            for _option in "${_options[@]}"; do
+                if run cmake -S "${_source}" -B build ${_kept[@]+"${_kept[@]/%/=ON}"} "${_option}=ON"; then
+                    _kept+=("${_option}")
+                else
+                    run cmake -S "${_source}" -B build ${_kept[@]+"${_kept[@]/%/=ON}"} "${_option}=OFF"
+                fi
+            done
+        fi
+    fi
+    cmake_compile
+}
+# Of the option names on stdin, the ones the project's own CMake files name
+# (as whole words), outside its build trees and fetched dependencies.
+cmake_own_options() {
+    local _names
+    _names="$(cat)"
+    [ -n "${_names}" ] || return 0
+    find "$1" \( -name _deps -o -name CMakeFiles -o -type d -exec test -f '{}/CMakeCache.txt' \; \) -prune -o \
+        \( -name CMakeLists.txt -o -name '*.cmake' \) -type f -print0 2>/dev/null |
+        xargs -0 grep -ohwF "${_names}" 2>/dev/null | sort -u | sed 's/^/-D/'
 }
 
-# CMake: configure once into build/, then build.
+# CMake: configure once into build/, then build. A CMakeLists.txt that calls
+# no project() is a subdirectory a parent's add_subdirectory() pulls in, and
+# can't be configured alone: configure the nearest directory above (within
+# the project) whose CMakeLists.txt calls project(), into this directory's
+# build/, then build and test only this directory's part of it (its
+# directory in the build tree, whose targets and tests are the ones defined
+# here and below), not the rest of the project's languages.
 cmake_build() {
-    run cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-    run cmake --build build --parallel
+    run cmake -S "$(cmake_source_dir)" -B build -DCMAKE_BUILD_TYPE=Release
+    cmake_compile
+}
+cmake_compile() {
+    local _part
+    _part="$(cmake_binary_dir)"
+    if [ "${_part}" = build ]; then
+        run cmake --build build --parallel "$(build_jobs)"
+    elif grep -q '^CMAKE_GENERATOR:INTERNAL=Ninja' build/CMakeCache.txt; then
+        run cmake --build build --parallel "$(build_jobs)" --target "${_part#build/}/all"
+    else
+        run make -C "${_part}" -j "$(build_jobs)"
+    fi
+}
+# CTest's tests; or, for a project that registers none and runs its tests
+# from a custom target instead (add_custom_target(check ...) or tests), that
+# target.
+cmake_test() {
+    local _part _target
+    _part="$(cmake_binary_dir)"
+    if ! ctest --test-dir "${_part}" -N 2>/dev/null | grep -q '^Total Tests: [1-9]'; then
+        _target="$(cmake_test_target)"
+        if [ -n "${_target}" ]; then
+            run cmake --build build --parallel "$(build_jobs)" --target "${_target}"
+            return
+        fi
+    fi
+    run ctest --test-dir "${_part}" --output-on-failure --no-tests=error
+}
+cmake_test_target() {
+    local _target
+    for _target in check tests; do
+        if grep -qsiE "add_custom_target[[:space:]]*\([[:space:]]*${_target}([[:space:]]|\)|$)" CMakeLists.txt; then
+            echo "${_target}"
+            return
+        fi
+    done
+}
+cmake_source_dir() {
+    local _dir
+    _dir="$(pwd)"
+    while ! cmake_has_project "${_dir}"; do
+        if [ "${_dir}" = "${HECATRON_ROOT:-/}" ] || [ "${_dir}" = / ]; then
+            pwd
+            return 0
+        fi
+        _dir="$(dirname "${_dir}")"
+    done
+    echo "${_dir}"
+}
+cmake_has_project() { grep -qiE '^[[:space:]]*project[[:space:]]*\(' "$1/CMakeLists.txt" 2>/dev/null; }
+cmake_binary_dir() {
+    local _source _here
+    _source="$(cmake_source_dir)"
+    _here="$(pwd)"
+    echo "build${_here#"${_source}"}"
+}
+
+# How many compile jobs to run at once: one per CPU the machine (or the
+# container's CPU quota) gives, but at most one per 2 GB of memory (the
+# container's limit, when it has one), which a large C++ file can take to
+# compile. Bare `cmake --build --parallel` lets make start any number, and on
+# a big project the kernel then kills compilers for memory.
+# CMAKE_BUILD_PARALLEL_LEVEL, when set, decides.
+build_jobs() {
+    local _cpus _quota _period _memory_kb _limit
+    if [ -n "${CMAKE_BUILD_PARALLEL_LEVEL:-}" ]; then
+        echo "${CMAKE_BUILD_PARALLEL_LEVEL}"
+        return
+    fi
+    _cpus="$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 1)"
+    if read -r _quota _period </sys/fs/cgroup/cpu.max 2>/dev/null && [ "${_quota}" != max ]; then
+        _quota=$(((_quota + _period - 1) / _period))
+        [ "${_quota}" -ge "${_cpus}" ] || _cpus="${_quota}"
+    fi
+    if [ -r /proc/meminfo ]; then
+        _memory_kb="$(sed -n 's/^MemTotal:[[:space:]]*\([0-9]*\).*/\1/p' /proc/meminfo)"
+    else
+        _memory_kb=$(($(sysctl -n hw.memsize 2>/dev/null || echo 0) / 1024))
+    fi
+    _limit="$(cat /sys/fs/cgroup/memory.max 2>/dev/null || true)"
+    case "${_limit}" in
+        "" | max | *[!0-9]*) ;;
+        *) [ $((_limit / 1024)) -ge "${_memory_kb:-0}" ] || _memory_kb=$((_limit / 1024)) ;;
+    esac
+    _memory_kb="${_memory_kb:-0}"
+    if [ "${_memory_kb}" -gt 0 ] && [ $((_memory_kb / 2097152)) -lt "${_cpus}" ]; then
+        _cpus=$((_memory_kb / 2097152))
+    fi
+    [ "${_cpus}" -ge 1 ] || _cpus=1
+    echo "${_cpus}"
 }
 
 # Objective-C: xcodebuild for an Xcode project on macOS (untested: no macOS

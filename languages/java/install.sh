@@ -90,6 +90,14 @@ deps() {
     jvm_build_tools java
 }
 
+# With arguments, from the JVM languages' installers (jvm_jdks in
+# _common.sh): only those JDKs, as feature versions ("17"), each the newest
+# release of its line.
+if [ "$#" -gt 0 ]; then
+    for _feature in "$@"; do _install_jdk "${_feature}"; done
+    exit 0
+fi
+
 log "Installing Java (Temurin JDK)..."
 "install_${OS}"
 deps

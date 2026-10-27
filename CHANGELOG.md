@@ -9,6 +9,37 @@ minor version can change behaviour. Numbers are
 - **elm-review is on PATH:** global npm commands Elm installs are all linked
   onto PATH, now that Node.js comes from its official builds.
 
+- **CMake builds run fewer compile jobs at once:** one per CPU (or CPU
+  quota) but at most one per 2 GB of memory, so a large C++ project no
+  longer has its compilers killed for memory. `CMAKE_BUILD_PARALLEL_LEVEL`
+  still decides when set.
+- **A CMake subdirectory is built as part of its project:** a component
+  whose `CMakeLists.txt` calls no `project()` (one a parent's
+  `add_subdirectory()` pulls in) is configured from the nearest directory
+  above it that does, and its own tests run.
+- **CMake test options are the project's own:** the test hook no longer
+  turns on a fetched dependency's test options, nor valgrind or
+  large-memory ones, and an option whose setup is missing is left off
+  instead of failing the configure. A project that registers no CTest
+  tests and runs them from a `check` or `tests` target gets that target.
+- **C and C++ installers find more of what a CMake build needs:**
+  `pkg_check_modules()` and `pkg_search_module()` lookups, headers looked
+  for by hand (`gtest/gtest.h`), files `include()`d from outside the
+  component, the enclosing project's own lookups, and more libraries (GLib,
+  RE2, ICU, Jansson, Snappy, zstd, LZ4, libevent, flex, bison...).
+- **Perl installs Module::Install** and the extensions a `Makefile.PL`
+  written with it names (`configure_requires`), which a checkout doesn't
+  bundle, and installs the CPAN dependencies a `Makefile.PL` or `Build.PL`
+  declares, as it did a `cpanfile`'s.
+- **Dart installs Flutter** (3.47.8) where a component is a Flutter package,
+  and fetches its packages with `flutter pub get`; the doctor reports it
+  missing. The test hook says so when a package has no `test/` directory.
+- **JVM builds get the JDKs they ask for:** the JVM installers install the
+  JDKs a Gradle or Maven toolchain names, and a build whose Gradle wrapper
+  (before 9.1) or Kotlin compiler (before 2.3) can't run on the default
+  JDK runs on the newest LTS JDK it supports, which they install too.
+- **Python installs a C compiler on Linux,** for dependencies that build a
+  C extension from source.
 - **Default hooks find a build that isn't in the language's directory:**
   above it in the project (pulumi's `sdk/go` in the module `sdk/go.mod`, a
   root `Package.swift`, CMake project or Gradle build), or in directories
