@@ -24,13 +24,20 @@ install_linux() {
     _npm_global elm@latest elm-test@latest
 }
 
-# Global npm packages go into Node's prefix; it's root's with apt's Node.
+# Global npm packages go into Node's prefix, which may be root's. An official
+# Node.js build's prefix is its own directory (/opt/node/<version>), off PATH,
+# so link the commands into /usr/local/bin.
 _npm_global() {
-    if [ -w "$(npm prefix -g)/lib" ]; then
+    local prefix tool
+    prefix="$(npm prefix -g)"
+    if [ -w "${prefix}/lib" ]; then
         npm install -g "$@"
     else
         $SUDO npm install -g "$@"
     fi
+    for tool in elm elm-test; do
+        has "${tool}" || $SUDO ln -sfn "${prefix}/bin/${tool}" "/usr/local/bin/${tool}"
+    done
 }
 
 deps() { :; }

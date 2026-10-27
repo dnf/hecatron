@@ -1,9 +1,11 @@
 # after: typescript
 
-# Elm via npm — no arm64 Linux binary available
+# Elm via npm — no arm64 Linux binary available. Global packages go under
+# the official Node.js build's own directory, so link the commands onto PATH.
 RUN ARCH="$(dpkg --print-architecture)" && \
     if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "aarch64" ]; then \
-      npm install -g elm elm-test; \
+      npm install -g elm elm-test && \
+      for tool in elm elm-test; do ln -sfn "$(npm prefix -g)/bin/${tool}" "/usr/local/bin/${tool}"; done; \
     else \
       echo "Skipping Elm: no arm64 Linux binary available"; \
     fi
