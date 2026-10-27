@@ -1,0 +1,8 @@
+Name: add
+Version: 0.1.0
+Date: 2026-10-27
+Author: Hecatron Fixture <fixture@example.com>
+Maintainer: Hecatron Fixture <fixture@example.com>
+Title: Add Two Numbers
+Description: Adds two numbers, to test hecatron's default hooks.
+License: MIT
