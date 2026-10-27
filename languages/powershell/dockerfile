@@ -8,4 +8,15 @@ RUN VERSION="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com
     curl -fsSL "https://github.com/PowerShell/PowerShell/releases/download/v${VERSION}/powershell-${VERSION}-linux-${ARCH}.tar.gz" | tar -C /opt/microsoft/powershell/7 -xz && \
     chmod +x /opt/microsoft/powershell/7/pwsh && \
     ln -s /opt/microsoft/powershell/7/pwsh /usr/local/bin/pwsh
-RUN pwsh -Command "Install-Module -Name Pester, PSScriptAnalyzer -Force -SkipPublisherCheck -Scope AllUsers"
+# Pester for the default test hook, PSScriptAnalyzer for the lint hook, as
+# install.sh installs them. Install-Module reports a failed lookup ("No match
+# was found") without failing, so check each, try twice more, and fail the
+# build if it's still missing.
+RUN for MODULE in Pester PSScriptAnalyzer; do \
+      for ATTEMPT in 1 2 3; do \
+        pwsh -NoProfile -Command "Install-Module -Name ${MODULE} -Force -SkipPublisherCheck -Scope AllUsers"; \
+        pwsh -NoProfile -Command "if (-not (Get-Module -ListAvailable -Name ${MODULE})) { exit 1 }" && break; \
+        [ "${ATTEMPT}" -lt 3 ] || { echo "${MODULE} didn't install" >&2; exit 1; }; \
+        sleep 10; \
+      done; \
+    done
