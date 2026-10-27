@@ -126,7 +126,7 @@ var DefaultPatterns = &Patterns{List: []Pattern{
 var (
 	ansi            = regexp.MustCompile(`\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]`)
 	componentHeader = regexp.MustCompile(`^=== \S+ (.+) \([^()]+\) ===$`)
-	componentResult = regexp.MustCompile(`^\S+: \S+ (?:failed: .*|passed for \d+ component\(s\))$`)
+	componentResult = regexp.MustCompile(`^\S+: \S+ (?:failed: .*|passed for \d+ component\(s\))$|^hecatron: \S+ timed out: stopped at its `)
 	// Lines that say nothing about a failure: downloads, progress, and
 	// package managers' fetching and compiling dependencies.
 	noise = regexp.MustCompile(`(?i)^\s*(?:` +

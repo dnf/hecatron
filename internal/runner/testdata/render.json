@@ -4,8 +4,9 @@
   "exitCode": 1,
   "duration": 271.3,
   "summary": {
-    "passed": 2,
+    "passed": 3,
     "failed": 2,
+    "timedOut": 1,
     "skipped": 2
   },
   "logs": "/repo/.logs/test",
@@ -93,6 +94,48 @@
       "errorsFrom": "tail"
     },
     {
+      "label": "kotlin",
+      "kind": "language",
+      "language": "kotlin",
+      "status": "timed out",
+      "exitCode": 1,
+      "duration": 600,
+      "log": "/repo/.logs/test/kotlin.log",
+      "timeLimit": {
+        "seconds": 600,
+        "source": "history",
+        "description": "the 10m minimum (5× its median 1m10s over 5 passing runs is less)"
+      },
+      "components": [
+        {
+          "name": ".",
+          "dir": "/repo/kotlin",
+          "failed": true
+        }
+      ],
+      "errors": [
+        {
+          "text": "\u003e Task :test",
+          "component": "."
+        }
+      ],
+      "errorsFrom": "tail"
+    },
+    {
+      "label": "python2",
+      "kind": "language",
+      "language": "python",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 2,
+      "log": "/repo/.logs/test/python2.log",
+      "timeLimit": {
+        "seconds": 90,
+        "source": "--timeout",
+        "description": "--timeout"
+      }
+    },
+    {
       "label": "docs",
       "kind": "task",
       "status": "passed",
@@ -101,5 +144,5 @@
       "log": "/repo/.logs/test/docs.log"
     }
   ],
-  "rerun": "hct test go php"
+  "rerun": "hct test go php kotlin"
 }

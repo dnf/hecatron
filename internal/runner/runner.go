@@ -40,6 +40,7 @@ type Job struct {
 	Kind  Kind
 	Lang  string // the language, "" for a project task or tool
 	Task  bool   // a project task (config.json "tasks")
+	Limit Limit  // its time limit (limit.go)
 	Exec  func(ctx context.Context, out io.Writer) Outcome
 }
 
@@ -63,6 +64,7 @@ type Status string
 const (
 	Passed            Status = "passed"
 	Failed            Status = "failed"
+	TimedOut          Status = "timed out" // stopped at its time limit
 	StatusNotInstall  Status = "not installed"
 	StatusDisabled    Status = "disabled"
 	StatusSeparator   Status = ""
@@ -77,6 +79,7 @@ type Result struct {
 	Status     Status
 	ExitCode   int
 	Duration   time.Duration
+	Limit      Limit
 	Log        string
 	Components []Component
 	Excerpt    Excerpt
@@ -98,6 +101,14 @@ func (r *Result) ToolchainMissing() bool {
 	}
 	return missing
 }
+
+// Ran reports whether the job ran: it passed, failed or timed out.
+func (r *Result) Ran() bool {
+	return r.Status == Passed || r.Status == Failed || r.Status == TimedOut
+}
+
+// Unsuccessful reports whether the job failed or timed out.
+func (r *Result) Unsuccessful() bool { return r.Status == Failed || r.Status == TimedOut }
 
 // FailedComponents are the components a failed job failed in.
 func (r *Result) FailedComponents() []Component {
@@ -152,7 +163,7 @@ func Run(ctx context.Context, jobs []Job, opts Options) ([]Result, time.Duration
 	results := make([]Result, len(jobs))
 	var queue []int
 	for i, job := range jobs {
-		results[i] = Result{Label: job.Label, Lang: job.Lang, Task: job.Task, Status: statusNotFinished}
+		results[i] = Result{Label: job.Label, Lang: job.Lang, Task: job.Task, Limit: job.Limit, Status: statusNotFinished}
 		switch job.Kind {
 		case NotInstalled:
 			results[i].Status = StatusNotInstall
@@ -186,15 +197,12 @@ func Run(ctx context.Context, jobs []Job, opts Options) ([]Result, time.Duration
 		mu.Unlock()
 		go func() {
 			began := now()
-			outcome := runJob(ctx, jobs[i], results[i].Log)
+			outcome, status := runJob(ctx, jobs[i], results[i].Log)
 			r := &results[i]
 			r.Duration = now().Sub(began)
 			r.ExitCode = outcome.ExitCode
 			r.Components = outcome.Components
-			r.Status = Passed
-			if outcome.ExitCode != 0 {
-				r.Status = Failed
-			}
+			r.Status = status
 			finished <- done{slot, i}
 		}()
 	}
@@ -256,14 +264,14 @@ func Run(ctx context.Context, jobs []Job, opts Options) ([]Result, time.Duration
 }
 
 // runJob runs a job with its output in its log file.
-func runJob(ctx context.Context, job Job, logPath string) Outcome {
+func runJob(ctx context.Context, job Job, logPath string) (Outcome, Status) {
 	log, err := os.Create(logPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
-		return Outcome{ExitCode: 1}
+		return Outcome{ExitCode: 1}, Failed
 	}
 	defer log.Close()
-	return job.Exec(ctx, log)
+	return Execute(ctx, job, log)
 }
 
 // Deciseconds is a duration as run-parallel.sh records it.
@@ -368,11 +376,15 @@ func (h History) Last(label string) (time.Duration, int, bool) {
 func (h History) Append(path string, results []Result) {
 	var pairs []string
 	for _, r := range results {
-		if r.Status == Passed || r.Status == Failed {
-			// A status as run-parallel.sh records it, a hecatron command's.
+		if r.Ran() {
+			// A status as run-parallel.sh records it, a hecatron command's
+			// (timeout(1)'s for a time limit).
 			status := 0
-			if r.Status == Failed {
+			switch r.Status {
+			case Failed:
 				status = 1
+			case TimedOut:
+				status = timedOutStatus
 			}
 			pairs = append(pairs, fmt.Sprintf("%s=%d:%d", r.Label, Deciseconds(r.Duration), status))
 		}
@@ -401,10 +413,14 @@ func Lock(logDir string) (unlock func(), err error) {
 }
 
 // ExitStatus is a run's exit status: 0 when nothing failed, 3 when every
-// failure is a component whose toolchain command wasn't on PATH, else 1.
+// failure is a component whose toolchain command wasn't on PATH, else 1 (a
+// timed-out job included).
 func ExitStatus(results []Result) int {
 	failed, missing := 0, 0
 	for i := range results {
+		if results[i].Status == TimedOut {
+			failed++
+		}
 		if results[i].Status == Failed {
 			failed++
 			if results[i].ToolchainMissing() {

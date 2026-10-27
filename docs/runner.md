@@ -78,6 +78,40 @@ Each job's whole output is saved to `<logs>/<action>/<language>.log`
 - `hct parallel NAME "job" ...` runs your own list of jobs with the same
   scheduling and display.
 
+## Time limits
+
+A hung job (a deadlock, a test waiting on input or the network) is stopped
+instead of holding the run, or the agent waiting on it, forever.
+
+- **By default, from the job's own history:** 5× the median of its last 10
+  passing runs in `history.log`, at least 10 minutes; a job with no passing
+  run recorded has no limit. One job's time on one machine swings with
+  load, `-j`, cold caches and throttling (2–3× is routine), so 5× seldom
+  stops a healthy job; short jobs swing the most (a 5-second job that
+  downloads or recompiles after a clean takes minutes), hence the floor.
+  Failed runs are left out (a failure can stop early) and so are timed-out
+  ones (they ran to the limit). A run with `-c` records the language's
+  time for those components only, which counts too.
+- **`--timeout DURATION`** (`90s`, `30m`, `1h30m`, or seconds as a bare
+  number), else **`HECATRON_TIMEOUT`**, sets one limit for every job instead;
+  `--timeout 0` turns limits off.
+- **At the limit** the job's process group gets SIGTERM, then SIGKILL five
+  seconds later if anything is left, so the hook's children (mvn, a test
+  JVM, `sleep`) stop with it. On Linux, processes that left the group
+  (`setsid`, a daemon such as Gradle's, started by the job) are found by a
+  token in their environment and stopped too; on macOS they are not. On
+  Windows only the hook's own process is stopped (a job object would stop
+  the rest; not done yet).
+- The job is reported as **timed out**, apart from failures, with its limit
+  and where the limit came from, in every output: `TIMEOUT go (go/) stopped
+  at its 10m limit (the 10m minimum ...)` in agent output, `"status": "timed
+  out"` and `"timeLimit"` in JSON, `✗ ... timed out` in human output, an
+  annotation in CI. Its log ends with the same line; `history.log` records
+  it with status 124, as `timeout(1)` exits. The run exits 1.
+- Named runs (`hct test go`) take their limits from the parallel runs'
+  history too. The bash runner (`run-parallel.sh`, used without the binary)
+  has no time limits.
+
 ## With the Go binary
 
 The Go core (`docs/design.md` §19), built from a checkout, has the same

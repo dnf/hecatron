@@ -38,6 +38,12 @@ minor version can change behaviour. Numbers are
   that install something. `--output human|agent|json`, chosen as for
   `hct test`. Needs the binary that releases ship (#121).
 
+- **Time limits:** a job that hangs is stopped with everything it started
+  and reported as timed out, saying its limit and how it was set; the run
+  exits 1. Each job's limit is 5× its usual time from its own history, at
+  least 10 minutes; `--timeout 30m` or `HECATRON_TIMEOUT` sets one for every
+  job, `--timeout 0` none. Needs the binary (#124).
+
 ## 0.4.0 (2026-10-27)
 
 - **A fast binary:** installing a release also installs the Go core for
