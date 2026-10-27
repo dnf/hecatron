@@ -183,7 +183,8 @@ For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
   interface without reading the docs: in Claude Code,
   `/plugin install hecatron --marketplace dnf/hecatron`; other agents that
   read Agent Skills can use [its folder](plugins/hecatron/skills/hecatron/)
-  as it is.
+  as it is; in claude.ai, upload a release's `hecatron-skill.zip` under
+  Settings > Features.
 - **Output sized for agents.** With `HECATRON_OUTPUT=agent`, a run prints
   one summary line, then only the failures with their log paths and key
   error lines, under a third of the human summary; exit status 3 means a
