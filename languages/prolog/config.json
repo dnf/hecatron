@@ -2,5 +2,7 @@
   "abbreviation": "swi",
   "dependency": "swipl",
   "lintDependency": null,
-  "detect": []
+  "detect": [
+    "pack.pl"
+  ]
 }

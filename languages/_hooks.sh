@@ -20,6 +20,18 @@ exists() {
     return 1
 }
 
+# The files a find expression matches below this directory, sorted, into the
+# array found_files, e.g. `find_files -name '*.sh'`. Version control and
+# dependency directories aren't searched.
+found_files=()
+find_files() {
+    local _file
+    found_files=()
+    while IFS= read -r -d '' _file; do
+        found_files+=("${_file}")
+    done < <(find . \( -name .git -o -name node_modules \) -prune -o -type f \( "$@" \) -print0 | sort -z)
+}
+
 # Run a command, showing it first, so a log says which build system ran.
 run() {
     echo "+ $*"
@@ -70,6 +82,161 @@ dotnet_hook() {
         clean) run dotnet clean ${_target:+"${_target}"} ;;
         lint) run dotnet format ${_target:+"${_target}"} --verify-no-changes ;;
     esac
+}
+
+# Janet's jpm, in the project's local tree (jpm -l) when it keeps its
+# dependencies in one.
+jpm_() { if [ -d jpm_tree ]; then run jpm -l "$@"; else run jpm "$@"; fi; }
+
+# Common Lisp: ASDF systems on SBCL, found from this directory's .asd files
+# (each a system named after its file; foo-test.asd and foo-tests.asd are
+# left to foo's test-op, unless they are all there is). The test passes when
+# the system's test-op signals no error. The user's init file still loads,
+# so a Quicklisp it sets up finds dependencies.
+asdf_hook() {
+    exists '*.asd' || unknown "no .asd file"
+    local _asd _system _systems=() _tests=()
+    for _asd in *.asd; do
+        _system="${_asd%.asd}"
+        case "${_system}" in
+            *-test | *-tests) _tests+=("${_system}") ;;
+            *) _systems+=("${_system}") ;;
+        esac
+    done
+    [ "${#_systems[@]}" -gt 0 ] || _systems=("${_tests[@]}")
+    case "$1" in
+        test) for _system in "${_systems[@]}"; do asdf_run "(asdf:test-system \"${_system}\")"; done ;;
+        build) for _system in "${_systems[@]}"; do asdf_run "(asdf:load-system \"${_system}\" :force t)"; done ;;
+        lint) skip "Common Lisp has no standard linter" ;;
+        clean) asdf_clean ;;
+    esac
+}
+asdf_run() {
+    run sbcl --noinform --non-interactive \
+        --eval '(require :asdf)' \
+        --eval '(push (uiop:getcwd) asdf:*central-registry*)' \
+        --eval "$1"
+}
+# The fasls compiled in place, and ASDF's cache of this directory's
+# (~/.cache/common-lisp/<implementation>/<this path>), never this directory
+# itself if output translations are off.
+asdf_clean() {
+    local _cache
+    _cache="$(sbcl --noinform --non-interactive --eval '(require :asdf)' \
+        --eval '(format t "~&cache: ~a~%" (namestring (asdf:apply-output-translations (uiop:getcwd))))' |
+        sed -n 's/^cache: //p')"
+    find_files -name '*.fasl'
+    if [ "${#found_files[@]}" -gt 0 ]; then run rm -f "${found_files[@]}"; fi
+    case "${_cache}" in
+        "" | "$(pwd)" | "$(pwd)/") ;;
+        */common-lisp/*) [ ! -d "${_cache}" ] || run rm -rf "${_cache}" ;;
+    esac
+}
+
+# Pharo: a Tonel repository (its directory from .project's srcDirectory,
+# else src/) with a BaselineOf package, loaded with Metacello into a copy of
+# a fresh Pharo image in build/, whose packages' tests then run. The fresh
+# image is downloaded once, for the Pharo version the installer's VM runs.
+_PHARO_VERSION="120"
+pharo_hook() {
+    local _src="src" _baseline _packages=() _package
+    if [ -f .project ]; then
+        _src="$(sed -n "s/.*'srcDirectory'[[:space:]]*:[[:space:]]*'\([^']*\)'.*/\1/p" .project)"
+        _src="${_src:-.}"
+    fi
+    _baseline="$(cd "${_src}" 2>/dev/null && ls -d BaselineOf* 2>/dev/null | head -1 || true)"
+    case "$1" in
+        lint) skip "Pharo has no standard command-line linter" ;;
+        clean) run rm -rf build; return ;;
+    esac
+    [ -n "${_baseline}" ] || unknown "no Tonel repository with a BaselineOf package (in .project's srcDirectory, or src/)"
+    pharo_image
+    run pharo build/Pharo.image metacello install "tonel://$(cd "${_src}" && pwd)" "${_baseline}"
+    [ "$1" = test ] || return 0
+    for _package in "${_src}"/*/; do
+        _package="$(basename "${_package}")"
+        case "${_package}" in BaselineOf*) ;; *) _packages+=("${_package}") ;; esac
+    done
+    [ "${#_packages[@]}" -gt 0 ] || unknown "no packages besides ${_baseline} in ${_src}/"
+    run pharo build/Pharo.image test --fail-on-failure "${_packages[@]}"
+}
+pharo_image() {
+    local _fresh="${XDG_CACHE_HOME:-${HOME}/.cache}/hecatron/pharo/${_PHARO_VERSION}"
+    [ -f build/Pharo.image ] && return
+    if [ ! -f "${_fresh}/Pharo.image" ]; then
+        echo "+ downloading a fresh Pharo ${_PHARO_VERSION} image into ${_fresh}"
+        mkdir -p "${_fresh}"
+        (cd "${_fresh}" && curl -fsSL "https://get.pharo.org/64/${_PHARO_VERSION}" | bash)
+    fi
+    mkdir -p build
+    run cp "${_fresh}"/Pharo.image "${_fresh}"/Pharo.changes "${_fresh}"/*.sources build/
+}
+
+# Haxe: the project's .hxml build files. The test hook compiles and runs
+# test.hxml (or tests.hxml), which runs its tests itself (--interp, or a
+# --cmd after the build); the build hook build.hxml, else every other .hxml;
+# both install the haxelib libraries the file names first. Clean removes
+# the outputs the .hxml files name, inside this directory.
+haxe_hook() {
+    local _hxml _builds=()
+    case "$1" in
+        test)
+            for _hxml in test.hxml tests.hxml; do
+                [ -f "${_hxml}" ] || continue
+                haxe_build "${_hxml}"
+                return
+            done
+            unknown "no test.hxml or tests.hxml" ;;
+        build)
+            if [ -f build.hxml ]; then
+                _builds=(build.hxml)
+            else
+                for _hxml in *.hxml; do
+                    case "${_hxml}" in test.hxml | tests.hxml | "*.hxml") ;; *) _builds+=("${_hxml}") ;; esac
+                done
+            fi
+            [ "${#_builds[@]}" -gt 0 ] || skip "no build.hxml or other .hxml besides the tests'"
+            for _hxml in "${_builds[@]}"; do haxe_build "${_hxml}"; done ;;
+        lint) skip "Haxe has no standard linter" ;;
+        clean) haxe_clean ;;
+    esac
+}
+haxe_build() {
+    if grep -qE '^[[:space:]]*(-lib|-L|--library)[[:space:]]' "$1"; then
+        run haxelib install --always "$1"
+    fi
+    run haxe "$1"
+}
+# Each target's output path in the .hxml files here (--js out.js, --cpp
+# dir...), when it is relative and stays inside this directory.
+haxe_outputs() {
+    local _hxml _line _words _flag _index
+    for _hxml in *.hxml; do
+        [ -f "${_hxml}" ] || continue
+        while IFS= read -r _line || [ -n "${_line}" ]; do
+            read -r -a _words <<<"${_line}"
+            for ((_index = 0; _index + 1 < ${#_words[@]}; _index++)); do
+                _flag="${_words[${_index}]}"
+                case "${_flag}" in
+                    -js | --js | -lua | --lua | -python | --python | -neko | --neko | -hl | --hl | -swf | --swf | \
+                        -php | --php | -cpp | --cpp | -cppia | --cppia | -cs | --cs | -java | --java | -jvm | --jvm) ;;
+                    *) continue ;;
+                esac
+                case "${_words[$((_index + 1))]}" in
+                    /* | ..* | */..* | . | ./) ;;
+                    *) echo "${_words[$((_index + 1))]}" ;;
+                esac
+            done
+        done <"${_hxml}"
+    done
+}
+haxe_clean() {
+    local _outputs=() _output
+    while IFS= read -r _output; do
+        if [ -e "${_output}" ]; then _outputs+=("${_output}"); fi
+    done < <(haxe_outputs | sort -u)
+    [ "${#_outputs[@]}" -gt 0 ] || skip "no build outputs from the .hxml files here"
+    run rm -rf "${_outputs[@]}"
 }
 
 # Whether package.json defines an npm script, e.g. `npm_script test`.

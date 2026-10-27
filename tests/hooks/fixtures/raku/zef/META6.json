@@ -1,0 +1,13 @@
+{
+    "meta-version": 1,
+    "name": "Add",
+    "description": "Adds two numbers.",
+    "version": "0.1.0",
+    "auth": "zef:hecatron",
+    "license": "MIT",
+    "raku": "6.d",
+    "depends": [],
+    "provides": {
+        "Add": "lib/Add.rakumod"
+    }
+}

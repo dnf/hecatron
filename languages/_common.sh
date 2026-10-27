@@ -47,6 +47,18 @@ each_impl() {
     done < <(impl_dirs "${_lang}")
 }
 
+# Whether any of a language's components has a file a find expression
+# matches, e.g. `impl_has bash -name '*.bats'`: for installing a tool only
+# where a component needs it.
+impl_has() {
+    local _lang="$1" _dir
+    shift
+    while IFS= read -r _dir; do
+        [ -n "$(find "${_dir}" \( "$@" \) -print -quit 2>/dev/null)" ] && return 0
+    done < <(impl_dirs "${_lang}")
+    return 1
+}
+
 # For doctor.sh scripts: `problem` reports one problem, and `doctor_done`
 # exits non-zero when any were reported.
 _doctor_failed=0

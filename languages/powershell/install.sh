@@ -32,8 +32,12 @@ _download_pwsh() {
     $SUDO chmod +x "${_pwsh_root}/pwsh"
 }
 
+# Pester for the default test hook, PSScriptAnalyzer for the lint hook.
 deps() {
-    pwsh -Command "if (-not (Get-Module -ListAvailable -Name Pester)) { Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser }"
+    local _module
+    for _module in Pester PSScriptAnalyzer; do
+        pwsh -NoProfile -Command "if (-not (Get-Module -ListAvailable -Name ${_module})) { Install-Module -Name ${_module} -Force -SkipPublisherCheck -Scope CurrentUser }"
+    done
 }
 
 log "Installing PowerShell..."

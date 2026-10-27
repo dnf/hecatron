@@ -1,0 +1,12 @@
+{
+  "abbreviation": "hx",
+  "dependency": "haxe",
+  "lintDependency": null,
+  "detect": [
+    "*.hxml",
+    "haxelib.json"
+  ],
+  "dirNames": [
+    "haxe"
+  ]
+}

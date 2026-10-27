@@ -1,0 +1,12 @@
+# Haxe: the official release tarball, latest release, as install.sh installs
+# it, and the Neko VM haxelib runs on; haxelib's repository in /opt/haxelib
+# apt: neko
+RUN VERSION="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/HaxeFoundation/haxe/releases/latest)" && \
+    VERSION="${VERSION##*/}" && \
+    case "$(uname -m)" in aarch64) PLATFORM=linux-arm64 ;; *) PLATFORM=linux64 ;; esac && \
+    mkdir -p /opt/haxe /opt/haxelib && \
+    curl -fsSL "https://github.com/HaxeFoundation/haxe/releases/download/${VERSION}/haxe-${VERSION}-${PLATFORM}.tar.gz" | tar -C /opt/haxe --strip-components=1 -xz && \
+    ln -s /opt/haxe/haxe /usr/local/bin/haxe && \
+    ln -s /opt/haxe/haxelib /usr/local/bin/haxelib && \
+    chmod 1777 /opt/haxelib
+ENV HAXELIB_PATH=/opt/haxelib
