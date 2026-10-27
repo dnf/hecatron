@@ -8,8 +8,9 @@
 //
 // Ported: --version, help, the run commands (test, lint, build, clean,
 // rebuild, retest, audit, format, deps, outdated: run.go), doctor's and
-// version's help, list, and env without a language. The prototype's
-// `hecatron plan <lang> <action> [dir]` is kept, unlisted.
+// version's help, list, and env (with a language, its environment for a
+// component). The prototype's `hecatron plan <lang> <action> [dir]` is
+// kept, unlisted.
 package main
 
 import (
