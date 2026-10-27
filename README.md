@@ -191,7 +191,7 @@ expect changes before 1.0. Changes are listed in
 - **Platforms:** macOS (Apple Silicon and Intel) and Linux (Debian and
   Ubuntu, x86_64 and arm64). Windows isn't planned; installers and hooks are
   bash.
-- **Next:** a GitHub Action for CI, and versions for Ruby, PHP and .NET.
+- **Next:** a GitHub Action for CI.
 
 ## Documentation
 

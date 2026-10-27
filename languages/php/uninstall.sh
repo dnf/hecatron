@@ -8,6 +8,7 @@ uninstall_linux() {
     $SUDO apt-get remove -y 'php*' 2>/dev/null || true
     $SUDO apt-get autoremove -y 2>/dev/null || true
     $SUDO rm -f /usr/local/bin/composer
+    $SUDO rm -rf /opt/php
 }
 
 log "Uninstalling PHP..."
