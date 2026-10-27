@@ -189,6 +189,20 @@ perl_tools_missing() {
 # (require, not -M: Module::Install's import dies outside a Makefile.PL.)
 perl_has_module() { perl -e "require $1" 2>/dev/null; }
 
+# For Dart's installer and doctor: whether a component is a Flutter package
+# (its pubspec.yaml depends on the Flutter SDK, which `dart pub` refuses) and
+# flutter isn't installed. The Dart hooks run flutter for these (dart_tool).
+flutter_missing() {
+    local _dir
+    has flutter && return 1
+    while IFS= read -r _dir; do
+        is_flutter_package "${_dir}" && return 0
+    done < <(impl_dirs dart)
+    return 1
+}
+# (dependencies: flutter: sdk: flutter, or inline, flutter: { sdk: flutter })
+is_flutter_package() { grep -qsE 'sdk:[[:space:]]*flutter([^[:alnum:]_]|$)' "$1/pubspec.yaml"; }
+
 # For Elm's installer and doctor: whether a component configures elm-review
 # (review/elm.json) and it isn't installed.
 elm_review_missing() {

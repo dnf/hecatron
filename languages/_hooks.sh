@@ -318,7 +318,7 @@ module_build_configure() { [ -x Build ] || run perl Build.PL; }
 # Dart: the flutter tool for a package on the Flutter SDK, else dart; and
 # the package's dependencies first, when they aren't fetched yet.
 dart_tool() {
-    if grep -qE '^[[:space:]]+sdk:[[:space:]]*flutter' pubspec.yaml; then echo flutter; else echo dart; fi
+    if grep -qE 'sdk:[[:space:]]*flutter([^[:alnum:]_]|$)' pubspec.yaml; then echo flutter; else echo dart; fi
 }
 dart_deps() {
     if [ ! -f .dart_tool/package_config.json ]; then run "$(dart_tool)" pub get; fi

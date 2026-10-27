@@ -28,6 +28,9 @@ minor version can change behaviour. Numbers are
   written with it names (`configure_requires`), which a checkout doesn't
   bundle, and installs the CPAN dependencies a `Makefile.PL` or `Build.PL`
   declares, as it did a `cpanfile`'s.
+- **Dart installs Flutter** (3.47.8) where a component is a Flutter package,
+  and fetches its packages with `flutter pub get`; the doctor reports it
+  missing. The test hook says so when a package has no `test/` directory.
 - **Rust repairs an interrupted install:** a rustup left with no default
   toolchain (an install killed mid-download) is reported by the doctor and
   fixed by the installer.
