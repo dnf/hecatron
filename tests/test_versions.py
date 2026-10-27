@@ -223,6 +223,28 @@ class DoctorTest(VersionFixture):
         result = self.doctor()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_the_default_takes_any_version_on_its_release_line(self):
+        # A machine with another patch of the default's line needs no second copy.
+        self.installed("1.0.4\t/opt/tool-1.0.4", "2.0.7\t/opt/tool-2.0.7")
+        self.assertEqual(self.load().missing_versions("tool"), [])
+        self.assertEqual(self.load().installed_version("tool", "b"), ("2.0.7", "/opt/tool-2.0.7"))
+
+    def test_a_version_off_the_default_line_is_missing(self):
+        self.installed("1.0.4\t/opt/tool-1.0.4", "2.1.0\t/opt/tool-2.1.0")
+        self.assertEqual(self.load().missing_versions("tool"), [("b", "=2.0.0", "default")])
+
+    def test_a_definition_can_name_a_shorter_release_line(self):
+        # Node.js and Java number a line by its major version alone.
+        self.define(version="=2.0.0", releaseLine=1, dependency="bash",
+                    pinFiles=[{"file": ".tool-version", "format": "python-version"}])
+        self.installed("1.0.4\t/opt/tool-1.0.4", "2.5.1\t/opt/tool-2.5.1")
+        self.assertEqual(self.load().missing_versions("tool"), [])
+
+    def test_an_exact_project_version_still_matches_exactly(self):
+        self.override(version="=2.0.0")
+        self.installed("1.0.4\t/opt/tool-1.0.4", "2.0.7\t/opt/tool-2.0.7")
+        self.assertEqual(self.load().missing_versions("tool"), [("b", "=2.0.0", "project")])
+
     def test_without_installed_sh_versions_arent_checked(self):
         self.assertEqual(self.load().missing_versions("tool"), [])
         self.assertEqual(self.doctor().returncode, 0)
