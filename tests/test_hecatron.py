@@ -139,11 +139,76 @@ class ProjectModelTest(Fixture):
 
 class InitTest(Fixture):
     def test_infers_one_component_per_language_directory(self):
-        self.assertEqual(manage.infer_layout({"go": {"go"}, "rust": {"rust", "rust/src"}}), (["."], "{lang}"))
+        self.assertEqual(manage.infer_layout({"go": {"go"}, "rust": {"rust", "rust/src"}}), (["."], "{lang}", {}))
 
     def test_infers_components_from_a_varying_segment(self):
         found = {"go": {"age/impl/go", "date/impl/go"}, "rust": {"age/impl/rust", "date/impl/rust/src"}}
-        self.assertEqual(manage.infer_layout(found), (["age", "date"], "{component}/impl/{lang}"))
+        self.assertEqual(manage.infer_layout(found), (["age", "date"], "{component}/impl/{lang}", {}))
+
+    def test_a_directory_may_carry_any_of_a_languages_names(self):
+        # Thrift's lib/rb and lib/netstd.
+        found = {"ruby": {"lib/rb"}, "csharp": {"lib/netstd/src"}, "go": {"lib/go"}}
+        names = {"ruby": ["ruby", "rb"], "csharp": ["csharp", "netstd"], "go": ["go"]}
+        self.assertEqual(manage.infer_layout(found, names), (["."], "lib/{lang}", {}))
+
+    def test_a_preferred_parent_beats_covering_more_languages(self):
+        # Beam: the SDKs under sdks/, not the katas, which cover one more.
+        found = {"go": {"sdks/go", "learning/katas/go"}, "java": {"sdks/java", "learning/katas/java"},
+                 "kotlin": {"learning/katas/kotlin"}}
+        self.assertEqual(manage.infer_layout(found),
+                         (["."], "sdks/{lang}", {"kotlin": "learning/katas/kotlin"}))
+
+    def test_a_language_outside_the_shared_layout_gets_its_own_path(self):
+        # Cucumber's TypeScript in javascript/; flatbuffers' C++ at the root.
+        found = {"go": {"go"}, "java": {"java"}, "typescript": {"javascript"}, "cpp": {".", "src"}}
+        self.assertEqual(manage.infer_layout(found),
+                         (["."], "{lang}", {"typescript": "javascript", "cpp": "."}))
+
+    def test_a_directory_fitting_the_layout_counts_without_a_build_file(self):
+        # Thrift: go.mod at the root, the code in lib/go.
+        found = {"go": {"."}, "java": {"lib/java"}, "ruby": {"lib/rb"}}
+        self.assertEqual(manage.infer_layout(found, {"ruby": ["ruby", "rb"]}, {"lib", "lib/go", "lib/java", "lib/rb"}),
+                         (["."], "lib/{lang}", {}))
+
+    def detect(self, files: dict[str, str], defs: dict[str, dict]):
+        for path, content in files.items():
+            write(self.path(path), content)
+        self.commit()
+        return manage.detect_languages(self.root, defs)
+
+    def test_examples_tests_and_vendored_code_are_skipped(self):
+        found, skipped = self.detect({"go/go.mod": "", "examples/lua/x.lua": "", "third_party/zlib/x.c": "",
+                                      "go/testdata/x.c": ""},
+                                     {"go": {"detect": ["go.mod"]}, "lua": {"detect": ["*.lua"]},
+                                      "c": {"detect": ["*.c"]}})
+        self.assertEqual(found, {"go": {"go"}})
+        self.assertEqual(skipped, {"lua", "c"})
+
+    def test_build_files_outrank_sources(self):
+        found, _ = self.detect({"java/pom.xml": "", "java/src/main/A.java": "", "tools/B.java": "",
+                                "kt/x.kt": ""},
+                               {"java": {"detect": ["pom.xml"], "detectSources": ["*.java"]},
+                                "kotlin": {"detect": ["build.gradle.kts"], "detectSources": ["*.kt"]}})
+        self.assertEqual(found, {"java": {"java"}, "kotlin": {"kt"}})
+
+    def test_detect_unless_drops_a_hit_beside_another_languages_file(self):
+        found, _ = self.detect({"js/package.json": "", "ts/package.json": "", "ts/tsconfig.json": ""},
+                               {"javascript": {"detect": ["package.json"], "detectUnless": ["tsconfig.json"]},
+                                "typescript": {"detect": ["tsconfig.json"]}})
+        self.assertEqual(found, {"javascript": {"js"}, "typescript": {"ts"}})
+
+    def test_init_writes_a_path_for_a_language_outside_the_layout(self):
+        write(self.path("go", "go.mod"), "module x\n")
+        write(self.path("java", "pom.xml"), "<project/>\n")
+        write(self.path("dotnet", "Lib.csproj"), "<Project/>\n")
+        self.commit()
+        result = self.hecatron("init")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with open(self.path(".hecatron", "config.json"), encoding="utf-8") as f:
+            config = json.load(f)
+        self.assertEqual(config["implPath"], "{lang}")
+        self.assertEqual(config["implPaths"], {"csharp": "dotnet"})
+        self.assertEqual(project.load(self.root).impl_dirs("csharp"), [(".", self.path("dotnet"))])
 
     def test_single_language_repository(self):
         write(self.path("go.mod"), "module x\n")
@@ -167,6 +232,40 @@ class InitTest(Fixture):
         with tempfile.TemporaryDirectory() as outside:
             result = subprocess.run(["bash", BIN, "init", outside], capture_output=True, text=True)
         self.assertNotEqual(result.returncode, 0)
+
+
+class LanguageDirectoryTest(Fixture):
+    def test_a_language_directory_may_go_by_another_name(self):
+        self.configure(languages=["csharp"], implPath="lib/{lang}")
+        write(self.path(".hecatron", "languages", "csharp", "config.json"), json.dumps({"dirNames": ["netstd"]}))
+        os.makedirs(self.path("lib", "netstd"))
+        self.assertEqual(project.load(self.root).impl_dirs("csharp"), [(".", self.path("lib", "netstd"))])
+
+    def test_the_languages_own_name_comes_first(self):
+        self.configure(languages=["c"], implPath="{lang}")
+        write(self.path(".hecatron", "languages", "c", "config.json"), json.dumps({"dirNames": ["c_glib"]}))
+        os.makedirs(self.path("c"))
+        os.makedirs(self.path("c_glib"))
+        self.assertEqual(project.load(self.root).impl_dirs("c"), [(".", self.path("c"))])
+
+    def test_impl_paths_override_the_template_for_one_language(self):
+        self.configure(languages=["go", "typescript"], components=["a", "b"], implPath="{component}/{lang}",
+                       implPaths={"typescript": "{component}/javascript"})
+        for directory in ("a/go", "b/go", "a/javascript", "b/javascript"):
+            os.makedirs(self.path(directory))
+        p = project.load(self.root)
+        self.assertEqual(p.impl_dirs("typescript"), [("a", self.path("a", "javascript")),
+                                                     ("b", self.path("b", "javascript"))])
+        self.assertEqual(p.impl_dirs("go"), [("a", self.path("a", "go")), ("b", self.path("b", "go"))])
+
+    def test_hooks_run_in_the_overridden_directory(self):
+        self.configure(languages=["go"], implPaths={"go": "golang"})
+        os.makedirs(self.path("golang"))
+        write(self.path(".hecatron", "languages", "go", "test.sh"), "#!/usr/bin/env bash\npwd > ../where\n", 0o755)
+        result = self.hecatron("test", "go")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        with open(self.path("where"), encoding="utf-8") as f:
+            self.assertEqual(os.path.realpath(f.read().strip()), os.path.realpath(self.path("golang")))
 
 
 class LanguageCommandsTest(Fixture):

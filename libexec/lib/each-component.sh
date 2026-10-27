@@ -47,7 +47,7 @@ while IFS=$'\t' read -r _component _dir; do
 done < <(python3 "${HECATRON_HOME}/libexec/lib/project.py" impl-dirs "${_lang}")
 
 if [ "${_ran}" -eq 0 ]; then
-    echo "error: no ${_lang} implementation found at ${HECATRON_IMPL_PATH}" >&2
+    echo "error: no ${_lang} implementation found (implPath, or implPaths.${_lang}, in .hecatron/config.json)" >&2
     exit 1
 fi
 if [ "${#_failed[@]}" -gt 0 ]; then
