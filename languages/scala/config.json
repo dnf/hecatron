@@ -3,7 +3,9 @@
   "dependency": "java",
   "lintDependency": null,
   "detect": [
-    "build.sbt",
+    "build.sbt"
+  ],
+  "detectSources": [
     "*.scala"
   ]
 }

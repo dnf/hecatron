@@ -4,5 +4,12 @@
   "lintDependency": null,
   "detect": [
     "*.csproj"
+  ],
+  "dirNames": [
+    "csharp",
+    "dotnet",
+    "netstd",
+    "cs",
+    "net"
   ]
 }

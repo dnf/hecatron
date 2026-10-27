@@ -2,7 +2,8 @@
   "abbreviation": null,
   "dependency": "wren_cli",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.wren"
   ]
 }

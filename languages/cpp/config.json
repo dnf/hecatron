@@ -2,9 +2,23 @@
   "abbreviation": "c++",
   "dependency": "cmake",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.cpp",
     "*.cc",
+    "*.cxx",
     "*.hpp"
+  ],
+  "sharedBuildFiles": [
+    "CMakeLists.txt",
+    "meson.build",
+    "configure.ac",
+    "Makefile"
+  ],
+  "dirNames": [
+    "cpp",
+    "c++",
+    "cxx",
+    "cc"
   ]
 }

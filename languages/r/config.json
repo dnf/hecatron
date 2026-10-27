@@ -4,5 +4,9 @@
   "lintDependency": null,
   "detect": [
     "DESCRIPTION"
+  ],
+  "dirNames": [
+    "r",
+    "R"
   ]
 }

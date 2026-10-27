@@ -3,7 +3,9 @@
   "dependency": "java",
   "lintDependency": null,
   "detect": [
-    "pom.xml",
+    "pom.xml"
+  ],
+  "detectSources": [
     "*.java"
   ],
   "path": [

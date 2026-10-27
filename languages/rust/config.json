@@ -5,6 +5,10 @@
   "detect": [
     "Cargo.toml"
   ],
+  "dirNames": [
+    "rust",
+    "rs"
+  ],
   "path": [
     "{home}/bin",
     "~/.cargo/bin"

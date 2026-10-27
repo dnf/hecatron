@@ -2,8 +2,14 @@
   "abbreviation": "ph",
   "dependency": "pharo",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.st"
+  ],
+  "dirNames": [
+    "pharo",
+    "st",
+    "smalltalk"
   ],
   "path": [
     "~/.local/bin"

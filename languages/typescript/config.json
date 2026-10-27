@@ -5,6 +5,14 @@
   "detect": [
     "tsconfig.json"
   ],
+  "dirNames": [
+    "typescript",
+    "ts",
+    "nodets",
+    "javascript",
+    "js",
+    "nodejs"
+  ],
   "path": [
     "{home}/bin"
   ],
