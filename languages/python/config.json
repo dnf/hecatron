@@ -213,5 +213,27 @@
         }
       }
     }
-  }
+  },
+  "errorPatterns": [
+    {
+      "tool": "pytest",
+      "regex": "^E\\s+(?P<message>.+)$"
+    },
+    {
+      "tool": "pytest",
+      "regex": "^(?P<file>[^\\s:]+\\.py):(?P<line>\\d+): (?P<message>\\w+)$"
+    },
+    {
+      "tool": "pytest",
+      "regex": "^(?:FAILED|ERROR) (?P<file>[^\\s:]+\\.py)(?:::\\S+)?(?: - (?P<message>.+))?$"
+    },
+    {
+      "tool": "python",
+      "regex": "^\\s*File \\\"(?P<file>[^\\\"]+)\\\", line (?P<line>\\d+)"
+    },
+    {
+      "tool": "python",
+      "regex": "^(?P<message>\\w+(?:Error|Exception): .+)$"
+    }
+  ]
 }

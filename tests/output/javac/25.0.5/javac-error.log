@@ -1,0 +1,9 @@
+calc/Calc.java:7: error: incompatible types: int cannot be converted to String
+        String total = a + b;
+                         ^
+calc/Calc.java:8: error: cannot find symbol
+        return totl;
+               ^
+  symbol:   variable totl
+  location: class Calc
+2 errors

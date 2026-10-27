@@ -59,5 +59,51 @@
   ],
   "testing": "npm test",
   "linting": "npm run lint, tsc --noEmit",
-  "formatting": "Prettier, Biome (when a dependency)"
+  "formatting": "Prettier, Biome (when a dependency)",
+  "errorPatterns": [
+    {
+      "tool": "tsc",
+      "regex": "^(?P<file>[^\\s(]+)\\((?P<line>\\d+),(?P<col>\\d+)\\): error (?P<message>TS\\d+: .+)$"
+    },
+    {
+      "tool": "tsc",
+      "regex": "^(?P<file>[^\\s:]+):(?P<line>\\d+):(?P<col>\\d+) - error (?P<message>TS\\d+: .+)$"
+    },
+    {
+      "tool": "vitest",
+      "regex": "^\\s*FAIL\\s+(?P<message>\\S+ > .+)$"
+    },
+    {
+      "tool": "vitest",
+      "regex": "^\\s*\u2192 (?P<message>.+)$"
+    },
+    {
+      "tool": "vitest",
+      "regex": "^\\s*\u276f (?P<file>[^\\s:]+):(?P<line>\\d+):(?P<col>\\d+)$"
+    },
+    {
+      "tool": "jest",
+      "regex": "^FAIL (?P<file>\\S+\\.[cm]?[jt]sx?)$"
+    },
+    {
+      "tool": "jest",
+      "regex": "^\\s*\u25cf (?P<message>.+)$"
+    },
+    {
+      "tool": "jest",
+      "regex": "^\\s*(?P<message>(?:Expected|Received): .+)$"
+    },
+    {
+      "tool": "node-test",
+      "regex": "^\u2716 (?P<message>.+)$"
+    },
+    {
+      "tool": "node",
+      "regex": "^\\s+at .*\\((?P<file>[^():\\s]+\\.[cm]?[jt]sx?):(?P<line>\\d+):(?P<col>\\d+)\\)$"
+    },
+    {
+      "tool": "node",
+      "regex": "^\\s*(?P<message>(?:AssertionError|TypeError|ReferenceError|SyntaxError|RangeError|Error)(?: \\[\\w+\\])?: .+)$"
+    }
+  ]
 }

@@ -1,0 +1,14 @@
+1) Calc adds two numbers
+Failure/Error: expect(Calc.add(2, 3)).to eq(5)
+expected: 5
+got: -1
+# ./spec/calc_spec.rb:5:in `block (2 levels) in <top (required)>'
+    -> ./spec/calc_spec.rb:5
+2) Calc rejects nil
+Failure/Error: a - b
+# ./lib/calc.rb:3:in `add'
+    -> ./lib/calc.rb:3
+# ./spec/calc_spec.rb:13:in `block (2 levels) in <top (required)>'
+    -> ./spec/calc_spec.rb:13
+rspec ./spec/calc_spec.rb:4 # Calc adds two numbers
+    -> ./spec/calc_spec.rb:4 Calc adds two numbers

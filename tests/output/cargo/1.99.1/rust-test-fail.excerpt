@@ -1,0 +1,7 @@
+test tests::adds ... FAILED
+thread 'tests::adds' (174) panicked at src/lib.rs:11:9:
+    -> src/lib.rs:11:9
+assertion `left == right` failed
+left: -1
+right: 5
+error: test failed, to rerun pass `--lib`

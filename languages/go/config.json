@@ -137,5 +137,23 @@
         "default": "bin"
       }
     }
-  }
+  },
+  "errorPatterns": [
+    {
+      "tool": "go",
+      "regex": "^\\s*(?P<file>[^\\s:]+\\.go):(?P<line>\\d+)(?::(?P<col>\\d+))?: (?P<message>.+)$"
+    },
+    {
+      "tool": "go",
+      "regex": "^--- FAIL: (?P<message>.+)$"
+    },
+    {
+      "tool": "go",
+      "regex": "^panic: (?P<message>.+)$"
+    },
+    {
+      "tool": "go",
+      "regex": "^FAIL\\s+(?P<message>\\S+\\s+\\[(?:build|setup) failed\\])$"
+    }
+  ]
 }

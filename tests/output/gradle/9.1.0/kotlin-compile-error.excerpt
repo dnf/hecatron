@@ -1,0 +1,5 @@
+e: file:///tmp/capture/kotlin-compile-error/kotlin/src/main/kotlin/calc/Calc.kt:4:23 Initializer type mismatch: expected 'String', actual 'Int'.
+    -> /tmp/capture/kotlin-compile-error/kotlin/src/main/kotlin/calc/Calc.kt:4:23 Initializer type mismatch: expected 'String', actual 'Int'.
+e: file:///tmp/capture/kotlin-compile-error/kotlin/src/main/kotlin/calc/Calc.kt:5:12 Unresolved reference 'totl'.
+    -> /tmp/capture/kotlin-compile-error/kotlin/src/main/kotlin/calc/Calc.kt:5:12 Unresolved reference 'totl'.
+Execution failed for task ':compileKotlin'.

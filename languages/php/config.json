@@ -51,5 +51,27 @@
   ],
   "testing": "PHPUnit",
   "linting": "PHPStan, PHP_CodeSniffer, PHP CS Fixer",
-  "formatting": "PHP CS Fixer, Laravel Pint (when installed)"
+  "formatting": "PHP CS Fixer, Laravel Pint (when installed)",
+  "errorPatterns": [
+    {
+      "tool": "phpunit",
+      "regex": "^\\d+\\) (?P<message>\\S+::\\S+)$"
+    },
+    {
+      "tool": "phpunit",
+      "regex": "^(?P<message>Failed asserting .+)$"
+    },
+    {
+      "tool": "php",
+      "regex": "^(?P<message>\\w+(?:Error|Exception): .+)$"
+    },
+    {
+      "tool": "phpunit",
+      "regex": "^(?P<file>/\\S+\\.php):(?P<line>\\d+)$"
+    },
+    {
+      "tool": "php",
+      "regex": "^PHP (?:Parse|Fatal) error:\\s+(?P<message>.+) in (?P<file>\\S+) on line (?P<line>\\d+)$"
+    }
+  ]
 }

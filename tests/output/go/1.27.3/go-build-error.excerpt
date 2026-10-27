@@ -1,0 +1,4 @@
+./calc.go:4:6: declared and not used: unused
+    -> ./calc.go:4:6 declared and not used: unused
+./calc.go:5:9: invalid operation: a + b + "1" (mismatched types int and untyped string)
+    -> ./calc.go:5:9 invalid operation: a + b + "1" (mismatched types int and untyped string)

@@ -53,5 +53,39 @@
   ],
   "testing": "RSpec, Minitest",
   "linting": "RuboCop, Standard",
-  "formatting": "RuboCop, Standard (when in the bundle)"
+  "formatting": "RuboCop, Standard (when in the bundle)",
+  "errorPatterns": [
+    {
+      "tool": "rspec",
+      "regex": "^\\s+\\d+\\) (?P<message>.+)$"
+    },
+    {
+      "tool": "rspec",
+      "regex": "^\\s+(?P<message>(?:Failure/Error|expected|got): .+)$"
+    },
+    {
+      "tool": "rspec",
+      "regex": "^\\s+# (?P<file>\\./\\S+\\.rb):(?P<line>\\d+):in"
+    },
+    {
+      "tool": "rspec",
+      "regex": "^rspec (?P<file>\\./\\S+\\.rb):(?P<line>\\d+) # (?P<message>.+)$"
+    },
+    {
+      "tool": "minitest",
+      "regex": "^(?P<message>\\S+#\\S+) \\[(?P<file>[^\\]:]+\\.rb):(?P<line>\\d+)\\]:$"
+    },
+    {
+      "tool": "minitest",
+      "regex": "^(?P<message>\\S+#\\S+):$"
+    },
+    {
+      "tool": "minitest",
+      "regex": "^\\s*(?P<message>(?:Expected|Actual): .+)$"
+    },
+    {
+      "tool": "ruby",
+      "regex": "^(?P<message>\\w+(?:Error|Exception): .+)$"
+    }
+  ]
 }

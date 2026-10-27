@@ -1,0 +1,10 @@
+1) CalcTest::testRejectsNull
+TypeError: Calc\Calc::add(): Argument #1 ($a) must be of type int, null given, called in /tmp/capture/phpunit-test-fail/php/tests/CalcTest.php on line 20
+/tmp/capture/phpunit-test-fail/php/src/Calc.php:7
+    -> /tmp/capture/phpunit-test-fail/php/src/Calc.php:7
+/tmp/capture/phpunit-test-fail/php/tests/CalcTest.php:20
+    -> /tmp/capture/phpunit-test-fail/php/tests/CalcTest.php:20
+1) CalcTest::testAdds
+Failed asserting that -1 is identical to 5.
+/tmp/capture/phpunit-test-fail/php/tests/CalcTest.php:10
+    -> /tmp/capture/phpunit-test-fail/php/tests/CalcTest.php:10

@@ -1,0 +1,4 @@
+CalcTest > adds() FAILED
+org.opentest4j.AssertionFailedError at CalcTest.kt:9
+    -> CalcTest.kt:9 org.opentest4j.AssertionFailedError at CalcTest.kt:9
+Execution failed for task ':test'.

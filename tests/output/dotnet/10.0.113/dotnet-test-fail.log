@@ -1,0 +1,40 @@
+=== test . (csharp) ===
++ dotnet test
+
+Welcome to .NET 10.0!
+---------------------
+SDK Version: 10.0.113
+
+----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate, run 'dotnet dev-certs https --trust'
+Learn about HTTPS: https://aka.ms/dotnet-https
+
+----------------
+Write your first app: https://aka.ms/dotnet-hello-world
+Find out what's new: https://aka.ms/dotnet-whats-new
+Explore documentation: https://aka.ms/dotnet-docs
+Report issues and find source on GitHub: https://github.com/dotnet/core
+Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
+--------------------------------------------------------------------------------------
+  Determining projects to restore...
+  Restored /tmp/capture/dotnet-test-fail/csharp/Calc.Tests.csproj (in 1.95 sec).
+  Calc.Tests -> /tmp/capture/dotnet-test-fail/csharp/bin/Debug/net10.0/Calc.Tests.dll
+Test run for /tmp/capture/dotnet-test-fail/csharp/bin/Debug/net10.0/Calc.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.14]     Calc.Tests.CalcTests.Adds [FAIL]
+  Failed Calc.Tests.CalcTests.Adds [5 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 5
+Actual:   -1
+  Stack Trace:
+     at Calc.Tests.CalcTests.Adds() in /tmp/capture/dotnet-test-fail/csharp/CalcTests.cs:line 13
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     1, Skipped:     0, Total:     2, Duration: 29 ms - Calc.Tests.dll (net10.0)
+csharp: test failed: .

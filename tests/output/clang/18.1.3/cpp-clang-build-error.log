@@ -1,0 +1,41 @@
+=== build . (cpp) ===
++ make
+clang++ -std=c++17 -Wall -Wextra   -c -o calc.o calc.cpp
+calc.cpp:6:40: error: use of undeclared identifier 'missing'; did you mean 'using'?
+    6 | int add(int a, int b) { return a + b + missing; }
+      |                                        ^~~~~~~
+      |                                        using
+calc.cpp:6:40: error: expected expression
+calc.cpp:10:17: error: no viable conversion from 'int' to 'std::string' (aka 'basic_string<char>')
+   10 |     std::string total = calc::add(2, 3);
+      |                 ^       ~~~~~~~~~~~~~~~
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:547:7: note: candidate constructor not viable: no known conversion from 'int' to 'const basic_string<char> &' for 1st argument
+  547 |       basic_string(const basic_string& __str)
+      |       ^            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:641:7: note: candidate constructor template not viable: no known conversion from 'int' to 'const char *' for 1st argument
+  641 |       basic_string(const _CharT* __s, const _Alloc& __a = _Alloc())
+      |       ^            ~~~~~~~~~~~~~~~~~
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:677:7: note: candidate constructor not viable: no known conversion from 'int' to 'basic_string<char> &&' for 1st argument
+  677 |       basic_string(basic_string&& __str) noexcept
+      |       ^            ~~~~~~~~~~~~~~~~~~~~
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:706:7: note: candidate constructor not viable: no known conversion from 'int' to 'initializer_list<char>' for 1st argument
+  706 |       basic_string(initializer_list<_CharT> __l, const _Alloc& __a = _Alloc())
+      |       ^            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:535:7: note: explicit constructor is not a candidate
+  535 |       basic_string(const _Alloc& __a) _GLIBCXX_NOEXCEPT
+      |       ^
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:795:2: note: explicit constructor is not a candidate
+  795 |         basic_string(const _Tp& __t, const _Alloc& __a = _Alloc())
+      |         ^
+calc.cpp:12:12: error: no matching member function for call to 'push_back'
+   12 |     values.push_back("four");
+      |     ~~~~~~~^~~~~~~~~
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/stl_vector.h:1281:7: note: candidate function not viable: no known conversion from 'const char[5]' to 'const value_type' (aka 'const int') for 1st argument
+ 1281 |       push_back(const value_type& __x)
+      |       ^         ~~~~~~~~~~~~~~~~~~~~~
+/usr/bin/../lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/stl_vector.h:1298:7: note: candidate function not viable: no known conversion from 'const char[5]' to 'value_type' (aka 'int') for 1st argument
+ 1298 |       push_back(value_type&& __x)
+      |       ^         ~~~~~~~~~~~~~~~~
+4 errors generated.
+make: *** [<builtin>: calc.o] Error 1
+cpp: build failed: .

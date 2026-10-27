@@ -1,0 +1,9 @@
+calc.cpp:6:40: error: use of undeclared identifier 'missing'; did you mean 'using'?
+    -> calc.cpp:6:40 use of undeclared identifier 'missing'; did you mean 'using'?
+calc.cpp:6:40: error: expected expression
+    -> calc.cpp:6:40 expected expression
+calc.cpp:10:17: error: no viable conversion from 'int' to 'std::string' (aka 'basic_string<char>')
+    -> calc.cpp:10:17 no viable conversion from 'int' to 'std::string' (aka 'basic_string<char>')
+calc.cpp:12:12: error: no matching member function for call to 'push_back'
+    -> calc.cpp:12:12 no matching member function for call to 'push_back'
+make: *** [<builtin>: calc.o] Error 1

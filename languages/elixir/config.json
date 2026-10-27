@@ -164,5 +164,28 @@
         "elixir"
       ]
     }
-  }
+  },
+  "errorPatterns": [
+    {
+      "tool": "exunit",
+      "regex": "^\\s+\\d+\\) (?P<message>test .+)$"
+    },
+    {
+      "tool": "exunit",
+      "regex": "^\\s+(?P<file>test/\\S+\\.exs):(?P<line>\\d+)$"
+    },
+    {
+      "tool": "exunit",
+      "regex": "^\\s+(?P<message>(?:Assertion with .+ failed|\\*\\* \\(\\w+(?:\\.\\w+)*\\) .+|left: .+|right: .+))$"
+    },
+    {
+      "tool": "mix",
+      "regex": "^\\*\\* \\((?:\\w+\\.)*\\w*Error\\) (?P<file>[^\\s:]+\\.exs?):(?P<line>\\d+)(?::(?P<col>\\d+))?: (?P<message>.+)$"
+    },
+    {
+      "tool": "mix",
+      "regex": "^\\s*error: (?P<message>.+)$",
+      "next": "^\\s*(?:\u2514\u2500 )?(?P<file>[^\\s:]+\\.exs?):(?P<line>\\d+)(?::(?P<col>\\d+))?"
+    }
+  ]
 }

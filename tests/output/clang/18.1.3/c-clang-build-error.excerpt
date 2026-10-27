@@ -1,0 +1,5 @@
+calc.c:5:20: error: use of undeclared identifier 'missing'
+    -> calc.c:5:20 use of undeclared identifier 'missing'
+calc.c:9:17: error: incompatible integer to pointer conversion initializing 'const char *' with an expression of type 'int' [-Wint-conversion]
+    -> calc.c:9:17 incompatible integer to pointer conversion initializing 'const char *' with an expression of type 'int' [-Wint-conversion]
+make: *** [<builtin>: calc.o] Error 1

@@ -1,0 +1,6 @@
+Calc.kt:4:23: error: initializer type mismatch: expected 'String', actual 'Int'.
+    val total: String = a + b
+                      ^
+Calc.kt:5:12: error: unresolved reference 'totl'.
+    return totl
+           ^^^^

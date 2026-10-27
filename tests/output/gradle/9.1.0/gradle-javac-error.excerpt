@@ -1,0 +1,5 @@
+/tmp/capture/gradle-javac-error/java/src/main/java/calc/Calc.java:7: error: incompatible types: int cannot be converted to String
+    -> /tmp/capture/gradle-javac-error/java/src/main/java/calc/Calc.java:7 incompatible types: int cannot be converted to String
+/tmp/capture/gradle-javac-error/java/src/main/java/calc/Calc.java:8: error: cannot find symbol
+    -> /tmp/capture/gradle-javac-error/java/src/main/java/calc/Calc.java:8 cannot find symbol
+Execution failed for task ':compileJava'.

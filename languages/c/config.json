@@ -27,5 +27,31 @@
   ],
   "testing": "CTest, Meson test, make check",
   "linting": null,
-  "formatting": "clang-format (with a .clang-format)"
+  "formatting": "clang-format (with a .clang-format)",
+  "errorPatterns": [
+    {
+      "tool": "gcc",
+      "regex": "^(?P<file>[^\\s:]+):(?P<line>\\d+):(?P<col>\\d+): (?:fatal )?error: (?P<message>.+)$"
+    },
+    {
+      "tool": "gcc",
+      "regex": "^(?P<file>[^\\s:]+):(?P<line>\\d+): (?:fatal )?error: (?P<message>.+)$"
+    },
+    {
+      "tool": "ld",
+      "regex": "^(?P<file>[^\\s:]+):(?P<line>\\d+):(?P<col>\\d+): (?P<message>undefined reference to .+)$"
+    },
+    {
+      "tool": "ld",
+      "regex": "^(?P<message>(?:/usr/bin/)?ld: .+)$"
+    },
+    {
+      "tool": "make",
+      "regex": "^(?P<message>\\S*make(?:\\[\\d+\\])?: \\*\\*\\* .+)$"
+    },
+    {
+      "tool": "cmake",
+      "regex": "^CMake Error at (?P<file>[^\\s:]+):(?P<line>\\d+) .*$"
+    }
+  ]
 }

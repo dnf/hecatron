@@ -43,5 +43,27 @@
   ],
   "testing": "dotnet test",
   "linting": "dotnet format",
-  "formatting": "dotnet format"
+  "formatting": "dotnet format",
+  "errorPatterns": [
+    {
+      "tool": "dotnet",
+      "regex": "^\\s*(?P<file>[^\\s(]+)\\((?P<line>\\d+),(?P<col>\\d+)\\): error (?P<message>[A-Z]+\\d+: .+?)(?: \\[[^\\]]+\\])?$"
+    },
+    {
+      "tool": "dotnet",
+      "regex": "^\\s*Failed (?P<message>\\S+) \\[[^\\]]+\\]$"
+    },
+    {
+      "tool": "dotnet",
+      "regex": "^\\s*(?P<message>Assert\\.\\S+ Failure.*)$"
+    },
+    {
+      "tool": "dotnet",
+      "regex": "^(?P<message>(?:Expected|Actual):\\s+.+)$"
+    },
+    {
+      "tool": "dotnet",
+      "regex": "^\\s+at .+ in (?P<file>\\S+):line (?P<line>\\d+)$"
+    }
+  ]
 }

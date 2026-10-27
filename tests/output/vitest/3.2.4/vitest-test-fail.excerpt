@@ -1,0 +1,10 @@
+→ expected -1 to be 5 // Object.is equality
+→ expected { total: +0 } to deeply equal { total: 2 }
+FAIL  src/calc.test.ts > add > adds two numbers
+AssertionError: expected -1 to be 5 // Object.is equality
+❯ src/calc.test.ts:6:23
+    -> src/calc.test.ts:6:23
+FAIL  src/calc.test.ts > add > returns an object
+AssertionError: expected { total: +0 } to deeply equal { total: 2 }
+❯ src/calc.test.ts:14:34
+    -> src/calc.test.ts:14:34

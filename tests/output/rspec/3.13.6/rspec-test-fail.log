@@ -1,0 +1,51 @@
+=== test . (ruby) ===
++ bundle install
+Don't run Bundler as root. Installing your bundle as root will break this
+application for all non-root users on this machine.
+Fetching gem metadata from https://rubygems.org/...
+Resolving dependencies...
+Fetching rspec-support 3.13.7
+Fetching diff-lcs 1.6.2
+Installing rspec-support 3.13.7
+Installing diff-lcs 1.6.2
+Fetching rspec-core 3.13.6
+Fetching rspec-expectations 3.13.5
+Fetching rspec-mocks 3.13.8
+Installing rspec-mocks 3.13.8
+Installing rspec-expectations 3.13.5
+Installing rspec-core 3.13.6
+Fetching rspec 3.13.2
+Installing rspec 3.13.2
+Bundle complete! 1 Gemfile dependency, 7 gems now installed.
+Use `bundle info [gemname]` to see where a bundled gem is installed.
++ bundle exec rspec
+F.F
+
+Failures:
+
+  1) Calc adds two numbers
+     Failure/Error: expect(Calc.add(2, 3)).to eq(5)
+
+       expected: 5
+            got: -1
+
+       (compared using ==)
+     # ./spec/calc_spec.rb:5:in `block (2 levels) in <top (required)>'
+
+  2) Calc rejects nil
+     Failure/Error: a - b
+
+     NoMethodError:
+       undefined method `-' for nil:NilClass
+     # ./lib/calc.rb:3:in `add'
+     # ./spec/calc_spec.rb:13:in `block (2 levels) in <top (required)>'
+
+Finished in 0.00262 seconds (files took 0.02731 seconds to load)
+3 examples, 2 failures
+
+Failed examples:
+
+rspec ./spec/calc_spec.rb:4 # Calc adds two numbers
+rspec ./spec/calc_spec.rb:12 # Calc rejects nil
+
+ruby: test failed: .

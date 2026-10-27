@@ -100,5 +100,47 @@
         }
       }
     }
-  }
+  },
+  "errorPatterns": [
+    {
+      "tool": "javac",
+      "regex": "^\\s*(?P<file>\\S+\\.(?:java|kt|scala|groovy)):(?P<line>\\d+): error: (?P<message>.+)$"
+    },
+    {
+      "tool": "maven",
+      "regex": "^\\[ERROR\\] (?P<file>\\S+\\.(?:java|kt|scala|groovy)):\\[(?P<line>\\d+),(?P<col>\\d+)\\] (?P<message>.+)$"
+    },
+    {
+      "tool": "maven",
+      "regex": "^\\[ERROR\\]\\s+(?P<message>\\S+:\\d+ .+)$"
+    },
+    {
+      "tool": "maven",
+      "regex": "^\\[ERROR\\] (?P<message>\\S+ -- Time elapsed: .+<<< (?:FAILURE|ERROR)!)$"
+    },
+    {
+      "tool": "junit",
+      "regex": "^(?P<message>(?:org\\.opentest4j|org\\.junit|junit\\.framework|java\\.lang)\\.\\S+: .+)$"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^(?P<message>\\S+ > .+ FAILED)$"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^\\s+(?P<message>\\S+(?:Error|Exception|Failure)\\S* at (?P<file>\\S+\\.(?:java|kt|scala|groovy)):(?P<line>\\d+))$"
+    },
+    {
+      "tool": "kotlin",
+      "regex": "^e: (?:file://)?(?P<file>[^\\s:]+\\.kts?):(?P<line>\\d+):(?P<col>\\d+) (?P<message>.+)$"
+    },
+    {
+      "tool": "kotlinc",
+      "regex": "^(?P<file>\\S+\\.kts?):(?P<line>\\d+):(?P<col>\\d+): error: (?P<message>.+)$"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^(?P<message>Execution failed for task .+)$"
+    }
+  ]
 }
