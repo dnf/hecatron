@@ -26,7 +26,31 @@ PLATFORM_NAMES = {
     "macos-x86_64": "Intel Macs",
 }
 
-HEADER = """\
+# The languages most developers use, most used first: those hecatron
+# supports that at least 5% of respondents to the Stack Overflow Developer
+# Survey 2025 used (https://survey.stackoverflow.co/2025/technology). Listed
+# first, so a reader finds theirs without scrolling.
+POPULAR = [
+    "javascript",
+    "python",
+    "bash",
+    "typescript",
+    "java",
+    "csharp",
+    "cpp",
+    "powershell",
+    "c",
+    "php",
+    "go",
+    "rust",
+    "kotlin",
+    "lua",
+    "ruby",
+    "dart",
+    "swift",
+]
+
+INTRO = """\
 # Languages
 
 Every language hecatron supports, what it is, and how hecatron builds,
@@ -37,7 +61,20 @@ Generated from each language's `config.json` by
 `libexec/codegen/languages_doc.py`; don't edit by hand.
 [coverage.md](coverage.md) has which platforms each one installs and passes
 on, and [adding-a-language.md](adding-a-language.md) covers adding one.
+"""
 
+POPULAR_HEADING = """\
+## Popular languages
+
+The languages at least 5% of developers use, most used first, from the
+[Stack Overflow Developer Survey 2025](https://survey.stackoverflow.co/2025/technology).
+"""
+
+ADDITIONAL_HEADING = """\
+## Additional languages
+"""
+
+TABLE_HEADER = """\
 | Language | What it is | Build systems | Tests | Linting | Formatting | Default version |
 | --- | --- | --- | --- | --- | --- | --- |
 """
@@ -73,9 +110,18 @@ def row(lang: str, config: dict) -> str:
                               cell(config.get("linting")), cell(config.get("formatting")), cell(version)]) + " |"
 
 
+def table(entries: list[tuple[str, dict]]) -> str:
+    return TABLE_HEADER + "\n".join(row(lang, config) for lang, config in entries) + "\n"
+
+
 def render() -> str:
-    rows = [row(lang, config) for lang, config in definitions()]
-    return HEADER + "\n".join(rows) + "\n"
+    found = dict(definitions())
+    missing = [lang for lang in POPULAR if lang not in found]
+    if missing:
+        raise SystemExit(f"languages_doc: POPULAR names languages with no definition: {', '.join(missing)}")
+    popular = [(lang, found[lang]) for lang in POPULAR]
+    additional = [(lang, config) for lang, config in definitions() if lang not in POPULAR]
+    return "\n".join([INTRO, POPULAR_HEADING, table(popular), ADDITIONAL_HEADING, table(additional)])
 
 
 def main() -> int:

@@ -18,6 +18,16 @@ class LanguagesDocTest(unittest.TestCase):
         result = subprocess.run([sys.executable, GENERATOR, "--check"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_every_language_is_listed_once(self):
+        with open(os.path.join(ROOT, "docs", "languages.md"), encoding="utf-8") as f:
+            text = f.read()
+        popular, additional = text.split("## Popular languages")[1].split("## Additional languages")
+        rows = [line for section in (popular, additional) for line in section.splitlines() if line.startswith("| [")]
+        definitions = [d for d in os.listdir(os.path.join(ROOT, "languages"))
+                       if os.path.isfile(os.path.join(ROOT, "languages", d, "config.json"))]
+        self.assertEqual(len(rows), len(definitions))
+        self.assertEqual(len(rows), len(set(rows)))
+
     def test_every_definition_describes_itself(self):
         languages = os.path.join(ROOT, "languages")
         for lang in sorted(os.listdir(languages)):
