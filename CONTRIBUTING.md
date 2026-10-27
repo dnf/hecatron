@@ -35,6 +35,23 @@ The [coverage workflow](.github/workflows/coverage.yml) runs the install test
 for every language on every platform each week and writes
 [docs/coverage.md](docs/coverage.md).
 
+## Releasing
+
+Each change adds a line under `## Unreleased` in [CHANGELOG.md](CHANGELOG.md).
+To release, from an up-to-date `main`:
+
+```bash
+libexec/maintenance/release.sh 0.4.0 --dry-run   # the checks, the changes and the notes
+libexec/maintenance/release.sh 0.4.0
+```
+
+It checks the tree and the changelog and runs `hct self-test`, then bumps
+`VERSION`, dates the changelog section and updates the README's status line
+in a pull request, merges it when CI passes, tags `v0.4.0` and publishes a
+GitHub release with the changelog section as its notes. The installer
+installs the newest tag. Before 1.0, a release that changes behaviour bumps
+the minor version.
+
 ## Conventions
 
 [CLAUDE.md](CLAUDE.md) has the conventions the code follows (shell style,
