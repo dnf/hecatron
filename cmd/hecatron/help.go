@@ -42,7 +42,7 @@ Languages:
 
 Generated files:
   dockerfile [--check]       Generate the Dockerfile from language snippets
-  workflows [--check]        Generate each language's CI workflow
+  workflows [--check]        Generate CI: each language's workflow (--ci gitlab: one pipeline)
   check                      Verify every generated file is current
   banner --generator PATH    Print a DO NOT EDIT banner for a code generator
 

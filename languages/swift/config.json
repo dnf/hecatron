@@ -13,5 +13,13 @@
   ],
   "testing": "XCTest, Swift Testing",
   "linting": null,
-  "formatting": "swift-format"
+  "formatting": "swift-format",
+  "cache": {
+    "dependencies": [
+      "~/.cache/org.swift.swiftpm"
+    ],
+    "lockFiles": [
+      "Package.resolved"
+    ]
+  }
 }

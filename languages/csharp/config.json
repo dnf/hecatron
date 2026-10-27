@@ -66,5 +66,15 @@
       "tool": "dotnet",
       "regex": "^\\s+at .+ in (?P<file>\\S+):line (?P<line>\\d+)$"
     }
-  ]
+  ],
+  "cache": {
+    "dependencies": [
+      "~/.nuget/packages"
+    ],
+    "lockFiles": [
+      "packages.lock.json",
+      "*.csproj",
+      "Directory.Packages.props"
+    ]
+  }
 }

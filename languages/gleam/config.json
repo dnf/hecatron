@@ -13,5 +13,13 @@
   ],
   "testing": "gleeunit (gleam test)",
   "linting": "gleam format",
-  "formatting": "gleam format"
+  "formatting": "gleam format",
+  "cache": {
+    "dependencies": [
+      "~/.cache/gleam"
+    ],
+    "lockFiles": [
+      "manifest.toml"
+    ]
+  }
 }

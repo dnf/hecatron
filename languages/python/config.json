@@ -238,5 +238,18 @@
   ],
   "notes": {
     "formatting": "Black only where the project configures it; otherwise Ruff."
+  },
+  "cache": {
+    "toolchain": [
+      "~/.local/share/uv/python"
+    ],
+    "dependencies": [
+      "~/.cache/uv"
+    ],
+    "lockFiles": [
+      "uv.lock",
+      "requirements*.txt",
+      "pyproject.toml"
+    ]
   }
 }

@@ -27,5 +27,15 @@
   "formatting": "perltidy",
   "notes": {
     "formatting": "Only when the project has a `.perltidyrc`."
+  },
+  "cache": {
+    "dependencies": [
+      "~/.cpanm",
+      "local"
+    ],
+    "lockFiles": [
+      "cpanfile.snapshot",
+      "cpanfile"
+    ]
   }
 }

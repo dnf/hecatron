@@ -13,5 +13,13 @@
   ],
   "testing": "zig build test",
   "linting": "zig fmt",
-  "formatting": "zig fmt"
+  "formatting": "zig fmt",
+  "cache": {
+    "dependencies": [
+      "~/.cache/zig"
+    ],
+    "lockFiles": [
+      "build.zig.zon"
+    ]
+  }
 }

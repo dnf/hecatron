@@ -16,5 +16,13 @@
   ],
   "testing": "elm-test",
   "linting": "elm-review",
-  "formatting": "elm-format"
+  "formatting": "elm-format",
+  "cache": {
+    "dependencies": [
+      "~/.elm"
+    ],
+    "lockFiles": [
+      "elm.json"
+    ]
+  }
 }

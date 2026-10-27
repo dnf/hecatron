@@ -155,5 +155,14 @@
       "tool": "go",
       "regex": "^FAIL\\s+(?P<message>\\S+\\s+\\[(?:build|setup) failed\\])$"
     }
-  ]
+  ],
+  "cache": {
+    "dependencies": [
+      "~/go/pkg/mod",
+      "~/.cache/go-build"
+    ],
+    "lockFiles": [
+      "go.sum"
+    ]
+  }
 }

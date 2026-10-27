@@ -193,6 +193,9 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `tools` | Non-language dependencies, as `{ "dependency": "<command>" }` | `{}` |
 | `generated.dockerfile` | Where `hecatron dockerfile` writes; omit for none | none |
 | `generated.workflows` | Where `hecatron workflows` writes each language's CI workflow | none |
+| `generated.ci` | The CI systems `hecatron workflows` generates for: `"github"` (each language's workflow, at `generated.workflows`), `"gitlab"` (`.gitlab-ci.yml`), or both as a list (binary only) | `"github"` |
+| `ci.cache` | Cache toolchains and dependencies in the generated CI (§11; binary only) | `false` |
+| `ci.image` | The image GitLab jobs run in (binary only) | `ubuntu:24.04` |
 | `lint.format` | Whether `hecatron lint` runs each language's format check: `false`, or per language (`{"haskell": false}`) | `true` |
 | `tasks` | Extra named jobs per action (`test`, `lint`, ...): shell commands run from the root, in parallel with the languages and by name (`hecatron test codegen`) | `{}` |
 | `taskPaths` | Per task name, the paths whose changes it depends on, for `--changed` (`{"codegen": ["codegen/", "*.proto"]}`); a task without runs on any change | `{}` |
@@ -418,6 +421,34 @@ DO NOT EDIT banner naming the generator and its source:
   `workflow.yml`, with a banner. `hecatron check` verifies that each workflow
   mentions every component, generalising sayable's
   `check_workflow_components.py`.
+
+- **GitLab pipeline** (`generated.ci: "gitlab"`, or `hecatron workflows
+  --ci gitlab`): `.gitlab-ci.yml`, written from the project's languages
+  rather than a template: one job per language that installs hecatron with
+  install.sh (pinned to the generating version, `HECATRON_VERSION`) and runs
+  `hct install`, `hct test` and `hct lint` for the language, which cover
+  every component. The job's image is `ci.image`.
+- **Caching** (`"ci": {"cache": true}`, off by default so that turning it
+  on is what changes existing projects' files): each definition's `cache`
+  names the directories its installer puts the toolchain in and its package
+  manager downloads to (`~/...`, or relative to each component's
+  directory), and its lock files. The toolchain cache is keyed on hecatron's
+  version, the project's `config.json`, the language's definition in the
+  project, and the definition's pin and support files; the dependency
+  cache on the lock files, both matched anywhere in the repository (`**/`),
+  so adding a component changes nothing. GitHub workflows get an
+  `actions/cache` step per cache after each job's `actions/checkout`, with
+  the key's prefix as `restore-keys`; GitLab jobs get `cache:key:files`
+  with the same files and a prefix. GitLab caches only paths in the
+  project, so each job links every home directory it caches to one under
+  `.hecatron-cache/<lang>/` before installing. Toolchains installed by apt
+  or into `/opt` and `/usr/local` (most JVM languages', Node.js, .NET and
+  Ruby on Linux) aren't cached: restoring them needs root. Since the
+  toolchain key names hecatron's version, upgrading hecatron makes `hecatron
+  check` ask for the files to be regenerated.
+
+The GitLab pipeline and caching are written only by the Go binary
+(§19); the scripts say so when a project's config asks for them.
 
 Generators for the project's own code (sayable's locale codegen) stay in the
 project. They can embed the same banner with `hecatron banner --generator
@@ -1127,7 +1158,8 @@ The bash 3.2 rule (§14) then applies only to hooks and install scripts.
 
 ## 20. Source control backends
 
-Status: **planned** (#99–#103), except where marked as working today.
+Status: **planned** (#99–#103), except where marked as working today
+(#102 is done).
 Hecatron runs the same everywhere; what differs between GitHub, GitLab,
 Bitbucket and Azure DevOps is where CI is configured and where results are
 shown. Hecatron meets each forge with thin adapters (an environment variable
@@ -1144,6 +1176,11 @@ on a laptop and in CI.
 - **GitHub annotations.** With the Go binary, `--output ci` (chosen
   automatically when `GITHUB_ACTIONS` is set) adds `::error` annotations at
   each error line's file and line, shown on the pull request (§19).
+- **GitLab CI and caching (#102).** `hecatron workflows` writes
+  `.gitlab-ci.yml` (`generated.ci: "gitlab"` or `--ci gitlab`), and with
+  `"ci": {"cache": true}` caches toolchains and dependencies with
+  `actions/cache` and `cache:key:files` (§11); `hecatron check` fails when
+  the pipeline is behind. Bitbucket and Azure on demand.
 - **Audit in CI.** `hecatron audit` fails at a severity threshold and can
   save each tool's raw report (`HECATRON_AUDIT_REPORT_DIR`);
   [audit.md](audit.md) has a workflow step.
@@ -1156,8 +1193,6 @@ on a laptop and in CI.
 | Per-test results (JUnit XML, `--output junit`) | through a reporting action | merge request test widget | Jenkins, Azure, Buildkite, CircleCI | #100 |
 | Findings on the change (SARIF from `audit` and `lint`; GitLab Code Quality JSON) | code scanning | security and code quality widgets | any SARIF reader | #100 |
 | A results page per run | job summary (`GITHUB_STEP_SUMMARY`) | the JUnit report | | #101 |
-| Generated CI | Actions (today) | `.gitlab-ci.yml` | Bitbucket, Azure on demand | #102 |
-| Caching toolchains (keyed on pin files) and dependencies (on lock files) in generated CI | `actions/cache` | `cache:key:files` | | #102 |
 | Dependency update configuration, kept current by `hecatron check` | `.github/dependabot.yml` | `renovate.json` | Renovate anywhere | #103 |
 
 Reports are written with the normal output, not instead of it: a run in CI

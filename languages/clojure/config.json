@@ -22,5 +22,15 @@
   "formatting": "cljfmt",
   "notes": {
     "formatting": "Only when the project has a `cljfmt.edn`."
+  },
+  "cache": {
+    "dependencies": [
+      "~/.m2/repository",
+      "~/.gitlibs"
+    ],
+    "lockFiles": [
+      "deps.edn",
+      "project.clj"
+    ]
   }
 }

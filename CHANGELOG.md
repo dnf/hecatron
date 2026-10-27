@@ -37,6 +37,15 @@ minor version can change behaviour. Numbers are
   uncommitted changes; then the commands worth running next, marking those
   that install something. `--output human|agent|json`, chosen as for
   `hct test`. Needs the binary that releases ship (#121).
+- **GitLab CI and caching in generated CI:** `hct workflows` writes a
+  `.gitlab-ci.yml` with a job per language (install, test and lint through
+  `hct`) when `generated.ci` is `"gitlab"` (or `["github", "gitlab"]`, or
+  with `--ci gitlab`), and `hct check` fails when it falls behind. With
+  `"ci": {"cache": true}` the generated GitHub workflows and GitLab jobs
+  cache each language's toolchain (keyed on its pin files and hecatron's
+  version) and dependencies (keyed on its lock files); each definition
+  lists the directories in its new `cache` key. Off by default, so existing
+  workflows don't change. Needs the binary (#102).
 
 - **Time limits:** a job that hangs is stopped with everything it started
   and reported as timed out, saying its limit and how it was set; the run
