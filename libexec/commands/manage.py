@@ -228,7 +228,10 @@ def write_dockerfile(project, *, check: bool) -> bool:
         if check:
             return True
         die("no Dockerfile configured (config.json generated.dockerfile)")
-    content = dockerfilelib.generate(project)
+    try:
+        content = dockerfilelib.generate(project)
+    except (projectlib.ProjectError, ValueError) as e:
+        die(str(e))
     return write_if_changed(os.path.join(project.root, relative), content, check=check, label=relative)
 
 

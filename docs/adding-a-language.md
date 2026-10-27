@@ -17,7 +17,7 @@ combine.
 | `doctor.sh` | Detect a toolchain that is installed but broken, one `problem` per issue | No |
 | `installed.sh` | The versions installed on this machine, one `version<TAB>home` line each; offline and fast. The core picks the version a component needs from it ([design.md §18](design.md)) | No |
 | `releases.sh` | The language's releases, newest first, as `version<TAB>flags` (`lts`, `eol`); `endoflife_releases <product>` from `_common.sh` covers languages endoflife.date tracks | No |
-| `dockerfile` | Snippet for `hecatron dockerfile`: `# apt:` packages, `# after: <lang>`, `RUN`/`ENV` blocks | No |
+| `dockerfile` | Snippet for `hecatron dockerfile`: `# apt:` packages, `# after: <lang>`, `RUN`/`ENV` blocks, an `# each-version` … `# end-each-version` block repeated per version ([design §18](design.md#18-toolchain-versions)) | No |
 | `hooks/test.sh`, `lint.sh`, `build.sh`, `clean.sh` | Default hooks for a conventional layout (design.md §9) | No |
 
 `config.json`:

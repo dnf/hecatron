@@ -206,7 +206,7 @@ class Project:
         """The definition's pin files, then any the project adds."""
         return list(self._layer(lang, True).get("pinFiles", [])) + list(self._layer(lang, False).get("pinFiles", []))
 
-    def _default_version(self, lang: str) -> str | None:
+    def default_version(self, lang: str) -> str | None:
         builtin = self._layer(lang, True)
         if not builtin:
             return None
@@ -243,7 +243,7 @@ class Project:
         project's "version", else the definition's default. spec is None
         when a pin file names no version ("stable"), or nothing gives one."""
         component = component or self._first_component(lang)
-        default = self._default_version(lang)
+        default = self.default_version(lang)
         spec, source = self._pin(lang, component)
         if spec is versions.NOT_PINNED:
             spec, source = self._project_version(lang), "project"
