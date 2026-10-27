@@ -30,8 +30,10 @@ type runArgs struct {
 	components    []string
 	targets       []string
 	output        string
-	changed       bool     // --changed
-	changedRef    string   // its ref, "" for the default
+	changed       bool   // --changed
+	changedRef    string // its ref, "" for the default
+	timeout       string // --timeout
+	timeoutGiven  bool
 	env           []string // what the flags export to the hooks
 	outdatedJSON  bool
 	rest          []string // the arguments without --output, for run.sh
@@ -76,6 +78,13 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 			}
 		case strings.HasPrefix(arg, "--changed="):
 			a.changed, a.changedRef = true, strings.TrimPrefix(arg, "--changed=")
+		case arg == "--timeout":
+			if i+1 >= len(args) {
+				return a, fmt.Errorf("--timeout needs a duration (90s, 30m, 1h30m), or 0 for none")
+			}
+			a.timeout, a.timeoutGiven = value(), true
+		case strings.HasPrefix(arg, "--timeout="):
+			a.timeout, a.timeoutGiven = strings.TrimPrefix(arg, "--timeout="), true
 		case arg == "--fail-on" && action == "audit":
 			a.env = append(a.env, "HECATRON_AUDIT_FAIL_ON="+value())
 		case strings.HasPrefix(arg, "--fail-on="):
@@ -92,9 +101,9 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 	}
 	for i := 0; i < len(args); i++ {
 		switch {
-		case args[i] == "--output":
+		case args[i] == "--output", args[i] == "--timeout":
 			i++
-		case strings.HasPrefix(args[i], "--output="):
+		case strings.HasPrefix(args[i], "--output="), strings.HasPrefix(args[i], "--timeout="):
 		default:
 			a.rest = append(a.rest, args[i])
 		}
@@ -148,7 +157,12 @@ func (c *cli) runCommand() (int, bool) {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 2, true
 	}
-	r := &invocation{cli: c, shell: shell, args: a, format: format, patterns: map[string]*runner.Patterns{}}
+	timeout, err := runner.SelectTimeout(a.timeout, a.timeoutGiven, os.Getenv)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "hecatron:", err)
+		return 2, true
+	}
+	r := &invocation{cli: c, shell: shell, args: a, format: format, timeout: timeout, patterns: map[string]*runner.Patterns{}}
 	if !r.resolveTargets() {
 		return a.declineChanged()
 	}
@@ -272,6 +286,7 @@ type invocation struct {
 	shell     *project.Shell
 	args      runArgs
 	format    runner.Format
+	timeout   runner.Override
 	named     []runner.Job       // the targets, resolved
 	selection *changed.Selection // --changed's, else nil
 	patterns  map[string]*runner.Patterns
@@ -342,7 +357,7 @@ func (r *invocation) run() int {
 func (r *invocation) sub(action string) *invocation {
 	c := *r.cli
 	c.command = action
-	s := &invocation{cli: &c, ctx: r.ctx, shell: r.shell, args: r.args, format: r.format, patterns: r.patterns, selection: r.selection}
+	s := &invocation{cli: &c, ctx: r.ctx, shell: r.shell, args: r.args, format: r.format, timeout: r.timeout, patterns: r.patterns, selection: r.selection}
 	s.resolveTargets()
 	return s
 }
@@ -359,6 +374,17 @@ func (r *invocation) environment() []string {
 
 func (r *invocation) logDir() string { return filepath.Join(r.project.Logs, r.command) }
 
+// limit sets each job's time limit, from the override or the action's
+// history.log (which named runs read but, as run.sh's, don't write).
+func (r *invocation) limit(jobs []runner.Job) {
+	history := runner.ReadHistory(filepath.Join(r.logDir(), "history.log"))
+	for i := range jobs {
+		if jobs[i].Kind == runner.Runnable {
+			jobs[i].Limit = history.Limit(jobs[i].Label, r.timeout)
+		}
+	}
+}
+
 // runNamed runs the targets one at a time. Human (and CI) output streams
 // each one's output as run.sh does; agent and JSON output keep it in the
 // logs and report at the end.
@@ -368,10 +394,11 @@ func (r *invocation) runNamed() int {
 		return 1
 	}
 	stream := r.format == runner.Human || r.format == runner.CI
+	r.limit(r.named)
 	start := time.Now()
 	var results []runner.Result
 	for _, job := range r.named {
-		result := runner.Result{Label: job.Label, Lang: job.Lang, Task: job.Task,
+		result := runner.Result{Label: job.Label, Lang: job.Lang, Task: job.Task, Limit: job.Limit,
 			Log: filepath.Join(r.logDir(), job.Label+".log")}
 		log, err := os.Create(result.Log)
 		if err != nil {
@@ -383,13 +410,10 @@ func (r *invocation) runNamed() int {
 			out = io.MultiWriter(os.Stdout, log)
 		}
 		began := time.Now()
-		outcome := job.Exec(r.ctx, out)
+		outcome, status := runner.Execute(r.ctx, job, out)
 		log.Close()
 		result.Duration, result.ExitCode, result.Components = time.Since(began), outcome.ExitCode, outcome.Components
-		result.Status = runner.Passed
-		if outcome.ExitCode != 0 {
-			result.Status = runner.Failed
-		}
+		result.Status = status
 		results = append(results, result)
 		if r.ctx.Err() != nil {
 			break
@@ -410,7 +434,7 @@ func (r *invocation) runNamed() int {
 // report adds each failure's excerpt.
 func (r *invocation) report(results []runner.Result, wall time.Duration) *runner.Report {
 	for i := range results {
-		if results[i].Status != runner.Failed {
+		if !results[i].Unsuccessful() {
 			continue
 		}
 		if log, err := os.ReadFile(results[i].Log); err == nil {
@@ -545,6 +569,7 @@ func (r *invocation) runAll() int {
 	if human && r.selection != nil {
 		fmt.Println(r.selection.Line())
 	}
+	r.limit(jobs)
 	if runner.Runnables(jobs) == 0 {
 		results, _ := runner.Run(r.ctx, jobs, runner.Options{LogDir: r.logDir()})
 		report := r.report(results, 0)

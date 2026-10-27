@@ -70,13 +70,15 @@ type Changed struct {
 	Languages  []string `json:"languages,omitempty"` // selected, when not everything
 }
 
-func (r *Report) counts() (passed, failed, skipped int) {
+func (r *Report) counts() (passed, failed, timedOut, skipped int) {
 	for _, result := range r.Results {
 		switch result.Status {
 		case Passed:
 			passed++
 		case Failed:
 			failed++
+		case TimedOut:
+			timedOut++
 		case StatusNotInstall, StatusDisabled:
 			skipped++
 		}
@@ -88,7 +90,7 @@ func (r *Report) counts() (passed, failed, skipped int) {
 func (r *Report) Rerun() string {
 	var failed []string
 	for _, result := range r.Results {
-		if result.Status == Failed {
+		if result.Unsuccessful() {
 			failed = append(failed, result.Label)
 		}
 	}
@@ -146,20 +148,23 @@ func WriteAgent(w io.Writer, r *Report) {
 	if r.Changed != nil {
 		fmt.Fprintln(w, r.Changed.Line)
 	}
-	passed, failed, skipped := r.counts()
+	passed, failed, timedOut, skipped := r.counts()
 	summary := fmt.Sprintf("hct %s: %d passed", r.Action, passed)
 	if failed > 0 {
 		summary += fmt.Sprintf(", %d failed", failed)
+	}
+	if timedOut > 0 {
+		summary += fmt.Sprintf(", %d timed out", timedOut)
 	}
 	if skipped > 0 {
 		summary += fmt.Sprintf(", %d skipped", skipped)
 	}
 	fmt.Fprintf(w, "%s (%s)\n", summary, FormatDuration(r.Wall))
-	if failed == 0 {
+	if failed+timedOut == 0 {
 		return
 	}
 	for _, result := range r.Results {
-		if result.Status != Failed {
+		if !result.Unsuccessful() {
 			continue
 		}
 		where := ""
@@ -174,8 +179,13 @@ func WriteAgent(w io.Writer, r *Report) {
 		if result.ToolchainMissing() {
 			reason = "toolchain not found"
 		}
-		fmt.Fprintf(w, "FAIL %s%s %s, %s, log %s\n", result.Label, where, reason,
-			FormatDuration(result.Duration), r.shownPath(result.Log))
+		if result.Status == TimedOut {
+			fmt.Fprintf(w, "TIMEOUT %s%s stopped at its %s limit (%s), %s, log %s\n", result.Label, where,
+				FormatLimit(result.Limit.Duration), result.Limit.Describe(), FormatDuration(result.Duration), r.shownPath(result.Log))
+		} else {
+			fmt.Fprintf(w, "FAIL %s%s %s, %s, log %s\n", result.Label, where, reason,
+				FormatDuration(result.Duration), r.shownPath(result.Log))
+		}
 		for _, line := range result.Excerpt.Lines {
 			fmt.Fprintf(w, "  %s\n", line.Text)
 		}
@@ -196,9 +206,16 @@ type jsonRun struct {
 }
 
 type jsonCounts struct {
-	Passed  int `json:"passed"`
-	Failed  int `json:"failed"`
-	Skipped int `json:"skipped"`
+	Passed   int `json:"passed"`
+	Failed   int `json:"failed"`
+	TimedOut int `json:"timedOut"`
+	Skipped  int `json:"skipped"`
+}
+
+type jsonLimit struct {
+	Seconds     float64 `json:"seconds"`
+	Source      string  `json:"source"` // --timeout, HECATRON_TIMEOUT or history
+	Description string  `json:"description"`
 }
 
 type jsonJob struct {
@@ -209,6 +226,7 @@ type jsonJob struct {
 	ExitCode   *int        `json:"exitCode,omitempty"`
 	Duration   *float64    `json:"duration,omitempty"`
 	Log        string      `json:"log,omitempty"`
+	TimeLimit  *jsonLimit  `json:"timeLimit,omitempty"`
 	Components []Component `json:"components,omitempty"`
 	Errors     []ErrorLine `json:"errors,omitempty"`
 	Source     string      `json:"errorsFrom,omitempty"`
@@ -216,10 +234,10 @@ type jsonJob struct {
 
 // WriteJSON writes the run as one JSON document.
 func WriteJSON(w io.Writer, r *Report) error {
-	passed, failed, skipped := r.counts()
+	passed, failed, timedOut, skipped := r.counts()
 	doc := jsonRun{Command: r.Action, Status: "passed", Exit: ExitStatus(r.Results), Duration: seconds(r.Wall),
-		Summary: jsonCounts{passed, failed, skipped}, Logs: r.LogDir, Jobs: []jsonJob{}, Rerun: r.Rerun(), Changed: r.Changed}
-	if failed > 0 {
+		Summary: jsonCounts{passed, failed, timedOut, skipped}, Logs: r.LogDir, Jobs: []jsonJob{}, Rerun: r.Rerun(), Changed: r.Changed}
+	if failed+timedOut > 0 {
 		doc.Status = "failed"
 	}
 	for _, result := range r.Results {
@@ -232,12 +250,15 @@ func WriteJSON(w io.Writer, r *Report) error {
 		} else if result.Lang == "" {
 			job.Kind = "tool"
 		}
-		if result.Status == Passed || result.Status == Failed {
+		if result.Ran() {
 			exit, duration := result.ExitCode, seconds(result.Duration)
 			job.ExitCode, job.Duration, job.Log = &exit, &duration, result.Log
 			job.Components = result.Components
+			if l := result.Limit; l.Duration > 0 {
+				job.TimeLimit = &jsonLimit{l.Duration.Seconds(), string(l.Source), l.Describe()}
+			}
 		}
-		if result.Status == Failed {
+		if result.Unsuccessful() {
 			job.Errors, job.Source = result.Excerpt.Lines, result.Excerpt.Source
 		}
 		doc.Jobs = append(doc.Jobs, job)
@@ -257,6 +278,10 @@ func WriteAnnotations(w io.Writer, r *Report, workspace string) {
 		workspace = r.Root
 	}
 	for _, result := range r.Results {
+		if result.Status == TimedOut {
+			writeTimedOutAnnotation(w, r, result)
+			continue
+		}
 		if result.Status != Failed {
 			continue
 		}
@@ -304,6 +329,19 @@ func WriteAnnotations(w io.Writer, r *Report, workspace string) {
 			fmt.Fprintf(w, "::error title=%s::%s\n", escapeProperty(title), escapeData(message))
 		}
 	}
+}
+
+// writeTimedOutAnnotation is a timed-out job's one annotation: the limit,
+// how it was set, the log and its last lines. Its error lines are left
+// unplaced: the job didn't stop at them.
+func writeTimedOutAnnotation(w io.Writer, r *Report, result Result) {
+	title := fmt.Sprintf("hct %s %s", r.Action, result.Label)
+	message := fmt.Sprintf("%s timed out: stopped at its %s limit (%s) after %s; log %s", result.Label,
+		FormatLimit(result.Limit.Duration), result.Limit.Describe(), FormatDuration(result.Duration), result.Log)
+	for _, line := range result.Excerpt.Lines {
+		message += "\n" + line.Text
+	}
+	fmt.Fprintf(w, "::error title=%s::%s\n", escapeProperty(title), escapeData(message))
 }
 
 func escapeData(s string) string {

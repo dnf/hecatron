@@ -1073,6 +1073,14 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
   component, a bad `-j`, `-s` or `--output`) exit 2; run-parallel.sh's `-j`
   and `-s` errors exited 1.
 - `rebuild` and `retest` keep `-c` for both steps (run.sh drops it).
+- **Time limits** (#124): each job's limit is 5× the median of its last 10
+  passing runs in `history.log`, at least 10 minutes, none without one;
+  `--timeout` or `HECATRON_TIMEOUT` sets one for every job, `0` none. At the
+  limit the job's process group is stopped (SIGTERM, then SIGKILL after five
+  seconds), and on Linux the processes carrying its token
+  (`HECATRON_JOB_TOKENS`) that left the group; the job is "timed out",
+  apart from failed, in every format, with its limit and its source, and
+  the run exits 1. Only the Go runner has them (docs/runner.md).
 - **`--changed [ref]`** (#91, #99; `internal/changed`) runs only what the
   files changed since the merge base with `ref` (else the pull request's
   base in CI, else the default branch) touch, uncommitted and untracked

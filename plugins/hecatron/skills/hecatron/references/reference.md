@@ -56,6 +56,10 @@ system of its own. `hct` and `hecatron` are the same command.
   `--output json` gives one JSON document. Its exit status 3 means a
   failure whose language command (`go`, `cargo`...) isn't on PATH:
   install the toolchain (ask first, below).
+- A job that runs far longer than it usually does is stopped and reported
+  as timed out (`TIMEOUT` in agent output), with its limit: by default 5×
+  its usual time, at least 10 minutes. `--timeout 30m` (or
+  `HECATRON_TIMEOUT`) sets one for every job; `--timeout 0` none.
 - "no <action> command for <dir>": the default hook found no build file it
   knows there; write a hook (below).
 
