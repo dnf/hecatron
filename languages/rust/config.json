@@ -48,5 +48,78 @@
   ],
   "testing": "cargo test",
   "linting": "Clippy, rustfmt",
-  "formatting": "rustfmt"
+  "formatting": "rustfmt",
+  "actions": {
+    "test": {
+      "find": "above-first",
+      "files": [
+        "Cargo.toml"
+      ],
+      "steps": [
+        {
+          "run": [
+            "cargo",
+            "test",
+            "--all-targets"
+          ]
+        }
+      ]
+    },
+    "lint": {
+      "find": "above-first",
+      "files": [
+        "Cargo.toml"
+      ],
+      "steps": [
+        {
+          "run": [
+            "cargo",
+            "clippy",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings"
+          ]
+        },
+        {
+          "run": [
+            "cargo",
+            "fmt",
+            "--all",
+            "--",
+            "--check"
+          ]
+        }
+      ]
+    },
+    "build": {
+      "find": "above-first",
+      "files": [
+        "Cargo.toml"
+      ],
+      "steps": [
+        {
+          "run": [
+            "cargo",
+            "build",
+            "--all-targets"
+          ]
+        }
+      ]
+    },
+    "clean": {
+      "find": "above-first",
+      "files": [
+        "Cargo.toml"
+      ],
+      "steps": [
+        {
+          "run": [
+            "cargo",
+            "clean"
+          ]
+        }
+      ]
+    }
+  }
 }

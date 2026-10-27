@@ -17,5 +17,136 @@
   ],
   "testing": "ExUnit",
   "linting": "mix format, Credo",
-  "formatting": "mix format"
+  "formatting": "mix format",
+  "shared": {
+    "deps": [
+      {
+        "run": [
+          "mix",
+          "deps.get"
+        ],
+        "if": {
+          "all": [
+            {
+              "file": "mix.lock"
+            },
+            {
+              "missing": "deps"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "actions": {
+    "test": {
+      "files": [
+        "mix.exs"
+      ],
+      "unknown": "no mix.exs",
+      "steps": [
+        {
+          "use": "deps"
+        },
+        {
+          "run": [
+            "mix",
+            "test"
+          ]
+        }
+      ]
+    },
+    "lint": {
+      "files": [
+        "mix.exs"
+      ],
+      "unknown": "no mix.exs",
+      "steps": [
+        {
+          "if": {
+            "not": {
+              "any": [
+                {
+                  "file": ".formatter.exs"
+                },
+                {
+                  "contains": [
+                    "mix.exs",
+                    ":credo"
+                  ]
+                }
+              ]
+            }
+          },
+          "skip": "no .formatter.exs and no Credo dependency"
+        },
+        {
+          "use": "deps"
+        },
+        {
+          "run": [
+            "mix",
+            "format",
+            "--check-formatted"
+          ],
+          "if": {
+            "file": ".formatter.exs"
+          }
+        },
+        {
+          "run": [
+            "mix",
+            "credo",
+            "--strict"
+          ],
+          "if": {
+            "contains": [
+              "mix.exs",
+              ":credo"
+            ]
+          }
+        }
+      ]
+    },
+    "build": {
+      "files": [
+        "mix.exs"
+      ],
+      "unknown": "no mix.exs",
+      "steps": [
+        {
+          "use": "deps"
+        },
+        {
+          "run": [
+            "mix",
+            "compile"
+          ]
+        }
+      ]
+    },
+    "clean": {
+      "files": [
+        "mix.exs"
+      ],
+      "unknown": "no mix.exs",
+      "steps": [
+        {
+          "run": [
+            "mix",
+            "clean"
+          ]
+        },
+        {
+          "run": [
+            "mix",
+            "clean"
+          ],
+          "env": {
+            "MIX_ENV": "test"
+          }
+        }
+      ]
+    }
+  }
 }

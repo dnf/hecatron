@@ -23,6 +23,21 @@ jobs:
       - name: The command runs
         run: bin/hecatron --version && bin/hct help
 
+  # The Go core (docs/design.md §19): formatted, vetted and tested.
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt, go vet and the tests
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "${unformatted}" ]; then echo "Not gofmt-formatted: ${unformatted}"; exit 1; fi
+          go vet ./...
+          go test ./...
+
   # Hecatron runs on the bash macOS ships (3.2); the runners' bash is newer,
   # so run the tests under 3.2 itself.
   bash-3-2:
