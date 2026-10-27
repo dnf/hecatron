@@ -112,12 +112,17 @@ type Project struct {
 	Logs       string
 	Metadata   string // the metadata file's path, or ""
 	Detected   bool   // a git repository without a config of its own
+	// Announcement is what to say on stderr having just detected the
+	// project for the first time (LoadDetected), else "".
+	Announcement string
 
 	// Environ is the environment project.py would run in (installed.sh's,
 	// HOME, HECATRON_AS_OF); nil means this process's.
 	Environ []string
 
 	config      *Object
+	local       *Object // local.json as read; nil without one
+	localPath   string
 	implPaths   map[string]string
 	definitions *Definitions
 
@@ -304,6 +309,7 @@ func (p *Project) readConfig() error {
 func (p *Project) readLocal() error { return p.readLocalFrom(pyJoin(p.Dir, "local.json")) }
 
 func (p *Project) readLocalFrom(path string) error {
+	p.localPath = path
 	local, err := readJSON(path)
 	if err != nil {
 		return err
@@ -318,6 +324,7 @@ func (p *Project) readLocalFrom(path string) error {
 	if !ok {
 		return unsupported("local.json is not an object")
 	}
+	p.local = object
 	if p.Disabled, err = p.stringList(object, "disabled", "local.json"); err != nil {
 		return err
 	}

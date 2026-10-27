@@ -874,6 +874,24 @@ entry points' output byte for byte. Decided with the first port
   `history.log` when the log is from the last run recorded there.
   `bin/hecatron status` without the binary says so.
 
+- **The project commands** ported next (#73): `init`, `add`, `remove`,
+  `enable`, `disable`, `check`, `dockerfile` and `workflows` (with
+  `--check`), with detection (`detect_languages`, `infer_layout`,
+  `detected_config`: `detectSources`, `detectUnless`, `sharedBuildFiles`,
+  `dirNames`, `detectScript`) in `internal/project` and the generated files
+  in `internal/generate`. Each command works out everything it will print
+  and write before doing any of it, so a project the model declines is
+  handed to `manage.py` untouched; files are written as Python writes them
+  (`json.dump(indent=2)`'s ASCII escapes, text read with universal
+  newlines). Arguments are read as argparse reads the usual forms; others
+  (abbreviated options, `-h`, an option between languages, `--`) are
+  delegated. A git repository without a config is found and detected in Go
+  too, writing `project.py`'s cache (`.git/hecatron/detected.json`, same key)
+  and its first-time message, so no command needs Python to find or read
+  it. Tests compare stdout, stderr, status and every file written with
+  `bin/hecatron` on fixture repositories (including `tests/hooks/fixtures`
+  and `tests/output/fixtures`), and detection on clones of real projects.
+
 ### Language definitions: data, families, scripts
 
 A definition says what to do in the most declarative of three tiers that can
