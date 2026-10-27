@@ -153,12 +153,74 @@ elm_review_missing() {
     return 1
 }
 
+# For the native languages' installers (C, C++, Objective-C): the libraries a
+# component's CMake build looks for with find_package(), as distribution
+# packages, for the common ones. A name not in the table is left to the
+# project (its README, or a vcpkg or Conan manifest).
+_cmake_package() {
+    local _name="$1"
+    if [ "${OS}" = "macos" ]; then
+        case "${_name}" in
+            GTest | GMock) echo googletest ;;
+            yaml-cpp) echo yaml-cpp ;;
+            nlohmann_json) echo nlohmann-json ;;
+            Boost) echo boost ;;
+            fmt) echo fmt ;;
+            spdlog) echo spdlog ;;
+            Catch2) echo catch2 ;;
+            benchmark) echo google-benchmark ;;
+            Protobuf | protobuf) echo protobuf ;;
+            OpenSSL) echo openssl ;;
+            CURL) echo curl ;;
+            PkgConfig) echo pkgconf ;;
+        esac
+    else
+        case "${_name}" in
+            GTest | GMock) echo "libgtest-dev libgmock-dev" ;;
+            yaml-cpp) echo libyaml-cpp-dev ;;
+            nlohmann_json) echo nlohmann-json3-dev ;;
+            Boost) echo libboost-all-dev ;;
+            fmt) echo libfmt-dev ;;
+            spdlog) echo libspdlog-dev ;;
+            Catch2) echo catch2 ;;
+            benchmark) echo libbenchmark-dev ;;
+            Protobuf | protobuf) echo "libprotobuf-dev protobuf-compiler" ;;
+            OpenSSL) echo libssl-dev ;;
+            CURL) echo libcurl4-openssl-dev ;;
+            ZLIB) echo zlib1g-dev ;;
+            PkgConfig) echo pkg-config ;;
+            Threads) ;;
+        esac
+    fi
+}
+# The find_package() names in a language's components' CMake files.
+cmake_find_packages() {
+    local _dir
+    while IFS= read -r _dir; do
+        find "${_dir}" -maxdepth 3 \( -name build -o -name 'build-*' -o -name third_party -o -name external \) -prune -o \
+            \( -name CMakeLists.txt -o -name '*.cmake' \) -type f -print 2>/dev/null
+    done < <(impl_dirs "$1") |
+        xargs -r sed -n 's/.*find_package[[:space:]]*([[:space:]]*\([A-Za-z0-9_+-]*\).*/\1/p' 2>/dev/null | sort -u
+}
+cmake_dependencies() {
+    local _name _packages=""
+    while IFS= read -r _name; do
+        [ -n "${_name}" ] && _packages="${_packages} $(_cmake_package "${_name}")"
+    done < <(cmake_find_packages "$1")
+    _packages="$(echo "${_packages}" | xargs -n1 2>/dev/null | sort -u | xargs 2>/dev/null)"
+    [ -n "${_packages}" ] || return 0
+    log "Installing the libraries the CMake builds look for: ${_packages}"
+    # shellcheck disable=SC2086 # one word per package
+    if [ "${OS}" = "macos" ]; then brew_install ${_packages}; else apt_install ${_packages}; fi
+}
+
 # For the JVM languages' installers: Maven where a component builds with a
 # pom.xml and ships no ./mvnw, Gradle where it builds with build.gradle(.kts)
 # and ships no ./gradlew (the default hooks run the wrapper when there is one),
 # and sbt where it builds with build.sbt (sbt's launcher fetches the sbt
 # version project/build.properties names).
 _JVM_GRADLE_VERSION="9.8.2"
+_JVM_MAVEN_VERSION="3.9.16"
 _JVM_SBT_VERSION="1.11.7"
 # The build tools a language's components need and lack, one per line.
 jvm_build_tools_missing() {
@@ -168,7 +230,7 @@ jvm_build_tools_missing() {
         { { [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ]; } && [ ! -x "${_dir}/gradlew" ]; } && _gradle=1
         [ -f "${_dir}/build.sbt" ] && _sbt=1
     done < <(impl_dirs "$1")
-    if [ "${_maven}" -eq 1 ] && ! has mvn; then echo maven; fi
+    if [ "${_maven}" -eq 1 ] && ! _maven_current; then echo maven; fi
     if [ "${_gradle}" -eq 1 ] && ! has gradle; then echo gradle; fi
     if [ "${_sbt}" -eq 1 ] && ! has sbt; then echo sbt; fi
     return 0
@@ -177,8 +239,7 @@ jvm_build_tools() {
     local _missing
     _missing="$(jvm_build_tools_missing "$1")"
     if [[ "${_missing}" == *maven* ]]; then
-        log "Installing Maven..."
-        if [ "${OS}" = "macos" ]; then brew_install maven; else apt_install maven; fi
+        if [ "${OS}" = "macos" ]; then brew_install maven; else _install_maven; fi
     fi
     if [[ "${_missing}" == *gradle* ]]; then
         if [ "${OS}" = "macos" ]; then brew_install gradle; else _install_gradle; fi
@@ -186,6 +247,24 @@ jvm_build_tools() {
     if [[ "${_missing}" == *sbt* ]]; then
         if [ "${OS}" = "macos" ]; then brew_install sbt; else _install_sbt; fi
     fi
+}
+# A Maven of 3.9 or later on PATH.
+_maven_current() {
+    local _version
+    _version="$(mvn --version 2>/dev/null | sed -n '1s/^Apache Maven \([0-9]*\)\.\([0-9]*\).*/\1 \2/p')"
+    [ -n "${_version}" ] && { set -- ${_version}; [ "$1" -gt 3 ] || { [ "$1" -eq 3 ] && [ "$2" -ge 9 ]; }; }
+}
+# Maven's own distribution: Ubuntu 24.04's Maven is 3.8, which projects that
+# require 3.9 (maven-enforcer's requireMavenVersion) refuse.
+_install_maven() {
+    local _root="/opt/maven/apache-maven-${_JVM_MAVEN_VERSION}"
+    if [ ! -x "${_root}/bin/mvn" ]; then
+        log "Downloading Maven ${_JVM_MAVEN_VERSION}..."
+        $SUDO mkdir -p /opt/maven
+        curl -fsSL "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${_JVM_MAVEN_VERSION}/apache-maven-${_JVM_MAVEN_VERSION}-bin.tar.gz" |
+            $SUDO tar -C /opt/maven -xz
+    fi
+    $SUDO ln -sfn "${_root}/bin/mvn" /usr/local/bin/mvn
 }
 # Gradle's own distribution: distributions' Gradle is years old.
 _install_gradle() {

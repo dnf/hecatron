@@ -69,6 +69,20 @@ dotnet_target() {
     fi
 }
 
+# How `dotnet test` takes a target: with Microsoft.Testing.Platform selected in
+# global.json (.NET 10), as --solution or --project; otherwise positionally.
+dotnet_test_target() {
+    [ -n "$1" ] || return 0
+    if [ -f global.json ] && grep -q '"Microsoft.Testing.Platform"' global.json; then
+        case "$1" in
+            *.sln | *.slnx) echo "--solution $1" ;;
+            *) echo "--project $1" ;;
+        esac
+    else
+        echo "$1"
+    fi
+}
+
 # .NET (C#, F#, VB.NET): the solution or project in the directory. `dotnet
 # format` checks C# and VB.NET only, so F#'s lint hook is its own.
 dotnet_hook() {
@@ -77,7 +91,10 @@ dotnet_hook() {
     local _target
     _target="$(dotnet_target)"
     case "$1" in
-        test) run dotnet test ${_target:+"${_target}"} ;;
+        test)
+            local _args=()
+            read -r -a _args <<<"$(dotnet_test_target "${_target}")"
+            run dotnet test ${_args[@]+"${_args[@]}"} ;;
         build) run dotnet build ${_target:+"${_target}"} ;;
         clean) run dotnet clean ${_target:+"${_target}"} ;;
         lint) run dotnet format ${_target:+"${_target}"} --verify-no-changes ;;
@@ -413,7 +430,10 @@ clj_kondo() {
 native_hook() {
     if [ -f CMakeLists.txt ]; then
         case "$1" in
-            test) cmake_build; run ctest --test-dir build --output-on-failure ;;
+            test)
+                cmake_build
+                cmake_enable_tests
+                run ctest --test-dir build --output-on-failure --no-tests=error ;;
             build) cmake_build ;;
             clean) run rm -rf build ;;
             lint) skip "no standard linter for CMake builds" ;;
@@ -451,6 +471,21 @@ autotools_configure() {
     run ./configure
 }
 meson_setup() { [ -d build ] || run meson setup build; }
+
+# Many projects build their tests only when asked, through an option of their
+# own (FOO_BUILD_TESTS, ENABLE_TESTING...) that defaults to off: turn on the
+# boolean cache options that name tests, then build again.
+cmake_enable_tests() {
+    local _options=() _option
+    while IFS= read -r _option; do
+        [ -n "${_option}" ] && _options+=("-D${_option}=ON")
+    done < <(cmake -N -LA build 2>/dev/null |
+        sed -n 's/^\([A-Za-z0-9_]*\(TEST\|TESTS\|TESTING\)[A-Za-z0-9_]*\):BOOL=OFF$/\1/p' |
+        grep -Eiv 'COVERAGE|FUZZ|BENCH|INSTALL|DISABLE|SKIP|(^|_)NO_' || true)
+    [ "${#_options[@]}" -gt 0 ] || return 0
+    run cmake -S . -B build "${_options[@]}"
+    run cmake --build build --parallel
+}
 
 # CMake: configure once into build/, then build.
 cmake_build() {

@@ -16,6 +16,17 @@ deps() {
             Perl::Critic) if [ "${OS}" = "linux" ]; then apt_install libperl-critic-perl; else _cpan Perl::Critic; fi ;;
         esac
     done < <(perl_tools_missing)
+    each_impl perl _cpanfile_deps
+}
+# A component's CPAN dependencies (its cpanfile, test requirements included)
+# through cpanminus, system-wide like the tools above; XS modules need a C
+# compiler.
+_cpanfile_deps() {
+    [ -f cpanfile ] || return 0
+    if ! has cpanm; then
+        if [ "${OS}" = "linux" ]; then apt_install cpanminus build-essential; else brew_install cpanminus; fi
+    fi
+    cpanm --notest --installdeps ${SUDO:+--sudo} .
 }
 # macOS's system Perl takes modules from CPAN through cpanminus, into its
 # root-owned site directory.
