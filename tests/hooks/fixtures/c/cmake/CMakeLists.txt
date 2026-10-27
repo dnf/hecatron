@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.16)
+project(add C)
+enable_testing()
+add_library(add add.c)
+add_executable(add_test add_test.c)
+target_link_libraries(add_test add)
+add_test(NAME add_test COMMAND add_test)

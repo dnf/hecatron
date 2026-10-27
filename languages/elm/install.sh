@@ -40,7 +40,11 @@ _npm_global() {
     done
 }
 
-deps() { :; }
+# elm-review where a component configures it (review/elm.json).
+_ELM_REVIEW_VERSION="2.13.5"
+deps() {
+    if elm_review_missing; then _npm_global "elm-review@${_ELM_REVIEW_VERSION}"; fi
+}
 
 log "Installing Elm..."
 "install_${OS}"

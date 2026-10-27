@@ -1,0 +1,16 @@
+{
+  "abbreviation": "js",
+  "dependency": "npm",
+  "lintDependency": null,
+  "detect": [
+    "package.json"
+  ],
+  "detectUnless": [
+    "tsconfig.json"
+  ],
+  "dirNames": [
+    "javascript",
+    "js",
+    "nodejs"
+  ]
+}

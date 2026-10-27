@@ -7,7 +7,12 @@ install_linux() { apt_install racket; }
 
 # minimal-racket (Homebrew) has no rackunit and no `raco test` (compiler-lib);
 # the full distribution (apt, CI's setup-racket) already includes both.
-deps() { raco pkg install --auto --skip-installed rackunit-lib compiler-lib; }
+# (Only when missing: on the full distribution they are installed in
+# installation scope, and installing them again in user scope fails.)
+deps() {
+    raco test --help >/dev/null 2>&1 && racket -l rackunit -e '' >/dev/null 2>&1 && return
+    raco pkg install --auto --skip-installed rackunit-lib compiler-lib
+}
 
 log "Installing Racket..."
 "install_${OS}"

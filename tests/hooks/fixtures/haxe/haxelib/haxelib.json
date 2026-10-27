@@ -1,0 +1,10 @@
+{
+  "name": "add",
+  "license": "MIT",
+  "description": "Adds two numbers.",
+  "version": "0.1.0",
+  "classPath": "src",
+  "releasenote": "First release.",
+  "contributors": ["hecatron"],
+  "dependencies": {}
+}

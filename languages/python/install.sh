@@ -36,7 +36,7 @@ _sync_venv() {
         log "Recreating moved virtualenv in ${PWD}"
         rm -rf .venv
     fi
-    uv sync --extra dev
+    uv sync --all-extras
 }
 # Every Python version the project's components resolve to (pin files, the
 # project's config, else the default; docs/design.md §18), through uv, which

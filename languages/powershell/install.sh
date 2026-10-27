@@ -32,20 +32,23 @@ _download_pwsh() {
     $SUDO chmod +x "${_pwsh_root}/pwsh"
 }
 
-# Pester, PowerShell's test framework. Install-Module reports a failed
-# download from the PowerShell Gallery without failing, so check, and try
-# once more.
-_has_pester() { pwsh -NoProfile -Command "if (-not (Get-Module -ListAvailable -Name Pester)) { exit 1 }"; }
-_install_pester() {
-    pwsh -NoProfile -Command "Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -ErrorAction Stop"
+# Pester for the default test hook, PSScriptAnalyzer for the lint hook, from
+# the PowerShell Gallery. Install-Module reports a failed download without
+# failing, so check, and try once more.
+_has_module() { pwsh -NoProfile -Command "if (-not (Get-Module -ListAvailable -Name $1)) { exit 1 }"; }
+_install_module() {
+    pwsh -NoProfile -Command "Install-Module -Name $1 -Force -SkipPublisherCheck -Scope CurrentUser -ErrorAction Stop"
 }
 deps() {
-    _has_pester && return
-    _install_pester || true
-    _has_pester && return
-    log "Pester didn't install; trying again..."
-    _install_pester
-    _has_pester
+    local _module
+    for _module in Pester PSScriptAnalyzer; do
+        _has_module "${_module}" && continue
+        _install_module "${_module}" || true
+        _has_module "${_module}" && continue
+        log "${_module} didn't install; trying again..."
+        _install_module "${_module}"
+        _has_module "${_module}"
+    done
 }
 
 log "Installing PowerShell..."

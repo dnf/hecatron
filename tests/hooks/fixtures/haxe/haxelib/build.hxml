@@ -1,0 +1,3 @@
+-cp src
+add.Add
+--js bin/add.js

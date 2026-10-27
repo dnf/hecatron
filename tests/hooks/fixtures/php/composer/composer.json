@@ -1,0 +1,23 @@
+{
+    "name": "example/add",
+    "description": "Adds two numbers",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.3"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "2.2.16",
+        "phpunit/phpunit": "12.5.36"
+    },
+    "autoload": {
+        "psr-4": {
+            "Example\\Add\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Example\\Add\\Tests\\": "tests/"
+        }
+    }
+}

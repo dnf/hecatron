@@ -8,4 +8,4 @@ RUN VERSION="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com
     curl -fsSL "https://github.com/PowerShell/PowerShell/releases/download/v${VERSION}/powershell-${VERSION}-linux-${ARCH}.tar.gz" | tar -C /opt/microsoft/powershell/7 -xz && \
     chmod +x /opt/microsoft/powershell/7/pwsh && \
     ln -s /opt/microsoft/powershell/7/pwsh /usr/local/bin/pwsh
-RUN pwsh -Command "Install-Module -Name Pester -Force -SkipPublisherCheck -Scope AllUsers"
+RUN pwsh -Command "Install-Module -Name Pester, PSScriptAnalyzer -Force -SkipPublisherCheck -Scope AllUsers"

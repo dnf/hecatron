@@ -14,7 +14,7 @@ install_linux() {
     fi
 }
 
-deps() { :; }
+deps() { jvm_build_tools scala; }
 
 log "Installing Scala..."
 "install_${OS}"

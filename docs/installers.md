@@ -32,7 +32,7 @@ Some languages share a toolchain. Uninstalling one affects the others.
 | .NET SDK   | C#, F#                | Both share the same SDK; uninstalling one removes the other             |
 | cmake      | C, C++, Fortran       | All three lose build capability until reinstalled                       |
 | JDK        | Java, Kt, Scala, Gy   | Protected: `hecatron uninstall java` is a no-op (prints a message)      |
-| Node.js    | TypeScript, Elm       | Elm depends on npm; Elm installer auto-installs Node if missing         |
+| Node.js    | TypeScript, JS, Elm   | JavaScript's installer is TypeScript's; Elm's installs Node if missing  |
 | Erlang/OTP | Erlang, Elixir, Gleam | Elixir and Gleam depend on Erlang runtime; uninstall Erlang breaks both |
 
 ## Architecture limitations

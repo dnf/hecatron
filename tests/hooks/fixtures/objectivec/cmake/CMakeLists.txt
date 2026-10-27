@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.16)
+project(adder OBJC)
+enable_testing()
+
+add_library(adder Adder.m)
+if(APPLE)
+  target_link_libraries(adder PUBLIC "-framework Foundation")
+else()
+  # GNUstep: its compiler flags and libraries, from gnustep-config.
+  execute_process(COMMAND gnustep-config --objc-flags OUTPUT_VARIABLE objc_flags OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND gnustep-config --base-libs OUTPUT_VARIABLE base_libs OUTPUT_STRIP_TRAILING_WHITESPACE)
+  separate_arguments(objc_flags UNIX_COMMAND "${objc_flags}")
+  separate_arguments(base_libs UNIX_COMMAND "${base_libs}")
+  target_compile_options(adder PUBLIC ${objc_flags})
+  target_link_libraries(adder PUBLIC ${base_libs})
+endif()
+
+add_executable(add_test add_test.m)
+target_link_libraries(add_test adder)
+add_test(NAME add_test COMMAND add_test)

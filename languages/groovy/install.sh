@@ -14,7 +14,7 @@ install_linux() {
     fi
 }
 
-deps() { :; }
+deps() { jvm_build_tools groovy; }
 
 log "Installing Groovy..."
 "install_${OS}"

@@ -85,7 +85,10 @@ _install_versions() {
         _install_jdk "${spec}"
     done <<<"${specs}"
 }
-deps() { _install_versions; }
+deps() {
+    _install_versions
+    jvm_build_tools java
+}
 
 log "Installing Java (Temurin JDK)..."
 "install_${OS}"
