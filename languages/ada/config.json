@@ -13,6 +13,7 @@
     "~/.local/bin",
     "~/.local/share/alire/toolchains/*/bin"
   ],
+  "sdkrootFromXcrun": true,
   "buildSystems": [
     "Alire",
     "GPRbuild"

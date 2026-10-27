@@ -5,7 +5,9 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"runtime"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 )
@@ -356,25 +358,61 @@ func (p *Project) LanguageEnv(lang, component string) (LanguageEnv, error) {
 		env.Path = append(env.Path, sortedDirs(matches)...)
 	}
 	variables, present := definition.Get("env")
-	if fields == nil || !present {
-		return env, nil
-	}
-	object, isObject := variables.(*Object)
-	if !isObject {
-		return LanguageEnv{}, unsupported("%s's env is not an object", lang)
-	}
-	for _, name := range object.Keys {
-		value, ok := object.Values[name].(string)
-		if !ok {
-			return LanguageEnv{}, unsupported("%s's env.%s is not a string", lang, name)
+	if fields != nil && present {
+		object, isObject := variables.(*Object)
+		if !isObject {
+			return LanguageEnv{}, unsupported("%s's env is not an object", lang)
 		}
-		expanded, err := pyFormat(value, fields)
-		if err != nil {
-			return LanguageEnv{}, err
+		for _, name := range object.Keys {
+			value, ok := object.Values[name].(string)
+			if !ok {
+				return LanguageEnv{}, unsupported("%s's env.%s is not a string", lang, name)
+			}
+			expanded, err := pyFormat(value, fields)
+			if err != nil {
+				return LanguageEnv{}, err
+			}
+			env.Vars = append(env.Vars, [2]string{name, expanded})
 		}
-		env.Vars = append(env.Vars, [2]string{name, expanded})
+	}
+	if wanted, _ := definition.Get("sdkrootFromXcrun"); truthy(wanted) && hostOS == "darwin" {
+		if _, set := p.lookupEnv("SDKROOT"); !set {
+			if sdk := xcrunSDKPath(); sdk != "" {
+				env.Vars = append(env.Vars, [2]string{"SDKROOT", sdk})
+			}
+		}
 	}
 	return env, nil
+}
+
+// hostOS is runtime.GOOS, which the parity tests set to take macOS's path
+// elsewhere.
+var hostOS = runtime.GOOS
+
+// xcrunSDK caches xcrunSDKPath's answer for the process.
+type xcrunCache struct {
+	once sync.Once
+	path string
+}
+
+var xcrunSDK = new(xcrunCache)
+
+// xcrunSDKPath is project.py's xcrun_sdk_path: the selected Xcode's (or
+// Command Line Tools') SDK, from `xcrun --show-sdk-path`, asked once per
+// process, for a definition's "sdkrootFromXcrun" (GNAT's gcc links against
+// the Command Line Tools' SDK, which can be newer than the selected Xcode's
+// ld knows; clang asks xcrun). "" when xcrun fails.
+func xcrunSDKPath() string {
+	cache := xcrunSDK
+	cache.once.Do(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), installedTimeout)
+		defer cancel()
+		out, err := exec.CommandContext(ctx, "xcrun", "--show-sdk-path").Output()
+		if err == nil {
+			cache.path = strings.TrimSpace(string(out))
+		}
+	})
+	return cache.path
 }
 
 // pyFormat is Python's str.format(**fields) for the forms a definition
