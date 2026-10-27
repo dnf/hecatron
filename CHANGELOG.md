@@ -13,6 +13,13 @@ minor version can change behaviour. Numbers are
 - **A missing linter says so:** `hct lint` with a language's linter not
   installed (golangci-lint, say) reports the toolchain missing (exit 3), and
   "command not found" leads the failure's excerpt.
+- **`init` detects better:** a build file at the root keeps its language
+  there unless the directory the layout names for it holds the language's
+  code (in a repository with `go.mod` at the root and a `languages/go/` of
+  other files, Go lives at the root, not in `languages/go/`), and files
+  under `hooks/` are tooling, not a language (a Tcl hook script no longer
+  adds Tcl). Applies to `hecatron init` and to a repository read without a
+  config.
 - **`hct licenses`:** every dependency's license, in every language and
   component, from the lock files (OSV-Scanner with deps.dev for npm, PyPI,
   Go, crates.io, Maven, NuGet and RubyGems; `composer.lock` for PHP):
