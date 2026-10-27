@@ -6,6 +6,12 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Toolchain versions for PHP:** a pinned default (PHP 8.5), or the line a
+  component's `.php-version`, composer.json `config.platform.php`,
+  `.tool-versions` or mise asks for, installed side by side from Ondřej
+  Surý's packages (his PPA on Ubuntu, packages.sury.org on Debian) or
+  Homebrew's shivammathur/php tap, with one Composer for all. The doctor
+  reports a component whose PHP is older than its composer.lock needs.
 - **Toolchain versions for Ruby:** a pinned default (Ruby 4.0.9), or the
   version a component's `.ruby-version`, `.tool-versions` or mise asks for,
   built side by side by ruby-build into `/opt/ruby/<version>` (per-user on

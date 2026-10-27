@@ -48,7 +48,7 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [Pascal](https://www.freepascal.org) | Structured, strongly typed language, with Free Pascal. | Free Pascal, make | test programs, make check | – | – |
 | [Perl](https://www.perl.org) | Text-processing veteran with CPAN, the first great package archive. | ExtUtils::MakeMaker, Module::Build, Carton | prove (Test::More) | Perl::Critic | – |
 | [Pharo](https://pharo.org) | Live, image-based Smalltalk environment. | Metacello (Tonel) | SUnit | – | – |
-| [PHP](https://www.php.net) | The web's server-side workhorse. | Composer | PHPUnit | PHPStan, PHP_CodeSniffer, PHP CS Fixer | – |
+| [PHP](https://www.php.net) | The web's server-side workhorse. | Composer | PHPUnit | PHPStan, PHP_CodeSniffer, PHP CS Fixer | 8.5.12 |
 | [PowerShell](https://learn.microsoft.com/powershell/) | Cross-platform shell and scripting language built on .NET. | PowerShell modules | Pester | PSScriptAnalyzer | – |
 | [Prolog](https://www.swi-prolog.org) | Logic programming, with SWI-Prolog. | SWI-Prolog packs | plunit | – | – |
 | [Python](https://www.python.org) | Readable general-purpose language with a vast ecosystem. | uv (pyproject.toml), setuptools | pytest | Ruff | 3.15.1 |

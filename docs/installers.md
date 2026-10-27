@@ -63,7 +63,7 @@ Languages install via a mix of apt packages and direct downloads:
 
 | Method           | Languages                                                                         |
 | ---------------- | --------------------------------------------------------------------------------- |
-| apt packages     | Ada, C/C++ (cmake), C#/F# (dotnet), Elixir, Erlang, Fortran, Lua, Perl, PHP       |
+| apt packages     | Ada, C/C++ (cmake), C#/F# (dotnet), Elixir, Erlang, Fortran, Lua, Perl, PHP (Ondřej Surý's packages) |
 | Direct download  | Dart, Gleam, Go, Java/Kotlin/Scala/Groovy (Temurin), Node.js, Swift, Zig          |
 | Installer script | Clojure, Haskell (ghcup), Rust (rustup), Python (uv)                              |
 | Built from source | Ruby (ruby-build)                                                                |
