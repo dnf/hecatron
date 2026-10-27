@@ -22,6 +22,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | Known vulnerabilities | `hct audit [lang...]` | `--fail-on critical\|high\|moderate\|low` (default high) |
 | Newer dependency versions | `hct outdated [lang...]` | Report only; `--json`, `--fail` |
 | Where to start | `HECATRON_OUTPUT=agent hct status` | Each language's directories, toolchain version and whether it's installed, last runs, uncommitted changes, and what to run next; one `git status`, installs nothing |
+| What the ecosystems recommend | `hct advisor [lang...]` | Lock files, toolchain pins and end of life, linter config, CI coverage; each with why and a link. Reads files only; `--fix` adds pin files; `--fail-on recommended` |
 | Which languages, where | `hct list` | `hct list --all`: every supported language |
 | Is each toolchain working | `hct doctor [lang...]` | Read-only; see Installing |
 | Validate config and generated files | `hct check` | |
@@ -75,6 +76,7 @@ saves that.
 | `tasks` | Extra jobs per action, run from the root: `{"test": {"codegen": "make gen-test"}}` |
 | `lint.format` | `false` (or `{"lang": false}`) turns off lint's format check |
 | `audit.ignore` | Accepted vulnerabilities: `{"id", "reason", "until"}` each |
+| `advisor.ignore` | Silenced advisor rules: `{"id", "reason"}` each, optional `"path"` |
 | `logs` | Log directory |
 
 Change languages with `hct add LANG` / `hct remove LANG`, not by hand.

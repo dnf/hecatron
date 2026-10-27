@@ -18,6 +18,7 @@ combine.
 | `installed.sh` | The versions installed on this machine, one `version<TAB>home` line each; offline and fast. The core picks the version a component needs from it ([design.md §18](design.md)) | No |
 | `releases.sh` | The language's releases, newest first, as `version<TAB>flags` (`lts`, `eol`); `endoflife_releases <product>` from `_common.sh` covers languages endoflife.date tracks | No |
 | `dockerfile` | Snippet for `hecatron dockerfile`: `# apt:` packages, `# after: <lang>`, `RUN`/`ENV` blocks, an `# each-version` … `# end-each-version` block repeated per version ([design §18](design.md#18-toolchain-versions)) | No |
+| `advice.json` | `hct advisor`'s rules for the language: its ecosystem's own guidance on lock files, pins, end of life, linter configuration and CI, each citing that ecosystem's documentation, or `include`s of shared sets in `languages/_advice.json` ([advisor.md](advisor.md)); each rule needs a fixture in `internal/advisor/testdata/rules.json` | No |
 | `hooks/test.sh`, `lint.sh`, `build.sh`, `clean.sh`, `audit.sh`, `format.sh`, `deps.sh`, `outdated.sh` | Default hooks for a conventional layout (design.md §9) | No |
 
 `config.json`:
@@ -86,6 +87,8 @@ missing dependencies too, both call one `*_fetch` function in
 - [ ] `install.sh` and `uninstall.sh` for macOS and Linux, idempotent
 - [ ] `doctor.sh` if the toolchain can be present but broken
 - [ ] `dockerfile` snippet
+- [ ] `advice.json` with the ecosystem's own recommendations, if it has
+      any ([advisor.md](advisor.md))
 - [ ] `tests/docker/smoke/<lang>.sh`, a smoke test that builds and runs a small
       program and checks its output (and runs the language's linter, where
       hecatron installs one), and `tests/docker/install-test.sh ubuntu:24.04 <lang>`

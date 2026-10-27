@@ -874,6 +874,23 @@ entry points' output byte for byte. Decided with the first port
   `history.log` when the log is from the last run recorded there.
   `bin/hecatron status` without the binary says so.
 
+- **`hct advisor`** (#105; `internal/advisor`) is native only too: what
+  each language's ecosystem considers good practice for the project, each
+  finding with a level (`recommended`, what the ecosystem asks for, or
+  `suggestion`), a category, why and a link to the ecosystem's own
+  documentation. Rules are data where they can be, in the definitions
+  (`languages/<lang>/advice.json`, and sets several share in
+  `languages/_advice.json`), with the conditions of the definitions' steps
+  (tier 1 above) plus `tracked`, committed to git; rules needing logic
+  (end of life and lines behind from `releases.json`, an npm lock that no
+  longer matches its manifest, CI coverage, audit acceptances past their
+  date) are Go code parameterised by the same files. It reads files only
+  (one `git ls-files`): no network, no toolchain, no auditor. `--fix` only
+  creates a missing pin file at the version the component runs; silencing
+  is `"advisor": {"ignore": [...]}`, which the Go `hct check` validates
+  (`manage.py`'s check doesn't know the key). Its rules and thresholds are
+  in [advisor.md](advisor.md).
+
 - **The project commands** ported next (#73): `init`, `add`, `remove`,
   `enable`, `disable`, `check`, `dockerfile` and `workflows` (with
   `--check`), with detection (`detect_languages`, `infer_layout`,
