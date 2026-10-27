@@ -6,6 +6,9 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **elm-review is on PATH:** global npm commands Elm installs are all linked
+  onto PATH, now that Node.js comes from its official builds.
+
 - **Default hooks find a build that isn't in the language's directory:**
   above it in the project (pulumi's `sdk/go` in the module `sdk/go.mod`, a
   root `Package.swift`, CMake project or Gradle build), or in directories
