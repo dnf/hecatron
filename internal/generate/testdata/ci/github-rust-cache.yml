@@ -12,6 +12,7 @@ on: push
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Cache rust toolchain
@@ -34,6 +35,7 @@ jobs:
       - run: hct test rust
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Check out
         uses: actions/checkout@v4

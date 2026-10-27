@@ -224,7 +224,7 @@ func GitLabCI(p *project.Project, settings project.CISettings, version string) (
 		"    - " + yamlScalar(`. "${HOME}/.hecatron/env"`),
 	}
 	for _, lang := range p.Languages {
-		lines = append(lines, "", lang+":")
+		lines = append(lines, "", lang+":", "  timeout: "+p.CITimeoutMinutes(lang)+"m")
 		var script []string
 		if settings.Cache {
 			c, err := projectCache(p, lang)

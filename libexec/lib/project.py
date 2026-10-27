@@ -792,6 +792,57 @@ def lint_config_problems(config: dict) -> list[str]:
     return ['lint.format must be true, false, or an object of languages to true or false ({"haskell": false})']
 
 
+# The time limit `hecatron workflows` gives each generated CI job that sets
+# none: GitHub's own is 6 hours, so one hung job holds every merge that long.
+DEFAULT_TIMEOUT_MINUTES = 60
+
+
+def _minutes(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 1
+
+
+def ci_timeout_minutes(config: dict, lang: str) -> int:
+    """A language's CI job time limit: config.json's "ci": {"languages":
+    {lang: N}}, else "ci": {"timeoutMinutes": N}, else 60. A value that isn't
+    a whole number of minutes is passed over (hecatron check reports it)."""
+    ci = config.get("ci")
+    ci = ci if isinstance(ci, dict) else {}
+    languages = ci.get("languages")
+    languages = languages if isinstance(languages, dict) else {}
+    for value in (languages.get(lang), ci.get("timeoutMinutes")):
+        if _minutes(value):
+            return value
+    return DEFAULT_TIMEOUT_MINUTES
+
+
+# The "ci" section's settings: the time limits, which these scripts write,
+# and cache and image, only the Go core's (manage.py's go_only_settings).
+CI_KEYS = ("cache", "image", "timeoutMinutes", "languages")
+
+
+def ci_config_problems(config: dict) -> list[str]:
+    """What's wrong with config.json's "ci" time limits and unknown keys, for
+    hecatron check, as the Go core says it (internal/project/ci.go)."""
+    ci = config.get("ci")
+    if ci is None:
+        return []
+    if not isinstance(ci, dict):
+        return ['"ci" must be an object']
+    problems = []
+    for key, value in ci.items():
+        if key == "timeoutMinutes" and not _minutes(value):
+            problems.append("ci.timeoutMinutes must be a whole number of minutes, 1 or more")
+        elif key == "languages" and value is not None:
+            if not isinstance(value, dict):
+                problems.append('ci.languages must be an object of languages to minutes ({"pascal": 120})')
+            else:
+                problems += [f"ci.languages.{lang} must be a whole number of minutes, 1 or more"
+                             for lang, minutes in value.items() if not _minutes(minutes)]
+        elif key not in CI_KEYS:
+            problems.append(f"ci.{key} is not a setting ({', '.join(CI_KEYS)})")
+    return problems
+
+
 def env_exports(environment: dict) -> str:
     """Shell exports for a language environment from Project.language_env."""
     out = [f"export {name}={shlex.quote(value)}" for name, value in environment["vars"].items()]

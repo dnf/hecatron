@@ -1,6 +1,7 @@
 package project
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"unicode"
@@ -11,13 +12,52 @@ var Severities = []string{"critical", "high", "moderate", "low"}
 
 // ConfigProblems is what's wrong with config.json's "audit" and "lint"
 // sections, for hecatron check: audit.py's config_problems and project.py's
-// lint_config_problems, message for message.
+// lint_config_problems, message for message. The "ci" section's are
+// CISettings'.
 func (p *Project) ConfigProblems() ([]string, error) {
 	problems, err := p.auditProblems()
 	if err != nil {
 		return nil, err
 	}
 	return append(problems, p.lintProblems()...), nil
+}
+
+// DefaultTimeoutMinutes is project.py's DEFAULT_TIMEOUT_MINUTES: the time
+// limit `hecatron workflows` gives each generated CI job that sets none.
+const DefaultTimeoutMinutes = "60"
+
+// ciMinutes is project.py's _minutes: a JSON whole number, 1 or more. It's
+// kept as written, since Python's int has no size limit.
+func ciMinutes(value any) (string, bool) {
+	number, ok := value.(json.Number)
+	if !ok {
+		return "", false
+	}
+	text := string(number)
+	if text == "" || strings.Trim(text, "0123456789") != "" || strings.Trim(text, "0") == "" {
+		return "", false
+	}
+	return text, true
+}
+
+// CITimeoutMinutes is project.py's ci_timeout_minutes: a language's CI job
+// time limit, from config.json's "ci": {"languages": {lang: N}}, else
+// "ci": {"timeoutMinutes": N}, else 60, passing over a value that isn't a
+// whole number of minutes.
+func (p *Project) CITimeoutMinutes(lang string) string {
+	ci, _ := p.config.Values["ci"].(*Object)
+	languages := (*Object)(nil)
+	if value, _ := ci.Get("languages"); value != nil {
+		languages, _ = value.(*Object)
+	}
+	language, _ := languages.Get(lang)
+	project, _ := ci.Get("timeoutMinutes")
+	for _, value := range []any{language, project} {
+		if minutes, ok := ciMinutes(value); ok {
+			return minutes
+		}
+	}
+	return DefaultTimeoutMinutes
 }
 
 func (p *Project) lintProblems() []string {

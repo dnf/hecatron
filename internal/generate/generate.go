@@ -368,7 +368,93 @@ func Workflow(p *project.Project, lang string) (content string, ok bool, err err
 		"To update: edit the source, then run hecatron workflows",
 		"(hecatron add and remove regenerate it too)",
 	}, "# ", "")
-	return banner + body, true, nil
+	return banner + WithTimeouts(body, p.CITimeoutMinutes(lang)), true, nil
+}
+
+func yamlContent(line string) bool {
+	text := strings.Trim(line, " \t\r")
+	return text != "" && !strings.HasPrefix(text, "#")
+}
+
+func yamlIndent(line string) int { return len(line) - len(strings.TrimLeft(line, " ")) }
+
+// WithTimeouts is manage.py's with_timeouts: the workflow with
+// `timeout-minutes: <minutes>` after the runs-on of each job in its
+// top-level jobs: that sets no timeout-minutes. A job without runs-on (one
+// calling a reusable workflow) can't have one. The text is otherwise left as
+// written.
+func WithTimeouts(body, minutes string) string {
+	lines := strings.Split(body, "\n")
+	start := -1
+	for i, line := range lines {
+		if strings.TrimRight(line, " \t\r") == "jobs:" {
+			start = i
+			break
+		}
+	}
+	if start < 0 {
+		return body
+	}
+	type job struct {
+		indent, runsOn int
+		timeout        bool
+	}
+	var inserts [][2]int
+	finish := func(j job) {
+		if j.runsOn >= 0 && !j.timeout {
+			inserts = append(inserts, [2]int{j.runsOn, j.indent})
+		}
+	}
+	jobIndent := -1
+	current := job{indent: -1, runsOn: -1}
+	for i := start + 1; i < len(lines); i++ {
+		line := lines[i]
+		if !yamlContent(line) {
+			continue
+		}
+		indent := yamlIndent(line)
+		if indent == 0 {
+			break
+		}
+		if jobIndent < 0 {
+			jobIndent = indent
+		}
+		if indent <= jobIndent {
+			finish(current)
+			current = job{indent: -1, runsOn: -1}
+			continue
+		}
+		if current.indent < 0 {
+			current.indent = indent
+		}
+		if indent != current.indent {
+			continue
+		}
+		key, _, _ := strings.Cut(strings.Trim(line, " \t\r"), ":")
+		switch key {
+		case "timeout-minutes":
+			current.timeout = true
+		case "runs-on":
+			end := i
+			for j := i + 1; j < len(lines); j++ {
+				if !yamlContent(lines[j]) {
+					continue
+				}
+				if yamlIndent(lines[j]) <= indent {
+					break
+				}
+				end = j
+			}
+			current.runsOn = end
+		}
+	}
+	finish(current)
+	for k := len(inserts) - 1; k >= 0; k-- {
+		at, indent := inserts[k][0]+1, inserts[k][1]
+		line := strings.Repeat(" ", indent) + "timeout-minutes: " + minutes
+		lines = append(lines[:at], append([]string{line}, lines[at:]...)...)
+	}
+	return strings.Join(lines, "\n")
 }
 
 // CoverageProblems are manage.py's workflow_coverage_problems: each

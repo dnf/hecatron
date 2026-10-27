@@ -95,6 +95,31 @@ var commandRepos = map[string]commandRepo{
 		"a/python/.python-version":               "3.11\n", "b/python/.python-version": "3.12\n",
 		"a/java/.java-version": "system\n", "b/java/pom.xml": "",
 	}, commands: [][]string{{"check"}}},
+	"ci time limits": {files: map[string]string{
+		".hecatron/config.json": `{"schema": 1, "languages": ["go", "rust", "zig", "lua"], "generated": {"workflows": "w/{lang}.yml"},
+			"ci": {"timeoutMinutes": 45, "languages": {"rust": 90, "zig": "long", "lua": 99999999999999999999}}}`,
+		"go/go.mod": "", "rust/Cargo.toml": "", "zig/build.zig": "", "lua/x.lua": "",
+		".hecatron/languages/go/workflow.yml": "name: go\r\njobs:\r\n  test:\r\n    runs-on: ubuntu-latest\r\n    steps: []\r\n" +
+			"  lint:\n    # a comment\n    runs-on:\n      - self-hosted\n\n      - linux\n    timeout-minutes: 5\n" +
+			"  reuse:\n    uses: ./r.yml\n  odd:\n      runs-on: x\n  last:\n    steps:\n      - timeout-minutes: 3\n    runs-on: y\n" +
+			"other:\n  runs-on: z\n",
+		".hecatron/languages/rust/workflow.yml": "jobs:\n  a:\n    runs-on: x\n  b: {runs-on: y}\n",
+		".hecatron/languages/zig/workflow.yml":  "jobs:   \n\tbad:\n  t:\n    runs-on: x",
+		".hecatron/languages/lua/workflow.yml":  "on: push\njobs:\n  t:\n    runs-on: x\n",
+	}, commands: [][]string{{"workflows"}, {"check"}, {"workflows", "--check"}}},
+	"ci section problems": {files: map[string]string{
+		".hecatron/config.json": `{"schema": 1, "languages": ["go"], "generated": {"workflows": "w/{lang}.yml"},
+			"ci": {"timeoutMinutes": 0, "languages": {"go": 1.5, "rust": true, "lua": -3, "zig": null}, "timeout": 5, "x": 1}}`,
+		"go/go.mod": "", ".hecatron/languages/go/workflow.yml": "jobs:\n  t:\n    runs-on: x\n",
+	}, commands: [][]string{{"check"}, {"workflows"}}},
+	"ci not an object": {files: map[string]string{
+		".hecatron/config.json": `{"schema": 1, "languages": ["go"], "generated": {"workflows": "w/{lang}.yml"}, "ci": [60]}`,
+		"go/go.mod":             "", ".hecatron/languages/go/workflow.yml": "jobs:\n  t:\n    runs-on: x\n",
+	}, commands: [][]string{{"check"}, {"workflows"}}},
+	"ci languages not an object": {files: map[string]string{
+		".hecatron/config.json": `{"schema": 1, "languages": ["go"], "generated": {"workflows": "w/{lang}.yml"}, "ci": {"languages": 60, "timeoutMinutes": 1e2}}`,
+		"go/go.mod":             "", ".hecatron/languages/go/workflow.yml": "jobs:\n  t:\n    runs-on: x\n",
+	}, commands: [][]string{{"check"}, {"workflows"}}},
 	"coverage matrix": {files: merge(map[string]string{
 		".hecatron/config.json": `{"schema": 1, "components": ["age", "date"], "languages": ["go", "rust"], "generated": {"workflows": "{lang}.yml"}}`,
 		"age/go/go.mod":         "", "date/go/go.mod": "", "age/rust/Cargo.toml": "",

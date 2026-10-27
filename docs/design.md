@@ -196,6 +196,8 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `generated.ci` | The CI systems `hecatron workflows` generates for: `"github"` (each language's workflow, at `generated.workflows`), `"gitlab"` (`.gitlab-ci.yml`), or both as a list (binary only) | `"github"` |
 | `ci.cache` | Cache toolchains and dependencies in the generated CI (§11; binary only) | `false` |
 | `ci.image` | The image GitLab jobs run in (binary only) | `ubuntu:24.04` |
+| `ci.timeoutMinutes` | Each generated CI job's time limit, unless its template sets one (§11) | `60` |
+| `ci.languages` | Per language, its jobs' time limit (`{"pascal": 120}`) | `{}` |
 | `generated.dependabot` | `true` or a path: `hecatron workflows` writes Dependabot's configuration (§11; binary only) | none (`.github/dependabot.yml` with `true`) |
 | `generated.renovate` | `true` or a path: `hecatron workflows` writes Renovate's configuration (binary only) | none (`renovate.json` with `true`) |
 | `dependabot` | Settings for every Dependabot `updates` entry (`schedule`, `groups`, `open-pull-requests-limit`...), and per package ecosystem under `ecosystems` (`{"npm": {...}}`) | `{"schedule": {"interval": "weekly"}}` |
@@ -423,14 +425,25 @@ DO NOT EDIT banner naming the generator and its source:
 - **CI workflows** (`generated.workflows`): each language's project
   `workflow.yml`, with a banner. `hecatron check` verifies that each workflow
   mentions every component, generalising sayable's
-  `check_workflow_components.py`.
+  `check_workflow_components.py`. Each job under `jobs:` that has a
+  `runs-on` and no `timeout-minutes` gets one, after its `runs-on`: 60
+  minutes, or config.json's `ci.timeoutMinutes`, or the language's
+  `ci.languages` entry. GitHub's own limit is 6 hours, so a hung job (a
+  stalled download, a test waiting on input) would hold every merge that
+  long; 60 is above every language's slowest run so far. A job calling a
+  reusable workflow (`uses:`, no `runs-on`) can't have one and gets none,
+  and the rest of the template stays as written. `hecatron check` reports
+  a time limit that isn't a whole number of minutes, and `hecatron workflows`
+  refuses to generate until it's fixed.
 
 - **GitLab pipeline** (`generated.ci: "gitlab"`, or `hecatron workflows
   --ci gitlab`): `.gitlab-ci.yml`, written from the project's languages
   rather than a template: one job per language that installs hecatron with
   install.sh (pinned to the generating version, `HECATRON_VERSION`) and runs
   `hct install`, `hct test` and `hct lint` for the language, which cover
-  every component. The job's image is `ci.image`.
+  every component. The job's image is `ci.image`, and its `timeout` the
+  same limit a GitHub job gets (`60m`, or `ci.timeoutMinutes`, or the
+  language's `ci.languages` entry).
 - **Caching** (`"ci": {"cache": true}`, off by default so that turning it
   on is what changes existing projects' files): each definition's `cache`
   names the directories its installer puts the toolchain in and its package

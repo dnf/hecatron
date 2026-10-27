@@ -27,7 +27,8 @@ type CISettings struct {
 }
 
 // CISettings reads generated.ci and the "ci" section, and says what's wrong
-// with them; what's wrong falls back to the default.
+// with them; what's wrong falls back to the default. The jobs' time limits
+// (ci.timeoutMinutes, ci.languages) are CITimeoutMinutes'.
 func (p *Project) CISettings() (CISettings, []string) {
 	settings := CISettings{Systems: []string{CIGitHub}, Image: DefaultCIImage}
 	var problems []string
@@ -66,11 +67,39 @@ func (p *Project) CISettings() (CISettings, []string) {
 			} else {
 				problems = append(problems, "ci.image must be an image name (ubuntu:24.04)")
 			}
+		case "timeoutMinutes":
+			if _, ok := ciMinutes(value); !ok {
+				problems = append(problems, "ci.timeoutMinutes must be a whole number of minutes, 1 or more")
+			}
+		case "languages":
+			problems = append(problems, ciLanguagesProblems(value)...)
 		default:
-			problems = append(problems, fmt.Sprintf("ci.%s is not a setting (cache, image)", key))
+			problems = append(problems, fmt.Sprintf("ci.%s is not a setting (%s)", key, ciKeys))
 		}
 	}
 	return settings, problems
+}
+
+// ciKeys are the "ci" section's settings, as its problems list them.
+const ciKeys = "cache, image, timeoutMinutes, languages"
+
+// ciLanguagesProblems are what's wrong with ci.languages: an object of
+// languages to minutes. Absent or null is fine.
+func ciLanguagesProblems(value any) []string {
+	if value == nil {
+		return nil
+	}
+	languages, ok := value.(*Object)
+	if !ok {
+		return []string{`ci.languages must be an object of languages to minutes ({"pascal": 120})`}
+	}
+	var problems []string
+	for _, lang := range languages.Keys {
+		if _, ok := ciMinutes(languages.Values[lang]); !ok {
+			problems = append(problems, fmt.Sprintf("ci.languages.%s must be a whole number of minutes, 1 or more", lang))
+		}
+	}
+	return problems
 }
 
 // ciSystems reads generated.ci: a name or a list of names, each once.
