@@ -29,7 +29,7 @@ Some languages share a toolchain. Uninstalling one affects the others.
 
 | Toolchain  | Languages             | Effect of uninstalling any one                                          |
 | ---------- | --------------------- | ----------------------------------------------------------------------- |
-| .NET SDK   | C#, F#                | Both share the same SDK; uninstalling one removes the other             |
+| .NET SDK   | C#, F#, VB.NET        | All share the SDKs in one directory; uninstalling one removes them all  |
 | cmake      | C, C++, Fortran       | All three lose build capability until reinstalled                       |
 | JDK        | Java, Kt, Scala, Gy   | Protected: `hecatron uninstall java` is a no-op (prints a message)      |
 | Node.js    | TypeScript, JS, Elm   | JavaScript's installer is TypeScript's; Elm's installs Node if missing  |
@@ -63,9 +63,9 @@ Languages install via a mix of apt packages and direct downloads:
 
 | Method           | Languages                                                                         |
 | ---------------- | --------------------------------------------------------------------------------- |
-| apt packages     | Ada, C/C++ (cmake), C#/F# (dotnet), Elixir, Erlang, Fortran, Lua, Perl, PHP (Ondřej Surý's packages) |
+| apt packages     | Ada, C/C++ (cmake), Elixir, Erlang, Fortran, Lua, Perl, PHP (Ondřej Surý's packages) |
 | Direct download  | Dart, Gleam, Go, Java/Kotlin/Scala/Groovy (Temurin), Node.js, Swift, Zig          |
-| Installer script | Clojure, Haskell (ghcup), Rust (rustup), Python (uv)                              |
+| Installer script | Clojure, Haskell (ghcup), Rust (rustup), Python (uv), .NET (dotnet-install.sh)    |
 | Built from source | Ruby (ruby-build)                                                                |
 | npm global       | Elm                                                                               |
 

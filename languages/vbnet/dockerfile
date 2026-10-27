@@ -1,1 +1,17 @@
-# apt: dotnet-sdk-10.0
+# .NET SDKs: each version the components use, with Microsoft's
+# dotnet-install.sh into /opt/dotnet as install.sh installs them, beside ICU,
+# which .NET needs; the dotnet there is linked into /usr/local/bin. Shared by
+# C#, F# and VB.NET, and each installed once. A prefix resolves to its newest
+# release in Microsoft's release metadata.
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+      "$(apt-cache pkgnames libicu | grep -E '^libicu[0-9]+$' | sort -V | tail -1)" && \
+    rm -rf /var/lib/apt/lists/*
+# each-version
+RUN V="{version}" && \
+    if [ -z "{exact}" ]; then V="$(curl -fsSL https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json | python3 -c 'import json, sys, urllib.request; p = sys.argv[1].split("."); vs = [s["version"] for c in json.load(sys.stdin)["releases-index"] if c["channel-version"].split(".")[:len(p[:2])] == p[:2] for r in json.load(urllib.request.urlopen(c["releases.json"]))["releases"] for s in (r.get("sdks") or [r["sdk"]])]; vs = [v for v in vs if v.split("-")[0].split(".")[:len(p)] == p]; print(max(vs, key=lambda v: ([int(x) for x in v.split("-")[0].split(".")], "-" not in v)))' "${V}")"; fi && \
+    if [ ! -d "/opt/dotnet/sdk/${V}" ]; then \
+      curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version "${V}" --install-dir /opt/dotnet --no-path; \
+    fi && \
+    { [ -e /usr/local/bin/dotnet ] || ln -s /opt/dotnet/dotnet /usr/local/bin/dotnet; }
+# end-each-version
+ENV DOTNET_ROOT="/opt/dotnet"

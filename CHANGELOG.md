@@ -6,6 +6,13 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Toolchain versions for .NET (C#, F#, VB.NET):** a pinned default SDK
+  (10.0.403 LTS, the 10.0.4xx feature band), or the one a component's
+  global.json asks for, installed side by side with Microsoft's
+  dotnet-install.sh into `/opt/dotnet` (per-user on macOS) rather than the
+  distribution's package, which holds one feature band; the runtimes older
+  target frameworks need go there too. A newer band's analyzers no longer
+  fail with CS9057 on Ubuntu's 10.0.1xx compiler.
 - **Toolchain versions for PHP:** a pinned default (PHP 8.5), or the line a
   component's `.php-version`, composer.json `config.platform.php`,
   `.tool-versions` or mise asks for, installed side by side from Ondřej

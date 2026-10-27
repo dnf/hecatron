@@ -14,7 +14,7 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [Ada](https://ada-lang.io) | Safety-critical systems language with strong typing and contracts (SPARK). | Alire, GPRbuild | Alire, GPRbuild test projects | – | – |
 | [Bash](https://www.gnu.org/software/bash/) | The Unix shell and scripting language. | – | Bats | ShellCheck | – |
 | [C](https://www.open-std.org/jtc1/sc22/wg14/) | The portable systems language most others build on. | CMake, Meson, Autotools, make | CTest, Meson test, make check | – | – |
-| [C#](https://learn.microsoft.com/dotnet/csharp/) | Microsoft's general-purpose language for .NET. | .NET SDK (dotnet) | dotnet test | dotnet format | – |
+| [C#](https://learn.microsoft.com/dotnet/csharp/) | Microsoft's general-purpose language for .NET. | .NET SDK (dotnet) | dotnet test | dotnet format | 10.0.403 (LTS) |
 | [C++](https://isocpp.org) | Zero-overhead systems language with templates and RAII. | CMake, Meson, Autotools, make | CTest, Meson test, make check | – | – |
 | [Clojure](https://clojure.org) | A Lisp on the JVM built around immutable data. | Clojure CLI (deps.edn), Leiningen | clojure.test | clj-kondo | – |
 | [COBOL](https://gnucobol.sourceforge.io) | The business language of record, compiled with GnuCOBOL. | CMake, make | CTest, make check | – | – |
@@ -25,7 +25,7 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [Elixir](https://elixir-lang.org) | Functional, concurrent language on the Erlang VM. | Mix | ExUnit | mix format, Credo | – |
 | [Elm](https://elm-lang.org) | Pure functional language for web front ends, with no runtime exceptions. *Not on Linux arm64: no toolchain upstream.* | elm | elm-test | elm-review | – |
 | [Erlang](https://www.erlang.org) | Fault-tolerant concurrency on the BEAM, born at Ericsson. | rebar3 | EUnit, Common Test | Dialyzer | – |
-| [F#](https://fsharp.org) | Functional-first language for .NET. | .NET SDK (dotnet) | dotnet test | Fantomas | – |
+| [F#](https://fsharp.org) | Functional-first language for .NET. | .NET SDK (dotnet) | dotnet test | Fantomas | 10.0.403 (LTS) |
 | [Fortran](https://fortran-lang.org) | The original high-performance numerical language, still current. | fpm, CMake, Meson, make | fpm test, CTest | – | – |
 | [Gleam](https://gleam.run) | Friendly, type-safe language for the Erlang VM and JavaScript. | gleam | gleeunit (gleam test) | gleam format | – |
 | [Go](https://go.dev) | Simple, fast-compiling language with built-in concurrency. | go modules | go test | golangci-lint | 1.27.3 |
@@ -62,6 +62,6 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [Tcl](https://www.tcl-lang.org) | Embeddable command language, with Tk. | TEA (make) | tcltest | – | – |
 | [TypeScript](https://www.typescriptlang.org) | JavaScript with static types. | npm (tsc) | npm test | npm run lint, tsc --noEmit | 24.22.1 (LTS) |
 | [V](https://vlang.io) | Simple, fast-compiling language in the spirit of Go. | v | v test | v fmt, v vet | – |
-| [VB.NET](https://learn.microsoft.com/dotnet/visual-basic/) | Visual Basic for .NET. | .NET SDK (dotnet) | dotnet test | dotnet format | – |
+| [VB.NET](https://learn.microsoft.com/dotnet/visual-basic/) | Visual Basic for .NET. | .NET SDK (dotnet) | dotnet test | dotnet format | 10.0.403 (LTS) |
 | [Wren](https://wren.io) | Small, fast, class-based scripting language for embedding. | wren_cli | test scripts | – | – |
 | [Zig](https://ziglang.org) | Simple systems language and C toolchain, with comptime. | zig build | zig build test | zig fmt | – |
