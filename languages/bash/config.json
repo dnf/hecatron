@@ -1,6 +1,12 @@
 {
+  "name": "Bash",
+  "homepage": "https://www.gnu.org/software/bash/",
+  "summary": "The Unix shell and scripting language.",
   "abbreviation": "sh",
   "dependency": "bash",
   "lintDependency": "shellcheck",
-  "detect": []
+  "detect": [],
+  "buildSystems": [],
+  "testing": "Bats",
+  "linting": "ShellCheck"
 }

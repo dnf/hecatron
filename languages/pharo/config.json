@@ -1,4 +1,7 @@
 {
+  "name": "Pharo",
+  "homepage": "https://pharo.org",
+  "summary": "Live, image-based Smalltalk environment.",
   "abbreviation": "ph",
   "dependency": "pharo",
   "lintDependency": null,
@@ -13,5 +16,10 @@
   ],
   "path": [
     "~/.local/bin"
-  ]
+  ],
+  "buildSystems": [
+    "Metacello (Tonel)"
+  ],
+  "testing": "SUnit",
+  "linting": null
 }

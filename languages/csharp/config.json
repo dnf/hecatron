@@ -1,4 +1,7 @@
 {
+  "name": "C#",
+  "homepage": "https://learn.microsoft.com/dotnet/csharp/",
+  "summary": "Microsoft's general-purpose language for .NET.",
   "abbreviation": "cs",
   "dependency": "dotnet",
   "lintDependency": null,
@@ -11,5 +14,10 @@
     "netstd",
     "cs",
     "net"
-  ]
+  ],
+  "buildSystems": [
+    ".NET SDK (dotnet)"
+  ],
+  "testing": "dotnet test",
+  "linting": "dotnet format"
 }

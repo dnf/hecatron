@@ -1,4 +1,7 @@
 {
+  "name": "Python",
+  "homepage": "https://www.python.org",
+  "summary": "Readable general-purpose language with a vast ecosystem.",
   "abbreviation": "py",
   "dependency": "uv",
   "lintDependency": null,
@@ -40,5 +43,11 @@
   ],
   "env": {
     "UV_PYTHON": "{home}/bin/python3"
-  }
+  },
+  "buildSystems": [
+    "uv (pyproject.toml)",
+    "setuptools"
+  ],
+  "testing": "pytest",
+  "linting": "Ruff"
 }

@@ -1,8 +1,16 @@
 {
+  "name": "Swift",
+  "homepage": "https://www.swift.org",
+  "summary": "Apple's safe, fast language, also on Linux.",
   "abbreviation": "sw",
   "dependency": "swift",
   "lintDependency": null,
   "detect": [
     "Package.swift"
-  ]
+  ],
+  "buildSystems": [
+    "Swift Package Manager"
+  ],
+  "testing": "XCTest, Swift Testing",
+  "linting": null
 }

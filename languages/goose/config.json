@@ -1,4 +1,7 @@
 {
+  "name": "Goose",
+  "homepage": "https://aardappel.github.io/goose/",
+  "summary": "Memory-safe systems language with no heap allocator, garbage collector or lifetime annotations.",
   "abbreviation": "gs",
   "dependency": "goose",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   ],
   "unsupported": [
     "linux-aarch64"
-  ]
+  ],
+  "buildSystems": [
+    "goose"
+  ],
+  "testing": "test programs",
+  "linting": "goose check"
 }

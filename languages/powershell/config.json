@@ -1,4 +1,7 @@
 {
+  "name": "PowerShell",
+  "homepage": "https://learn.microsoft.com/powershell/",
+  "summary": "Cross-platform shell and scripting language built on .NET.",
   "abbreviation": "ps1",
   "dependency": "pwsh",
   "lintDependency": null,
@@ -11,5 +14,10 @@
   "dirNames": [
     "powershell",
     "pwsh"
-  ]
+  ],
+  "buildSystems": [
+    "PowerShell modules"
+  ],
+  "testing": "Pester",
+  "linting": "PSScriptAnalyzer"
 }

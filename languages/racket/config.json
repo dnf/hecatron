@@ -1,8 +1,16 @@
 {
+  "name": "Racket",
+  "homepage": "https://racket-lang.org",
+  "summary": "A Lisp for making languages.",
   "abbreviation": "rkt",
   "dependency": "racket",
   "lintDependency": null,
   "detect": [
     "info.rkt"
-  ]
+  ],
+  "buildSystems": [
+    "raco"
+  ],
+  "testing": "rackunit (raco test)",
+  "linting": null
 }

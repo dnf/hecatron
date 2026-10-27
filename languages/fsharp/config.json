@@ -1,4 +1,7 @@
 {
+  "name": "F#",
+  "homepage": "https://fsharp.org",
+  "summary": "Functional-first language for .NET.",
   "abbreviation": "fs",
   "dependency": "dotnet",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   "dirNames": [
     "fsharp",
     "fs"
-  ]
+  ],
+  "buildSystems": [
+    ".NET SDK (dotnet)"
+  ],
+  "testing": "dotnet test",
+  "linting": "Fantomas"
 }

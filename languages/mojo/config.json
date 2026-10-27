@@ -1,4 +1,7 @@
 {
+  "name": "Mojo",
+  "homepage": "https://www.modular.com/mojo",
+  "summary": "Python-like syntax with systems-level performance, for AI.",
   "abbreviation": "mj",
   "dependency": "mojo",
   "lintDependency": null,
@@ -11,5 +14,10 @@
   ],
   "unsupported": [
     "macos-x86_64"
-  ]
+  ],
+  "buildSystems": [
+    "mojo package"
+  ],
+  "testing": "test programs",
+  "linting": "mojo format"
 }

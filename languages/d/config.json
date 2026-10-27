@@ -1,9 +1,17 @@
 {
+  "name": "D",
+  "homepage": "https://dlang.org",
+  "summary": "C-family systems language with garbage collection and metaprogramming.",
   "abbreviation": null,
   "dependency": "ldc2",
   "lintDependency": null,
   "detect": [
     "dub.json",
     "dub.sdl"
-  ]
+  ],
+  "buildSystems": [
+    "dub"
+  ],
+  "testing": "unittest blocks (dub test)",
+  "linting": "D-Scanner"
 }

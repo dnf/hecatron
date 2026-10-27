@@ -1,4 +1,7 @@
 {
+  "name": "Scala",
+  "homepage": "https://www.scala-lang.org",
+  "summary": "Functional and object-oriented language for the JVM.",
   "abbreviation": "sc",
   "dependency": "scalac",
   "lintDependency": null,
@@ -7,5 +10,13 @@
   ],
   "detectSources": [
     "*.scala"
-  ]
+  ],
+  "buildSystems": [
+    "sbt",
+    "Gradle",
+    "Maven",
+    "scalac"
+  ],
+  "testing": "MUnit, ScalaTest",
+  "linting": null
 }

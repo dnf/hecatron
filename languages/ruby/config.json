@@ -1,4 +1,7 @@
 {
+  "name": "Ruby",
+  "homepage": "https://www.ruby-lang.org",
+  "summary": "Expressive, object-oriented language behind Rails.",
   "abbreviation": "rb",
   "dependency": "ruby",
   "lintDependency": null,
@@ -9,5 +12,12 @@
   "dirNames": [
     "ruby",
     "rb"
-  ]
+  ],
+  "buildSystems": [
+    "Bundler",
+    "Rake",
+    "RubyGems"
+  ],
+  "testing": "RSpec, Minitest",
+  "linting": "RuboCop, Standard"
 }

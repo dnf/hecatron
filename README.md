@@ -171,6 +171,9 @@ Java, JavaScript, Julia, Kotlin, Lua, Mojo, Nim, Objective-C, OCaml, Octave,
 Odin, Pascal, Perl, Pharo, PHP, PowerShell, Prolog, Python, R, Racket, Raku,
 Ruby, Rust, Scala, Swift, Tcl, TypeScript, V, VB.NET, Wren and Zig.
 
+[docs/languages.md](docs/languages.md) has each one with a link to its home,
+what it's for, and the build systems, test runners and linters hecatron uses
+for it; it's also a good place to discover a language you haven't tried.
 Adding another is a directory of small scripts; see
 [docs/adding-a-language.md](docs/adding-a-language.md).
 
@@ -191,6 +194,7 @@ expect changes before 1.0. Changes are listed in
 | --- | --- |
 | [docs/why-one-repository.md](docs/why-one-repository.md) | Why one library in many languages belongs in one repository |
 | [docs/design.md](docs/design.md) | How hecatron works and why: concepts, configuration, commands, and the decisions behind them |
+| [docs/languages.md](docs/languages.md) | Every language: its home, what it's for, and how hecatron builds, tests and lints it |
 | [docs/coverage.md](docs/coverage.md) | Which languages install and work on which platforms |
 | [docs/hecatron-vs-ad-hoc.md](docs/hecatron-vs-ad-hoc.md) | A ten-language library maintained with hecatron and without it |
 | [docs/installers.md](docs/installers.md) | How each language's toolchain is installed on macOS and Linux, and toolchains languages share |

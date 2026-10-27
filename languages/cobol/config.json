@@ -1,4 +1,7 @@
 {
+  "name": "COBOL",
+  "homepage": "https://gnucobol.sourceforge.io",
+  "summary": "The business language of record, compiled with GnuCOBOL.",
   "abbreviation": "cb",
   "dependency": "cobc",
   "lintDependency": null,
@@ -6,5 +9,11 @@
   "detectSources": [
     "*.cbl",
     "*.cob"
-  ]
+  ],
+  "buildSystems": [
+    "CMake",
+    "make"
+  ],
+  "testing": "CTest, make check",
+  "linting": null
 }

@@ -1,4 +1,7 @@
 {
+  "name": "Haxe",
+  "homepage": "https://haxe.org",
+  "summary": "One language that compiles to many targets: JS, C++, JVM, Python...",
   "abbreviation": "hx",
   "dependency": "haxe",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   ],
   "dirNames": [
     "haxe"
-  ]
+  ],
+  "buildSystems": [
+    "haxelib (.hxml)"
+  ],
+  "testing": "utest",
+  "linting": null
 }

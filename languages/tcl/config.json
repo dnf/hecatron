@@ -1,4 +1,7 @@
 {
+  "name": "Tcl",
+  "homepage": "https://www.tcl-lang.org",
+  "summary": "Embeddable command language, with Tk.",
   "abbreviation": null,
   "dependency": "tclsh",
   "lintDependency": null,
@@ -7,5 +10,10 @@
   ],
   "detectSources": [
     "*.tcl"
-  ]
+  ],
+  "buildSystems": [
+    "TEA (make)"
+  ],
+  "testing": "tcltest",
+  "linting": null
 }

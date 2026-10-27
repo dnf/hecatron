@@ -1,4 +1,7 @@
 {
+  "name": "Fortran",
+  "homepage": "https://fortran-lang.org",
+  "summary": "The original high-performance numerical language, still current.",
   "abbreviation": "ft",
   "dependency": "cmake",
   "lintDependency": null,
@@ -7,5 +10,13 @@
   ],
   "detectSources": [
     "*.f90"
-  ]
+  ],
+  "buildSystems": [
+    "fpm",
+    "CMake",
+    "Meson",
+    "make"
+  ],
+  "testing": "fpm test, CTest",
+  "linting": null
 }

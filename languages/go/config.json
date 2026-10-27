@@ -1,4 +1,7 @@
 {
+  "name": "Go",
+  "homepage": "https://go.dev",
+  "summary": "Simple, fast-compiling language with built-in concurrency.",
   "abbreviation": null,
   "dependency": "go",
   "lintDependency": "golangci-lint",
@@ -36,5 +39,10 @@
       "format": "mise",
       "key": "go"
     }
-  ]
+  ],
+  "buildSystems": [
+    "go modules"
+  ],
+  "testing": "go test",
+  "linting": "golangci-lint"
 }

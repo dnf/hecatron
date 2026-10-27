@@ -1,4 +1,7 @@
 {
+  "name": "Haskell",
+  "homepage": "https://www.haskell.org",
+  "summary": "Lazy, purely functional language with a powerful type system.",
   "abbreviation": "hs",
   "dependency": "cabal",
   "lintDependency": null,
@@ -12,5 +15,11 @@
   ],
   "path": [
     "~/.ghcup/bin"
-  ]
+  ],
+  "buildSystems": [
+    "Stack",
+    "cabal"
+  ],
+  "testing": "test suites",
+  "linting": "HLint, cabal check"
 }

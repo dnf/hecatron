@@ -1,9 +1,17 @@
 {
+  "name": "Odin",
+  "homepage": "https://odin-lang.org",
+  "summary": "Data-oriented systems language, a C alternative.",
   "abbreviation": "od",
   "dependency": "odin",
   "lintDependency": null,
   "detect": [],
   "detectSources": [
     "*.odin"
-  ]
+  ],
+  "buildSystems": [
+    "odin"
+  ],
+  "testing": "@(test) procedures",
+  "linting": "odin vet"
 }

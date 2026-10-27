@@ -1,8 +1,16 @@
 {
+  "name": "Dart",
+  "homepage": "https://dart.dev",
+  "summary": "Client-optimized language behind Flutter.",
   "abbreviation": "dt",
   "dependency": "dart",
   "lintDependency": null,
   "detect": [
     "pubspec.yaml"
-  ]
+  ],
+  "buildSystems": [
+    "pub (dart, flutter)"
+  ],
+  "testing": "package:test",
+  "linting": "dart analyze"
 }

@@ -1,4 +1,7 @@
 {
+  "name": "Perl",
+  "homepage": "https://www.perl.org",
+  "summary": "Text-processing veteran with CPAN, the first great package archive.",
   "abbreviation": "pl",
   "dependency": "perl",
   "lintDependency": null,
@@ -13,5 +16,12 @@
   "dirNames": [
     "perl",
     "perl5"
-  ]
+  ],
+  "buildSystems": [
+    "ExtUtils::MakeMaker",
+    "Module::Build",
+    "Carton"
+  ],
+  "testing": "prove (Test::More)",
+  "linting": "Perl::Critic"
 }

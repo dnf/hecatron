@@ -1,6 +1,14 @@
 {
+  "name": "Octave",
+  "homepage": "https://octave.org",
+  "summary": "Free MATLAB-compatible numerical language.",
   "abbreviation": "oct",
   "dependency": "octave",
   "lintDependency": null,
-  "detect": []
+  "detect": [],
+  "buildSystems": [
+    "Octave packages"
+  ],
+  "testing": "%!test blocks",
+  "linting": null
 }

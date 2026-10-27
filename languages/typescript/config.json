@@ -1,4 +1,7 @@
 {
+  "name": "TypeScript",
+  "homepage": "https://www.typescriptlang.org",
+  "summary": "JavaScript with static types.",
   "abbreviation": "ts",
   "dependency": "npm",
   "lintDependency": null,
@@ -43,5 +46,10 @@
       "format": "mise",
       "key": "node"
     }
-  ]
+  ],
+  "buildSystems": [
+    "npm (tsc)"
+  ],
+  "testing": "npm test",
+  "linting": "npm run lint, tsc --noEmit"
 }

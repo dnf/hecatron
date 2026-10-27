@@ -6,6 +6,10 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **[docs/languages.md](docs/languages.md):** every language with a link to
+  its home, a one-line description, and the build systems, test runners and
+  linters its default hooks use, generated from the definitions.
+
 ## 0.3.0 (2026-10-27)
 
 - **An installer:** `curl -fsSL …/install.sh | sh` installs the latest

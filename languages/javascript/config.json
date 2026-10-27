@@ -1,4 +1,7 @@
 {
+  "name": "JavaScript",
+  "homepage": "https://developer.mozilla.org/docs/Web/JavaScript",
+  "summary": "The web's language, on Node.js.",
   "abbreviation": "js",
   "dependency": "npm",
   "lintDependency": null,
@@ -12,5 +15,10 @@
     "javascript",
     "js",
     "nodejs"
-  ]
+  ],
+  "buildSystems": [
+    "npm"
+  ],
+  "testing": "npm test (node:test, Jest...)",
+  "linting": "npm run lint (ESLint...)"
 }

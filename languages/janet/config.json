@@ -1,8 +1,16 @@
 {
+  "name": "Janet",
+  "homepage": "https://janet-lang.org",
+  "summary": "Small, embeddable Lisp-like scripting language.",
   "abbreviation": "jt",
   "dependency": "janet",
   "lintDependency": null,
   "detect": [
     "project.janet"
-  ]
+  ],
+  "buildSystems": [
+    "jpm"
+  ],
+  "testing": "jpm test",
+  "linting": null
 }

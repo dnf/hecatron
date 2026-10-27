@@ -1,4 +1,7 @@
 {
+  "name": "Java",
+  "homepage": "https://dev.java",
+  "summary": "The JVM's flagship language.",
   "abbreviation": null,
   "dependency": "java",
   "lintDependency": null,
@@ -46,5 +49,11 @@
   ],
   "env": {
     "JAVA_HOME": "{home}"
-  }
+  },
+  "buildSystems": [
+    "Maven",
+    "Gradle"
+  ],
+  "testing": "JUnit",
+  "linting": "Gradle check"
 }

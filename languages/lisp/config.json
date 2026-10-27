@@ -1,4 +1,7 @@
 {
+  "name": "Common Lisp",
+  "homepage": "https://common-lisp.net",
+  "summary": "The ANSI Lisp, interactive and extensible, on SBCL.",
   "abbreviation": "cl",
   "dependency": "sbcl",
   "lintDependency": null,
@@ -9,5 +12,10 @@
     "lisp",
     "cl",
     "common-lisp"
-  ]
+  ],
+  "buildSystems": [
+    "ASDF"
+  ],
+  "testing": "ASDF test-op",
+  "linting": null
 }
