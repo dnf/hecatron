@@ -41,10 +41,13 @@ newer() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -t. -k1,1n
 
 # The changelog's Unreleased entries (between its heading and the next one).
 unreleased_entries() { awk '/^## Unreleased$/ {on = 1; next} /^## / {on = 0} on' CHANGELOG.md; }
-# A released section's text, for the release notes.
+# A released section's text, for the release notes, with the repository's
+# relative links made absolute (a release page has no repository to resolve
+# them against).
 release_notes() {
     awk -v heading="## ${_version} (" 'index($0, heading) == 1 {on = 1; next} /^## / {on = 0} on' CHANGELOG.md |
-        sed -e '/./,$!d'
+        sed -e '/./,$!d' \
+            -e "s#](\([A-Za-z][^):]*\))#](https://github.com/dnf/hecatron/blob/${_tag}/\1)#g"
 }
 
 check() {
