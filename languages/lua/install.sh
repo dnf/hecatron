@@ -25,15 +25,9 @@ install_linux() {
 # luacheck 1.2 can't run on Lua 5.5 (it assigns to loop variables, which 5.5
 # makes constant), so it runs on Lua 5.4 whatever the default Lua is. The code
 # it checks is unaffected. A luacheck that fails to start is reinstalled.
-# Rocks go into ~/.luarocks on Linux: apt's luarocks would otherwise write
-# into /usr/local, which a normal user can't.
-_luarocks() {
-    if [ "${OS}" = "linux" ]; then
-        luarocks --local "$@"
-    else
-        luarocks "$@"
-    fi
-}
+# Rocks go into ~/.luarocks: the system tree (/usr/local, from apt's luarocks
+# or Homebrew's on Intel Macs) isn't writable by a normal user.
+_luarocks() { luarocks --local "$@"; }
 _install_luacheck() {
     luacheck --version >/dev/null 2>&1 && return
     local _lua54_dir=""
