@@ -2,7 +2,8 @@
 """Generate a project's Dockerfile from its languages' dockerfile snippets.
 
 Collects `# apt:` packages (deduplicated into one apt-get install), honours
-`# after: <lang>` ordering, and copies each snippet's RUN/ENV blocks. Called
+`# after: <lang>` ordering, and copies each snippet's RUN/ENV blocks,
+repeating an `# each-version` block once per toolchain version. Called
 by `hecatron dockerfile` (manage.py), which writes config.json's
 generated.dockerfile path.
 """
@@ -55,7 +56,65 @@ def parse_snippet(project, lang: str) -> tuple[list[str], list[str], str | None]
                 after = stripped[len("# after:"):].strip()
             else:
                 body_lines.append(stripped)
-    return apt_packages, body_lines, after
+    return apt_packages, expand_versions(project, lang, body_lines, snippet_path), after
+
+
+EACH_VERSION = "# each-version"
+END_EACH_VERSION = "# end-each-version"
+
+
+def block_versions(project, lang: str) -> list[str]:
+    """The specs an each-version block repeats for: the definition's default
+    (what the snippet's ENV lines point at), then every other spec the
+    components resolve to, in component order. None (a pin naming no version)
+    needs nothing beyond the default."""
+    specs = [project.default_version(lang)]
+    specs += [spec for spec, _ in project.versions(lang)]
+    return list(dict.fromkeys(spec for spec in specs if spec is not None))
+
+
+def fill_version(line: str, spec: str) -> str:
+    """A block line with {version} (the spec without "="), {exact} ("1" for an
+    exact spec, else ""), {major} and {minor} filled in. Only these four, so
+    shell's ${VAR} and other braces pass through."""
+    version = spec.lstrip("=")
+    parts = version.split(".")
+    values = {
+        "version": version,
+        "exact": "1" if spec.startswith("=") else "",
+        "major": parts[0],
+        "minor": parts[1] if len(parts) > 1 else "",
+    }
+    for name, value in values.items():
+        line = line.replace("{" + name + "}", value)
+    return line
+
+
+def expand_versions(project, lang: str, lines: list[str], source: str) -> list[str]:
+    """Snippet lines with each `# each-version [LANG]` ... `# end-each-version`
+    block written once per spec of LANG (the snippet's own language if none
+    is named; Kotlin's snippet repeats over Java's JDKs)."""
+    out: list[str] = []
+    block: list[str] | None = None
+    block_lang = lang
+    for line in lines:
+        if line == EACH_VERSION or line.startswith(EACH_VERSION + " "):
+            if block is not None:
+                raise ValueError(f"{source}: each-version blocks don't nest")
+            block, block_lang = [], line[len(EACH_VERSION):].strip() or lang
+        elif line == END_EACH_VERSION:
+            if block is None:
+                raise ValueError(f"{source}: {END_EACH_VERSION} without {EACH_VERSION}")
+            for spec in block_versions(project, block_lang):
+                out.extend(fill_version(block_line, spec) for block_line in block)
+            block = None
+        elif block is not None:
+            block.append(line)
+        else:
+            out.append(line)
+    if block is not None:
+        raise ValueError(f"{source}: {EACH_VERSION} without {END_EACH_VERSION}")
+    return out
 
 
 def has_body(lines: list[str]) -> bool:

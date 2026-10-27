@@ -330,7 +330,8 @@ DO NOT EDIT banner naming the generator and its source:
 
 - **Dockerfile** (`generated.dockerfile`): collected from each language's
   `dockerfile` snippet (`# apt:` lines deduplicated into one `apt-get
-  install`, `# after:` ordering, literal `RUN`/`ENV` blocks).
+  install`, `# after:` ordering, literal `RUN`/`ENV` blocks, and a block
+  repeated per toolchain version; see §18).
 - **CI workflows** (`generated.workflows`): each language's project
   `workflow.yml`, with a banner. `hecatron check` verifies that each workflow
   mentions every component, generalising sayable's
@@ -563,7 +564,16 @@ surprise.
   (from pin:b/java/.java-version)"), for languages with an `installed.sh`. A version past its
   upstream end of life is a warning, not a failure.
 - **Generated files.** The Dockerfile installs every version any component
-  resolves to. A workflow template names a language's resolved version with
+  resolves to. A snippet writes a block between `# each-version` and
+  `# end-each-version` lines, which `hecatron dockerfile` repeats for the
+  definition's default and then each other spec in component order, filling
+  in `{version}` (the spec without `=`), `{exact}` (`1` for an exact spec,
+  else empty), `{major}` and `{minor}`. `# each-version java` repeats over
+  another language's versions (Kotlin's snippet installs Java's JDKs).
+  Generation stays offline: a block given a prefix resolves it at build time,
+  installs where `installed.sh` looks, and skips a version already there.
+  `ENV` lines stay outside the block and name the default; a component's own
+  version comes from `hecatron env` at run time. A workflow template names a language's resolved version with
   a placeholder (`{{version:java}}`, or `{{version:java:age}}` for one
   component), which `hecatron workflows` fills in, and `hecatron check`
   fails when a generated file is behind its versions.
