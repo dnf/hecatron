@@ -29,6 +29,7 @@ Run (every component of each language; no languages means all, in parallel):
   clean [lang...]            Remove build artifacts
   rebuild, retest [lang...]  Clean, then build or test
   audit [lang...]            Check dependencies for known vulnerabilities (--fail-on SEVERITY)
+  outdated [lang...]         Report newer versions of dependencies (--json, --fail)
   deps [lang...]             Fetch dependencies, held to each component's lock file
   format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
 
@@ -104,15 +105,16 @@ func isHelp(arg string) bool { return arg == "help" || arg == "--help" }
 // runActions are what each run command describes itself as, and the hook
 // that decides which languages it covers.
 var runActions = map[string]struct{ description, hook string }{
-	"test":    {"Run each language's tests for every component", "test.sh"},
-	"lint":    {"Run each language's linter for every component", "lint.sh"},
-	"build":   {"Build each language for every component", "build.sh"},
-	"clean":   {"Remove each language's build artifacts for every component (keeps installed dependencies)", "clean.sh"},
-	"rebuild": {"Clean, then build", "build.sh"},
-	"retest":  {"Clean, then test", "test.sh"},
-	"audit":   {"Check each language's dependencies for known vulnerabilities in every component", "audit.sh"},
-	"deps":    {"Fetch each language's dependencies for every component, held to its lock file", "deps.sh"},
-	"format":  {"Format each language's code with its formatter in every component", "format.sh"},
+	"test":     {"Run each language's tests for every component", "test.sh"},
+	"lint":     {"Run each language's linter for every component", "lint.sh"},
+	"build":    {"Build each language for every component", "build.sh"},
+	"clean":    {"Remove each language's build artifacts for every component (keeps installed dependencies)", "clean.sh"},
+	"rebuild":  {"Clean, then build", "build.sh"},
+	"retest":   {"Clean, then test", "test.sh"},
+	"audit":    {"Check each language's dependencies for known vulnerabilities in every component", "audit.sh"},
+	"deps":     {"Fetch each language's dependencies for every component, held to its lock file", "deps.sh"},
+	"outdated": {"Report newer versions of each language's dependencies in every component", "outdated.sh"},
+	"format":   {"Format each language's code with its formatter in every component", "format.sh"},
 }
 
 // runHelp is `hecatron test help` and the other run commands' help, as
@@ -156,6 +158,11 @@ func (c *cli) runHelp() (int, bool) {
 		out.WriteString("  --fail-on SEVERITY\n" +
 			"             Fail on a finding at or above critical, high (default), moderate or low;\n" +
 			"             a project sets its own with \"audit\": {\"failOn\": ...} (docs/audit.md)\n")
+	}
+	if c.command == "outdated" {
+		out.WriteString("  --json     Print one JSON array of every outdated dependency (component, language,\n" +
+			"             package, current, wanted, latest); the languages run one at a time\n" +
+			"  --fail     Fail when anything is outdated (by default this only reports)\n")
 	}
 	if c.command == "format" {
 		out.WriteString("  --check    Change nothing; fail, listing the files the formatter would change\n" +

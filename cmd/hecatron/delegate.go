@@ -42,6 +42,7 @@ var delegated = map[string]func(*cli) target{
 	"audit":       runScript,
 	"format":      runScript,
 	"deps":        runScript,
+	"outdated":    runScript,
 	"doctor":      bashScript("libexec/commands/doctor.sh"),
 	"get-started": bashScript("libexec/onboarding/get-started.sh"),
 	"metadata":    bashScript("libexec/metadata/set.sh"),

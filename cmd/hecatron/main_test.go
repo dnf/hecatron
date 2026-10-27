@@ -110,9 +110,6 @@ var cliProjects = map[string]map[string]string{
 	},
 }
 
-// `deps help` isn't compared until bin/hecatron stops refusing deps as an
-// unknown command (#87); TestNativeCommandsNeedNoBashOrPython covers it.
-
 // cliArgs are the invocations compared: every native form, and delegated
 // ones that only read.
 var cliArgs = [][]string{
@@ -121,7 +118,7 @@ var cliArgs = [][]string{
 	{"list"}, {"list", "languages"}, {"list", "--all"}, {"list", "--all", "languages"}, {"list", "languages", "--all"},
 	{"list", "--al"}, {"list", "help"}, {"list", "-h"}, {"list", "nope"}, {"list", "languages", "languages"},
 	{"test", "help"}, {"test", "--help"}, {"lint", "help"}, {"build", "help"}, {"clean", "help"},
-	{"rebuild", "help"}, {"retest", "help"}, {"audit", "help"}, {"format", "help"}, {"format", "--help"}, {"test", "-c", "nope", "help"},
+	{"rebuild", "help"}, {"retest", "help"}, {"audit", "help"}, {"format", "help"}, {"deps", "help"}, {"outdated", "help"}, {"outdated", "--help"}, {"format", "--help"}, {"test", "-c", "nope", "help"},
 	{"doctor", "help"}, {"doctor", "--help", "go"},
 	{"version"}, {"version", "help"}, {"version", "--help"}, {"version", ""},
 	{"env"}, {"env", "go"}, {"env", "go", "-c", "age"},

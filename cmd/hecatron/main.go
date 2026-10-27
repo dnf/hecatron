@@ -76,19 +76,20 @@ func run(argv []string) int {
 // doesn't cover yet (an argument form, a project the model declines), and
 // the command is delegated instead, before anything is printed.
 var nativeCommands = map[string]func(*cli) (status int, handled bool){
-	"list":    (*cli).list,
-	"env":     (*cli).env,
-	"test":    (*cli).runHelp,
-	"lint":    (*cli).runHelp,
-	"build":   (*cli).runHelp,
-	"clean":   (*cli).runHelp,
-	"rebuild": (*cli).runHelp,
-	"retest":  (*cli).runHelp,
-	"audit":   (*cli).runHelp,
-	"format":  (*cli).runHelp,
-	"deps":    (*cli).runHelp,
-	"doctor":  (*cli).doctorHelp,
-	"version": (*cli).versionHelp,
+	"list":     (*cli).list,
+	"env":      (*cli).env,
+	"test":     (*cli).runHelp,
+	"lint":     (*cli).runHelp,
+	"build":    (*cli).runHelp,
+	"clean":    (*cli).runHelp,
+	"rebuild":  (*cli).runHelp,
+	"retest":   (*cli).runHelp,
+	"audit":    (*cli).runHelp,
+	"format":   (*cli).runHelp,
+	"deps":     (*cli).runHelp,
+	"outdated": (*cli).runHelp,
+	"doctor":   (*cli).doctorHelp,
+	"version":  (*cli).versionHelp,
 }
 
 // findProject finds the project (like git), setting it up first in a git
