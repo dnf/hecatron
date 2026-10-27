@@ -12,5 +12,6 @@
     "gleam"
   ],
   "testing": "gleeunit (gleam test)",
-  "linting": "gleam format"
+  "linting": "gleam format",
+  "formatting": "gleam format"
 }

@@ -12,5 +12,6 @@
     "zig build"
   ],
   "testing": "zig build test",
-  "linting": "zig fmt"
+  "linting": "zig fmt",
+  "formatting": "zig fmt"
 }

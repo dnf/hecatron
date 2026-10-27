@@ -18,5 +18,6 @@
     "scalac"
   ],
   "testing": "MUnit, ScalaTest",
-  "linting": null
+  "linting": null,
+  "formatting": "sbt-scalafmt, Spotless (when the build has one)"
 }

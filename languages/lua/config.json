@@ -18,5 +18,6 @@
     "LuaRocks"
   ],
   "testing": "busted",
-  "linting": "luacheck"
+  "linting": "luacheck",
+  "formatting": "StyLua (with a stylua.toml)"
 }

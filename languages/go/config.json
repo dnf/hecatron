@@ -51,5 +51,6 @@
     "go modules"
   ],
   "testing": "go test",
-  "linting": "golangci-lint"
+  "linting": "golangci-lint",
+  "formatting": "gofmt"
 }

@@ -50,5 +50,6 @@
     "Composer"
   ],
   "testing": "PHPUnit",
-  "linting": "PHPStan, PHP_CodeSniffer, PHP CS Fixer"
+  "linting": "PHPStan, PHP_CodeSniffer, PHP CS Fixer",
+  "formatting": "PHP CS Fixer, Laravel Pint (when installed)"
 }

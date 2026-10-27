@@ -9,4 +9,5 @@ _sources=(.)
 for _dir in Sources Tests Plugins; do
     [ "${build_dir}" = . ] && [ -d "${_dir}" ] && _sources+=("${_dir}")
 done
+checks_format
 run swift format lint --strict --recursive "${_sources[@]}"

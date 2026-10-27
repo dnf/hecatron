@@ -12,5 +12,6 @@
     "pub (dart, flutter)"
   ],
   "testing": "package:test",
-  "linting": "dart analyze"
+  "linting": "dart analyze",
+  "formatting": "dart format"
 }

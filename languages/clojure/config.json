@@ -18,5 +18,6 @@
     "Leiningen"
   ],
   "testing": "clojure.test",
-  "linting": "clj-kondo"
+  "linting": "clj-kondo",
+  "formatting": "cljfmt (with a cljfmt.edn)"
 }

@@ -31,5 +31,6 @@
     "make"
   ],
   "testing": "XCTest, test programs",
-  "linting": null
+  "linting": null,
+  "formatting": "clang-format (with a .clang-format)"
 }

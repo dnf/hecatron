@@ -31,5 +31,6 @@
     "make"
   ],
   "testing": "CTest, Meson test, make check",
-  "linting": null
+  "linting": null,
+  "formatting": "clang-format (with a .clang-format)"
 }

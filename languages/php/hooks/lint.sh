@@ -18,6 +18,7 @@ if [ -x vendor/bin/phpcs ] && exists 'phpcs.xml phpcs.xml.dist .phpcs.xml .phpcs
     _linted=1
 fi
 if [ -x vendor/bin/php-cs-fixer ] && exists '.php-cs-fixer.php .php-cs-fixer.dist.php'; then
+    checks_format
     run vendor/bin/php-cs-fixer fix --dry-run --diff
     _linted=1
 fi

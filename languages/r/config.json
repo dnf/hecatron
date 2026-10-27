@@ -16,5 +16,6 @@
     "R packages (DESCRIPTION)"
   ],
   "testing": "testthat",
-  "linting": "lintr"
+  "linting": "lintr",
+  "formatting": "Air (with an air.toml)"
 }

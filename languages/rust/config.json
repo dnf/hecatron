@@ -47,5 +47,6 @@
     "Cargo"
   ],
   "testing": "cargo test",
-  "linting": "Clippy, rustfmt"
+  "linting": "Clippy, rustfmt",
+  "formatting": "rustfmt"
 }

@@ -16,5 +16,6 @@
     "Mix"
   ],
   "testing": "ExUnit",
-  "linting": "mix format, Credo"
+  "linting": "mix format, Credo",
+  "formatting": "mix format"
 }

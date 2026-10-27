@@ -15,5 +15,6 @@
     "groovyc"
   ],
   "testing": "JUnit, Spock",
-  "linting": "Gradle check"
+  "linting": "Gradle check",
+  "formatting": "Spotless (when the build has it)"
 }

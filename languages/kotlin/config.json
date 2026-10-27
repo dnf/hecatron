@@ -19,5 +19,6 @@
     "kotlinc"
   ],
   "testing": "JUnit, kotlin.test",
-  "linting": "Gradle check (detekt, ktlint)"
+  "linting": "Gradle check (detekt, ktlint)",
+  "formatting": "Spotless, ktlint-gradle, Kotlinter (when the build has one)"
 }

@@ -60,6 +60,18 @@ unknown() {
     exit 1
 }
 
+# Whether a format hook only checks (hecatron format --check, and hecatron
+# lint): it changes nothing and fails, listing what it would change.
+format_checking() { [ "${HECATRON_FORMAT_CHECK:-}" = 1 ]; }
+
+# For a lint hook whose linter checks formatting itself (cargo fmt --check,
+# dotnet format --verify-no-changes): `hecatron lint` then doesn't run the
+# format hook's check as well (each-component.sh). Say so before the check,
+# which exits the hook when it fails.
+checks_format() {
+    if [ -n "${HECATRON_FORMAT_CHECKED:-}" ]; then echo "${HECATRON_LANG:-}" >>"${HECATRON_FORMAT_CHECKED}"; fi
+}
+
 # A language's directory isn't always where its build file is. The build can
 # be above it (pulumi's sdk/go is in the module sdk/go.mod; FlatBuffers'
 # swift/ is built by the root's Package.swift), or in directories below it
@@ -101,6 +113,12 @@ dir_above_with() {
         fi
     done < <(dirs_above)
     return 1
+}
+
+# The nearest directory, this one or above it in the project, with one of
+# the files: where a formatter that looks upward finds its configuration.
+nearest_with() {
+    if has_any "$@"; then pwd; else dir_above_with "$@"; fi
 }
 
 # The directories below this one, at most three levels down, with a file
@@ -214,7 +232,9 @@ dotnet_hook() {
             run dotnet test ${_args[@]+"${_args[@]}"} ;;
         build) run dotnet build ${_target:+"${_target}"} ;;
         clean) run dotnet clean ${_target:+"${_target}"} ;;
-        lint) run dotnet format ${_target:+"${_target}"} --verify-no-changes ;;
+        lint)
+            checks_format
+            run dotnet format ${_target:+"${_target}"} --verify-no-changes ;;
     esac
 }
 
@@ -516,6 +536,7 @@ jvm_hook() {
             build) maven package -DskipTests ;;
             clean) maven clean ;;
             lint) skip "Maven has no standard lint goal" ;;
+            format) jvm_format_maven ;;
         esac
     elif is_gradle || [ -n "${_gradle_above}" ]; then
         case "$1" in
@@ -523,6 +544,7 @@ jvm_hook() {
             build) gradle_ assemble ;;
             clean) gradle_ clean ;;
             lint) gradle_ check -x test ;;
+            format) jvm_format_gradle "${_gradle_above:-.}" ;;
         esac
     elif [ -f build.sbt ]; then
         case "$1" in
@@ -530,10 +552,51 @@ jvm_hook() {
             build) run sbt compile ;;
             clean) run sbt clean ;;
             lint) skip "sbt has no standard lint task" ;;
+            format) jvm_format_sbt ;;
         esac
     else
         unknown "no pom.xml, build.gradle(.kts) or build.sbt"
     fi
+}
+
+# Formatting is a plugin the build configures, run through the build so it
+# formats as the project's CI does: Spotless, or fmt-maven-plugin (Maven);
+# Spotless, ktlint-gradle or Kotlinter (Gradle); sbt-scalafmt (sbt). None is
+# a default: each JVM language has several styles.
+jvm_format_maven() {
+    local _poms=(pom.xml) _dir
+    while IFS= read -r _dir; do
+        if [ -f "${_dir}/pom.xml" ]; then _poms+=("${_dir}/pom.xml"); fi
+    done < <(dirs_above)
+    if grep -qs 'spotless-maven-plugin' "${_poms[@]}"; then
+        if format_checking; then maven spotless:check; else maven spotless:apply; fi
+    elif grep -qs 'fmt-maven-plugin' "${_poms[@]}"; then
+        if format_checking; then maven com.spotify.fmt:fmt-maven-plugin:check; else maven com.spotify.fmt:fmt-maven-plugin:format; fi
+    else
+        skip "no Spotless or fmt-maven-plugin in pom.xml"
+    fi
+}
+# The build's own files: this project's, and the root's (its settings file,
+# version catalog and buildSrc convention plugins) when that is above.
+jvm_format_gradle() {
+    local _root _build_files=() _file
+    _root="$(nearest_with settings.gradle settings.gradle.kts || echo "$1")"
+    while IFS= read -r -d '' _file; do _build_files+=("${_file}"); done < <(
+        find . "${_root}" -maxdepth 3 \( -name build -o -name .gradle -o -name node_modules \) -prune -o \
+            -type f \( -name '*.gradle' -o -name '*.gradle.kts' -o -name '*.versions.toml' \) -print0 2>/dev/null)
+    if grep -qs 'spotless' ${_build_files[@]+"${_build_files[@]}"}; then
+        if format_checking; then gradle_ spotlessCheck; else gradle_ spotlessApply; fi
+    elif grep -qs 'org.jlleitschuh.gradle.ktlint' ${_build_files[@]+"${_build_files[@]}"}; then
+        if format_checking; then gradle_ ktlintCheck; else gradle_ ktlintFormat; fi
+    elif grep -qs 'org.jmailen.kotlinter' ${_build_files[@]+"${_build_files[@]}"}; then
+        if format_checking; then gradle_ lintKotlin; else gradle_ formatKotlin; fi
+    else
+        skip "no Spotless, ktlint-gradle or Kotlinter in the Gradle build"
+    fi
+}
+jvm_format_sbt() {
+    grep -qs 'sbt-scalafmt' project/plugins.sbt || skip "no sbt-scalafmt in project/plugins.sbt"
+    if format_checking; then run sbt scalafmtCheckAll scalafmtSbtCheck; else run sbt scalafmtAll scalafmtSbt; fi
 }
 
 # A build whose Gradle wrapper or Kotlin compiler predates the JDK it would
@@ -691,6 +754,7 @@ make_target_above() {
             build) _targets="${_name} build_${_name} build-${_name}" ;;
             clean) _targets="clean_${_name} clean-${_name}" ;;
             lint) _targets="lint_${_name} lint-${_name}" ;;
+            format) _targets="format_${_name} format-${_name}" ;;
         esac
         for _target in ${_targets}; do
             if make_defines "${_dir}" "${_target}"; then
@@ -701,7 +765,7 @@ make_target_above() {
         done
     done
     case "$1" in
-        clean | lint) skip "the Makefile in ${_dir} has no ${1} target for $(basename "$(pwd)")" ;;
+        clean | lint | format) skip "the Makefile in ${_dir} has no ${1} target for $(basename "$(pwd)")" ;;
     esac
 }
 make_defines() {

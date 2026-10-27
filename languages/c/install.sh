@@ -5,7 +5,11 @@ source "$(dirname "$0")/../_common.sh"
 install_macos() { brew_install cmake; }
 install_linux() { apt_install build-essential cmake; }
 
-deps() { cmake_dependencies c; }
+deps() {
+    cmake_dependencies c
+    # uv runs the pinned clang-format hecatron format uses (languages/_format.sh).
+    if clang_format_missing c; then uv_install; fi
+}
 
 log "Installing C..."
 "install_${OS}"

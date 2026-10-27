@@ -12,5 +12,6 @@
     "Swift Package Manager"
   ],
   "testing": "XCTest, Swift Testing",
-  "linting": null
+  "linting": null,
+  "formatting": "swift-format"
 }

@@ -9,5 +9,8 @@ _credo=0
 grep -q ':credo' mix.exs && _credo=1
 [ "${_formatter}" -eq 1 ] || [ "${_credo}" -eq 1 ] || skip "no .formatter.exs and no Credo dependency"
 mix_deps
-if [ "${_formatter}" -eq 1 ]; then run mix format --check-formatted; fi
+if [ "${_formatter}" -eq 1 ]; then
+    checks_format
+    run mix format --check-formatted
+fi
 if [ "${_credo}" -eq 1 ]; then run mix credo --strict; fi

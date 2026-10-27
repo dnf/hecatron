@@ -21,5 +21,6 @@
     "cabal"
   ],
   "testing": "test suites",
-  "linting": "HLint, cabal check"
+  "linting": "HLint, cabal check",
+  "formatting": "Fourmolu, Ormolu (when configured)"
 }

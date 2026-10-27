@@ -12,5 +12,6 @@
     "v"
   ],
   "testing": "v test",
-  "linting": "v fmt, v vet"
+  "linting": "v fmt, v vet",
+  "formatting": "v fmt"
 }

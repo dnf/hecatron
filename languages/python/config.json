@@ -70,5 +70,6 @@
     "setuptools"
   ],
   "testing": "pytest",
-  "linting": "Ruff"
+  "linting": "Ruff",
+  "formatting": "Ruff, or Black where configured"
 }

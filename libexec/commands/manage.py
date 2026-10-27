@@ -327,7 +327,7 @@ def cmd_check(args) -> int:
         print("Generated files are up to date and every workflow covers every component.")
     else:
         print("Run 'hecatron dockerfile' / 'hecatron workflows' to regenerate.", file=sys.stderr)
-    config_problems = auditlib.config_problems(project.config)
+    config_problems = auditlib.config_problems(project.config) + projectlib.lint_config_problems(project.config)
     for problem in config_problems:
         print(f".hecatron/config.json: {problem}")
     return 0 if ok and not config_problems else 1

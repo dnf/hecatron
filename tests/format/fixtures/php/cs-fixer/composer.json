@@ -1,0 +1,11 @@
+{
+    "name": "example/messy",
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "3.95.27"
+    },
+    "autoload": {
+        "psr-4": {
+            "Example\\": "src/"
+        }
+    }
+}

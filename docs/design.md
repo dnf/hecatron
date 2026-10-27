@@ -102,7 +102,7 @@ has one, implicitly. Each language's code for a component lives at a path
 built from a template, e.g. `{component}/impl/{lang}`.
 
 **Action.** Something done to one component in one language: `test`, `lint`,
-`build`, `clean`. A project hook script implements it; hecatron runs it once
+`build`, `clean`, `audit`, `format`. A project hook script implements it; hecatron runs it once
 per component (the "every library" rule sayable adopted: a command for one
 language acts on all of that language's components).
 
@@ -193,6 +193,7 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `tools` | Non-language dependencies, as `{ "dependency": "<command>" }` | `{}` |
 | `generated.dockerfile` | Where `hecatron dockerfile` writes; omit for none | none |
 | `generated.workflows` | Where `hecatron workflows` writes each language's CI workflow | none |
+| `lint.format` | Whether `hecatron lint` runs each language's format check: `false`, or per language (`{"haskell": false}`) | `true` |
 | `tasks` | Extra named jobs per action (`test`, `lint`, ...): shell commands run from the root, in parallel with the languages and by name (`hecatron test codegen`) | `{}` |
 | `metadata` | JSON file `hecatron metadata` reads (name, description, author, license, repository) | none |
 | `logs` | Log directory for runs | `.logs` |
@@ -238,6 +239,7 @@ recipes do today. Output of single-language runs streams and is also saved to
 | `hecatron test [lang...]` | Run `test` for every component of each language; no languages means every language in parallel, plus project checks | `just test` |
 | `hecatron lint [lang...\|shell]` | Same for `lint`; languages without a lint hook rely on warnings-as-errors builds; `shell` runs shellcheck on every tracked shell script | `just lint` |
 | `hecatron build [lang...]`, `hecatron clean [lang...]` | Same for `build`/`clean` | `just build`, `just clean` |
+| `hecatron format [--check] [lang...]` | Same for `format`: rewrite the code with the language's formatter; `--check` changes nothing and fails listing what would change ([format.md](format.md)) | new |
 | `hecatron rebuild`, `hecatron retest` | clean then build/test | same |
 | `hecatron install [lang...]`, `uninstall` | Run definition installers; all languages when none are named, continuing past failures | `just install` |
 | `hecatron doctor [--fix] [lang...]` | Check toolchains; `--fix` runs installers and re-checks | `just doctor` |
@@ -310,6 +312,18 @@ and a root Makefile only through a target named for the directory or language
 the package declares (`packageManager`, else its lockfile, here or in the
 workspace above; pnpm and Yarn through Corepack), installing Corepack or Bun
 only when a component needs them.
+
+**Formatting.** A `format` hook rewrites files with the language's
+formatter, or with `HECATRON_FORMAT_CHECK=1` only checks. `lint` runs that
+check after the lint hook, for each component, unless the project turns it
+off (`lint.format`) or the lint hook checked formatting itself (it calls
+`checks_format`), so a project overriding `lint.sh` still gets it. A
+formatter runs by default only where it ships with the toolchain or nearly
+all of the language's code follows it (gofmt, rustfmt, `dotnet format`);
+elsewhere only where the project configures one (Prettier, clang-format,
+Spotless), since a default would rewrite every file of a project that
+doesn't use it. (Owner's brief, 2026-10-27; the per-formatter choices are
+the implementation's, in [format.md](format.md).)
 
 Environment for hooks: `HECATRON_ROOT` (project root), `HECATRON_COMPONENT`,
 `HECATRON_LANG`, `HECATRON_HOME`, and `_common.sh` helpers available by

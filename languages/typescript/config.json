@@ -58,5 +58,6 @@
     "npm, pnpm, Yarn or Bun (tsc)"
   ],
   "testing": "npm test",
-  "linting": "npm run lint, tsc --noEmit"
+  "linting": "npm run lint, tsc --noEmit",
+  "formatting": "Prettier, Biome (when a dependency)"
 }

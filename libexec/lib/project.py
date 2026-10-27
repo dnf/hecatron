@@ -44,7 +44,7 @@ HECATRON_HOME = os.environ.get(
 # HECATRON_BUILTIN_LANGUAGES points the tests at fixture definitions.
 BUILTIN_LANGUAGES = os.environ.get("HECATRON_BUILTIN_LANGUAGES") or os.path.join(HECATRON_HOME, "languages")
 # Built-in default hooks live in languages/<lang>/hooks/ (docs/design.md §9).
-HOOKS = ("test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh")
+HOOKS = ("test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh", "format.sh")
 
 
 class ProjectError(Exception):
@@ -607,6 +607,9 @@ def shell_env(project: Project) -> str:
         _emit_list("_LINT_LANGS", [lang for lang in added if has_hook(lang, "lint.sh")]),
         _emit_list("_TEST_LANGS", [lang for lang in added if has_hook(lang, "test.sh")]),
         _emit_list("_AUDIT_LANGS", [lang for lang in added if has_hook(lang, "audit.sh")]),
+        _emit_list("_FORMAT_LANGS", [lang for lang in added if has_hook(lang, "format.sh")]),
+        _emit_list("_LINT_FORMAT_LANGS", [lang for lang in added
+                                          if has_hook(lang, "format.sh") and lint_checks_format(project.config, lang)]),
         _emit_list("_NO_BUILD_LANGS", [lang for lang in added if not has_hook(lang, "build.sh")]),
         _emit_list("_DISABLED_LANGS", project.disabled),
         _emit_list("_TOOLS", sorted(project.tools)),
@@ -629,6 +632,32 @@ def shell_env(project: Project) -> str:
     static = {lang: [p for p in d.get("path", []) if "{" not in p] for lang, d in defs.items()}
     out += _emit_case("_lang_path_patterns", {lang: " ".join(p) for lang, p in static.items() if p})
     return "\n".join(out) + "\n"
+
+
+def lint_checks_format(config: dict, lang: str) -> bool:
+    """Whether `hecatron lint` runs the language's format check: config.json's
+    "lint": {"format": ...} is true (the default), false, or per language
+    ({"haskell": false}, the rest true)."""
+    lint = config.get("lint")
+    setting = lint.get("format", True) if isinstance(lint, dict) else True
+    if isinstance(setting, dict):
+        return setting.get(lang, True) is not False
+    return setting is not False
+
+
+def lint_config_problems(config: dict) -> list[str]:
+    """What's wrong with config.json's "lint" section, for hecatron check."""
+    lint = config.get("lint")
+    if lint is None:
+        return []
+    if not isinstance(lint, dict):
+        return ['"lint" must be an object']
+    setting = lint.get("format", True)
+    if isinstance(setting, bool):
+        return []
+    if isinstance(setting, dict) and all(isinstance(v, bool) for v in setting.values()):
+        return []
+    return ['lint.format must be true, false, or an object of languages to true or false ({"haskell": false})']
 
 
 def env_exports(environment: dict) -> str:

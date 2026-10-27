@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Check that elm-test matches the Elm compiler (an older elm-test can't build
-# with a newer elm), and for elm-review where a component configures it.
+# with a newer elm), for elm-review where a component configures it, and for
+# elm-format.
 source "$(dirname "$0")/../_common.sh"
 
 if ! has elm-test; then
@@ -15,5 +16,8 @@ elif has elm; then
 fi
 if elm_review_missing; then
     problem "elm-review not installed (a component configures it in review/elm.json)"
+fi
+if elm_format_missing; then
+    problem "elm-format not installed (hecatron format uses it)"
 fi
 doctor_done

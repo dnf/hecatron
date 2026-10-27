@@ -59,5 +59,6 @@
     "npm, pnpm, Yarn or Bun"
   ],
   "testing": "npm test (node:test, Jest...)",
-  "linting": "npm run lint (ESLint...)"
+  "linting": "npm run lint (ESLint...)",
+  "formatting": "Prettier, Biome (when a dependency)"
 }

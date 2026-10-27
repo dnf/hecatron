@@ -16,5 +16,6 @@
     "Pkg"
   ],
   "testing": "Test (Pkg.test)",
-  "linting": null
+  "linting": null,
+  "formatting": "JuliaFormatter (with a .JuliaFormatter.toml)"
 }

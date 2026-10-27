@@ -15,5 +15,6 @@
     "elm"
   ],
   "testing": "elm-test",
-  "linting": "elm-review"
+  "linting": "elm-review",
+  "formatting": "elm-format"
 }
