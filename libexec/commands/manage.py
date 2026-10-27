@@ -424,7 +424,9 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
       sources sit in it or under its src/ or include/.
     - A hit is dropped where one of the language's "detectUnless" files sits
       beside it (package.json is JavaScript unless a tsconfig.json says
-      TypeScript).
+      TypeScript), and, for a language with a "detectScript", where its
+      package.json has no such npm script (Cucumber's jsonschema/, tooling
+      with no test script).
     - Nothing under SKIPPED_DIRS counts.
     - A language found only by its sources keeps only the directories
       outside every other language's (protobuf's C in upb/, not the native
@@ -475,6 +477,12 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
     for lang, d in defs.items():
         unless, sources = d.get("detectUnless", []), d.get("detectSources", [])
         directories = hits(by_dir, d.get("detect", []), unless) | shared_hits(lang)
+        script = d.get("detectScript")
+        if script and directories:
+            directories = {directory for directory in directories if _has_npm_script(root, directory, script)}
+            if not directories:
+                not_added[lang] = f"no {script} script"
+                continue
         if not directories and sources:
             directories = hits(by_dir, sources, unless)
             from_sources.add(lang)
@@ -498,6 +506,17 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
             not_added[lang] = f"its files are all inside {', '.join(everyone)}'s directories"
             del found[lang]
     return found, not_added
+
+
+def _has_npm_script(root: str, directory: str, script: str) -> bool:
+    """Whether the directory's package.json has the npm script; one that
+    can't be read counts as having it."""
+    try:
+        with open(os.path.join(root, directory, "package.json"), encoding="utf-8") as f:
+            scripts = json.load(f).get("scripts") or {}
+    except (OSError, ValueError, AttributeError):
+        return True
+    return isinstance(scripts, dict) and script in scripts
 
 
 def _language_roots(directories: set[str], names: list[str]) -> set[str]:
