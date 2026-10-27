@@ -14,11 +14,72 @@
 #
 # Run from a clone (sourced or not), it uses that clone where it is.
 #
+# First it installs what hecatron itself needs when it's missing: on macOS the
+# Command Line Tools (git, python3), and on Linux git, Python 3 and perl from
+# the distribution (apt, dnf or zypper), with sudo when not root.
+#
 # POSIX sh, and safe to source into bash or zsh: no `exit`, no `set -e`;
 # everything lives in functions that are removed at the end.
 
 _hecatron_say() { printf 'hecatron: %s\n' "$*"; }
 _hecatron_fail() { printf 'hecatron: error: %s\n' "$*" >&2; return 1; }
+
+_hecatron_sudo() { if [ "$(id -u)" -eq 0 ]; then "$@"; else sudo "$@"; fi; }
+_hecatron_python_ok() { python3 -c 'import sys; sys.exit(sys.version_info < (3, 9))' 2>/dev/null; }
+
+# macOS: the Command Line Tools, which hold git and python3 (until they're
+# installed, /usr/bin/git and /usr/bin/python3 only open a dialog). Installed
+# without the dialog through softwareupdate, as Homebrew's installer does.
+_hecatron_macos_clt() {
+    xcode-select -p >/dev/null 2>&1 && return 0
+    _hecatron_say "Installing the Command Line Tools (git, python3); this needs your password..."
+    _hecatron_flag="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+    touch "${_hecatron_flag}"
+    _hecatron_label="$(softwareupdate -l 2>/dev/null |
+        sed -n 's/^[* ]*Label: \(Command Line Tools for Xcode.*\)$/\1/p' | sort -V | tail -1)"
+    if [ -n "${_hecatron_label}" ]; then
+        _hecatron_sudo softwareupdate -i "${_hecatron_label}" --verbose
+    fi
+    rm -f "${_hecatron_flag}"
+    xcode-select -p >/dev/null 2>&1 && return 0
+    # softwareupdate didn't offer them: the dialog is the remaining way.
+    xcode-select --install >/dev/null 2>&1 || true
+    _hecatron_fail "finish installing the Command Line Tools in the window that opened, then run this again"
+}
+
+# Linux: git, Python 3.9+ and perl (the parallel runner's timing), from the
+# distribution's package manager.
+_hecatron_linux_packages() {
+    _hecatron_missing=""
+    command -v git >/dev/null 2>&1 || _hecatron_missing="${_hecatron_missing} git"
+    _hecatron_python_ok || _hecatron_missing="${_hecatron_missing} python3"
+    command -v perl >/dev/null 2>&1 || _hecatron_missing="${_hecatron_missing} perl"
+    command -v curl >/dev/null 2>&1 || _hecatron_missing="${_hecatron_missing} curl"
+    [ -n "${_hecatron_missing}" ] || return 0
+    _hecatron_say "Installing what hecatron needs:${_hecatron_missing}..."
+    # shellcheck disable=SC2086 # one word per package
+    if command -v apt-get >/dev/null 2>&1; then
+        _hecatron_sudo apt-get update -qq && _hecatron_sudo apt-get install -y -qq ${_hecatron_missing} ca-certificates
+    elif command -v dnf >/dev/null 2>&1; then
+        _hecatron_sudo dnf install -y -q ${_hecatron_missing}
+    elif command -v zypper >/dev/null 2>&1; then
+        _hecatron_sudo zypper --non-interactive install ${_hecatron_missing}
+    else
+        _hecatron_fail "install${_hecatron_missing} with your package manager, then run this again"
+        return 1
+    fi
+}
+
+_hecatron_prerequisites() {
+    case "$(uname -s)" in
+        Darwin) _hecatron_macos_clt || return 1 ;;
+        Linux) _hecatron_linux_packages || return 1 ;;
+    esac
+    _hecatron_python_ok || {
+        _hecatron_fail "hecatron needs Python 3.9 or later; python3 is $(python3 -V 2>&1 || echo missing)"
+        return 1
+    }
+}
 
 # The directory this script is in, when that can be known: when executed, or
 # sourced from bash or zsh. Empty when piped (curl | sh).
@@ -44,10 +105,6 @@ _hecatron_script_dir() {
 _hecatron_fetch() {
     _hecatron_dir="$1"
     _hecatron_repo="${HECATRON_REPO:-https://github.com/dnf/hecatron}"
-    command -v git >/dev/null 2>&1 || {
-        _hecatron_fail "git is needed (macOS: xcode-select --install; Debian/Ubuntu: sudo apt-get install git)"
-        return 1
-    }
     _hecatron_version="${HECATRON_VERSION:-}"
     if [ -z "${_hecatron_version}" ]; then
         _hecatron_version="$(git ls-remote --tags --refs "${_hecatron_repo}" 'v*' 2>/dev/null |
@@ -121,6 +178,7 @@ _hecatron_modify_path() {
 }
 
 _hecatron_install() {
+    _hecatron_prerequisites || return 1
     _hecatron_here="$(_hecatron_script_dir)"
     if [ -z "${HECATRON_REPO:-}" ] && [ -n "${_hecatron_here}" ] && [ -x "${_hecatron_here}/bin/hecatron" ]; then
         _hecatron_target="${_hecatron_here}"
@@ -159,9 +217,11 @@ fi
 
 _hecatron_install
 _hecatron_status=$?
-unset -f _hecatron_say _hecatron_fail _hecatron_script_dir _hecatron_fetch _hecatron_write_env \
+unset -f _hecatron_say _hecatron_fail _hecatron_sudo _hecatron_python_ok _hecatron_macos_clt \
+    _hecatron_linux_packages _hecatron_prerequisites _hecatron_script_dir _hecatron_fetch _hecatron_write_env \
     _hecatron_add_line _hecatron_modify_path _hecatron_install
 unset _hecatron_src _hecatron_dir _hecatron_repo _hecatron_version _hecatron_bin _hecatron_file \
-    _hecatron_line _hecatron_env_line _hecatron_rc _hecatron_here _hecatron_target _hecatron_sourced
+    _hecatron_line _hecatron_env_line _hecatron_rc _hecatron_here _hecatron_target _hecatron_sourced \
+    _hecatron_flag _hecatron_label _hecatron_missing
 # Sourced: hand back the status without leaving the user's shell; run: exit with it.
 return "${_hecatron_status}" 2>/dev/null || exit "${_hecatron_status}"
