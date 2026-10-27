@@ -1,0 +1,4 @@
+/tmp/capture/dotnet-build-error/csharp/Calc.cs(7,24): error CS0029: Cannot implicitly convert type 'int' to 'string' [/tmp/capture/dotnet-build-error/csharp/Calc.csproj]
+    -> /tmp/capture/dotnet-build-error/csharp/Calc.cs:7:24 CS0029: Cannot implicitly convert type 'int' to 'string'
+/tmp/capture/dotnet-build-error/csharp/Calc.cs(8,16): error CS0103: The name 'totl' does not exist in the current context [/tmp/capture/dotnet-build-error/csharp/Calc.csproj]
+    -> /tmp/capture/dotnet-build-error/csharp/Calc.cs:8:16 CS0103: The name 'totl' does not exist in the current context

@@ -163,5 +163,28 @@
       },
       "bin": "{toolchains}/cargo/bin"
     }
-  }
+  },
+  "errorPatterns": [
+    {
+      "tool": "cargo",
+      "regex": "^(?P<message>error(?:\\[E\\d+\\])?: .+)$",
+      "next": "^\\s*--> (?P<file>[^\\s:]+):(?P<line>\\d+):(?P<col>\\d+)$"
+    },
+    {
+      "tool": "cargo",
+      "regex": "^thread '.+' (?:\\(\\d+\\) )?panicked at (?P<file>[^\\s:]+):(?P<line>\\d+):(?P<col>\\d+):$"
+    },
+    {
+      "tool": "cargo",
+      "regex": "^(?P<message>assertion .+ failed.*)$"
+    },
+    {
+      "tool": "cargo",
+      "regex": "^\\s+(?P<message>(?:left|right): .+)$"
+    },
+    {
+      "tool": "cargo",
+      "regex": "^test (?P<message>\\S+ \\.\\.\\. FAILED)$"
+    }
+  ]
 }

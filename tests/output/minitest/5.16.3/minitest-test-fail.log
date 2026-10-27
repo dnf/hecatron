@@ -1,0 +1,28 @@
+=== test . (ruby) ===
++ rake test
+Run options: --seed 57242
+
+# Running:
+
+FE.
+
+Finished in 0.013569s, 221.0975 runs/s, 147.3983 assertions/s.
+
+  1) Failure:
+CalcTest#test_adds [/tmp/capture/minitest-test-fail/ruby/test/calc_test.rb:6]:
+Expected: 5
+  Actual: -1
+
+  2) Error:
+CalcTest#test_rejects_nil:
+NoMethodError: undefined method `-' for nil:NilClass
+    /tmp/capture/minitest-test-fail/ruby/lib/calc.rb:3:in `add'
+    /tmp/capture/minitest-test-fail/ruby/test/calc_test.rb:14:in `test_rejects_nil'
+
+3 runs, 2 assertions, 1 failures, 1 errors, 0 skips
+rake aborted!
+Command failed with status (1)
+
+Tasks: TOP => test
+(See full trace by running task with --trace)
+ruby: test failed: .

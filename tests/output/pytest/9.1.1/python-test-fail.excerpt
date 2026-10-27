@@ -1,0 +1,9 @@
+E       assert -1 == 5
+E        +  where -1 = add(2, 3)
+test_calc.py:5: AssertionError
+    -> test_calc.py:5 AssertionError
+E       TypeError: unsupported operand type(s) for -: 'NoneType' and 'int'
+calc.py:2: TypeError
+    -> calc.py:2 TypeError
+FAILED test_calc.py::test_add - assert -1 == 5
+FAILED test_calc.py::test_add_type - TypeError: unsupported operand type(s) f...

@@ -1,0 +1,23 @@
+=== build . (elixir) ===
++ mix compile
+Compiling 1 file (.ex)
+warning: variable "c" does not exist and is being expanded to "c()", please use parentheses to remove the ambiguity or change the variable name
+  lib/calc.ex:3: Calc.add/2
+
+warning: variable "totl" does not exist and is being expanded to "totl()", please use parentheses to remove the ambiguity or change the variable name
+  lib/calc.ex:4: Calc.add/2
+
+warning: variable "b" is unused (if the variable is not meant to be used, prefix it with an underscore)
+  lib/calc.ex:2: Calc.add/2
+
+warning: variable "total" is unused (if the variable is not meant to be used, prefix it with an underscore)
+  lib/calc.ex:3: Calc.add/2
+
+warning: undefined function totl/0 (expected Calc to define such a function or for it to be imported, but none are available)
+  lib/calc.ex:4
+
+
+== Compilation error in file lib/calc.ex ==
+** (CompileError) lib/calc.ex:3: undefined function c/0 (expected Calc to define such a function or for it to be imported, but none are available)
+
+elixir: build failed: .

@@ -1,0 +1,27 @@
+=== build . (kotlin) ===
++ gradle assemble
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :processResources NO-SOURCE
+
+> Task :compileKotlin FAILED
+e: file:///tmp/capture/kotlin-compile-error/kotlin/src/main/kotlin/calc/Calc.kt:4:23 Initializer type mismatch: expected 'String', actual 'Int'.
+e: file:///tmp/capture/kotlin-compile-error/kotlin/src/main/kotlin/calc/Calc.kt:5:12 Unresolved reference 'totl'.
+
+[Incubating] Problems report is available at: file:///tmp/capture/kotlin-compile-error/kotlin/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 523ms
+1 actionable task: 1 executed
+kotlin: build failed: .

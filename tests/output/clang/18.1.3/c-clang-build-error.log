@@ -1,0 +1,16 @@
+=== build . (c) ===
++ make
+clang -Wall -Wextra   -c -o calc.o calc.c
+calc.c:5:20: error: use of undeclared identifier 'missing'
+    5 |     return a + b + missing;
+      |                    ^
+calc.c:9:17: error: incompatible integer to pointer conversion initializing 'const char *' with an expression of type 'int' [-Wint-conversion]
+    9 |     const char *total = add(2, 3);
+      |                 ^       ~~~~~~~~~
+calc.c:10:20: warning: format specifies type 'int' but the argument has type 'const char *' [-Wformat]
+   10 |     printf("%d\n", total);
+      |             ~~     ^~~~~
+      |             %s
+1 warning and 2 errors generated.
+make: *** [<builtin>: calc.o] Error 1
+c: build failed: .

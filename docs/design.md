@@ -989,6 +989,11 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
   and progress lines or repeated lines. hecatron's own `=== test a (go) ===`
   and `go: test failed: a` lines are left out of both. A pattern that
   doesn't compile is skipped, never failing a run.
+- **Recorded samples:** `tests/output/<tool>/<version>/<case>.log` is the
+  log hecatron wrote for a failing fixture (`tests/output/fixtures/`,
+  captured with real toolchains in Docker by `tests/output/capture.sh`);
+  `<case>.excerpt` beside it is the excerpt it must give, and a sample whose
+  language's patterns match nothing fails the tests.
 - **Exit status 3** when every failed job failed only in components whose
   language command (the definition's `dependency`) isn't on the PATH the
   component's hooks run with; whether a toolchain is broken isn't detected.

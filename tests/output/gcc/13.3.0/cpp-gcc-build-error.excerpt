@@ -1,0 +1,9 @@
+calc.cpp:6:40: error: ‘missing’ was not declared in this scope
+    -> calc.cpp:6:40 ‘missing’ was not declared in this scope
+calc.cpp:10:34: error: conversion from ‘int’ to non-scalar type ‘std::string’ {aka ‘std::__cxx11::basic_string<char>’} requested
+    -> calc.cpp:10:34 conversion from ‘int’ to non-scalar type ‘std::string’ {aka ‘std::__cxx11::basic_string<char>’} requested
+calc.cpp:12:21: error: no matching function for call to ‘push_back(const char [5])’
+    -> calc.cpp:12:21 no matching function for call to ‘push_back(const char [5])’
+calc.cpp:12:22: error: invalid conversion from ‘const char*’ to ‘std::vector<int>::value_type’ {aka ‘int’} [-fpermissive]
+    -> calc.cpp:12:22 invalid conversion from ‘const char*’ to ‘std::vector<int>::value_type’ {aka ‘int’} [-fpermissive]
+make: *** [<builtin>: calc.o] Error 1

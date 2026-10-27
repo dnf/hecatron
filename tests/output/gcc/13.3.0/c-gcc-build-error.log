@@ -1,0 +1,27 @@
+=== build . (c) ===
++ make
+gcc -Wall -Wextra   -c -o calc.o calc.c
+calc.c: In function ‘add’:
+calc.c:5:20: error: ‘missing’ undeclared (first use in this function)
+    5 |     return a + b + missing;
+      |                    ^~~~~~~
+calc.c:5:20: note: each undeclared identifier is reported only once for each function it appears in
+calc.c:4:9: warning: unused variable ‘unused’ [-Wunused-variable]
+    4 |     int unused;
+      |         ^~~~~~
+calc.c: In function ‘main’:
+calc.c:9:25: warning: initialization of ‘const char *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
+    9 |     const char *total = add(2, 3);
+      |                         ^~~
+calc.c:10:14: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘const char *’ [-Wformat=]
+   10 |     printf("%d\n", total);
+      |             ~^     ~~~~~
+      |              |     |
+      |              int   const char *
+      |             %s
+calc.c: In function ‘add’:
+calc.c:6:1: warning: control reaches end of non-void function [-Wreturn-type]
+    6 | }
+      | ^
+make: *** [<builtin>: calc.o] Error 1
+c: build failed: .

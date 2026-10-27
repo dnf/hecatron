@@ -1,0 +1,36 @@
+=== build . (cpp) ===
++ make
+g++ -std=c++17 -Wall -Wextra   -c -o calc.o calc.cpp
+calc.cpp: In function ‘int calc::add(int, int)’:
+calc.cpp:6:40: error: ‘missing’ was not declared in this scope
+    6 | int add(int a, int b) { return a + b + missing; }
+      |                                        ^~~~~~~
+calc.cpp: In function ‘int main()’:
+calc.cpp:10:34: error: conversion from ‘int’ to non-scalar type ‘std::string’ {aka ‘std::__cxx11::basic_string<char>’} requested
+   10 |     std::string total = calc::add(2, 3);
+      |                         ~~~~~~~~~^~~~~~
+calc.cpp:12:21: error: no matching function for call to ‘push_back(const char [5])’
+   12 |     values.push_back("four");
+      |     ~~~~~~~~~~~~~~~~^~~~~~~~
+In file included from /usr/include/c++/13/vector:66,
+                 from calc.cpp:3:
+/usr/include/c++/13/bits/stl_vector.h:1281:7: note: candidate: ‘void std::vector<_Tp, _Alloc>::push_back(const value_type&) [with _Tp = int; _Alloc = std::allocator<int>; value_type = int]’ (near match)
+ 1281 |       push_back(const value_type& __x)
+      |       ^~~~~~~~~
+/usr/include/c++/13/bits/stl_vector.h:1281:7: note:   conversion of argument 1 would be ill-formed:
+calc.cpp:12:22: error: invalid conversion from ‘const char*’ to ‘std::vector<int>::value_type’ {aka ‘int’} [-fpermissive]
+   12 |     values.push_back("four");
+      |                      ^~~~~~
+      |                      |
+      |                      const char*
+/usr/include/c++/13/bits/stl_vector.h:1298:7: note: candidate: ‘void std::vector<_Tp, _Alloc>::push_back(value_type&&) [with _Tp = int; _Alloc = std::allocator<int>; value_type = int]’ (near match)
+ 1298 |       push_back(value_type&& __x)
+      |       ^~~~~~~~~
+/usr/include/c++/13/bits/stl_vector.h:1298:7: note:   conversion of argument 1 would be ill-formed:
+calc.cpp:12:22: error: invalid conversion from ‘const char*’ to ‘std::vector<int>::value_type’ {aka ‘int’} [-fpermissive]
+   12 |     values.push_back("four");
+      |                      ^~~~~~
+      |                      |
+      |                      const char*
+make: *** [<builtin>: calc.o] Error 1
+cpp: build failed: .

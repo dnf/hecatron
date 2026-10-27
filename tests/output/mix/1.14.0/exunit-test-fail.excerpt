@@ -1,0 +1,10 @@
+1) test adds two numbers (CalcTest)
+test/calc_test.exs:4
+    -> test/calc_test.exs:4
+Assertion with == failed
+left:  -1
+right: 5
+2) test rejects nil (CalcTest)
+test/calc_test.exs:12
+    -> test/calc_test.exs:12
+** (ArithmeticError) bad argument in arithmetic expression: nil - 1

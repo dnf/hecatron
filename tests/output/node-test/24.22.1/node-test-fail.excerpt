@@ -1,0 +1,9 @@
+✖ adds two numbers (0.890246ms)
+✖ returns an object (0.702734ms)
+✖ failing tests:
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+at TestContext.<anonymous> (/tmp/capture/node-test-fail/javascript/test/calc.test.js:6:10)
+    -> /tmp/capture/node-test-fail/javascript/test/calc.test.js:6:10
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+at TestContext.<anonymous> (/tmp/capture/node-test-fail/javascript/test/calc.test.js:14:10)
+    -> /tmp/capture/node-test-fail/javascript/test/calc.test.js:14:10

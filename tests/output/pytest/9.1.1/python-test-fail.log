@@ -1,0 +1,42 @@
+=== test . (python) ===
++ uv run --with pytest pytest
+Downloading pygments (1.2MiB)
+ Downloaded pygments
+Installed 5 packages in 7ms
+============================= test session starts ==============================
+platform linux -- Python 3.15.1, pytest-9.1.1, pluggy-1.7.0
+rootdir: /tmp/capture/python-test-fail/python
+collected 3 items
+
+test_calc.py F.F                                                         [100%]
+
+=================================== FAILURES ===================================
+___________________________________ test_add ___________________________________
+
+    def test_add():
+>       assert add(2, 3) == 5
+E       assert -1 == 5
+E        +  where -1 = add(2, 3)
+
+test_calc.py:5: AssertionError
+________________________________ test_add_type _________________________________
+
+    def test_add_type():
+>       add(None, 1)
+
+test_calc.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = None, b = 1
+
+    def add(a, b):
+>       return a - b
+               ^^^^^
+E       TypeError: unsupported operand type(s) for -: 'NoneType' and 'int'
+
+calc.py:2: TypeError
+=========================== short test summary info ============================
+FAILED test_calc.py::test_add - assert -1 == 5
+FAILED test_calc.py::test_add_type - TypeError: unsupported operand type(s) f...
+========================= 2 failed, 1 passed in 0.05s ==========================
+python: test failed: .

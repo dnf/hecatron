@@ -1,0 +1,6 @@
+Failed Calc.Tests.CalcTests.Adds [5 ms]
+Assert.Equal() Failure: Values differ
+Expected: 5
+Actual:   -1
+at Calc.Tests.CalcTests.Adds() in /tmp/capture/dotnet-test-fail/csharp/CalcTests.cs:line 13
+    -> /tmp/capture/dotnet-test-fail/csharp/CalcTests.cs:13

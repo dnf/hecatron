@@ -1,0 +1,16 @@
+=== build . (csharp) ===
++ dotnet build
+  Determining projects to restore...
+  Restored /tmp/capture/dotnet-build-error/csharp/Calc.csproj (in 52 ms).
+/tmp/capture/dotnet-build-error/csharp/Calc.cs(7,24): error CS0029: Cannot implicitly convert type 'int' to 'string' [/tmp/capture/dotnet-build-error/csharp/Calc.csproj]
+/tmp/capture/dotnet-build-error/csharp/Calc.cs(8,16): error CS0103: The name 'totl' does not exist in the current context [/tmp/capture/dotnet-build-error/csharp/Calc.csproj]
+
+Build FAILED.
+
+/tmp/capture/dotnet-build-error/csharp/Calc.cs(7,24): error CS0029: Cannot implicitly convert type 'int' to 'string' [/tmp/capture/dotnet-build-error/csharp/Calc.csproj]
+/tmp/capture/dotnet-build-error/csharp/Calc.cs(8,16): error CS0103: The name 'totl' does not exist in the current context [/tmp/capture/dotnet-build-error/csharp/Calc.csproj]
+    0 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:00.71
+csharp: build failed: .

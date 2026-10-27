@@ -1,0 +1,8 @@
+=== test . (go) ===
++ go test ./...
+--- FAIL: TestAdd (0.00s)
+    calc_test.go:7: Add(2, 3) = -1, want 5
+FAIL
+FAIL	example.com/calc	0.003s
+FAIL
+go: test failed: .

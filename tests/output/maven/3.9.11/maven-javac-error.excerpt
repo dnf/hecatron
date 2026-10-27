@@ -1,0 +1,4 @@
+[ERROR] /tmp/capture/maven-javac-error/java/src/main/java/calc/Calc.java:[7,26] incompatible types: int cannot be converted to java.lang.String
+    -> /tmp/capture/maven-javac-error/java/src/main/java/calc/Calc.java:7:26 incompatible types: int cannot be converted to java.lang.String
+[ERROR] /tmp/capture/maven-javac-error/java/src/main/java/calc/Calc.java:[8,16] cannot find symbol
+    -> /tmp/capture/maven-javac-error/java/src/main/java/calc/Calc.java:8:16 cannot find symbol

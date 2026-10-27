@@ -1,0 +1,38 @@
+=== build . (java) ===
++ gradle assemble
+
+> Task :compileJava FAILED
+/tmp/capture/gradle-javac-error/java/src/main/java/calc/Calc.java:7: error: incompatible types: int cannot be converted to String
+        String total = a + b;
+                         ^
+/tmp/capture/gradle-javac-error/java/src/main/java/calc/Calc.java:8: error: cannot find symbol
+        return totl;
+               ^
+  symbol:   variable totl
+  location: class Calc
+2 errors
+
+[Incubating] Problems report is available at: file:///tmp/capture/gradle-javac-error/java/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler output below.
+  /tmp/capture/gradle-javac-error/java/src/main/java/calc/Calc.java:7: error: incompatible types: int cannot be converted to String
+          String total = a + b;
+                           ^
+  /tmp/capture/gradle-javac-error/java/src/main/java/calc/Calc.java:8: error: cannot find symbol
+          return totl;
+                 ^
+    symbol:   variable totl
+    location: class Calc
+  2 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+
+BUILD FAILED in 384ms
+1 actionable task: 1 executed
+java: build failed: .

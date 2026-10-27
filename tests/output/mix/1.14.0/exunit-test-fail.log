@@ -1,0 +1,32 @@
+=== test . (elixir) ===
++ mix test
+Compiling 1 file (.ex)
+Generated calc app
+
+
+  1) test adds two numbers (CalcTest)
+     test/calc_test.exs:4
+     Assertion with == failed
+     code:  assert Calc.add(2, 3) == 5
+     left:  -1
+     right: 5
+     stacktrace:
+       test/calc_test.exs:5: (test)
+
+
+
+  2) test rejects nil (CalcTest)
+     test/calc_test.exs:12
+     ** (ArithmeticError) bad argument in arithmetic expression: nil - 1
+     code: Calc.add(nil, 1)
+     stacktrace:
+       :erlang.-(nil, 1)
+       (calc 0.1.0) lib/calc.ex:2: Calc.add/2
+       test/calc_test.exs:13: (test)
+
+.
+Finished in 0.01 seconds (0.00s async, 0.01s sync)
+3 tests, 2 failures
+
+Randomized with seed 92140
+elixir: test failed: .

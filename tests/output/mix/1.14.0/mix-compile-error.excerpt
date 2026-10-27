@@ -1,0 +1,2 @@
+** (CompileError) lib/calc.ex:3: undefined function c/0 (expected Calc to define such a function or for it to be imported, but none are available)
+    -> lib/calc.ex:3 undefined function c/0 (expected Calc to define such a function or for it to be imported, but none are available)

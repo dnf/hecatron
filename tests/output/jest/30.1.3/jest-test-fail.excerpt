@@ -1,0 +1,9 @@
+FAIL ./calc.test.js
+● add › adds two numbers
+Expected: 5
+Received: -1
+at Object.toBe (calc.test.js:5:23)
+    -> calc.test.js:5:23
+● add › returns an object
+at Object.toEqual (calc.test.js:13:34)
+    -> calc.test.js:13:34
