@@ -118,6 +118,45 @@ asdf_clean() {
     esac
 }
 
+# Pharo: a Tonel repository (its directory from .project's srcDirectory,
+# else src/) with a BaselineOf package, loaded with Metacello into a copy of
+# a fresh Pharo image in build/, whose packages' tests then run. The fresh
+# image is downloaded once, for the Pharo version the installer's VM runs.
+_PHARO_VERSION="120"
+pharo_hook() {
+    local _src="src" _baseline _packages=() _package
+    if [ -f .project ]; then
+        _src="$(sed -n "s/.*'srcDirectory'[[:space:]]*:[[:space:]]*'\([^']*\)'.*/\1/p" .project)"
+        _src="${_src:-.}"
+    fi
+    _baseline="$(cd "${_src}" 2>/dev/null && ls -d BaselineOf* 2>/dev/null | head -1 || true)"
+    case "$1" in
+        lint) skip "Pharo has no standard command-line linter" ;;
+        clean) run rm -rf build; return ;;
+    esac
+    [ -n "${_baseline}" ] || unknown "no Tonel repository with a BaselineOf package (in .project's srcDirectory, or src/)"
+    pharo_image
+    run pharo build/Pharo.image metacello install "tonel://$(cd "${_src}" && pwd)" "${_baseline}"
+    [ "$1" = test ] || return 0
+    for _package in "${_src}"/*/; do
+        _package="$(basename "${_package}")"
+        case "${_package}" in BaselineOf*) ;; *) _packages+=("${_package}") ;; esac
+    done
+    [ "${#_packages[@]}" -gt 0 ] || unknown "no packages besides ${_baseline} in ${_src}/"
+    run pharo build/Pharo.image test --fail-on-failure "${_packages[@]}"
+}
+pharo_image() {
+    local _fresh="${XDG_CACHE_HOME:-${HOME}/.cache}/hecatron/pharo/${_PHARO_VERSION}"
+    [ -f build/Pharo.image ] && return
+    if [ ! -f "${_fresh}/Pharo.image" ]; then
+        echo "+ downloading a fresh Pharo ${_PHARO_VERSION} image into ${_fresh}"
+        mkdir -p "${_fresh}"
+        (cd "${_fresh}" && curl -fsSL "https://get.pharo.org/64/${_PHARO_VERSION}" | bash)
+    fi
+    mkdir -p build
+    run cp "${_fresh}"/Pharo.image "${_fresh}"/Pharo.changes "${_fresh}"/*.sources build/
+}
+
 # Whether package.json defines an npm script, e.g. `npm_script test`.
 npm_script() {
     [ -f package.json ] && python3 -c '

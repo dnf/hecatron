@@ -33,7 +33,13 @@ install_linux() {
     install_release linux-x64
 }
 
-deps() { :; }
+# A C compiler and libc's headers: goose runs a program by compiling its C
+# in-process (TinyCC, which needs the headers) and builds with the
+# machine's compiler.
+deps() {
+    [ "${OS}" = "linux" ] || return 0
+    { has cc && [ -f /usr/include/stdint.h ]; } || apt_install build-essential
+}
 
 log "Installing Goose..."
 "install_${OS}"
