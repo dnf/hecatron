@@ -6,8 +6,9 @@
 // same arguments, environment and exit status, so nothing changes for the
 // user but the speed.
 //
-// Ported: --version, help, each run command's, doctor's and version's
-// help, list, and env without a language. The prototype's
+// Ported: --version, help, the run commands (test, lint, build, clean,
+// rebuild, retest, audit, format, deps, outdated: run.go), doctor's and
+// version's help, list, and env without a language. The prototype's
 // `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
 
@@ -81,28 +82,35 @@ func run(argv []string) int {
 var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"list":     (*cli).list,
 	"env":      (*cli).env,
-	"test":     (*cli).runHelp,
-	"lint":     (*cli).runHelp,
-	"build":    (*cli).runHelp,
-	"clean":    (*cli).runHelp,
-	"rebuild":  (*cli).runHelp,
-	"retest":   (*cli).runHelp,
-	"audit":    (*cli).runHelp,
-	"format":   (*cli).runHelp,
-	"deps":     (*cli).runHelp,
-	"outdated": (*cli).runHelp,
+	"test":     (*cli).runCommand,
+	"lint":     (*cli).runCommand,
+	"build":    (*cli).runCommand,
+	"clean":    (*cli).runCommand,
+	"rebuild":  (*cli).runCommand,
+	"retest":   (*cli).runCommand,
+	"audit":    (*cli).runCommand,
+	"format":   (*cli).runCommand,
+	"deps":     (*cli).runCommand,
+	"outdated": (*cli).runCommand,
 	"doctor":   (*cli).doctorHelp,
 	"version":  (*cli).versionHelp,
 }
 
 // findProject finds the project (like git). A git repository with no
-// config of its own is read as detected, which only project.py does yet, so
-// the root then comes from it, and the command is delegated.
+// config of its own is read as detected, which only project.py does: the
+// root then comes from it, and the Go model reads what it detected from
+// its cache (or the command is delegated).
 func (c *cli) findProject() int {
-	if c.locateProject(false) || c.rootFromPython(true) {
+	if c.locateProject(false) {
 		return 0
 	}
-	return 1
+	if !c.rootFromPython(true) {
+		return 1
+	}
+	if p, err := project.LoadDetected(c.root, c.home); err == nil {
+		c.project = p
+	}
+	return 0
 }
 
 // locateProject sets the project root and, when the Go model reads it, the

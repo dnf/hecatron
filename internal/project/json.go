@@ -229,3 +229,7 @@ func pyStringRepr(s string) string {
 	out.WriteRune(quote)
 	return out.String()
 }
+
+// DecodeJSON parses a JSON document as the model reads config files: into
+// nil, bool, json.Number, string, []any and *Object.
+func DecodeJSON(data []byte) (any, error) { return decodeJSON(data) }

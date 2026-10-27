@@ -90,10 +90,13 @@ func goDump(t *testing.T, home, builtin, cwd string, langs []string) any {
 	t.Helper()
 	t.Setenv("HECATRON_BUILTIN_LANGUAGES", builtin)
 	root, err := FindRoot(cwd)
-	if err != nil {
-		return loadFailure(err)
+	var p *Project
+	if err == nil {
+		p, err = Load(root, NewHome(home))
+	} else if top := gitOutput(cwd, "rev-parse", "--show-toplevel"); top != "" {
+		// After dump.py, which detected the project and cached it.
+		p, err = LoadDetected(top, NewHome(home))
 	}
-	p, err := Load(root, NewHome(home))
 	if err != nil {
 		return loadFailure(err)
 	}
@@ -350,6 +353,7 @@ type parityCase struct {
 	builtin map[string]string
 	cwd     string // relative to the root
 	langs   []string
+	git     bool // a git repository: without a config, read as detected
 }
 
 func (c parityCase) create(t *testing.T) string {
@@ -362,6 +366,15 @@ func (c parityCase) create(t *testing.T) string {
 	if c.cwd != "" {
 		if err := os.MkdirAll(filepath.Join(root, c.cwd), 0o755); err != nil {
 			t.Fatal(err)
+		}
+	}
+	if c.git {
+		for _, args := range [][]string{{"init", "-q"}, {"add", "-A"}} {
+			cmd := exec.Command("git", args...)
+			cmd.Dir = root
+			if out, err := cmd.CombinedOutput(); err != nil {
+				t.Fatalf("git %v: %v\n%s", args, err, out)
+			}
 		}
 	}
 	return root
@@ -431,6 +444,11 @@ func parityCases() []parityCase {
 	})
 	return []parityCase{
 		{name: "minimal", files: config("")},
+		{name: "detected", git: true, files: map[string]string{"go/go.mod": "module x\n", "go/main.go": "package main\n",
+			"rust/Cargo.toml": "", "README": ""}, cwd: "go"},
+		{name: "detected components", git: true, files: map[string]string{
+			"age/go/go.mod": "module x\n", "date/python/pyproject.toml": "", "date/go/go.mod": "module y\n"}},
+		{name: "detected, nothing found", git: true, files: map[string]string{"README": ""}},
 		{name: "found from a subdirectory", files: config(`, "languages": ["go"]`), cwd: "a/b/c"},
 		{name: "several components", files: components},
 		{name: "several components from inside one", files: components, cwd: "date/impl"},

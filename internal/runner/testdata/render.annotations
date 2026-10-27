@@ -1,0 +1,2 @@
+::error file=go/calc_test.go,line=7,title=hct test go::Add(2, 3) = -1, want 5
+::error title=hct test php::php failed (exit 1); log /repo/.logs/test/php.log%0Abash: line 1: php: command not found
