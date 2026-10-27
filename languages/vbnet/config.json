@@ -12,6 +12,21 @@
     "vbnet",
     "vb"
   ],
+  "path": [
+    "{home}"
+  ],
+  "version": "=10.0.403",
+  "track": "lts",
+  "releaseLine": 3,
+  "pinFiles": [
+    {
+      "file": "global.json",
+      "format": "global-json"
+    }
+  ],
+  "env": {
+    "DOTNET_ROOT": "{home}"
+  },
   "buildSystems": [
     ".NET SDK (dotnet)"
   ],

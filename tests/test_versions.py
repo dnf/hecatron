@@ -80,6 +80,23 @@ class PinFormatTest(unittest.TestCase):
             self.read("global-json", '{"sdk": {"version": "8.0.100", "rollForward": "disable"}}'), "=8.0.100")
         self.assertIs(self.read("global-json", '{"msbuild-sdks": {}}'), versions.NOT_PINNED)
 
+    def test_global_json_keeps_the_part_its_roll_forward_policy_fixes(self):
+        def read(policy):
+            return self.read("global-json", '{"sdk": {"version": "8.0.100", "rollForward": "%s"}}' % policy)
+        self.assertEqual(read("latestPatch"), "8.0.100")
+        self.assertEqual(read("latestFeature"), "8.0")
+        self.assertEqual(read("latestMinor"), "8")
+        self.assertEqual(read("latestMajor"), "8")
+        self.assertEqual(
+            self.read("global-json", '{"sdk": {"version": "11.0.100-rc.1.1", "rollForward": "latestMajor"}}'),
+            "11.0.100-rc.1.1")
+
+    def test_composer_json_pins_only_with_a_platform_php(self):
+        self.assertEqual(self.read("composer-json", '{"config": {"platform": {"php": "8.4.0"}}}'), "8.4")
+        self.assertIs(self.read("composer-json", '{"require": {"php": "^8.4"}}'), versions.NOT_PINNED)
+        self.assertIs(self.read("composer-json", "not json"), versions.NOT_PINNED)
+        self.assertEqual(self.read("php-version", "8.3\n"), "8.3")
+
     def test_go_mod_pins_only_with_a_toolchain_line(self):
         self.assertEqual(self.read("go-mod-toolchain", "module m\n\ngo 1.22\n\ntoolchain go1.22.3\n"), "=1.22.3")
         self.assertIs(self.read("go-mod-toolchain", "module m\n\ngo 1.22\n"), versions.NOT_PINNED)

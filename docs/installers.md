@@ -29,7 +29,7 @@ Some languages share a toolchain. Uninstalling one affects the others.
 
 | Toolchain  | Languages             | Effect of uninstalling any one                                          |
 | ---------- | --------------------- | ----------------------------------------------------------------------- |
-| .NET SDK   | C#, F#                | Both share the same SDK; uninstalling one removes the other             |
+| .NET SDK   | C#, F#, VB.NET        | All share the SDKs in one directory; uninstalling one removes them all  |
 | cmake      | C, C++, Fortran       | All three lose build capability until reinstalled                       |
 | JDK        | Java, Kt, Scala, Gy   | Protected: `hecatron uninstall java` is a no-op (prints a message)      |
 | Node.js    | TypeScript, JS, Elm   | JavaScript's installer is TypeScript's; Elm's installs Node if missing  |
@@ -63,9 +63,10 @@ Languages install via a mix of apt packages and direct downloads:
 
 | Method           | Languages                                                                         |
 | ---------------- | --------------------------------------------------------------------------------- |
-| apt packages     | Ada, C/C++ (cmake), C#/F# (dotnet), Elixir, Erlang, Fortran, Lua, Perl, PHP, Ruby |
+| apt packages     | Ada, C/C++ (cmake), Elixir, Erlang, Fortran, Lua, Perl, PHP (Ondřej Surý's packages) |
 | Direct download  | Dart, Gleam, Go, Java/Kotlin/Scala/Groovy (Temurin), Node.js, Swift, Zig          |
-| Installer script | Clojure, Haskell (ghcup), Rust (rustup), Python (uv)                              |
+| Installer script | Clojure, Haskell (ghcup), Rust (rustup), Python (uv), .NET (dotnet-install.sh)    |
+| Built from source | Ruby (ruby-build)                                                                |
 | npm global       | Elm                                                                               |
 
 ### Uninstall caveats
@@ -86,6 +87,7 @@ Each script sources `languages/_common.sh` for shared helpers:
 - `brew_ensure_linked <formula> <command>` — link a formula Homebrew installed but left unlinked
 - `impl_dirs <lang>` — each component's directory for the language (from the project's `components` and `implPath`), one per line
 - `each_impl <lang> <command...>` — run a command in each of them (e.g. `each_impl ruby bundle install`)
+- `each_impl_versioned <lang> <command...>` — the same, with each component's toolchain version on PATH (for dependencies built for one version: bundles, Composer locks)
 - `problem` / `doctor_done` — for `doctor.sh`: report a problem; exit non-zero if any were reported
 - `$OS` — `"macos"` or `"linux"`
 - `$SUDO` — `"sudo"` or `""` (when root)

@@ -8,6 +8,36 @@
   "detect": [
     "composer.json"
   ],
+  "path": [
+    "{home}/bin"
+  ],
+  "version": "=8.5.12",
+  "track": "stable",
+  "pinFiles": [
+    {
+      "file": ".php-version",
+      "format": "php-version"
+    },
+    {
+      "file": "composer.json",
+      "format": "composer-json"
+    },
+    {
+      "file": ".tool-versions",
+      "format": "tool-versions",
+      "key": "php"
+    },
+    {
+      "file": "mise.toml",
+      "format": "mise",
+      "key": "php"
+    },
+    {
+      "file": ".mise.toml",
+      "format": "mise",
+      "key": "php"
+    }
+  ],
   "buildSystems": [
     "Composer"
   ],

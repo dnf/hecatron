@@ -14,7 +14,7 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [Ada](https://ada-lang.io) | Safety-critical systems language with strong typing and contracts (SPARK). | Alire, GPRbuild | Alire, GPRbuild test projects | – | – |
 | [Bash](https://www.gnu.org/software/bash/) | The Unix shell and scripting language. | – | Bats | ShellCheck | – |
 | [C](https://www.open-std.org/jtc1/sc22/wg14/) | The portable systems language most others build on. | CMake, Meson, Autotools, make | CTest, Meson test, make check | – | – |
-| [C#](https://learn.microsoft.com/dotnet/csharp/) | Microsoft's general-purpose language for .NET. | .NET SDK (dotnet) | dotnet test | dotnet format | – |
+| [C#](https://learn.microsoft.com/dotnet/csharp/) | Microsoft's general-purpose language for .NET. | .NET SDK (dotnet) | dotnet test | dotnet format | 10.0.403 (LTS) |
 | [C++](https://isocpp.org) | Zero-overhead systems language with templates and RAII. | CMake, Meson, Autotools, make | CTest, Meson test, make check | – | – |
 | [Clojure](https://clojure.org) | A Lisp on the JVM built around immutable data. | Clojure CLI (deps.edn), Leiningen | clojure.test | clj-kondo | – |
 | [COBOL](https://gnucobol.sourceforge.io) | The business language of record, compiled with GnuCOBOL. | CMake, make | CTest, make check | – | – |
@@ -25,7 +25,7 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [Elixir](https://elixir-lang.org) | Functional, concurrent language on the Erlang VM. | Mix | ExUnit | mix format, Credo | – |
 | [Elm](https://elm-lang.org) | Pure functional language for web front ends, with no runtime exceptions. *Not on Linux arm64: no toolchain upstream.* | elm | elm-test | elm-review | – |
 | [Erlang](https://www.erlang.org) | Fault-tolerant concurrency on the BEAM, born at Ericsson. | rebar3 | EUnit, Common Test | Dialyzer | – |
-| [F#](https://fsharp.org) | Functional-first language for .NET. | .NET SDK (dotnet) | dotnet test | Fantomas | – |
+| [F#](https://fsharp.org) | Functional-first language for .NET. | .NET SDK (dotnet) | dotnet test | Fantomas | 10.0.403 (LTS) |
 | [Fortran](https://fortran-lang.org) | The original high-performance numerical language, still current. | fpm, CMake, Meson, make | fpm test, CTest | – | – |
 | [Gleam](https://gleam.run) | Friendly, type-safe language for the Erlang VM and JavaScript. | gleam | gleeunit (gleam test) | gleam format | – |
 | [Go](https://go.dev) | Simple, fast-compiling language with built-in concurrency. | go modules | go test | golangci-lint | 1.27.3 |
@@ -48,20 +48,20 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [Pascal](https://www.freepascal.org) | Structured, strongly typed language, with Free Pascal. | Free Pascal, make | test programs, make check | – | – |
 | [Perl](https://www.perl.org) | Text-processing veteran with CPAN, the first great package archive. | ExtUtils::MakeMaker, Module::Build, Carton | prove (Test::More) | Perl::Critic | – |
 | [Pharo](https://pharo.org) | Live, image-based Smalltalk environment. | Metacello (Tonel) | SUnit | – | – |
-| [PHP](https://www.php.net) | The web's server-side workhorse. | Composer | PHPUnit | PHPStan, PHP_CodeSniffer, PHP CS Fixer | – |
+| [PHP](https://www.php.net) | The web's server-side workhorse. | Composer | PHPUnit | PHPStan, PHP_CodeSniffer, PHP CS Fixer | 8.5.12 |
 | [PowerShell](https://learn.microsoft.com/powershell/) | Cross-platform shell and scripting language built on .NET. | PowerShell modules | Pester | PSScriptAnalyzer | – |
 | [Prolog](https://www.swi-prolog.org) | Logic programming, with SWI-Prolog. | SWI-Prolog packs | plunit | – | – |
 | [Python](https://www.python.org) | Readable general-purpose language with a vast ecosystem. | uv (pyproject.toml), setuptools | pytest | Ruff | 3.15.1 |
 | [R](https://www.r-project.org) | The statistics and data analysis language. | R packages (DESCRIPTION) | testthat | lintr | – |
 | [Racket](https://racket-lang.org) | A Lisp for making languages. | raco | rackunit (raco test) | – | – |
 | [Raku](https://raku.org) | Perl's expressive sister language, formerly Perl 6. | zef | Test (prove6, zef test) | – | – |
-| [Ruby](https://www.ruby-lang.org) | Expressive, object-oriented language behind Rails. | Bundler, Rake, RubyGems | RSpec, Minitest | RuboCop, Standard | – |
+| [Ruby](https://www.ruby-lang.org) | Expressive, object-oriented language behind Rails. | Bundler, Rake, RubyGems | RSpec, Minitest | RuboCop, Standard | 4.0.9 |
 | [Rust](https://www.rust-lang.org) | Memory safety without garbage collection, and fearless concurrency. | Cargo | cargo test | Clippy, rustfmt | 1.99.1 |
 | [Scala](https://www.scala-lang.org) | Functional and object-oriented language for the JVM. | sbt, Gradle, Maven, scalac | MUnit, ScalaTest | – | – |
 | [Swift](https://www.swift.org) | Apple's safe, fast language, also on Linux. | Swift Package Manager | XCTest, Swift Testing | – | – |
 | [Tcl](https://www.tcl-lang.org) | Embeddable command language, with Tk. | TEA (make) | tcltest | – | – |
 | [TypeScript](https://www.typescriptlang.org) | JavaScript with static types. | npm, pnpm, Yarn or Bun (tsc) | npm test | npm run lint, tsc --noEmit | 24.22.1 (LTS) |
 | [V](https://vlang.io) | Simple, fast-compiling language in the spirit of Go. | v | v test | v fmt, v vet | – |
-| [VB.NET](https://learn.microsoft.com/dotnet/visual-basic/) | Visual Basic for .NET. | .NET SDK (dotnet) | dotnet test | dotnet format | – |
+| [VB.NET](https://learn.microsoft.com/dotnet/visual-basic/) | Visual Basic for .NET. | .NET SDK (dotnet) | dotnet test | dotnet format | 10.0.403 (LTS) |
 | [Wren](https://wren.io) | Small, fast, class-based scripting language for embedding. | wren_cli | test scripts | – | – |
 | [Zig](https://ziglang.org) | Simple systems language and C toolchain, with comptime. | zig build | zig build test | zig fmt | – |

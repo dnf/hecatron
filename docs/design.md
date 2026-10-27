@@ -486,9 +486,9 @@ Settled on 2026-10-26:
 
 ## 18. Toolchain versions
 
-Status: **accepted**, not yet implemented. Until it is, installers install
-one version per language, some pinned (JDK 17, Node 22, .NET 10) and some
-the latest at install time (Go, Swift, Julia, PowerShell, Odin, Crystal).
+Status: **accepted**; implemented for Python, Go, Rust, Node.js, Java,
+Ruby, PHP and .NET. Other installers install one version per language, some
+the latest at install time (Swift, Julia, PowerShell, Odin, Crystal).
 
 A project can need an older or newer version of a language than the
 newest one, and two projects on the same machine can need different ones. So
@@ -528,6 +528,19 @@ version in it (`stable`, `lts/*`, `nightly`) is left to the ecosystem's own
 tool: hecatron neither installs nor checks that language's version for that
 component, and the doctor says so.
 
+Some files name a floor rather than a version, and a format keeps the part
+the ecosystem holds fixed: `global.json`'s `rollForward` decides how far the
+.NET SDK may move from `sdk.version`, so `latestFeature` from 8.0.100 reads as
+`8.0` and `latestMajor` as `8`, the newest release of which always qualifies;
+`disable` is exact, and `patch`, the default, keeps the version as written,
+since its scope, a feature band (8.0.1xx), isn't a prefix. In
+`composer.json`, `config.platform.php` (the PHP Composer resolves for) is a
+pin on its line (`8.4.0` reads as `8.4`); the `require` constraint on `php`
+isn't, because it is the range a library supports, which the default
+normally satisfies. PHP's doctor checks instead that each component's PHP
+satisfies what its lock file requires. (Owner's decision pending; this is
+the implementation's.)
+
 ### Version syntax
 
 In hecatron's configuration:
@@ -554,7 +567,10 @@ doesn't need a second 24 for a default of 24.22.1. A definition's
 `releaseLine` names how many leading parts make a line (1 for Node.js and
 Java, whose 24 and 25 are lines); without it, a line is every part but the
 last (Go 1.27.3 is line 1.27). A version the project chooses, by pin file or
-`version`, still matches as written. (Owner's decision.)
+`version`, still matches as written. (Owner's decision.) The .NET SDK's
+`releaseLine` is 3, the whole version: its third part holds both the feature
+band and the patch (10.0.403 is band 4, patch 3), so no shorter prefix names
+a band, and an older band's compiler can't load a newer band's analyzers.
 
 ### Defaults and how they are updated
 

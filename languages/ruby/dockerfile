@@ -1,3 +1,17 @@
-# Ruby, Bundler, and the headers gems with native extensions compile against,
-# as install.sh installs them
-# apt: ruby ruby-dev ruby-bundler
+# Ruby: each version the components use, built by ruby-build into
+# /opt/ruby/<version> as install.sh builds it, with the libraries it and gems
+# with native extensions build against; the default version (config.json),
+# built first, is linked into /usr/local/bin. A prefix resolves to the newest
+# release ruby-build knows.
+# apt: build-essential autoconf git libssl-dev libyaml-dev zlib1g-dev libffi-dev libgmp-dev libreadline-dev
+RUN git clone --quiet --depth 1 https://github.com/rbenv/ruby-build.git /opt/ruby-build
+# each-version
+RUN V="{version}" && \
+    if [ -z "{exact}" ]; then V="$(/opt/ruby-build/bin/ruby-build --definitions | python3 -c 'import re, sys; p = sys.argv[1].split("."); vs = [v.strip() for v in sys.stdin if re.fullmatch(r"\d+\.\d+\.\d+", v.strip()) and v.strip().split(".")[:len(p)] == p]; print(max(vs, key=lambda v: [int(x) for x in v.split(".")]))' "${V}")"; fi && \
+    if [ ! -x "/opt/ruby/${V}/bin/ruby" ]; then \
+      RUBY_CONFIGURE_OPTS=--disable-install-doc /opt/ruby-build/bin/ruby-build "${V}" "/opt/ruby/${V}"; \
+    fi && \
+    if [ ! -e /usr/local/bin/ruby ]; then \
+      for tool in "/opt/ruby/${V}"/bin/*; do ln -s "${tool}" "/usr/local/bin/$(basename "${tool}")"; done; \
+    fi
+# end-each-version
