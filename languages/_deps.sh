@@ -163,10 +163,26 @@ deps_zig() {
     run zig build --fetch
 }
 
-# OCaml: opam's dependencies of the packages here.
+# OCaml: opam's dependencies of the packages here, test ones included.
+# Packages here that require each other at {= version} need one version, and
+# opam 2.1 gives a local package without a version field the newest in its
+# repository (ocaml-community/yojson's yojson 3.0.0, but yojson-bench 2.0.2,
+# so no solution), so several are pinned as <name>.dev while their
+# dependencies install, and unpinned after.
 deps_ocaml() {
     exists '*.opam' || skip "no .opam file"
-    run opam install . --deps-only --with-test --yes
+    local opams=(*.opam) names=() name status=0
+    if [ "${#opams[@]}" -eq 1 ]; then
+        run opam install . --deps-only --with-test --yes
+        return
+    fi
+    for name in "${opams[@]}"; do names+=("${name%.opam}"); done
+    for name in "${names[@]}"; do
+        run opam pin add --no-action --yes --kind=path "${name}.dev" .
+    done
+    run opam install --deps-only --with-test --yes "${names[@]}" || status=$?
+    opam pin remove --no-action --yes "${names[@]}" >/dev/null
+    return "${status}"
 }
 
 # D: dub's packages, as dub.selections.json selects.

@@ -22,6 +22,10 @@ install_linux() {
 
 # shellcheck source=_ocamlformat.sh source-path=SCRIPTDIR
 source "$(dirname "$0")/_ocamlformat.sh"
+# The ocamlformat each component's .ocamlformat asks for, then the opam
+# dependencies of every package in each component, test ones included
+# (hecatron deps): ocaml-community/yojson's yojson-five tests need sedlex,
+# which nothing else installs.
 deps() {
     local _version
     while IFS= read -r _version; do
@@ -31,6 +35,7 @@ deps() {
             opam install "ocamlformat.${_version}" --yes
         fi </dev/null
     done < <(ocamlformat_missing)
+    impl_deps ocaml
 }
 
 log "Installing OCaml..."
