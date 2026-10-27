@@ -2,9 +2,17 @@
   "abbreviation": "c++",
   "dependency": "cmake",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.cpp",
     "*.cc",
+    "*.cxx",
     "*.hpp"
+  ],
+  "dirNames": [
+    "cpp",
+    "c++",
+    "cxx",
+    "cc"
   ]
 }

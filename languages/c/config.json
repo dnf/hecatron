@@ -2,7 +2,12 @@
   "abbreviation": null,
   "dependency": "cmake",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.c"
+  ],
+  "dirNames": [
+    "c",
+    "c_glib"
   ]
 }

@@ -3,6 +3,17 @@
   "dependency": "fpc",
   "lintDependency": null,
   "detect": [
+    "*.lpi",
+    "*.lpk",
+    "*.dpr",
+    "*.dproj"
+  ],
+  "detectSources": [
     "*.pas"
+  ],
+  "dirNames": [
+    "pascal",
+    "delphi",
+    "fpc"
   ]
 }

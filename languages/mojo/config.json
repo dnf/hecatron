@@ -2,7 +2,8 @@
   "abbreviation": "mj",
   "dependency": "mojo",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.mojo"
   ],
   "path": [

@@ -4,5 +4,10 @@
   "lintDependency": null,
   "detect": [
     "*.asd"
+  ],
+  "dirNames": [
+    "lisp",
+    "cl",
+    "common-lisp"
   ]
 }

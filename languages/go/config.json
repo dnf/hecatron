@@ -5,6 +5,10 @@
   "detect": [
     "go.mod"
   ],
+  "dirNames": [
+    "go",
+    "golang"
+  ],
   "path": [
     "~/.local/bin"
   ]

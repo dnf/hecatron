@@ -4,5 +4,9 @@
   "lintDependency": null,
   "detect": [
     "META6.json"
+  ],
+  "dirNames": [
+    "raku",
+    "perl6"
   ]
 }

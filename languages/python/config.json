@@ -6,6 +6,11 @@
     "pyproject.toml",
     "setup.py"
   ],
+  "dirNames": [
+    "python",
+    "py",
+    "python3"
+  ],
   "path": [
     "{home}/bin",
     "~/.local/bin"

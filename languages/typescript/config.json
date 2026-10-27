@@ -4,5 +4,13 @@
   "lintDependency": null,
   "detect": [
     "tsconfig.json"
+  ],
+  "dirNames": [
+    "typescript",
+    "ts",
+    "nodets",
+    "javascript",
+    "js",
+    "nodejs"
   ]
 }

@@ -2,7 +2,8 @@
   "abbreviation": "cb",
   "dependency": "cobc",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.cbl",
     "*.cob"
   ]

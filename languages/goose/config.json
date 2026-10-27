@@ -2,7 +2,8 @@
   "abbreviation": "gs",
   "dependency": "goose",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.goose"
   ],
   "unsupported": [
