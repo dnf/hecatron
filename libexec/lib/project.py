@@ -125,9 +125,25 @@ class Project:
             return self.config["implPath"]
         return "{lang}" if self.components == ["."] else "{component}/{lang}"
 
+    def impl_template(self, lang: str) -> str:
+        """A language's implPath: the project's "implPaths" entry for it, else
+        the shared one."""
+        return (self.config.get("implPaths") or {}).get(lang) or self.impl_path
+
+    def dir_names(self, lang: str) -> list[str]:
+        """The names a language's directory goes by, its own first (C#'s
+        dotnet/, Python's py/): the definition's "dirNames"."""
+        names = self.definitions.get(lang, {}).get("dirNames", [])
+        return [lang] + [name for name in names if name != lang]
+
     def impl_dir(self, component: str, lang: str) -> str:
-        relative = self.impl_path.replace("{component}", component).replace("{lang}", lang)
-        return os.path.normpath(os.path.join(self.root, relative))
+        """Where a component's code in a language lives: the template filled
+        with the first of the language's directory names that exists, else
+        with its own name."""
+        template = self.impl_template(lang).replace("{component}", component)
+        candidates = [os.path.normpath(os.path.join(self.root, template.replace("{lang}", name)))
+                      for name in self.dir_names(lang)]
+        return next((c for c in candidates if os.path.isdir(c)), candidates[0])
 
     def impl_dirs(self, lang: str) -> list[tuple[str, str]]:
         """(component, directory) for each component implemented in `lang`."""
