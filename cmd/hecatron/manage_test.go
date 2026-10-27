@@ -111,17 +111,17 @@ var initArgs = [][]string{
 }
 
 var initRepos = map[string]map[string]string{
-	"layout":           {"age/impl/go/go.mod": "", "date/impl/go/go.mod": "", "age/impl/rust/Cargo.toml": ""},
-	"single":           {"go.mod": "module x\n"},
-	"nothing":          {"README": ""},
-	"agents":           {"go/go.mod": "", "AGENTS.md": "# Agents\r\nbe nice", "CLAUDE.md": "rules", ".gitignore": "x"},
-	"agents again":     {"go/go.mod": "", "AGENTS.md": "a\n<!-- hecatron:begin -->\nold\n<!-- hecatron:end -->\nb\n", "CLAUDE.md": "@AGENTS.md\n"},
-	"agents reversed":  {"go/go.mod": "", "AGENTS.md": "<!-- hecatron:end -->é<!-- hecatron:begin -->", "CLAUDE.md": ""},
-	"agents at end":    {"go/go.mod": "", "AGENTS.md": "<!-- hecatron:begin -->x<!-- hecatron:end -->", ".gitignore": ".logs/\n.hecatron/local.json\n"},
-	"already set up":   {".hecatron/config.json": `{"schema": 1}`, "go/go.mod": ""},
-	"unicode":          {"caf\u00e9/go.mod": "", "go/go.mod": "", "z\u00fcrich/Cargo.toml": ""},
+	"layout":                 {"age/impl/go/go.mod": "", "date/impl/go/go.mod": "", "age/impl/rust/Cargo.toml": ""},
+	"single":                 {"go.mod": "module x\n"},
+	"nothing":                {"README": ""},
+	"agents":                 {"go/go.mod": "", "AGENTS.md": "# Agents\r\nbe nice", "CLAUDE.md": "rules", ".gitignore": "x"},
+	"agents again":           {"go/go.mod": "", "AGENTS.md": "a\n<!-- hecatron:begin -->\nold\n<!-- hecatron:end -->\nb\n", "CLAUDE.md": "@AGENTS.md\n"},
+	"agents reversed":        {"go/go.mod": "", "AGENTS.md": "<!-- hecatron:end -->é<!-- hecatron:begin -->", "CLAUDE.md": ""},
+	"agents at end":          {"go/go.mod": "", "AGENTS.md": "<!-- hecatron:begin -->x<!-- hecatron:end -->", ".gitignore": ".logs/\n.hecatron/local.json\n"},
+	"already set up":         {".hecatron/config.json": `{"schema": 1}`, "go/go.mod": ""},
+	"unicode":                {"caf\u00e9/go.mod": "", "go/go.mod": "", "z\u00fcrich/Cargo.toml": ""},
 	"claude links to agents": {"go/go.mod": "", "AGENTS.md": "# Agents\n", "CLAUDE.md": "->AGENTS.md"},
-	"outside the tree": {"lib/rb/Gemfile": "", "lib/java/pom.xml": "", "go.mod": "", "lib/go/x.go": "", "clr/x.csproj": ""},
+	"outside the tree":       {"lib/rb/Gemfile": "", "lib/java/pom.xml": "", "go.mod": "", "lib/go/x.go": "", "clr/x.csproj": ""},
 }
 
 func TestProjectCommandsMatchBinHecatron(t *testing.T) {
