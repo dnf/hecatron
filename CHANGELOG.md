@@ -18,6 +18,7 @@ minor version can change behaviour. Numbers are
   checkout gets the Node.js and JDK it was tested with instead of today's,
   which can no longer build or run it. `HECATRON_AS_OF` sets the date or
   turns this off; `hecatron doctor` says when it applies.
+  A weekly workflow keeps the release dates this uses current.
 - **CI workflows and Maven builds say how new a toolchain may be:** with no
   pin file, the versions a project's GitHub Actions setup steps use, and a
   Maven build's Java source level, hold the default back.
