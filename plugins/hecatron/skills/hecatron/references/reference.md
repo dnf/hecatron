@@ -21,6 +21,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | Fetch dependencies | `hct deps [lang...]` | Held to the lock file; a stale lock fails |
 | Known vulnerabilities | `hct audit [lang...]` | `--fail-on critical\|high\|moderate\|low` (default high) |
 | Newer dependency versions | `hct outdated [lang...]` | Report only; `--json`, `--fail` |
+| Dependency licenses | `hct licenses [lang...]` | Per license and package, unknowns apart; exit 1 when the config's `licenses` policy refuses one; needs OSV-Scanner and the binary |
 | Where to start | `HECATRON_OUTPUT=agent hct status` | Each language's directories, toolchain version and whether it's installed, last runs, uncommitted changes, and what to run next; one `git status`, installs nothing |
 | Which languages, where | `hct list` | `hct list --all`: every supported language |
 | Is each toolchain working | `hct doctor [lang...]` | Read-only; see Installing |
@@ -75,6 +76,7 @@ saves that.
 | `tasks` | Extra jobs per action, run from the root: `{"test": {"codegen": "make gen-test"}}` |
 | `lint.format` | `false` (or `{"lang": false}`) turns off lint's format check |
 | `audit.ignore` | Accepted vulnerabilities: `{"id", "reason", "until"}` each |
+| `licenses` | License policy for `hct licenses`: `allow`, `deny` (SPDX IDs), `ignore` (`{"package": "npm:name", "reason", "until"}`), `includeDev` |
 | `logs` | Log directory |
 
 Change languages with `hct add LANG` / `hct remove LANG`, not by hand.

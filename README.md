@@ -131,6 +131,11 @@ options.
   outdated`, `composer outdated`, `dotnet list package --outdated`, Hex,
   pub, Maven's versions plugin), as a table or `--json`; `--fail` makes it
   a CI check ([docs/outdated.md](docs/outdated.md)).
+- **Every dependency's license.** `hct licenses` lists each component's
+  dependencies with their SPDX licenses, rolled up per license, unknown ones
+  apart, from the lock files (OSV-Scanner and deps.dev; Composer's lock
+  file); a policy in the config (allow, deny, accepted packages that
+  expire) makes it a CI check ([docs/licenses.md](docs/licenses.md)).
 - **One formatter per language.** `hct format` rewrites each component's
   code with its language's formatter and the project's own configuration
   (gofmt, rustfmt, Ruff, `dotnet format`, `mix format`, `dart format`, and
