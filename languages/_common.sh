@@ -102,18 +102,23 @@ apt_has() {
 }
 
 # For the JVM languages' installers: Maven where a component builds with a
-# pom.xml and ships no ./mvnw, and Gradle where it builds with build.gradle(.kts)
-# and ships no ./gradlew (the default hooks run the wrapper when there is one).
+# pom.xml and ships no ./mvnw, Gradle where it builds with build.gradle(.kts)
+# and ships no ./gradlew (the default hooks run the wrapper when there is one),
+# and sbt where it builds with build.sbt (sbt's launcher fetches the sbt
+# version project/build.properties names).
 _JVM_GRADLE_VERSION="9.8.2"
+_JVM_SBT_VERSION="1.11.7"
 # The build tools a language's components need and lack, one per line.
 jvm_build_tools_missing() {
-    local _dir _maven=0 _gradle=0
+    local _dir _maven=0 _gradle=0 _sbt=0
     while IFS= read -r _dir; do
         { [ -f "${_dir}/pom.xml" ] && [ ! -x "${_dir}/mvnw" ]; } && _maven=1
         { { [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ]; } && [ ! -x "${_dir}/gradlew" ]; } && _gradle=1
+        [ -f "${_dir}/build.sbt" ] && _sbt=1
     done < <(impl_dirs "$1")
     if [ "${_maven}" -eq 1 ] && ! has mvn; then echo maven; fi
     if [ "${_gradle}" -eq 1 ] && ! has gradle; then echo gradle; fi
+    if [ "${_sbt}" -eq 1 ] && ! has sbt; then echo sbt; fi
     return 0
 }
 jvm_build_tools() {
@@ -125,6 +130,9 @@ jvm_build_tools() {
     fi
     if [[ "${_missing}" == *gradle* ]]; then
         if [ "${OS}" = "macos" ]; then brew_install gradle; else _install_gradle; fi
+    fi
+    if [[ "${_missing}" == *sbt* ]]; then
+        if [ "${OS}" = "macos" ]; then brew_install sbt; else _install_sbt; fi
     fi
 }
 # Gradle's own distribution: distributions' Gradle is years old.
@@ -140,6 +148,19 @@ _install_gradle() {
         rm -f "${_zip}"
     fi
     $SUDO ln -sfn "${_root}/bin/gradle" /usr/local/bin/gradle
+}
+# sbt's own launcher: Ubuntu and Debian don't package sbt.
+_install_sbt() {
+    local _root="/opt/sbt/sbt-${_JVM_SBT_VERSION}" _tgz
+    if [ ! -x "${_root}/bin/sbt" ]; then
+        log "Downloading sbt ${_JVM_SBT_VERSION}..."
+        _tgz="$(mktemp)"
+        curl -fsSL -o "${_tgz}" "https://github.com/sbt/sbt/releases/download/v${_JVM_SBT_VERSION}/sbt-${_JVM_SBT_VERSION}.tgz"
+        $SUDO mkdir -p "${_root}"
+        $SUDO tar xzf "${_tgz}" -C "${_root}" --strip-components=1
+        rm -f "${_tgz}"
+    fi
+    $SUDO ln -sfn "${_root}/bin/sbt" /usr/local/bin/sbt
 }
 
 # For a definition's releases.sh: the latest release of each of a product's
