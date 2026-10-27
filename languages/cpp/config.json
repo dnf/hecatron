@@ -61,5 +61,16 @@
   ],
   "notes": {
     "formatting": "Only when the project has a `.clang-format` file: C-family code has no single standard style."
-  }
+  },
+  "dependabot": [
+    {
+      "ecosystem": "vcpkg",
+      "files": [
+        "vcpkg.json"
+      ]
+    }
+  ],
+  "renovate": [
+    "conan"
+  ]
 }

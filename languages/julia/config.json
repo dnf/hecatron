@@ -29,5 +29,6 @@
       "Manifest.toml",
       "Project.toml"
     ]
-  }
+  },
+  "dependabot": "julia"
 }

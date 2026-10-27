@@ -21,5 +21,9 @@
     "lockFiles": [
       "Package.resolved"
     ]
-  }
+  },
+  "dependabot": "swift",
+  "renovate": [
+    "swift"
+  ]
 }

@@ -43,5 +43,8 @@
       "stack.yaml",
       "stack.yaml.lock"
     ]
-  }
+  },
+  "renovate": [
+    "haskell-cabal"
+  ]
 }

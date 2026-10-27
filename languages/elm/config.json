@@ -24,5 +24,6 @@
     "lockFiles": [
       "elm.json"
     ]
-  }
+  },
+  "dependabot": "elm"
 }

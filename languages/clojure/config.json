@@ -32,5 +32,17 @@
       "deps.edn",
       "project.clj"
     ]
-  }
+  },
+  "dependabot": [
+    {
+      "ecosystem": "maven",
+      "files": [
+        "pom.xml"
+      ]
+    }
+  ],
+  "renovate": [
+    "deps-edn",
+    "leiningen"
+  ]
 }
