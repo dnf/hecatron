@@ -182,7 +182,7 @@ class InitTest(Fixture):
                                      {"go": {"detect": ["go.mod"]}, "lua": {"detect": ["*.lua"]},
                                       "c": {"detect": ["*.c"]}})
         self.assertEqual(found, {"go": {"go"}})
-        self.assertEqual(skipped, {"lua", "c"})
+        self.assertEqual(set(skipped), {"lua", "c"})
 
     def test_build_files_outrank_sources(self):
         found, _ = self.detect({"java/pom.xml": "", "java/src/main/A.java": "", "tools/B.java": "",
@@ -196,6 +196,46 @@ class InitTest(Fixture):
                                {"javascript": {"detect": ["package.json"], "detectUnless": ["tsconfig.json"]},
                                 "typescript": {"detect": ["tsconfig.json"]}})
         self.assertEqual(found, {"javascript": {"js"}, "typescript": {"ts"}})
+
+    def test_a_shared_build_file_marks_c_and_cpp_at_the_root(self):
+        # flatbuffers: CMakeLists.txt at the root and C++ in src/, not the
+        # copy nested in another tree.
+        defs = {"cpp": {"detect": [], "detectSources": ["*.cpp"], "sharedBuildFiles": ["CMakeLists.txt"]},
+                "go": {"detect": ["go.mod"]}}
+        found, _ = self.detect({"CMakeLists.txt": "", "src/a.cpp": "", "go/go.mod": "", "go/cgo/cpp/b.cpp": ""}, defs)
+        self.assertEqual(found, {"cpp": {"."}, "go": {"go"}})
+
+    def test_a_shared_build_file_without_the_languages_sources_isnt_a_hit(self):
+        defs = {"c": {"detect": [], "detectSources": ["*.c"], "sharedBuildFiles": ["Makefile"]}}
+        found, _ = self.detect({"Makefile": "", "lib/c/a.c": ""}, defs)
+        self.assertEqual(found, {"c": {"lib/c"}})
+
+    def test_a_shared_build_file_goes_to_the_language_with_most_sources(self):
+        defs = {lang: {"detect": [], "detectSources": [glob], "sharedBuildFiles": ["CMakeLists.txt"]}
+                for lang, glob in (("c", "*.c"), ("cpp", "*.cc"))}
+        found, not_added = self.detect({"cpp/CMakeLists.txt": "", "cpp/src/a.cc": "", "cpp/src/b.cc": "",
+                                        "cpp/src/utf/x.c": ""}, defs)
+        self.assertEqual(found, {"cpp": {"cpp"}})
+        self.assertIn("c", not_added)
+
+    def test_sources_inside_another_languages_directory_arent_a_language(self):
+        # libphonenumber's C files in the C++ library; diff-match-patch's in objectivec/.
+        defs = {"cpp": {"detect": ["CMakeLists.txt"]}, "c": {"detectSources": ["*.c"]},
+                "objectivec": {"detectSources": ["*.m"]}, "python": {"detect": ["pyproject.toml"]}}
+        found, not_added = self.detect({"cpp/CMakeLists.txt": "", "cpp/src/utf/x.c": "", "objectivec/a.m": "",
+                                        "objectivec/b.c": "", "python/pyproject.toml": ""}, defs)
+        self.assertEqual(found, {"cpp": {"cpp"}, "objectivec": {"objectivec"}, "python": {"python"}})
+        self.assertIn("inside cpp, objectivec", not_added["c"])
+
+    def test_other_languages_native_extensions_dont_place_a_language(self):
+        defs = {"python": {"detect": ["pyproject.toml"]}, "c": {"detectSources": ["*.c"]}}
+        found, _ = self.detect({"python/pyproject.toml": "", "python/ext/a.c": "", "upb/base/b.c": ""}, defs)
+        self.assertEqual(found, {"python": {"python"}, "c": {"upb/base"}})
+
+    def test_sources_of_their_own_are_still_a_language(self):
+        defs = {"cpp": {"detect": ["CMakeLists.txt"]}, "c": {"detectSources": ["*.c"]}}
+        found, _ = self.detect({"cpp/CMakeLists.txt": "", "cpp/x.c": "", "c/y.c": ""}, defs)
+        self.assertEqual(found, {"cpp": {"cpp"}, "c": {"c"}})
 
     def test_init_writes_a_path_for_a_language_outside_the_layout(self):
         write(self.path("go", "go.mod"), "module x\n")

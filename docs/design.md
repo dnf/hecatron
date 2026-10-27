@@ -308,12 +308,16 @@ directory):
    rust, `tsconfig.json` → typescript, `pyproject.toml` → python, `*.cabal` →
    haskell, and so on (a definition's `detect` globs). A language with no
    build file is detected from its sources (`detectSources`, such as `*.c`),
-   and a hit is dropped where one of the definition's `detectUnless` files
-   sits beside it (`package.json` is JavaScript unless a `tsconfig.json`
-   makes it TypeScript). Examples, tests, docs and vendored code
-   (`examples/`, `tests/`, `fixtures/`, `third_party/`, `vendor/`,
-   `node_modules/` and the like) are skipped: a language found only there
-   isn't added, and init says so.
+   keeping only the directories outside every other language's: C files in
+   `python/ext/` are Python's extension, and C found only inside `cpp/` isn't
+   added. A build file several languages share (`sharedBuildFiles`, such as
+   C's and C++'s `CMakeLists.txt`) counts for the one with the most sources
+   beside it or under its `src/` and `include/`. A hit is dropped where one
+   of the definition's `detectUnless` files sits beside it (`package.json` is
+   JavaScript unless a `tsconfig.json` makes it TypeScript). Examples, tests,
+   docs, tools and vendored code (`examples/`, `tests/`, `tools/`,
+   `fixtures/`, `android/`, `third_party/`, `vendor/`, `node_modules/` and
+   the like) are skipped. A language left out is listed with the reason.
 3. Detects the layout. A language's directory may carry any of its
    definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If the
    directories share a pattern with one part varying (`age/impl/go`,

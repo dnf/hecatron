@@ -343,9 +343,9 @@ def cmd_banner(args) -> int:
 # Trees holding code that isn't the project's own implementation: vendored
 # dependencies, samples, tests and docs. A language found only there isn't
 # added, and no language's directory is placed there.
-SKIPPED_DIRS = {"benchmarks", "demo", "demos", "doc", "docs", "example", "examples", "external", "fixtures",
-                "node_modules", "sample", "samples", "test", "testdata", "tests", "third_party", "tutorial",
-                "tutorials", "vendor"}
+SKIPPED_DIRS = {"android", "benchmarks", "buildSrc", "demo", "demos", "doc", "docs", "example", "examples",
+                "external", "fixtures", "node_modules", "playground", "sample", "samples", "test", "testdata",
+                "tests", "third_party", "tools", "tutorial", "tutorials", "vendor"}
 
 # Where projects keep per-language code; when layouts disagree, one under
 # these (or at the root) beats one covering more languages (Beam's sdks/{lang}
@@ -391,38 +391,94 @@ def tracked_dirs(root: str) -> set[str]:
     return dirs
 
 
-def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[dict[str, set[str]], set[str]]:
-    """(found, skipped_only). found maps a language to the directories holding
-    one of its build files ("detect"), or, for a language with none, its
-    sources ("detectSources"); a hit is dropped where one of its
-    "detectUnless" files sits beside it (package.json is JavaScript unless a
-    tsconfig.json says TypeScript). skipped_only names the languages found
-    only under SKIPPED_DIRS. Tracked files only."""
-    defs = _detection_definitions() if defs is None else defs
-    files = tracked_files(root)
-    by_dir: dict[str, set[str]] = {}
-    for path in files:
-        by_dir.setdefault(os.path.dirname(path) or ".", set()).add(os.path.basename(path))
+def _under(directory: str, parent: str) -> bool:
+    return directory == parent or directory.startswith(parent + "/")
 
-    def hits(patterns: list[str], unless: list[str]) -> set[str]:
-        return {directory for directory, names in by_dir.items()
-                if any(fnmatch.fnmatch(name, pattern) for name in names for pattern in patterns)
-                and not any(fnmatch.fnmatch(name, pattern) for name in names for pattern in unless)}
+
+def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[dict[str, set[str]], dict[str, str]]:
+    """(found, not_added). found maps a language to the directories holding
+    one of its build files ("detect"), or, for a language with none, its
+    sources ("detectSources"). Tracked files only.
+
+    - A directory holding one of a language's "sharedBuildFiles" (C's and
+      C++'s CMakeLists.txt, Makefile) is a build-file hit when the language's
+      sources sit in it or under its src/ or include/.
+    - A hit is dropped where one of the language's "detectUnless" files sits
+      beside it (package.json is JavaScript unless a tsconfig.json says
+      TypeScript).
+    - Nothing under SKIPPED_DIRS counts.
+    - A language found only by its sources keeps only the directories
+      outside every other language's (protobuf's C in upb/, not the native
+      extensions in python/ and ruby/), and isn't added when there are none
+      (libphonenumber's C files in cpp/src/ are the C++ library's).
+
+    not_added maps each language left out to why."""
+    defs = _detection_definitions() if defs is None else defs
+    by_dir: dict[str, set[str]] = {}
+    skipped_dirs: dict[str, set[str]] = {}
+    for path in tracked_files(root):
+        directory = os.path.dirname(path) or "."
+        tree = skipped_dirs if _is_skipped(directory) else by_dir
+        tree.setdefault(directory, set()).add(os.path.basename(path))
+
+    def matches(names: set[str], patterns: list[str]) -> bool:
+        return any(fnmatch.fnmatch(name, pattern) for name in names for pattern in patterns)
+
+    def hits(dirs: dict[str, set[str]], patterns: list[str], unless: list[str]) -> set[str]:
+        return {directory for directory, names in dirs.items()
+                if matches(names, patterns) and not matches(names, unless)}
+
+    def count(names: set[str], patterns: list[str]) -> int:
+        return sum(1 for name in names if any(fnmatch.fnmatch(name, pattern) for pattern in patterns))
+
+    def shared_sources(directory: str, sources: list[str]) -> int:
+        """The language's source files in a directory and under its src/ and include/."""
+        nested = [os.path.normpath(os.path.join(directory, sub)) for sub in ("src", "include")]
+        return count(by_dir[directory], sources) + sum(
+            count(names, sources) for d, names in by_dir.items() if any(_under(d, n) for n in nested))
+
+    # A shared build file goes to the language with the most sources under it
+    # (libphonenumber's cpp/CMakeLists.txt is C++'s, not its few C files').
+    shared_counts: dict[str, dict[str, int]] = {}
+    for lang, d in defs.items():
+        for directory in hits(by_dir, d.get("sharedBuildFiles", []), []):
+            n = shared_sources(directory, d.get("detectSources", []))
+            if n:
+                shared_counts.setdefault(directory, {})[lang] = n
+
+    def shared_hits(lang: str) -> set[str]:
+        return {directory for directory, counts in shared_counts.items()
+                if counts.get(lang) == max(counts.values())}
 
     found: dict[str, set[str]] = {}
-    skipped_only: set[str] = set()
+    from_sources: set[str] = set()
+    not_added: dict[str, str] = {}
     for lang, d in defs.items():
-        unless = d.get("detectUnless", [])
-        directories = hits(d.get("detect", []), unless)
-        kept = {directory for directory in directories if not _is_skipped(directory)}
-        if not kept and d.get("detectSources"):
-            directories = hits(d["detectSources"], unless)
-            kept = {directory for directory in directories if not _is_skipped(directory)}
-        if kept:
-            found[lang] = kept
-        elif directories:
-            skipped_only.add(lang)
-    return found, skipped_only
+        unless, sources = d.get("detectUnless", []), d.get("detectSources", [])
+        directories = hits(by_dir, d.get("detect", []), unless) | shared_hits(lang)
+        if not directories and sources:
+            directories = hits(by_dir, sources, unless)
+            from_sources.add(lang)
+        if directories:
+            found[lang] = directories
+        elif hits(skipped_dirs, d.get("detect", []) + sources, unless):
+            not_added[lang] = "found only in examples, tests or vendored code"
+
+    names = dir_names(defs)
+    claims = {lang: {c for c in _language_roots(dirs, names[lang]) | (set() if lang in from_sources else dirs)
+                     if c != "."} for lang, dirs in found.items()}
+    for lang in sorted(from_sources & set(found)):
+        owners = {directory: {other for other, claimed in claims.items()
+                              if other != lang and any(_under(directory, c) for c in claimed)}
+                  for directory in found[lang]}
+        own = {directory for directory, by in owners.items() if not by}
+        if own:
+            found[lang] = own
+        else:
+            everyone = sorted(set().union(*owners.values()))
+            not_added[lang] = f"its files are all inside {', '.join(everyone)}'s directories"
+            del found[lang]
+    return found, not_added
 
 
 def _language_roots(directories: set[str], names: list[str]) -> set[str]:
@@ -537,7 +593,7 @@ def cmd_init(args) -> int:
         print(f"{os.path.relpath(config_path)} already exists (use --force to overwrite).")
         return 0
     defs = _detection_definitions()
-    found, skipped_only = detect_languages(root, defs)
+    found, not_added = detect_languages(root, defs)
     components, impl_path, impl_paths = infer_layout(found, dir_names(defs), tracked_dirs(root))
     if args.components:
         components = [c for c in args.components.split(",") if c]
@@ -567,8 +623,8 @@ def cmd_init(args) -> int:
     print(f"  components: {', '.join(components)}   implPath: {impl_path}")
     for lang, path in sorted(impl_paths.items()):
         print(f"  {lang} lives in {path} (implPaths)")
-    if skipped_only:
-        print(f"  not added, found only in examples, tests or vendored code: {', '.join(sorted(skipped_only))}")
+    for lang, reason in sorted(not_added.items()):
+        print(f"  not added: {lang} ({reason})")
     print("Next: hecatron doctor   (checks each language's toolchain)")
     return 0
 
