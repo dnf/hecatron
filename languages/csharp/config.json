@@ -31,7 +31,8 @@
     {
       "file": ".github/workflows/*.y*ml",
       "format": "github-setup",
-      "key": "dotnet-version"
+      "key": "dotnet-version",
+      "selects": false
     }
   ],
   "oldestInstallable": "6.0",
