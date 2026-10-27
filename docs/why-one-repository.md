@@ -1,13 +1,22 @@
 # Why one repository
 
-A useful library ought to exist in every language its users write. Usually it
-doesn't: there's a reference implementation in one language, ports by other
-people that lag behind it, and bindings to a native library that are awkward
-to install and feel foreign in the language that calls them. Writing and
-maintaining a native, idiomatic implementation per language used to need a
-team fluent in each one, so almost nobody did it.
+Historically, a library has existed in one language, or at most a handful.
+That was never a judgement about where the library belonged; it was a cost.
+Porting a library takes time, and keeping each port in sync with the
+original takes time again with every release, so most libraries never get
+ported, and the ports that do exist are written by other people and lag
+behind. Bindings to a native library fill some gaps, but they're awkward to
+install and feel foreign in the language that calls them.
 
-AI coding agents change that cost. An agent can write, port and maintain an
+So learning a new language has meant learning a new ecosystem of libraries
+too. The date library, the parser, the API client you rely on in one
+language usually isn't there in the next, and what's there instead works
+differently. A useful library ought to exist in every language its users
+write; until now, writing and maintaining a native, idiomatic
+implementation per language needed a team fluent in each one, so almost
+nobody did it.
+
+That doesn't have to be the case any more. AI coding agents change the cost. An agent can write, port and maintain an
 implementation in a language its human maintainer doesn't know, so one person
 can ship the same library natively in a dozen or fifty languages. Once
 implementations are cheap, the best place for them is **one repository**:
