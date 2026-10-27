@@ -733,7 +733,7 @@ another.
 
 ## 19. A Go core and native Windows
 
-Status: **proposed** (#71; tracked in #80). Hecatron has two users, people
+Status: **accepted** 2026-10-27 (#71; tracked in #80). Hecatron has two users, people
 and AI agents, and two requirements bash and Python can't meet: fast startup
 (one `hct test` starts bash and Python again for every component, and a
 process costs far more on Windows) and native Windows, which has no bash.
@@ -756,21 +756,28 @@ needed to run it (no Python, bash or perl).
 A definition says what to do in the most declarative of three tiers that can
 express it.
 
-1. **Rules in `config.json`** for what is a lookup: which build file means
-   which command.
+1. **Rules in `config.json`** for what is a lookup: which build files mean
+   which commands. An action names the build files to look for and where
+   (`find`: here, `above-first` or `below-first`, as `find_build` does
+   today; found only in directories below, the action runs in each), then
+   its steps, in order:
 
    ```json
-   "actions": {
-     "test":   [{"when": ["go.mod"], "find": "above-first", "run": ["go", "test", "./..."]}],
-     "build":  [{"when": ["go.mod"], "find": "above-first", "run": ["go", "build", "./..."]}],
-     "format": [{"when": ["go.mod"], "run": ["gofmt", "-w", "."], "check": ["gofmt", "-l", "."]}]
-   }
+   "lint": {"files": ["mix.exs"], "unknown": "no mix.exs", "steps": [
+     {"if": {"not": {"any": [{"file": ".formatter.exs"}, {"contains": ["mix.exs", ":credo"]}]}},
+      "skip": "no .formatter.exs and no Credo dependency"},
+     {"use": "deps"},
+     {"if": {"file": ".formatter.exs"}, "run": ["mix", "format", "--check-formatted"]},
+     {"if": {"contains": ["mix.exs", ":credo"]}, "run": ["mix", "credo", "--strict"]}
+   ]}
    ```
 
-   A rule matches files (`when`), says where to look for them (`find`: here,
-   below, above-first, as `find_build` does today), runs an argv (never a
-   shell string), and may name steps to run first (`before`: `["deps"]`).
-   The first matching rule wins; none matching means "unknown".
+   A step runs an argv (never a shell string) with optional `env`, removes
+   files (`remove` globs, `keep` directories; no `rm`, so it works on
+   Windows), stops with a `skip` or `unknown` reason, or uses steps the
+   definition shares between actions (`shared`, e.g. fetching
+   dependencies). Its `if` tests files: `file`, `missing`, `contains`, and
+   `all`, `any`, `not`.
 
 2. **Families in Go** for build systems several languages share, whose logic
    is more than a lookup: `jvm` (Maven, Gradle, sbt, wrappers, choosing a JDK
@@ -804,6 +811,31 @@ installs stay system-wide.
 **Doctor checks** are a version command and the pattern its output must
 match, plus checks that need logic (a linter built with an older compiler)
 in the language's family or script.
+
+### When a tool's output changes
+
+Hecatron reads tools' output in four places: doctor's version checks, the
+installed versions it finds, the error lines in agent output, and the
+reports `audit` and `outdated` parse. New releases of a tool change that
+output from time to time (npm 7 rewrote `npm audit --json`), so:
+
+- **Machine-readable output first.** Where a tool has `--json` or
+  `--format`, hecatron uses it, and checks the schema version where the
+  tool states one.
+- **Patterns and parsers per version.** A definition's patterns are a list
+  tried in order, each optionally limited to tool versions (`"versions":
+  ">=7"`); a parser in Go recognises each known layout, as `audit` does for
+  npm 6 and 7.
+- **Recorded output as tests.** Each parser and pattern is tested against
+  output captured from real versions of the tool (`tests/output/<tool>/<version>/`),
+  so a new layout is added as a new sample beside the old ones.
+- **Failing soft.** Output hecatron can't read never fails a run on its own:
+  agent output falls back to the log's last lines, a version it can't read
+  is reported as such by doctor, and an unreadable audit report is an error
+  that names the tool and version.
+- **Noticed weekly.** The weekly coverage run saves each tool's output with
+  the newest versions and fails when a parser or pattern no longer matches,
+  so a change shows up as a failing check, not as a user's bug report.
 
 ### Project hooks
 
