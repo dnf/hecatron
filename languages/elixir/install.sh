@@ -3,7 +3,14 @@
 source "$(dirname "$0")/../_common.sh"
 
 install_macos() { brew_install elixir; }
-install_linux() { apt_install elixir; }
+# Erlang through its own installer first: Debian's elixir package brings
+# Erlang's runtime only, without erlang-dev's headers and includes, so a
+# dependency with a lexer or parser (erlex's .xrl, through leex) can't
+# compile.
+install_linux() {
+    bash "$(dirname "$0")/../erlang/install.sh"
+    apt_install elixir
+}
 
 # Hex and rebar3, which mix needs to fetch and build dependencies; a fresh
 # Elixir has neither, and mix asks interactively.
