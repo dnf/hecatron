@@ -6,6 +6,8 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+## 0.3.0 (2026-10-27)
+
 - **An installer:** `curl -fsSL …/install.sh | sh` installs the latest
   release into `~/.hecatron` and adds it to bash, zsh and fish startup files;
   sourced from a clone, it also sets up the current shell. Rerun to update.
