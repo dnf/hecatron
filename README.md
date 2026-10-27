@@ -20,6 +20,11 @@ repository, runs each language's tests, linters and builds in parallel, and
 keeps the CI workflows and Dockerfile that cover them in sync. It is for
 repositories where one project is implemented in many programming languages.
 
+<p align="center">
+  <img alt="hct test running sayable's 51 languages in parallel: a live row per language with its time, swim lanes for the jobs still running, ending in 53/53 passed" src="assets/demo/hct-test.gif" width="720">
+  <br><em><code>hct test</code> on <a href="https://github.com/dnf/sayable">sayable</a>: 51 languages and its own checks in parallel, 4½ minutes at 5× speed.</em>
+</p>
+
 ## Why
 
 Historically, a library has existed in one language, or at most a handful.
