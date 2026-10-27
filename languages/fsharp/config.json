@@ -41,5 +41,8 @@
   ],
   "testing": "dotnet test",
   "linting": "Fantomas",
-  "formatting": "Fantomas (in the tool manifest)"
+  "formatting": "Fantomas",
+  "notes": {
+    "formatting": "Only when Fantomas is in the project's .NET tool manifest."
+  }
 }

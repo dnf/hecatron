@@ -20,7 +20,7 @@
   ],
   "testing": "JUnit, kotlin.test",
   "linting": "Gradle check (detekt, ktlint)",
-  "formatting": "Spotless, ktlint-gradle, Kotlinter (when the build has one)",
+  "formatting": "Spotless, ktlint-gradle, Kotlinter",
   "errorPatterns": [
     {
       "tool": "javac",
@@ -62,5 +62,8 @@
       "tool": "gradle",
       "regex": "^(?P<message>Execution failed for task .+)$"
     }
-  ]
+  ],
+  "notes": {
+    "formatting": "Only when the build applies one; hecatron runs it through the build."
+  }
 }

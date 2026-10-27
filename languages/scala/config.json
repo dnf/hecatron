@@ -19,5 +19,8 @@
   ],
   "testing": "MUnit, ScalaTest",
   "linting": null,
-  "formatting": "sbt-scalafmt, Spotless (when the build has one)"
+  "formatting": "sbt-scalafmt, Spotless",
+  "notes": {
+    "formatting": "Only when the build applies one; hecatron runs it through the build."
+  }
 }

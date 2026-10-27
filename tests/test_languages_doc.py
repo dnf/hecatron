@@ -28,6 +28,26 @@ class LanguagesDocTest(unittest.TestCase):
         self.assertEqual(len(rows), len(definitions))
         self.assertEqual(len(rows), len(set(rows)))
 
+    def test_every_tool_link_is_used_and_https(self):
+        with open(os.path.join(ROOT, "libexec", "codegen", "tool-links.json"), encoding="utf-8") as f:
+            links = json.load(f)
+        with open(os.path.join(ROOT, "docs", "languages.md"), encoding="utf-8") as f:
+            text = f.read()
+        for name, url in links.items():
+            with self.subTest(tool=name):
+                self.assertTrue(url.startswith("https://"), url)
+                self.assertIn(f"[{name}]({url})", text, "named by no language definition")
+
+    def test_notes_name_a_tool_column(self):
+        languages = os.path.join(ROOT, "languages")
+        for lang in sorted(os.listdir(languages)):
+            path = os.path.join(languages, lang, "config.json")
+            if os.path.isfile(path):
+                with open(path, encoding="utf-8") as f:
+                    notes = json.load(f).get("notes") or {}
+                with self.subTest(lang=lang):
+                    self.assertLessEqual(set(notes), {"buildSystems", "testing", "linting", "formatting"})
+
     def test_every_definition_describes_itself(self):
         languages = os.path.join(ROOT, "languages")
         for lang in sorted(os.listdir(languages)):

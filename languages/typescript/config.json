@@ -59,7 +59,7 @@
   ],
   "testing": "npm test",
   "linting": "npm run lint, tsc --noEmit",
-  "formatting": "Prettier, Biome (when a dependency)",
+  "formatting": "Prettier, Biome",
   "errorPatterns": [
     {
       "tool": "tsc",
@@ -75,11 +75,11 @@
     },
     {
       "tool": "vitest",
-      "regex": "^\\s*\u2192 (?P<message>.+)$"
+      "regex": "^\\s*→ (?P<message>.+)$"
     },
     {
       "tool": "vitest",
-      "regex": "^\\s*\u276f (?P<file>[^\\s:]+):(?P<line>\\d+):(?P<col>\\d+)$"
+      "regex": "^\\s*❯ (?P<file>[^\\s:]+):(?P<line>\\d+):(?P<col>\\d+)$"
     },
     {
       "tool": "jest",
@@ -87,7 +87,7 @@
     },
     {
       "tool": "jest",
-      "regex": "^\\s*\u25cf (?P<message>.+)$"
+      "regex": "^\\s*● (?P<message>.+)$"
     },
     {
       "tool": "jest",
@@ -95,7 +95,7 @@
     },
     {
       "tool": "node-test",
-      "regex": "^\u2716 (?P<message>.+)$"
+      "regex": "^✖ (?P<message>.+)$"
     },
     {
       "tool": "node",
@@ -105,5 +105,8 @@
       "tool": "node",
       "regex": "^\\s*(?P<message>(?:AssertionError|TypeError|ReferenceError|SyntaxError|RangeError|Error)(?: \\[\\w+\\])?: .+)$"
     }
-  ]
+  ],
+  "notes": {
+    "formatting": "Only when the project depends on one, at the version it locks."
+  }
 }

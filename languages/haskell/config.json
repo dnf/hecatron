@@ -22,5 +22,8 @@
   ],
   "testing": "test suites",
   "linting": "HLint, cabal check",
-  "formatting": "Fourmolu, Ormolu (when configured)"
+  "formatting": "Fourmolu, Ormolu",
+  "notes": {
+    "formatting": "Only when the project configures one."
+  }
 }

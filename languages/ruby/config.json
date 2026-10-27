@@ -53,7 +53,7 @@
   ],
   "testing": "RSpec, Minitest",
   "linting": "RuboCop, Standard",
-  "formatting": "RuboCop, Standard (when in the bundle)",
+  "formatting": "RuboCop, Standard",
   "errorPatterns": [
     {
       "tool": "rspec",
@@ -87,5 +87,8 @@
       "tool": "ruby",
       "regex": "^(?P<message>\\w+(?:Error|Exception): .+)$"
     }
-  ]
+  ],
+  "notes": {
+    "formatting": "Only when one is in the project's Gemfile."
+  }
 }

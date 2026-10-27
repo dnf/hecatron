@@ -19,5 +19,8 @@
   ],
   "testing": "clojure.test",
   "linting": "clj-kondo",
-  "formatting": "cljfmt (with a cljfmt.edn)"
+  "formatting": "cljfmt",
+  "notes": {
+    "formatting": "Only when the project has a `cljfmt.edn`."
+  }
 }
