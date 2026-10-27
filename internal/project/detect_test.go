@@ -1,6 +1,7 @@
 package project
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -84,6 +85,10 @@ var detectionRepos = map[string]map[string]string{
 	"own directory":            {"go/go.mod": "", "java/pom.xml": "", "clr-binding/Lib.csproj": "", "a/x.csproj": "", "b/y.csproj": ""},
 	"unicode names":            {"caf\u00e9/go.mod": "", "go/go.mod": "", "z\u00fcrich/Cargo.toml": ""},
 	"two varying parts":        {"a/x/go/go.mod": "", "b/y/go/go.mod": ""},
+	"root module, definitions": {"go.mod": "", "cmd/x/main.go": "", "languages/go/config.json": "", "languages/go/install.sh": "", "languages/tcl/config.json": "", "languages/tcl/hooks/run.tcl": "", "languages/rust/Cargo.toml": ""},
+	"go directory module":      {"go/go.mod": "", "go/a.go": "", "rust/Cargo.toml": "", "go.work": ""},
+	"root module, code in lib": {"go.mod": "", "lib/go/thrift/a.go": "", "lib/java/pom.xml": "", "lib/rb/x.gemspec": ""},
+	"tcl in hooks":             {"go.mod": "", "languages/tcl/hooks/run.tcl": "", ".githooks/hooks/x.tcl": ""},
 }
 
 func TestDetectionMatchesManagePy(t *testing.T) {
@@ -127,4 +132,35 @@ func TestDetectionMatchesManagePy(t *testing.T) {
 		compared++
 	}
 	t.Logf("%d repositories compared", compared)
+}
+
+// A directory named for a language counts only when it holds the
+// language's files, and hooks/ is tooling (docs/design.md §10).
+func TestDetectionPlacesARootModuleAndSkipsHooks(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("no git")
+	}
+	home := repoHome(t)
+	t.Setenv("HECATRON_BUILTIN_LANGUAGES", "")
+	for name, want := range map[string]string{
+		"root module, definitions": "languages/{lang} [go rust] go=.",
+		"go directory module":      "{lang} [go rust] ",
+		"root module, code in lib": "lib/{lang} [go java ruby] ",
+		"tcl in hooks":             ". [go] ",
+	} {
+		root := parityCase{files: detectionRepos[name], git: true}.create(t)
+		config, _, err := DetectedConfig(root, NewHome(home), "", "", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := fmt.Sprint(config.Values["implPath"], " ", config.Values["languages"], " ")
+		if implPaths, ok := config.Values["implPaths"].(*Object); ok {
+			for _, lang := range implPaths.Keys {
+				got += fmt.Sprint(lang, "=", implPaths.Values[lang])
+			}
+		}
+		if got != want {
+			t.Errorf("%s: %q, want %q", name, got, want)
+		}
+	}
 }

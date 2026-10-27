@@ -450,10 +450,11 @@ def cmd_banner(args) -> int:
 
 
 # Trees holding code that isn't the project's own implementation: vendored
-# dependencies, samples, tests and docs. A language found only there isn't
-# added, and no language's directory is placed there.
+# dependencies, samples, tests, docs and tooling (hooks/: git hooks, build
+# hooks). A language found only there isn't added, and no language's
+# directory is placed there.
 SKIPPED_DIRS = {"android", "benchmarks", "buildSrc", "demo", "demos", "doc", "docs", "example", "examples",
-                "external", "fixtures", "node_modules", "playground", "sample", "samples", "test", "testdata",
+                "external", "fixtures", "hooks", "node_modules", "playground", "sample", "samples", "test", "testdata",
                 "tests", "third_party", "tools", "tutorial", "tutorials", "vendor"}
 
 # Where projects keep per-language code; when layouts disagree, one under
@@ -489,15 +490,36 @@ def tracked_files(root: str) -> list[str]:
         return []
 
 
-def tracked_dirs(root: str) -> set[str]:
-    """Every directory holding a tracked file, at any depth."""
-    dirs = set()
-    for path in tracked_files(root):
-        directory = os.path.dirname(path)
-        while directory and directory not in dirs:
-            dirs.add(directory)
-            directory = os.path.dirname(directory)
-    return dirs
+def _names_by_dir(files: list[str]) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
+    """The file names in each directory: outside SKIPPED_DIRS, and inside."""
+    by_dir: dict[str, set[str]] = {}
+    skipped_dirs: dict[str, set[str]] = {}
+    for path in files:
+        directory = os.path.dirname(path) or "."
+        tree = skipped_dirs if _is_skipped(directory) else by_dir
+        tree.setdefault(directory, set()).add(os.path.basename(path))
+    return by_dir, skipped_dirs
+
+
+def _matches(names: set[str], patterns: list[str]) -> bool:
+    return any(fnmatch.fnmatch(name, pattern) for name in names for pattern in patterns)
+
+
+def holds_language(by_dir: dict[str, set[str]], defs: dict[str, dict]):
+    """(lang, directory) → whether the directory holds the language's code:
+    one of its build or source files ("detect", "detectSources") in it or
+    under it, or, for a language without "detectSources", which can't tell
+    its sources, any file when the directory sits at the root or under a
+    PREFERRED_PARENTS directory (Thrift's lib/go, not a languages/go/
+    holding Go's definition)."""
+    def holds(lang: str, directory: str) -> bool:
+        d = defs.get(lang, {})
+        patterns = d.get("detect", []) + d.get("detectSources", [])
+        inside = [names for sub, names in by_dir.items() if _under(sub, directory)]
+        if any(_matches(names, patterns) for names in inside):
+            return True
+        return not d.get("detectSources") and bool(inside) and _preference(directory)[0] == 0
+    return holds
 
 
 def _under(directory: str, parent: str) -> bool:
@@ -525,19 +547,11 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
 
     not_added maps each language left out to why."""
     defs = _detection_definitions() if defs is None else defs
-    by_dir: dict[str, set[str]] = {}
-    skipped_dirs: dict[str, set[str]] = {}
-    for path in tracked_files(root):
-        directory = os.path.dirname(path) or "."
-        tree = skipped_dirs if _is_skipped(directory) else by_dir
-        tree.setdefault(directory, set()).add(os.path.basename(path))
-
-    def matches(names: set[str], patterns: list[str]) -> bool:
-        return any(fnmatch.fnmatch(name, pattern) for name in names for pattern in patterns)
+    by_dir, skipped_dirs = _names_by_dir(tracked_files(root))
 
     def hits(dirs: dict[str, set[str]], patterns: list[str], unless: list[str]) -> set[str]:
         return {directory for directory, names in dirs.items()
-                if matches(names, patterns) and not matches(names, unless)}
+                if _matches(names, patterns) and not _matches(names, unless)}
 
     def count(names: set[str], patterns: list[str]) -> int:
         return sum(1 for name in names if any(fnmatch.fnmatch(name, pattern) for pattern in patterns))
@@ -646,7 +660,7 @@ def _own_directory(directories: set[str]) -> str:
 
 
 def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None = None,
-                 directories: set[str] | None = None) -> tuple[list[str], str, dict[str, str]]:
+                 holds=None) -> tuple[list[str], str, dict[str, str]]:
     """Components, implPath and per-language implPaths from where each
     language's files sit.
 
@@ -655,9 +669,10 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
     `{lang}`. A directory may carry any of a language's names (dotnet/ for C#).
     With one component, a language whose directory doesn't fit the shared
     implPath gets its own entry in implPaths, unless the shared one names a
-    directory in the repository (`directories`) that no other language was
-    found in: Thrift's lib/go, whose go.mod is at the root, but not
-    Cucumber's javascript/, which is TypeScript's.
+    directory holding the language's build or source files (`holds(lang,
+    directory)`, see holds_language) that no other language was found in:
+    Thrift's lib/go, whose go.mod is at the root, but not Cucumber's
+    javascript/, which is TypeScript's, nor a languages/go/ holding no Go.
     """
     names = names or {}
     roots = {lang: _language_roots(dirs, names.get(lang, [lang])) for lang, dirs in found.items()}
@@ -679,9 +694,9 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
     for lang, dirs in sorted(found.items()):
         lang_names = names.get(lang, [lang])
         others = set().union(*(d for other, d in found.items() if other != lang))
-        unclaimed = (directories or set()) - others
-        fitting = [template.replace("{lang}", name) for name in lang_names
-                   if template.replace("{lang}", name) in roots[lang] | unclaimed]
+        candidates = [template.replace("{lang}", name) for name in lang_names]
+        fitting = [c for c in candidates
+                   if c in roots[lang] or (holds and c not in others and holds(lang, c))]
         if fitting:
             continue
         overrides[lang] = (min(roots[lang], key=lambda r: (_preference(r), r)) if roots[lang]
@@ -773,7 +788,9 @@ def detected_config(root: str, components: str | None = None, impl_path: str | N
     not added, with why."""
     defs = _detection_definitions()
     found, not_added = detect_languages(root, defs)
-    found_components, found_impl_path, impl_paths = infer_layout(found, dir_names(defs), tracked_dirs(root))
+    by_dir, _ = _names_by_dir(tracked_files(root))
+    found_components, found_impl_path, impl_paths = infer_layout(found, dir_names(defs),
+                                                                 holds_language(by_dir, defs))
     chosen_components = [c for c in components.split(",") if c] if components else found_components
     if impl_path:
         found_impl_path, impl_paths = impl_path, {}

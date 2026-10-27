@@ -378,20 +378,27 @@ saves it, as init would. Init itself:
    of the definition's `detectUnless` files sits beside it (`package.json` is
    JavaScript unless a `tsconfig.json` makes it TypeScript), and a
    `package.json` without the definition's `detectScript` npm script doesn't
-   count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling). Examples, tests,
-   docs, tools and vendored code (`examples/`, `tests/`, `tools/`,
-   `fixtures/`, `android/`, `third_party/`, `vendor/`, `node_modules/` and
-   the like) are skipped. A language left out is listed with the reason.
+   count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
+   Examples, tests, docs, tools, hooks and vendored code (`examples/`,
+   `tests/`, `tools/`, `hooks/`, `fixtures/`, `android/`, `third_party/`,
+   `vendor/`, `node_modules/` and the like) are skipped. A language left out
+   is listed with the reason.
 3. Detects the layout. A language's directory may carry any of its
-   definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If the
-   directories share a pattern with one part varying (`age/impl/go`,
+   definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If
+   the directories share a pattern with one part varying (`age/impl/go`,
    `date/impl/go`), it proposes `components` and `implPath`; otherwise one
    component, at the pattern under `sdks/`, `sdk/`, `lib/`, `lang/`,
    `bindings/`, `ffi/`, `packages/` or the root if there is one, else the
    pattern covering most languages. A language whose directory doesn't fit
-   gets its own entry in `implPaths`; a directory another language was found
-   in doesn't fit (Cucumber's `javascript/` is TypeScript's, so JavaScript
-   found in `jsonschema/` gets `implPaths` `jsonschema`). `--components` and
+   gets its own entry in `implPaths`. A directory the pattern names fits
+   without the language's build file only if it holds the language's code:
+   one of its `detect` or `detectSources` files, or, for a definition without
+   `detectSources`, any file when it sits at the root or under one of the
+   parents above (`lib/`, `sdks/`...: Thrift's `lib/go`, whose `go.mod` is at
+   the root). So a build file at the root keeps a language there beside a
+   `languages/go/` holding no Go. A directory another language was found in
+   doesn't fit (Cucumber's `javascript/` is TypeScript's, so JavaScript found
+   in `jsonschema/` gets `implPaths` `jsonschema`). `--components` and
    `--impl-path` set the layout explicitly.
 4. Writes `.hecatron/config.json`, adds `.hecatron/local.json` and the log
    directory to `.gitignore`.

@@ -15,12 +15,13 @@ import (
 // repository read without a config of its own.
 
 // skippedDirs hold code that isn't the project's own implementation:
-// vendored dependencies, samples, tests and docs. A language found only
-// there isn't added, and no language's directory is placed there.
+// vendored dependencies, samples, tests, docs and tooling (hooks/: git
+// hooks, build hooks). A language found only there isn't added, and no
+// language's directory is placed there.
 var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildSrc": true, "demo": true, "demos": true,
 	"doc": true, "docs": true, "example": true, "examples": true, "external": true, "fixtures": true,
-	"node_modules": true, "playground": true, "sample": true, "samples": true, "test": true, "testdata": true,
-	"tests": true, "third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true}
+	"hooks": true, "node_modules": true, "playground": true, "sample": true, "samples": true, "test": true,
+	"testdata": true, "tests": true, "third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true}
 
 // preferredParents are where projects keep per-language code; when layouts
 // disagree, one under these (or at the root) beats one covering more
@@ -99,17 +100,6 @@ func TrackedFiles(root string) ([]string, error) {
 	return pySplitLines(pyText(out)), nil
 }
 
-// trackedDirs are every directory holding a tracked file, at any depth.
-func trackedDirs(files []string) map[string]bool {
-	dirs := map[string]bool{}
-	for _, path := range files {
-		for directory := pyDirname(path); directory != "" && !dirs[directory]; directory = pyDirname(directory) {
-			dirs[directory] = true
-		}
-	}
-	return dirs
-}
-
 func isSkipped(directory string) bool {
 	for _, part := range strings.Split(directory, "/") {
 		if skippedDirs[part] {
@@ -137,6 +127,55 @@ func (s dirSet) sorted() []string {
 
 // namesByDir are the file names in each directory.
 type namesByDir map[string]map[string]bool
+
+// splitByDir are the file names in each directory: outside skippedDirs,
+// and inside.
+func splitByDir(files []string) (byDir, skipped namesByDir) {
+	byDir, skipped = namesByDir{}, namesByDir{}
+	for _, path := range files {
+		directory := pyDirname(path)
+		if directory == "" {
+			directory = "."
+		}
+		tree := byDir
+		if isSkipped(directory) {
+			tree = skipped
+		}
+		if tree[directory] == nil {
+			tree[directory] = map[string]bool{}
+		}
+		_, name := pySplit(path)
+		tree[directory][name] = true
+	}
+	return byDir, skipped
+}
+
+// holdsLanguage is whether a directory holds a language's code: one of
+// its build or source files (detect, detectSources) in it or under it, or,
+// for a language without detectSources, which can't tell its sources, any
+// file when the directory sits at the root or under a preferredParents
+// directory (Thrift's lib/go, not a languages/go/ holding Go's definition).
+func holdsLanguage(byDir namesByDir, defs []detection) func(lang, directory string) (bool, error) {
+	byLang := map[string]detection{}
+	for _, d := range defs {
+		byLang[d.lang] = d
+	}
+	return func(lang, directory string) (bool, error) {
+		d := byLang[lang]
+		patterns := append(append([]string(nil), d.detect...), d.sources...)
+		inside := false
+		for sub, names := range byDir {
+			if !under(sub, directory) {
+				continue
+			}
+			inside = true
+			if matched, err := anyMatch(names, patterns); err != nil || matched {
+				return matched, err
+			}
+		}
+		return len(d.sources) == 0 && inside && preference(directory)[0] == 0, nil
+	}
+}
 
 func anyMatch(names map[string]bool, patterns []string) (bool, error) {
 	for name := range names {
@@ -199,22 +238,7 @@ type Detected struct {
 
 // DetectLanguages is manage.py's detect_languages over the tracked files.
 func DetectLanguages(root string, defs []detection, files []string) (*Detected, error) {
-	byDir, skipped := namesByDir{}, namesByDir{}
-	for _, path := range files {
-		directory := pyDirname(path)
-		if directory == "" {
-			directory = "."
-		}
-		tree := byDir
-		if isSkipped(directory) {
-			tree = skipped
-		}
-		if tree[directory] == nil {
-			tree[directory] = map[string]bool{}
-		}
-		_, name := pySplit(path)
-		tree[directory][name] = true
-	}
+	byDir, skipped := splitByDir(files)
 
 	// A shared build file goes to the language with the most sources under
 	// it (libphonenumber's cpp/CMakeLists.txt is C++'s, not its few C
@@ -506,9 +530,11 @@ type Layout struct {
 // InferLayout is manage.py's infer_layout: `age/impl/go` and `date/impl/go`
 // give components [age, date] at `{component}/impl/{lang}`; `go/` and
 // `rust/` one component at `{lang}`; a language whose directory doesn't fit
-// gets its own implPaths entry, unless the shared template names a tracked
-// directory no other language was found in.
-func InferLayout(found map[string]dirSet, names map[string][]string, directories map[string]bool) Layout {
+// gets its own implPaths entry, unless the shared template names a
+// directory holding the language's build or source files (holds, which may
+// be nil) that no other language was found in.
+func InferLayout(found map[string]dirSet, names map[string][]string,
+	holds func(lang, directory string) (bool, error)) (Layout, error) {
 	namesOf := func(lang string) []string {
 		if n, ok := names[lang]; ok {
 			return n
@@ -528,7 +554,7 @@ func InferLayout(found map[string]dirSet, names map[string][]string, directories
 		}
 	}
 	if len(templates) == 0 {
-		return Layout{Components: []string{"."}, ImplPath: ".", ImplPaths: map[string]string{}}
+		return Layout{Components: []string{"."}, ImplPath: ".", ImplPaths: map[string]string{}}, nil
 	}
 	var split [][]string
 	lengths := map[int]bool{}
@@ -555,7 +581,7 @@ func InferLayout(found map[string]dirSet, names map[string][]string, directories
 				components[parts[i]] = true
 			}
 			pattern := append(append(append([]string(nil), split[0][:i]...), "{component}"), split[0][i+1:]...)
-			return Layout{Components: components.sorted(), ImplPath: strings.Join(pattern, "/"), ImplPaths: map[string]string{}}
+			return Layout{Components: components.sorted(), ImplPath: strings.Join(pattern, "/"), ImplPaths: map[string]string{}}, nil
 		}
 	}
 	template := ""
@@ -577,8 +603,14 @@ func InferLayout(found map[string]dirSet, names map[string][]string, directories
 		fits := false
 		for _, name := range namesOf(lang) {
 			candidate := strings.ReplaceAll(template, "{lang}", name)
-			if roots[lang][candidate] || directories[candidate] && !others[candidate] {
+			if roots[lang][candidate] {
 				fits = true
+			} else if holds != nil && !others[candidate] {
+				held, err := holds(lang, candidate)
+				if err != nil {
+					return Layout{}, err
+				}
+				fits = fits || held
 			}
 		}
 		if fits {
@@ -596,7 +628,7 @@ func InferLayout(found map[string]dirSet, names map[string][]string, directories
 			overrides[lang] = ownDirectory(dirs)
 		}
 	}
-	return Layout{Components: []string{"."}, ImplPath: template, ImplPaths: overrides}
+	return Layout{Components: []string{"."}, ImplPath: template, ImplPaths: overrides}, nil
 }
 
 // betterTemplate orders templates as min(key=(preference, -languages, text)).
@@ -632,7 +664,11 @@ func DetectedConfig(root string, home Home, components, implPath, languages stri
 	for _, d := range defs {
 		names[d.lang] = d.names
 	}
-	layout := InferLayout(detected.Found, names, trackedDirs(files))
+	byDir, _ := splitByDir(files)
+	layout, err := InferLayout(detected.Found, names, holdsLanguage(byDir, defs))
+	if err != nil {
+		return nil, nil, err
+	}
 	chosenComponents := layout.Components
 	if components != "" {
 		chosenComponents = nil
