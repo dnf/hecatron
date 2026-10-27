@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Run one of a language's hooks (test, lint, build or clean) for every
-# component, or the ones named.
+# Run one of a language's hooks (test, lint, build, clean, audit or format)
+# for every component, or the ones named. Lint also runs the format hook's
+# check (docs/format.md).
 #
 # Usage: each-component.sh <action> <lang> [component ...]
 #
@@ -24,6 +25,16 @@ if ! _hook="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" resolve "${_lang
     exit 1
 fi
 
+# Lint checks formatting too, unless the project turned that off ("lint":
+# {"format": false}) or the lint hook checked it itself (checks_format in
+# languages/_hooks.sh, which writes to HECATRON_FORMAT_CHECKED).
+_format_hook=""
+if [ "${_action}" = lint ] && [[ " ${_LINT_FORMAT_LANGS} " == *" ${_lang} "* ]]; then
+    _format_hook="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" resolve "${_lang}" format.sh)"
+fi
+_format_checked="$(mktemp)"
+trap 'rm -f "${_format_checked}"' EXIT
+
 _ran=0
 _failed=()
 while IFS=$'\t' read -r _component _dir; do
@@ -40,10 +51,15 @@ while IFS=$'\t' read -r _component _dir; do
     fi
     # stdin is the component list; a hook reading it (uv does) would swallow
     # the components after its own.
-    if ! (eval "${_env}" && cd "${_dir}" && HECATRON_COMPONENT="${_component}" HECATRON_LANG="${_lang}" \
-            bash "${_hook}" "${_component}" </dev/null); then
-        _failed+=("${_component}")
+    : >"${_format_checked}"
+    _status=0
+    (eval "${_env}" && cd "${_dir}" && HECATRON_COMPONENT="${_component}" HECATRON_LANG="${_lang}" \
+        HECATRON_FORMAT_CHECKED="${_format_checked}" bash "${_hook}" "${_component}" </dev/null) || _status=1
+    if [ -n "${_format_hook}" ] && [ ! -s "${_format_checked}" ]; then
+        (eval "${_env}" && cd "${_dir}" && HECATRON_COMPONENT="${_component}" HECATRON_LANG="${_lang}" \
+            HECATRON_FORMAT_CHECK=1 bash "${_format_hook}" "${_component}" </dev/null) || _status=1
     fi
+    [ "${_status}" -eq 0 ] || _failed+=("${_component}")
 done < <(python3 "${HECATRON_HOME}/libexec/lib/project.py" impl-dirs "${_lang}")
 
 if [ "${_ran}" -eq 0 ]; then

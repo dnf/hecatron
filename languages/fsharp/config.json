@@ -40,5 +40,6 @@
     ".NET SDK (dotnet)"
   ],
   "testing": "dotnet test",
-  "linting": "Fantomas"
+  "linting": "Fantomas",
+  "formatting": "Fantomas (in the tool manifest)"
 }

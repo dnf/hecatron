@@ -42,5 +42,6 @@
     ".NET SDK (dotnet)"
   ],
   "testing": "dotnet test",
-  "linting": "dotnet format"
+  "linting": "dotnet format",
+  "formatting": "dotnet format"
 }

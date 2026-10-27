@@ -45,8 +45,11 @@ _npm_global() {
 
 # elm-review where a component configures it (review/elm.json).
 _ELM_REVIEW_VERSION="2.13.5"
+# elm-format, which hecatron format runs on every component.
+_ELM_FORMAT_VERSION="0.8.8"
 deps() {
     if elm_review_missing; then _npm_global "elm-review@${_ELM_REVIEW_VERSION}"; fi
+    if elm_format_missing; then _npm_global "elm-format@${_ELM_FORMAT_VERSION}"; fi
 }
 
 log "Installing Elm..."

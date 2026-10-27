@@ -9,6 +9,7 @@ for _dir in src spec; do
     [ -d "${_dir}" ] && _sources+=("${_dir}")
 done
 [ "${#_sources[@]}" -gt 0 ] || unknown "no src/ or spec/"
+checks_format
 run crystal tool format --check "${_sources[@]}"
 if grep -q '^[[:space:]]*ameba:' shard.yml; then
     shards_deps

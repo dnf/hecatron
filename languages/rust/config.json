@@ -48,6 +48,7 @@
   ],
   "testing": "cargo test",
   "linting": "Clippy, rustfmt",
+  "formatting": "rustfmt",
   "actions": {
     "test": {
       "find": "above-first",

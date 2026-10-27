@@ -8,7 +8,7 @@ source "$(dirname "$0")/../_common.sh"
 # uv can update itself (_uv_python_install).
 install_macos() {
     brew_install python
-    _install_uv
+    uv_install
 }
 # A dependency with no wheel for this platform or Python version builds from
 # its source distribution, which for a C extension needs a C compiler (the
@@ -17,12 +17,7 @@ install_macos() {
 install_linux() {
     apt_install python3 python3-venv
     has cc || apt_install build-essential
-    _install_uv
-}
-_install_uv() {
-    [ -x "${HOME}/.local/bin/uv" ] || curl -LsSf https://astral.sh/uv/install.sh | sh
-    # uv lands in ~/.local/bin, which this shell's PATH may predate.
-    export PATH="${HOME}/.local/bin:${PATH}"
+    uv_install
 }
 # A Python released after this uv has no build in its list: update uv, then
 # try again.

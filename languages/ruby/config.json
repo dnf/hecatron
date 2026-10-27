@@ -52,5 +52,6 @@
     "RubyGems"
   ],
   "testing": "RSpec, Minitest",
-  "linting": "RuboCop, Standard"
+  "linting": "RuboCop, Standard",
+  "formatting": "RuboCop, Standard (when in the bundle)"
 }

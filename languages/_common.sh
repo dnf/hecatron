@@ -177,19 +177,23 @@ bundle_needs_user_path() {
         [ -z "$(bundle config get --parseable path 2>/dev/null)" ]
 }
 
+# perltidy's output changes between releases, so hecatron format runs one.
+_PERL_TIDY_VERSION="20260826"
 # For Perl's installer and doctor: the tools its components need and lack,
-# one per line (make for Makefile.PL, Module::Build for Build.PL, and
-# Perl::Critic where .perlcriticrc configures it), and the modules a
-# Makefile.PL written with Module::Install needs before it can run: Module::Install
-# itself and the configure_requires it names (its extensions, such as
+# one per line (make for Makefile.PL, Module::Build for Build.PL,
+# Perl::Critic where .perlcriticrc configures it, and Perl::Tidy where
+# .perltidyrc does), and the modules a Makefile.PL written with
+# Module::Install needs before it can run: Module::Install itself and the
+# configure_requires it names (its extensions, such as
 # Module::Install::ReadmeFromPod), which a release bundles in inc/ but a
 # checkout doesn't.
 perl_tools_missing() {
-    local _dir _make=0 _build=0 _critic=0 _modules="" _module
+    local _dir _make=0 _build=0 _critic=0 _tidy=0 _modules="" _module
     while IFS= read -r _dir; do
         [ -f "${_dir}/Makefile.PL" ] && _make=1
         [ -f "${_dir}/Build.PL" ] && _build=1
         [ -f "${_dir}/.perlcriticrc" ] && _critic=1
+        [ -f "${_dir}/.perltidyrc" ] && _tidy=1
         grep -qs 'inc::Module::Install' "${_dir}/Makefile.PL" || continue
         _modules="${_modules} Module::Install $(sed -n \
             "s/^[[:space:]]*configure_requires[[:space:]]*(*[[:space:]]*['\"]\([A-Za-z0-9_:]*\)['\"].*/\1/p" "${_dir}/Makefile.PL")"
@@ -200,6 +204,9 @@ perl_tools_missing() {
     if [ "${_make}" -eq 1 ] && ! has make; then echo make; fi
     if [ "${_build}" -eq 1 ] && ! perl_has_module Module::Build; then echo Module::Build; fi
     if [ "${_critic}" -eq 1 ] && ! has perlcritic; then echo Perl::Critic; fi
+    if [ "${_tidy}" -eq 1 ] && [ "$(perltidy --version 2>/dev/null | sed -n 's/.*perltidy, v\([0-9]*\).*/\1/p')" != "${_PERL_TIDY_VERSION}" ]; then
+        echo Perl::Tidy
+    fi
     return 0
 }
 # (require, not -M: Module::Install's import dies outside a Makefile.PL.)
@@ -228,6 +235,43 @@ elm_review_missing() {
         [ -f "${_dir}/review/elm.json" ] && return 0
     done < <(impl_dirs elm)
     return 1
+}
+
+# For the C, C++ and Objective-C installers and doctors: whether a component
+# formats with clang-format (a .clang-format) and neither uv, which runs the
+# pinned clang-format (languages/_format.sh), nor a clang-format is installed.
+clang_format_missing() {
+    has uvx || [ -x "${HOME}/.local/bin/uvx" ] || has clang-format && return 1
+    impl_configures "$1" .clang-format _clang-format
+}
+
+# For Elm's installer and doctor: elm-format, which hecatron format uses for
+# every Elm component.
+elm_format_missing() { ! has elm-format; }
+
+# For Lua's installer and doctor: whether a component configures StyLua
+# (stylua.toml) and hecatron's version of it isn't installed.
+_STYLUA_VERSION="2.6.0"
+stylua_missing() {
+    [ "$(stylua --version 2>/dev/null)" != "stylua ${_STYLUA_VERSION}" ] && impl_configures lua stylua.toml .stylua.toml
+}
+
+# For R's installer and doctor: whether a component configures Air
+# (air.toml) and hecatron's version of it isn't installed.
+_AIR_VERSION="0.12.0"
+air_missing() {
+    [ "$(air --version 2>/dev/null)" != "air ${_AIR_VERSION}" ] && impl_configures r air.toml .air.toml
+}
+
+# For Julia's installer and doctor: whether a component configures
+# JuliaFormatter (.JuliaFormatter.toml) and hecatron's version of it isn't in
+# the shared environment the format hook uses (@hecatron-format).
+_JULIA_FORMATTER_VERSION="2.14.0"
+julia_formatter_missing() {
+    impl_configures julia .JuliaFormatter.toml || return 1
+    julia --project=@hecatron-format -e "import Pkg
+exit(any(p -> p.name == \"JuliaFormatter\" && string(p.version) == \"${_JULIA_FORMATTER_VERSION}\", values(Pkg.dependencies())) ? 1 : 0)" \
+        </dev/null >/dev/null 2>&1
 }
 
 # For the .NET languages' installers and doctors: the .NET runtimes the
@@ -569,6 +613,58 @@ _install_sbt() {
     $SUDO ln -sfn "${_root}/bin/sbt" /usr/local/bin/sbt
 }
 
+# Whether a component configures a tool with one of the files: in its
+# directory, below it, or above it up to the project root (where formatters
+# that look upward find their configuration), e.g.
+# `impl_configures lua stylua.toml .stylua.toml`.
+impl_configures() {
+    local _lang="$1" _dir _name
+    shift
+    while IFS= read -r _dir; do
+        for _name in "$@"; do
+            [ -n "$(find "${_dir}" -maxdepth 3 -name "${_name}" -print -quit 2>/dev/null)" ] && return 0
+        done
+        while [ "${_dir}" != "${ROOT}" ] && [ "${_dir}" != / ]; do
+            _dir="$(dirname "${_dir}")"
+            for _name in "$@"; do
+                [ -e "${_dir}/${_name}" ] && return 0
+            done
+        done
+    done < <(impl_dirs "${_lang}")
+    return 1
+}
+
+# uv (Astral's), from its installer into ~/.local/bin: Python's toolchain,
+# and how hecatron runs pinned tools published on PyPI (clang-format).
+uv_install() {
+    [ -x "${HOME}/.local/bin/uv" ] || curl -LsSf https://astral.sh/uv/install.sh | sh
+    # uv lands in ~/.local/bin, which this shell's PATH may predate.
+    export PATH="${HOME}/.local/bin:${PATH}"
+}
+
+sha256_of() { if has sha256sum; then sha256sum "$1"; else shasum -a 256 "$1"; fi | cut -d' ' -f1; }
+
+# A tool's release download, checked against its checksum, into
+# /usr/local/bin: the binary itself, or the file at a path inside a .zip or
+# .tar.gz. Usage: release_binary_install NAME URL SHA256 [PATH-IN-ARCHIVE]
+release_binary_install() {
+    local _name="$1" _url="$2" _sha256="$3" _member="${4:-$1}" _work
+    _work="$(mktemp -d)"
+    curl -fsSL -o "${_work}/download" "${_url}"
+    if [ "$(sha256_of "${_work}/download")" != "${_sha256}" ]; then
+        rm -rf "${_work}"
+        echo "error: the ${_name} download doesn't match its checksum (${_url})" >&2
+        return 1
+    fi
+    case "${_url}" in
+        *.zip) (cd "${_work}" && python3 -m zipfile -e download .) ;;
+        *.tar.gz | *.tgz) tar -C "${_work}" -xzf "${_work}/download" ;;
+        *) mv "${_work}/download" "${_work}/${_member}" ;;
+    esac
+    $SUDO install -m 0755 "${_work}/${_member}" "/usr/local/bin/${_name}"
+    rm -rf "${_work}"
+}
+
 # OSV-Scanner (Google's), the dependency auditor `hecatron audit` uses for
 # ecosystems without one of their own (docs/audit.md): its release binary,
 # pinned and checked against its checksum, into /usr/local/bin.
@@ -589,7 +685,7 @@ osv_scanner_install() {
     _binary="$(mktemp)"
     curl -fsSL -o "${_binary}" \
         "https://github.com/google/osv-scanner/releases/download/v${_OSV_SCANNER_VERSION}/osv-scanner_${_platform}"
-    if [ "$(if has sha256sum; then sha256sum "${_binary}"; else shasum -a 256 "${_binary}"; fi | cut -d' ' -f1)" != "${_sha256}" ]; then
+    if [ "$(sha256_of "${_binary}")" != "${_sha256}" ]; then
         rm -f "${_binary}"
         echo "error: the OSV-Scanner download doesn't match its checksum" >&2
         return 1

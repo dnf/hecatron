@@ -68,6 +68,7 @@
   ],
   "testing": "JUnit",
   "linting": "Gradle check",
+  "formatting": "Spotless, fmt-maven-plugin (when the build has one)",
   "family": "jvm",
   "install": {
     "archive": {

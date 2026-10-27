@@ -108,6 +108,12 @@ hct test go       # one language
   audit`, `dotnet list package --vulnerable`, bundler-audit, OSV-Scanner for
   the rest) and fails at a severity you choose, with accepted risks that
   expire ([docs/audit.md](docs/audit.md)).
+- **One formatter per language.** `hct format` rewrites each component's
+  code with its language's formatter and the project's own configuration
+  (gofmt, rustfmt, Ruff, `dotnet format`, `mix format`, `dart format`, and
+  the Prettier, RuboCop or Spotless a project already uses); `--check`
+  changes nothing and lists what it would, and `hct lint` runs that check
+  ([docs/format.md](docs/format.md)).
 - **Generated CI and Dockerfile.** `hct workflows` writes one CI workflow per
   language and `hct dockerfile` an image with every toolchain (and, for the
   languages with versions, each version the components use); `hct check`
@@ -231,6 +237,7 @@ expect changes before 1.0. Changes are listed in
 | [docs/languages.md](docs/languages.md) | Every language: its home, what it's for, and how hecatron builds, tests and lints it |
 | [docs/coverage.md](docs/coverage.md) | Which languages install and work on which platforms |
 | [docs/audit.md](docs/audit.md) | `hct audit`: each language's dependency auditor, severities, accepted risks, CI |
+| [docs/format.md](docs/format.md) | `hct format`: each language's formatter, `--check`, and the format check in `hct lint` |
 | [docs/hecatron-vs-ad-hoc.md](docs/hecatron-vs-ad-hoc.md) | A ten-language library maintained with hecatron and without it |
 | [docs/installers.md](docs/installers.md) | How each language's toolchain is installed on macOS and Linux, and toolchains languages share |
 | [docs/adding-a-language.md](docs/adding-a-language.md) | Writing a language definition |

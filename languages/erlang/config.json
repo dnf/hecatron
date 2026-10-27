@@ -16,5 +16,6 @@
     "rebar3"
   ],
   "testing": "EUnit, Common Test",
-  "linting": "Dialyzer"
+  "linting": "Dialyzer",
+  "formatting": "erlfmt (rebar3 plugin)"
 }

@@ -30,7 +30,7 @@ HEADER = """\
 # Languages
 
 Every language hecatron supports, what it is, and how hecatron builds,
-tests and lints it by default. A project overrides any default with its own
+tests, lints and formats it by default. A project overrides any default with its own
 hook (`.hecatron/languages/<lang>/<action>.sh`).
 
 Generated from each language's `config.json` by
@@ -38,8 +38,8 @@ Generated from each language's `config.json` by
 [coverage.md](coverage.md) has which platforms each one installs and passes
 on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 
-| Language | What it is | Build systems | Tests | Linting | Default version |
-| --- | --- | --- | --- | --- | --- |
+| Language | What it is | Build systems | Tests | Linting | Formatting | Default version |
+| --- | --- | --- | --- | --- | --- | --- |
 """
 
 
@@ -70,7 +70,7 @@ def row(lang: str, config: dict) -> str:
     if version and config.get("track") == "lts":
         version += " (LTS)"
     return "| " + " | ".join([language, cell(summary), cell(builds), cell(config.get("testing")),
-                              cell(config.get("linting")), cell(version)]) + " |"
+                              cell(config.get("linting")), cell(config.get("formatting")), cell(version)]) + " |"
 
 
 def render() -> str:

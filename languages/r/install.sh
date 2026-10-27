@@ -11,6 +11,21 @@ deps() {
     if impl_has r -name .lintr; then
         _r_package lintr r-cran-lintr
     fi
+    if air_missing; then _install_air; fi
+}
+# Air (hecatron format's R formatter), its release binary.
+_install_air() {
+    local _platform _sha256
+    case "${OS}-$(uname -m)" in
+        linux-x86_64) _platform=x86_64-unknown-linux-gnu _sha256=d2b9452bfc44d55f0e61c2d8906ca3fbaac5e63f40726017acf8bad6bfd3ba37 ;;
+        linux-aarch64 | linux-arm64) _platform=aarch64-unknown-linux-gnu _sha256=b3d9d576dd0e2dae4be7a8c4fa78de6b2e23bc0ce703db84776c08fc17bcd55c ;;
+        macos-x86_64) _platform=x86_64-apple-darwin _sha256=582221cd54220a4232c8251760a05d8765b56361bada9608a9d3150972ba101e ;;
+        macos-arm64) _platform=aarch64-apple-darwin _sha256=30ca7b7458cc78a11d1de9cfe1a1154b805bd1c64fbf71f53b739f0b261b857e ;;
+        *) echo "WARNING: no Air release for $(uname -sm)" >&2; return 0 ;;
+    esac
+    log "Installing Air ${_AIR_VERSION} (for hecatron format)..."
+    release_binary_install air \
+        "https://github.com/posit-dev/air/releases/download/${_AIR_VERSION}/air-${_platform}.tar.gz" "${_sha256}" "air-${_platform}/air"
 }
 # An R package from apt on Linux, else from CRAN.
 _r_package() {

@@ -16,5 +16,6 @@
     "Shards"
   ],
   "testing": "crystal spec",
-  "linting": "crystal tool format"
+  "linting": "crystal tool format",
+  "formatting": "crystal tool format"
 }

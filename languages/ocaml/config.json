@@ -16,5 +16,6 @@
     "dune"
   ],
   "testing": "dune runtest",
-  "linting": "ocamlformat, dune @check"
+  "linting": "ocamlformat, dune @check",
+  "formatting": "ocamlformat (with a .ocamlformat)"
 }

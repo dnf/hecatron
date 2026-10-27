@@ -19,5 +19,6 @@
     "mojo package"
   ],
   "testing": "test programs",
-  "linting": "mojo format"
+  "linting": "mojo format",
+  "formatting": "mojo format"
 }

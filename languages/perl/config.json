@@ -23,5 +23,6 @@
     "Carton"
   ],
   "testing": "prove (Test::More)",
-  "linting": "Perl::Critic"
+  "linting": "Perl::Critic",
+  "formatting": "perltidy (with a .perltidyrc)"
 }

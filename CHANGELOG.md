@@ -6,6 +6,23 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **`hct lint` now fails on unformatted code.** It runs each language's
+  format check (below) after its linter, where the linter doesn't check
+  formatting already, so a project whose code isn't formatted the way its
+  formatter says will see `lint` fail. Run `hct format` once, or turn the
+  check off in `.hecatron/config.json` with `"lint": {"format": false}` (or
+  `{"format": {"haskell": false}}` for one language). See
+  [docs/format.md](docs/format.md).
+- **`hecatron format`:** rewrites every component's code with its
+  language's formatter, using the project's own configuration: gofmt,
+  rustfmt, Ruff (or Black), `dotnet format`, `mix format`, `dart format`,
+  `zig fmt`, swift-format, elm-format..., and where the project configures
+  one, Prettier or Biome, RuboCop or Standard, PHP CS Fixer or Pint,
+  Spotless, ktlint or scalafmt through the build, clang-format, StyLua,
+  perltidy, Fourmolu or Ormolu, Air, cljfmt, erlfmt, JuliaFormatter and
+  ocamlformat. `--check` changes nothing and lists the files it would
+  change. The installers add the formatters a toolchain doesn't ship, at
+  pinned versions.
 - **`hecatron audit`:** checks every component's dependencies for known
   vulnerabilities with each ecosystem's auditor (npm, pnpm, Yarn, Bun,
   pip-audit, govulncheck, bundler-audit, Composer, the .NET SDK, and

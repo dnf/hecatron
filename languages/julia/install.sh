@@ -32,7 +32,15 @@ _download_julia() {
     curl -fsSL "${url}" | $SUDO tar -C "${_julia_root}" --strip-components=1 -xz
 }
 
-deps() { :; }
+# JuliaFormatter, where a component configures it, into the shared
+# environment hecatron format runs it from.
+deps() {
+    if julia_formatter_missing; then
+        log "Installing JuliaFormatter ${_JULIA_FORMATTER_VERSION} (for hecatron format)..."
+        julia --project=@hecatron-format -e "import Pkg
+Pkg.add(name=\"JuliaFormatter\", version=\"${_JULIA_FORMATTER_VERSION}\")"
+    fi
+}
 
 log "Installing Julia..."
 "install_${OS}"

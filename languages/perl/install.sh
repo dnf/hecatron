@@ -15,6 +15,7 @@ deps() {
             Module::Install) if [ "${OS}" = "linux" ]; then apt_install libmodule-install-perl; else _cpan Module::Install; fi ;;
             Module::Build) if [ "${OS}" = "linux" ]; then apt_install libmodule-build-perl; else _cpan Module::Build; fi ;;
             Perl::Critic) if [ "${OS}" = "linux" ]; then apt_install libperl-critic-perl; else _cpan Perl::Critic; fi ;;
+            Perl::Tidy) _cpan "Perl::Tidy@${_PERL_TIDY_VERSION}" ;;
             *) _cpan "${_tool}" ;;
         esac
     done < <(perl_tools_missing)

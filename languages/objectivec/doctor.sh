@@ -18,4 +18,7 @@ if ! has cmake; then
         [ -f "${_dir}/CMakeLists.txt" ] && { problem "cmake not installed (a component builds with it)"; break; }
     done < <(impl_dirs objectivec)
 fi
+if clang_format_missing objectivec; then
+    problem "neither uv nor clang-format installed (a component has a .clang-format)"
+fi
 doctor_done

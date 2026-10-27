@@ -26,3 +26,23 @@ mojo_files() {
     find . -path "./${_mojo_build_dir}" -prune -o -path './.*' -prune -o \
         -type f \( -name '*.mojo' -o -name '*.🔥' \) -print | sort
 }
+
+# Fail where mojo format would change a file. It has no check mode, so this
+# formats copies and compares.
+mojo_format_check() {
+    local _files _copies _file _unformatted=0
+    _files="$(mojo_files)"
+    [ -n "${_files}" ] || unknown "no .mojo files"
+    _copies="$(mktemp -d)"
+    while IFS= read -r _file; do
+        mkdir -p "${_copies}/$(dirname "${_file}")"
+        cp "${_file}" "${_copies}/${_file}"
+    done <<<"${_files}"
+    echo "+ mojo format (checking, on copies)"
+    mojo format --quiet "${_copies}"
+    while IFS= read -r _file; do
+        diff -u "${_file}" "${_copies}/${_file}" || _unformatted=1
+    done <<<"${_files}"
+    rm -rf "${_copies}"
+    [ "${_unformatted}" -eq 0 ] || { echo "error: mojo: run hecatron format mojo for the files above" >&2; exit 1; }
+}

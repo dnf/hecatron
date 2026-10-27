@@ -52,6 +52,7 @@
   ],
   "testing": "go test",
   "linting": "golangci-lint",
+  "formatting": "gofmt",
   "actions": {
     "test": {
       "find": "above-first",

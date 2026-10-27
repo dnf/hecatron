@@ -6,6 +6,7 @@
 # shellcheck source=_dune.sh source-path=SCRIPTDIR
 source "$(dirname "$0")/_dune.sh"
 if [ -f .ocamlformat ]; then
+    checks_format
     run dune build @fmt
 else
     run dune build @check

@@ -17,6 +17,7 @@
   ],
   "testing": "ExUnit",
   "linting": "mix format, Credo",
+  "formatting": "mix format",
   "shared": {
     "deps": [
       {
