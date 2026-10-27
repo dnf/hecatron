@@ -184,7 +184,8 @@ For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
   `/plugin install hecatron --marketplace dnf/hecatron`, or `hct skill
   install` (`--project` puts it in the repository, for everyone who opens
   it); other agents that read Agent Skills take it with `hct skill install
-  --dir <their skills folder>`.
+  --dir <their skills folder>`; in claude.ai,
+  upload a release's `hecatron-skill.zip` under Settings > Features.
 - **Output sized for agents.** With `HECATRON_OUTPUT=agent`, a run prints
   one summary line, then only the failures with their log paths and key
   error lines, under a third of the human summary; exit status 3 means a

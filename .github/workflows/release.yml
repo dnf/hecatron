@@ -2,7 +2,8 @@ name: Release binaries
 
 # Build the Go binary (docs/design.md §19) for every platform and attach it,
 # with SHA256SUMS, to a published release; install.sh downloads the one for
-# its machine. On demand, for a release that's already published.
+# its machine. The Agent Skill goes with it as hecatron-skill.zip. On
+# demand, for a release that's already published.
 
 on:
   release:
@@ -28,9 +29,16 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      # The Agent Skill as a zip with one top folder, as claude.ai's skill
+      # upload (Settings > Features) takes it.
+      - name: Package the Agent Skill
+        run: |
+          mkdir -p dist
+          (cd plugins/hecatron/skills && zip -qr "${GITHUB_WORKSPACE}/dist/hecatron-skill.zip" hecatron)
+          unzip -l dist/hecatron-skill.zip
       - name: Build for each platform
         run: |
-          mkdir dist
+          mkdir -p dist
           for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
             os="${target%/*}"
             arch="${target#*/}"
