@@ -85,6 +85,11 @@ npm_deps() {
     if [ -f package-lock.json ]; then run npm ci; else run npm install; fi
 }
 
+# Mix: a locked project's dependencies first, when they aren't fetched yet.
+mix_deps() {
+    if [ -f mix.lock ] && [ ! -d deps ]; then run mix deps.get; fi
+}
+
 # Node.js packages (TypeScript, JavaScript): the package's own npm scripts.
 node_hook() {
     [ -f package.json ] || unknown "no package.json"
