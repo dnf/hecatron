@@ -1,1 +1,9 @@
-# apt: openjdk-17-jdk-headless
+# JDK: Temurin, the default version (java's config.json), as java's install.sh
+# installs it (shared by Java, Kotlin, Scala, Groovy; installed once)
+RUN [ -d /usr/lib/jvm/temurin-25.0.5 ] || { \
+      ARCH="$(dpkg --print-architecture | sed 's/amd64/x64/;s/arm64/aarch64/')" && \
+      mkdir -p /usr/lib/jvm/temurin-25.0.5 && \
+      curl -fsSL "https://api.adoptium.net/v3/binary/version/jdk-25.0.5%2B8/linux/${ARCH}/jdk/hotspot/normal/eclipse" | \
+      tar -C /usr/lib/jvm/temurin-25.0.5 --strip-components=1 -xz; }
+ENV JAVA_HOME="/usr/lib/jvm/temurin-25.0.5"
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
