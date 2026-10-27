@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/dnf/hecatron/internal/project"
 	"github.com/dnf/hecatron/internal/runner"
 )
 
@@ -106,9 +107,22 @@ func noHook(out io.Writer, action, lang string) runner.Outcome {
 }
 
 // languageEnv is the environment for a language's hooks in a component:
-// base with project.py env's exports applied. Its errors go to out; ok is
-// false when it fails.
+// base with the language's environment for the component's version
+// applied, from the Go model, else (where it declines) from project.py env.
+// Its errors go to out; ok is false when it fails.
 func (r *invocation) languageEnv(ctx context.Context, out io.Writer, base []string, lang, component string) ([]string, bool) {
+	env, err := r.project.LanguageEnv(lang, component)
+	switch {
+	case err == nil:
+		return env.Apply(base), true
+	case !project.IsUnsupported(err):
+		fmt.Fprintln(out, "hecatron:", err)
+		return nil, false
+	}
+	return r.languageEnvFromPython(ctx, out, base, lang, component)
+}
+
+func (r *invocation) languageEnvFromPython(ctx context.Context, out io.Writer, base []string, lang, component string) ([]string, bool) {
 	cmd := exec.CommandContext(ctx, "python3", r.homePath("libexec/lib/project.py"), "env", lang, component)
 	cmd.Dir, cmd.Env, cmd.Stderr = r.root, base, out
 	exports, err := cmd.Output()

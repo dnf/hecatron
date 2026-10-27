@@ -3,7 +3,12 @@ directory, as JSON, for the Go model's parity tests (parity_test.go).
 
     HECATRON_HOME=... python3 dump.py LANG...
 
-A value project.py raised on is {"raised": "<exception type>"}.
+With HECATRON_DUMP_VERSIONS=1, each language's toolchain versions and
+environment too (which runs its installed.sh).
+
+A value project.py raised on is {"raised": "<exception type>"}, or, for the
+errors its command line reports as "hecatron: <message>" (ProjectError and
+ValueError), {"error": "<message>"}.
 """
 
 import json
@@ -25,6 +30,8 @@ def field(compute):
     afresh."""
     try:
         return compute(project.load())
+    except (project.ProjectError, ValueError) as e:
+        return {"error": str(e)}
     except Exception as e:  # noqa: BLE001 - which exception is the point
         return {"raised": type(e).__name__}
 
@@ -47,8 +54,35 @@ def shell(p):
     }
 
 
-def language(lang):
+def component_version(lang, component):
+    """What a component's language resolves to, as the version and env
+    queries print it ("" for None)."""
+    def compute(p):
+        resolved = p.resolve_version(lang, component)
+        match = p.installed_version(lang, component)
+        return {"spec": resolved["spec"] or "", "source": resolved["source"] or "", "exact": resolved["exact"],
+                "selects": p.selects_version(lang, component), "installed": list(match) if match else [],
+                "env": project.env_exports(p.language_env(lang, component))}
+    return field(compute)
+
+
+def versions_of(lang, components):
+    if not os.environ.get("HECATRON_DUMP_VERSIONS"):
+        return {}
     return {
+        "default": field(lambda p: p.default_version(lang) or ""),
+        "installedAll": field(lambda p: [list(pair) for pair in p.installed(lang)]),
+        "version": {c or "(none)": component_version(lang, c) for c in components + [""]},
+        "versions": field(lambda p: [[spec or "", sources] for spec, sources in p.versions(lang)]),
+        "missing": field(lambda p: [list(m) for m in p.missing_versions(lang)]),
+        "notes": field(lambda p: [list(n) for n in p.version_notes(lang)]),
+        "staticPath": field(lambda p: p._static_path(lang)),
+    }
+
+
+def language(lang, components):
+    return {
+        **versions_of(lang, components),
         "implTemplate": field(lambda p: p.impl_template(lang)),
         "dirNames": field(lambda p: p.dir_names(lang)),
         "implDir": field(lambda p: {c: p.impl_dir(c, lang) for c in p.components}),
@@ -69,6 +103,10 @@ def main():
         print(json.dumps({"crash": type(e).__name__}))
         return
     langs = sys.argv[1:]
+    try:
+        components = p.components
+    except Exception:  # noqa: BLE001 - the components field reports it
+        components = []
     out = {
         "root": p.root,
         "name": field(lambda p: p.name),
@@ -83,7 +121,10 @@ def main():
         "definitions": field(lambda p: p.definitions),
         "shell": field(shell),
         "configProblems": field(lambda p: audit.config_problems(p.config) + project.lint_config_problems(p.config)),
-        "lang": {lang: language(lang) for lang in langs},
+        "asOf": field(lambda p: p.as_of() or ""),
+        "conflicts": field(lambda p: [[lang, c, source, spec or "", wanted]
+                                      for lang, c, source, spec, wanted in p.version_conflicts()]),
+        "lang": {lang: language(lang, components) for lang in langs},
     }
     print(json.dumps(out))
 

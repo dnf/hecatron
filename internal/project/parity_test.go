@@ -33,8 +33,15 @@ func TestModelMatchesProjectPy(t *testing.T) {
 	}
 	home := repoHome(t)
 	answered, declined := 0, 0
-	for _, c := range parityCases() {
+	for _, c := range append(parityCases(), versionCases()...) {
 		t.Run(c.name, func(t *testing.T) {
+			t.Setenv("HECATRON_AS_OF", "off") // a fixture's commit is today's, and the date is the case's
+			for name, value := range c.env {
+				t.Setenv(name, value)
+			}
+			if c.versions {
+				t.Setenv("HECATRON_DUMP_VERSIONS", "1")
+			}
 			root := c.create(t)
 			builtin := ""
 			if c.builtin != nil {
@@ -170,15 +177,101 @@ func goDump(t *testing.T, home, builtin, cwd string, langs []string) any {
 		problems, err := p.ConfigProblems()
 		return strs(problems), err
 	})
+	out["asOf"] = answer(func() (any, error) { return p.AsOf() })
+	out["conflicts"] = answer(func() (any, error) {
+		conflicts, err := p.VersionConflicts()
+		list := []any{}
+		for _, c := range conflicts {
+			list = append(list, []any{c.Lang, c.Component, c.Source, c.PinSpec, c.ProjectSpec})
+		}
+		return list, err
+	})
 	languages := map[string]any{}
 	for _, lang := range langs {
-		languages[lang] = goLanguage(p, lang)
+		language := goLanguage(p, lang)
+		if os.Getenv("HECATRON_DUMP_VERSIONS") != "" {
+			for key, value := range goVersions(p, lang) {
+				language[key] = value
+			}
+		}
+		languages[lang] = language
 	}
 	out["lang"] = languages
 	return out
 }
 
-func goLanguage(p *Project, lang string) any {
+// goVersions are dump.py's version fields from the Go model.
+func goVersions(p *Project, lang string) map[string]any {
+	versions := map[string]any{}
+	for _, component := range append(append([]string(nil), p.Components...), "") {
+		key := component
+		if key == "" {
+			key = "(none)"
+		}
+		versions[key] = answer(func() (any, error) {
+			resolved, err := p.ResolveVersion(lang, component)
+			if err != nil {
+				return nil, err
+			}
+			match, ok, err := p.InstalledVersion(lang, component)
+			if err != nil {
+				return nil, err
+			}
+			installed := []any{}
+			if ok {
+				installed = []any{match.Version, match.Home}
+			}
+			env, err := p.LanguageEnv(lang, component)
+			if err != nil {
+				return nil, err
+			}
+			return map[string]any{"spec": resolved.Spec, "source": resolved.Source, "exact": resolved.Exact(),
+				"selects": resolved.Selects, "installed": installed, "env": env.Exports()}, nil
+		})
+	}
+	return map[string]any{
+		"default": answer(func() (any, error) { return p.DefaultVersion(lang) }),
+		"installedAll": answer(func() (any, error) {
+			all, err := p.InstalledVersions(lang)
+			list := []any{}
+			for _, entry := range all {
+				list = append(list, []any{entry.Version, entry.Home})
+			}
+			return list, err
+		}),
+		"version": versions,
+		"versions": answer(func() (any, error) {
+			specs, err := p.Versions(lang)
+			list := []any{}
+			for _, s := range specs {
+				list = append(list, []any{s.Spec, strs(s.Sources)})
+			}
+			return list, err
+		}),
+		"missing": answer(func() (any, error) {
+			missing, err := p.MissingVersions(lang)
+			list := []any{}
+			for _, m := range missing {
+				list = append(list, []any{m.Component, m.Spec, m.Source})
+			}
+			return list, err
+		}),
+		"notes": answer(func() (any, error) {
+			notes, err := p.VersionNotes(lang)
+			list := []any{}
+			for _, n := range notes {
+				list = append(list, []any{n.Component, n.Note})
+			}
+			return list, err
+		}),
+		"staticPath": answer(func() (any, error) {
+			dirs, err := p.StaticPath(lang)
+			return strs(dirs), err
+		}),
+	}
+}
+
+func goLanguage(p *Project, lang string) map[string]any {
 	resolve := map[string]any{}
 	for _, file := range append([]string{"config.json", "install.sh", "doctor.sh", "workflow.yml", "dockerfile", "installed.sh"}, Hooks...) {
 		resolve[file] = p.Resolve(lang, file)
@@ -232,6 +325,9 @@ func answer(compute func() (any, error)) any {
 	if err != nil {
 		if IsUnsupported(err) {
 			return skipped{err.Error()}
+		}
+		if e, ok := err.(*Error); ok {
+			return map[string]any{"error": e.Message}
 		}
 		return map[string]any{"goError": err.Error()}
 	}
@@ -348,12 +444,15 @@ func pythonFailed(want any) bool {
 // A parity case: files making up a project (and, when builtin is set,
 // fixture built-in definitions in place of languages/).
 type parityCase struct {
-	name    string
-	files   map[string]string
-	builtin map[string]string
-	cwd     string // relative to the root
-	langs   []string
-	git     bool // a git repository: without a config, read as detected
+	name     string
+	files    map[string]string
+	builtin  map[string]string
+	cwd      string // relative to the root
+	langs    []string
+	git      bool              // a git repository: without a config, read as detected
+	commit   string            // with git: commit everything, dated this (YYYY-MM-DD)
+	versions bool              // compare toolchain versions and environments too
+	env      map[string]string // set for both
 }
 
 func (c parityCase) create(t *testing.T) string {
@@ -369,9 +468,14 @@ func (c parityCase) create(t *testing.T) string {
 		}
 	}
 	if c.git {
-		for _, args := range [][]string{{"init", "-q"}, {"add", "-A"}} {
+		commands := [][]string{{"init", "-q"}, {"add", "-A"}}
+		if c.commit != "" {
+			commands = append(commands, []string{"-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-qm", "x"})
+		}
+		for _, args := range commands {
 			cmd := exec.Command("git", args...)
 			cmd.Dir = root
+			cmd.Env = append(os.Environ(), "GIT_COMMITTER_DATE="+c.commit+"T12:00:00", "GIT_AUTHOR_DATE="+c.commit+"T12:00:00")
 			if out, err := cmd.CombinedOutput(); err != nil {
 				t.Fatalf("git %v: %v\n%s", args, err, out)
 			}

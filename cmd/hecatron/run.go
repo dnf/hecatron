@@ -207,6 +207,9 @@ func taskCommand(tasks []project.Task, name string) (string, bool) {
 }
 
 func (r *invocation) run() int {
+	// The environment project.py env ran in, which the model's
+	// installed.sh runs and $HOME come from.
+	r.project.Environ = r.environment()
 	switch r.command {
 	case "rebuild", "retest":
 		then := map[string]string{"rebuild": "build", "retest": "test"}[r.command]

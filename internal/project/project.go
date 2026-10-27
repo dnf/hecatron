@@ -1,7 +1,8 @@
 // Package project is the read-only hecatron project model: finding the
 // project, its config.json and local.json, components, language definitions
-// and file resolution (docs/design.md §6-§7). It is a port of
-// libexec/lib/project.py and must agree with it: tests run both on the same
+// and file resolution (docs/design.md §6-§7), and toolchain versions and
+// each component's environment (§18). It is a port of
+// libexec/lib/project.py and versions.py and must agree with them: tests run both on the same
 // projects.
 //
 // Where project.py's result depends on how Python treats an unusual value
@@ -21,6 +22,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"unicode"
 )
 
@@ -111,9 +113,16 @@ type Project struct {
 	Metadata   string // the metadata file's path, or ""
 	Detected   bool   // a git repository without a config of its own
 
+	// Environ is the environment project.py would run in (installed.sh's,
+	// HOME, HECATRON_AS_OF); nil means this process's.
+	Environ []string
+
 	config      *Object
 	implPaths   map[string]string
 	definitions *Definitions
+
+	cacheMu sync.Mutex
+	cache   versionCache
 }
 
 // Load reads the project at root: config.json, checked as project.py checks
@@ -512,6 +521,11 @@ func readJSON(path string) (any, error) {
 func isFile(path string) bool {
 	info, err := os.Stat(path)
 	return err == nil && info.Mode().IsRegular()
+}
+
+func isExecutableFile(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.Mode().IsRegular() && info.Mode()&0o111 != 0
 }
 
 func isDir(path string) bool {
