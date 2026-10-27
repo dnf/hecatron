@@ -60,9 +60,116 @@ unknown() {
     exit 1
 }
 
-# A Maven or Gradle wrapper when the project ships one, else the tool.
+# A language's directory isn't always where its build file is. The build can
+# be above it (pulumi's sdk/go is in the module sdk/go.mod; FlatBuffers'
+# swift/ is built by the root's Package.swift), or in directories below it
+# (FlatBuffers' rust/ holds three crates). find_build looks here, then below,
+# then above, never leaving the project (HECATRON_ROOT).
+
+# This hook and its arguments, to run it again in another directory.
+_hook_script="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+_hook_args=("$@")
+
+# Whether this directory has a file matching one of the globs.
+has_any() {
+    local _glob
+    for _glob in "$@"; do
+        exists "${_glob}" && return 0
+    done
+    return 1
+}
+
+# The directories above this one, nearest first, up to the project root.
+dirs_above() {
+    local _root _dir
+    _root="$(cd "${HECATRON_ROOT:-.}" 2>/dev/null && pwd -P)" || return 0
+    _dir="$(pwd -P)"
+    case "${_dir}/" in "${_root}/"?*) ;; *) return 0 ;; esac
+    while [ "${_dir}" != "${_root}" ]; do
+        _dir="$(dirname "${_dir}")"
+        echo "${_dir}"
+    done
+}
+
+# The nearest directory above this one with a file matching one of the globs.
+dir_above_with() {
+    local _dir
+    while IFS= read -r _dir; do
+        if (cd "${_dir}" && has_any "$@"); then
+            echo "${_dir}"
+            return 0
+        fi
+    done < <(dirs_above)
+    return 1
+}
+
+# The directories below this one, at most three levels down, with a file
+# matching one of the globs: only the shallowest that have one (csharp/src/
+# with the solution, not each project under it), as ./paths. Vendored code,
+# test data and build output aren't searched.
+dirs_below_with() {
+    local _names=() _skip=() _glob
+    for _glob in "$@"; do _names+=(-o -name "${_glob}"); done
+    for _glob in '.*' node_modules vendor third_party third-party external \
+        testdata test-data test_data fixtures build target out dist bin obj; do
+        _skip+=(-o -name "${_glob}")
+    done
+    find . -maxdepth 4 \( -type d ! -path . \( "${_skip[@]:1}" \) -prune \) -o \
+        -type f \( "${_names[@]:1}" \) -print 2>/dev/null |
+        sed 's|/[^/]*$||' | sort -u |
+        awk -F/ 'NF > 1 { depth[NR] = NF; dir[NR] = $0; if (!least || NF < least) least = NF }
+            END { for (i = 1; i <= NR; i++) if (depth[i] == least) print dir[i] }'
+}
+
+# Run this hook again in each directory, and exit: failing if any fails.
+run_hook_in() {
+    local _dir _failed_dirs=()
+    for _dir in "$@"; do
+        echo "--- ${HECATRON_LANG:-}: ${_hook_action} in ${_dir#./}"
+        (cd "${_dir}" && bash "${_hook_script}" ${_hook_args[@]+"${_hook_args[@]}"}) || _failed_dirs+=("${_dir#./}")
+    done
+    if [ "${#_failed_dirs[@]}" -gt 0 ]; then
+        echo "error: ${HECATRON_LANG:-}: ${_hook_action} failed in ${_failed_dirs[*]}" >&2
+        exit 1
+    fi
+    exit 0
+}
+
+# Where the build files matching the globs are: here (build_dir is .), or the
+# nearest directory above (build_dir is its path); when only directories
+# below have them, the hook runs in each and exits. Fails when none has.
+# --above-first looks above before below, for a tool that itself finds its
+# build file upward (go, cargo, bundler, gradle): one above means this
+# directory belongs to that build, and the tool acts on it from here.
+build_dir=""
+find_build() {
+    local _above_first=0 _dirs=() _dir
+    if [ "$1" = --above-first ]; then
+        _above_first=1
+        shift
+    fi
+    build_dir=.
+    has_any "$@" && return 0
+    if [ "${_above_first}" -eq 1 ] && build_dir="$(dir_above_with "$@")"; then return 0; fi
+    while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(dirs_below_with "$@")
+    [ "${#_dirs[@]}" -eq 0 ] || run_hook_in "${_dirs[@]}"
+    if [ "${_above_first}" -eq 0 ] && build_dir="$(dir_above_with "$@")"; then return 0; fi
+    build_dir=""
+    return 1
+}
+# Say where the build is, when it isn't here.
+note_build_dir() {
+    [ "${build_dir}" = . ] || echo "${HECATRON_LANG:-}: ${_hook_action}: the build for $(pwd) is in ${build_dir}"
+}
+
+# A Maven or Gradle wrapper when the project ships one, else the tool. A
+# Gradle subproject's wrapper is usually in the build's root, above it.
 maven() { if [ -x ./mvnw ]; then run ./mvnw -B "$@"; else run mvn -B "$@"; fi; }
-gradle_() { if [ -x ./gradlew ]; then run ./gradlew "$@"; else run gradle "$@"; fi; }
+gradle_() {
+    local _wrapper=./gradlew
+    [ -x "${_wrapper}" ] || _wrapper="$(dir_above_with gradlew || true)/gradlew"
+    if [ "${_wrapper}" != /gradlew ] && [ -x "${_wrapper}" ]; then run "${_wrapper}" "$@"; else run gradle "$@"; fi
+}
 is_gradle() { exists 'build.gradle' || exists 'build.gradle.kts'; }
 
 # The one solution or project file `dotnet` should act on, when a directory
@@ -89,11 +196,15 @@ dotnet_test_target() {
     fi
 }
 
-# .NET (C#, F#, VB.NET): the solution or project in the directory. `dotnet
-# format` checks C# and VB.NET only, so F#'s lint hook is its own.
+# .NET (C#, F#, VB.NET): the solution or project in the directory, else in
+# each directory below with one (protobuf's csharp/src/), else the nearest
+# above, acting there. `dotnet format` checks C# and VB.NET only, so F#'s lint
+# hook is its own.
 dotnet_hook() {
-    exists '*.sln' || exists '*.slnx' || exists '*.csproj' || exists '*.fsproj' || exists '*.vbproj' ||
-        unknown "no .sln, .slnx or project file"
+    find_build '*.sln' '*.slnx' '*.csproj' '*.fsproj' '*.vbproj' ||
+        unknown "no .sln, .slnx or project file here, below, or above it in the project"
+    note_build_dir
+    cd "${build_dir}"
     local _target
     _target="$(dotnet_target)"
     case "$1" in
@@ -105,6 +216,18 @@ dotnet_hook() {
         clean) run dotnet clean ${_target:+"${_target}"} ;;
         lint) run dotnet format ${_target:+"${_target}"} --verify-no-changes ;;
     esac
+}
+
+# SwiftPM: the package here, each package below, or the one above whose
+# targets include this directory's sources (FlatBuffers' Package.swift at the
+# root builds swift/Sources), which swift_package_args points SwiftPM at.
+# shellcheck disable=SC2034 # read by the swift hooks
+swift_package_args=()
+swift_package() {
+    find_build Package.swift || unknown "no Package.swift here, below, or above it in the project"
+    note_build_dir
+    # shellcheck disable=SC2034 # read by the swift hooks
+    [ "${build_dir}" = . ] || swift_package_args=(--package-path "${build_dir}")
 }
 
 # Janet's jpm, in the project's local tree (jpm -l) when it keeps its
@@ -292,22 +415,34 @@ composer_deps() {
     if [ ! -d vendor ]; then run composer install --no-interaction; fi
 }
 
+# Ruby: the bundle and Rakefile here, else the nearest above (Bundler and
+# Rake look upward themselves: gRPC's src/ruby is in the root's bundle), in
+# ruby_root; else each bundle below, running the hook there.
+ruby_root=.
+ruby_project() {
+    has_any Gemfile Rakefile '*.gemspec' && return 0
+    if find_build --above-first Gemfile Rakefile; then
+        ruby_root="${build_dir}"
+        note_build_dir
+        if [ -f "${ruby_root}/Gemfile" ]; then export BUNDLE_GEMFILE="${ruby_root}/Gemfile"; fi
+    fi
+}
 # Bundler: the bundle first, when it isn't installed yet; then a command
 # through it (or directly, without a Gemfile).
 bundle_deps() {
-    if [ -f Gemfile ] && ! bundle check >/dev/null 2>&1; then run bundle install; fi
+    if [ -f "${ruby_root}/Gemfile" ] && ! bundle check >/dev/null 2>&1; then run bundle install; fi
 }
 ruby_run() {
-    if [ -f Gemfile ]; then run bundle exec "$@"; else run "$@"; fi
+    if [ -f "${ruby_root}/Gemfile" ]; then run bundle exec "$@"; else run "$@"; fi
 }
 # Whether the bundle (or the gemspec) names a gem, e.g. `gem_listed rubocop`.
 gem_listed() {
-    grep -qsE "^ {4}$1 \(|['\"]$1['\"]" Gemfile.lock Gemfile ./*.gemspec
+    grep -qsE "^ {4}$1 \(|['\"]$1['\"]" "${ruby_root}/Gemfile.lock" "${ruby_root}/Gemfile" "${ruby_root}"/*.gemspec
 }
 # Whether the Rakefile defines a task, described or not, e.g. `rake_has test`.
 rake_has() {
     local _tasks
-    if [ -f Gemfile ]; then _tasks="$(bundle exec rake -P 2>/dev/null)"; else _tasks="$(rake -P 2>/dev/null)"; fi
+    if [ -f "${ruby_root}/Gemfile" ]; then _tasks="$(bundle exec rake -P 2>/dev/null)"; else _tasks="$(rake -P 2>/dev/null)"; fi
     grep -qx "rake $1" <<<"${_tasks}"
 }
 
@@ -352,7 +487,23 @@ node_hook() {
 # the directory has, through its wrapper when it ships one. Gradle's `check`
 # without tests runs whatever checkers the build configures (Checkstyle,
 # Spotless, detekt...).
+#
+# Without a build file here: a Gradle settings file above makes this
+# directory one of that build's projects (Beam's sdks/java, whose tasks run
+# for every project under it), and Gradle, run from here, acts on it. Else
+# the builds in the directories below, each; else a Makefile above with a
+# target for this directory (make_target_above).
 jvm_hook() {
+    local _gradle_above=""
+    if ! has_any pom.xml build.gradle build.gradle.kts build.sbt; then
+        if _gradle_above="$(dir_above_with settings.gradle settings.gradle.kts)"; then
+            echo "${HECATRON_LANG:-}: ${_hook_action}: $(pwd) is a project of the Gradle build in ${_gradle_above}"
+        else
+            find_build pom.xml build.gradle build.gradle.kts build.sbt || true
+            make_target_above "$1"
+            unknown "no pom.xml, build.gradle(.kts) or build.sbt here or below, no Gradle settings above, and no Makefile above with a target for $(basename "$(pwd)")"
+        fi
+    fi
     if [ -f pom.xml ]; then
         case "$1" in
             test) maven test ;;
@@ -360,7 +511,7 @@ jvm_hook() {
             clean) maven clean ;;
             lint) skip "Maven has no standard lint goal" ;;
         esac
-    elif is_gradle; then
+    elif is_gradle || [ -n "${_gradle_above}" ]; then
         case "$1" in
             test) gradle_ test ;;
             build) gradle_ assemble ;;
@@ -434,6 +585,8 @@ clj_kondo() {
 # Native builds (C, C++, Objective-C): CMake, Meson, Autotools or a Makefile.
 # CMake and Meson build out of tree in build/, which clean removes.
 native_hook() {
+    has_any CMakeLists.txt meson.build configure configure.ac Makefile makefile GNUmakefile ||
+        native_elsewhere "$1"
     if [ -f CMakeLists.txt ]; then
         case "$1" in
             test)
@@ -466,6 +619,67 @@ native_hook() {
         unknown "no CMakeLists.txt, meson.build, configure or Makefile"
     fi
 }
+# Without a native build here: the CMake or Meson projects in the
+# directories below, each; else the nearest one above, which the hook then
+# acts on, building in its build/. A project above builds more than this
+# directory, but it is this directory's build: gRPC's src/cpp has no build of
+# its own, and the root's CMakeLists.txt is gRPC's C++ build. Only a file that
+# declares a project() counts, not one that a parent's add_subdirectory()
+# reads. Else a Makefile above with a target for this directory.
+native_elsewhere() {
+    local _dirs=() _dir
+    while IFS= read -r _dir; do
+        if is_native_project "${_dir}"; then _dirs+=("${_dir}"); fi
+    done < <(dirs_below_with CMakeLists.txt meson.build)
+    [ "${#_dirs[@]}" -eq 0 ] || run_hook_in "${_dirs[@]}"
+    while IFS= read -r _dir; do
+        if is_native_project "${_dir}"; then
+            echo "${HECATRON_LANG:-}: ${_hook_action}: the build for $(pwd) is in ${_dir}"
+            cd "${_dir}"
+            return 0
+        fi
+    done < <(dirs_above)
+    make_target_above "$1"
+    unknown "no CMakeLists.txt, meson.build, configure or Makefile here, no CMake or Meson project below or above it, and no Makefile above with a target for $(basename "$(pwd)")"
+}
+is_native_project() {
+    grep -qsiE '^[[:space:]]*project[[:space:]]*\(' "$1/CMakeLists.txt" "$1/meson.build"
+}
+
+# A Makefile above this directory with a target named for it or for the
+# language (check_cxx, test-java...), which runs and exits: a root Makefile
+# that builds every language's directory (Snowball's check_cxx for cxx/). Only
+# a rule the Makefile defines counts, not a file or directory make finds.
+make_target_above() {
+    local _dir _name _target _targets
+    _dir="$(dir_above_with Makefile makefile GNUmakefile)" || return 0
+    for _name in "$(basename "$(pwd)")" "${HECATRON_LANG:-}"; do
+        [ -n "${_name}" ] || continue
+        case "$1" in
+            test) _targets="check_${_name} check-${_name} test_${_name} test-${_name}" ;;
+            build) _targets="${_name} build_${_name} build-${_name}" ;;
+            clean) _targets="clean_${_name} clean-${_name}" ;;
+            lint) _targets="lint_${_name} lint-${_name}" ;;
+        esac
+        for _target in ${_targets}; do
+            if make_defines "${_dir}" "${_target}"; then
+                echo "${HECATRON_LANG:-}: ${_hook_action}: the build for $(pwd) is the ${_dir} Makefile's ${_target}"
+                run make -C "${_dir}" "${_target}"
+                exit 0
+            fi
+        done
+    done
+    case "$1" in
+        clean | lint) skip "the Makefile in ${_dir} has no ${1} target for $(basename "$(pwd)")" ;;
+    esac
+}
+make_defines() {
+    local _database
+    # make -q exits 1 when the default goal is out of date: the database still prints.
+    _database="$(make -C "$1" -qp 2>/dev/null || true)"
+    grep -q "^$2:" <<<"${_database}"
+}
+
 # Whether the Makefile has a target (make -q exits 2 only for an unknown one).
 make_has() {
     local _status=0

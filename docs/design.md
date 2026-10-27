@@ -293,6 +293,21 @@ conventional project needs no hook files at all. Sayable's hooks, kept in
 sayable's files (`test_format_${1}.wren`), the default uses a convention and
 the project overrides.
 
+**Where the build is.** A language's directory isn't always where its build
+file is. When it has none, a default hook looks below it (up to three levels,
+skipping vendored code, test data and build output) and runs itself in each
+of the shallowest directories that have one, failing if any fails (several
+crates under `rust/`, a solution in `csharp/src/`); else it uses the nearest
+build file above it, never outside the project (`sdk/go` in `sdk/go.mod`, a
+root `Package.swift` or CMake project that builds `swift/` or `src/cpp`).
+Where the tool itself finds its build file upward (go, cargo, Bundler and
+Rake, a Gradle settings file), above comes first and the tool runs from the
+directory, scoped to it as far as the tool allows; elsewhere the hook acts
+where the build file is (`swift --package-path`, the CMake project's
+`build/`). A CMake or Meson file counts only when it declares a `project()`,
+and a root Makefile only through a target named for the directory or language
+(`check_cxx` for `cxx/`).
+
 Environment for hooks: `HECATRON_ROOT` (project root), `HECATRON_COMPONENT`,
 `HECATRON_LANG`, `HECATRON_HOME`, and `_common.sh` helpers available by
 sourcing `$HECATRON_HOME/languages/_common.sh`.

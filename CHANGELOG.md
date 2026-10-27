@@ -6,6 +6,13 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Default hooks find a build that isn't in the language's directory:**
+  above it in the project (pulumi's `sdk/go` in the module `sdk/go.mod`, a
+  root `Package.swift`, CMake project or Gradle build), or in directories
+  below it, run in each (several crates under `rust/`, a solution in
+  `csharp/src/`), or a root Makefile's target named for the directory
+  (`check_cxx`).
+
 - **Rust repairs an interrupted install:** a rustup left with no default
   toolchain (an install killed mid-download) is reported by the doctor and
   fixed by the installer.
