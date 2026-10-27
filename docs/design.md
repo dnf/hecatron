@@ -188,7 +188,7 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `project` | Name used in banners, Docker image tags and messages | directory name |
 | `components` | Component names, in order | `["."]` (one, unnamed) |
 | `implPath` | Where a component's code in a language lives | `{lang}` with one component, else `{component}/{lang}` |
-| `implPaths` | A language's own `implPath`, for one kept elsewhere (`{"csharp": "dotnet"}`) | `{}` |
+| `implPaths` | A language's own `implPath`, for one kept elsewhere (`{"csharp": "dotnet"}`). A directory filled in from `{lang}` is the language's only when none of its `detectUnless` files sit there; one named outright is taken as written | `{}` |
 | `languages` | Languages the project implements (was `added.json`) | `[]` |
 | `tools` | Non-language dependencies, as `{ "dependency": "<command>" }` | `{}` |
 | `generated.dockerfile` | Where `hecatron dockerfile` writes; omit for none | none |
@@ -325,8 +325,10 @@ directory):
    component, at the pattern under `sdks/`, `sdk/`, `lib/`, `lang/`,
    `bindings/`, `ffi/`, `packages/` or the root if there is one, else the
    pattern covering most languages. A language whose directory doesn't fit
-   gets its own entry in `implPaths`. `--components` and `--impl-path` set
-   the layout explicitly.
+   gets its own entry in `implPaths`; a directory another language was found
+   in doesn't fit (Cucumber's `javascript/` is TypeScript's, so JavaScript
+   found in `jsonschema/` gets `implPaths` `jsonschema`). `--components` and
+   `--impl-path` set the layout explicitly.
 4. Writes `.hecatron/config.json`, adds `.hecatron/local.json` and the log
    directory to `.gitignore`.
 5. Writes no hooks: defaults apply until the project adds its own. `--hooks`
