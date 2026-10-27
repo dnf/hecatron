@@ -333,17 +333,22 @@ class Project:
         """(spec, source) from the nearest pin file (or other entries),
         searching from the component's implementation directory up to the
         project root."""
+        spec, source, _ = self._pin_entry(lang, component, entries, kind)
+        return spec, source
+
+    def _pin_entry(self, lang: str, component: str, entries: list[dict] | None = None, kind: str = "pin"):
+        """_pin's (spec, source), and the entry that gave them."""
         entries = self._pin_files(lang) if entries is None else entries
         if not entries:
-            return versions.NOT_PINNED, None
+            return versions.NOT_PINNED, None, None
         directory = self.impl_dir(component, lang)
         while True:
             for entry in entries:
                 spec, path = self._read_entry(directory, entry)
                 if spec is not versions.NOT_PINNED:
-                    return spec, f"{kind}:" + os.path.relpath(path, self.root)
+                    return spec, f"{kind}:" + os.path.relpath(path, self.root), entry
             if os.path.normpath(directory) == os.path.normpath(self.root) or len(directory) <= len(self.root):
-                return versions.NOT_PINNED, None
+                return versions.NOT_PINNED, None, None
             directory = os.path.dirname(directory)
 
     @staticmethod
@@ -374,22 +379,37 @@ class Project:
         then becomes the release that was current at its last commit
         (as_of). spec is None when a pin file names no version ("stable"),
         or nothing gives one."""
+        return self._resolve(lang, component)[0]
+
+    def selects_version(self, lang: str, component: str | None = None) -> bool:
+        """Whether the component's version is also the one that runs. Not
+        when it comes from a support file marked "selects": false, which says
+        what to install but not what runs: a workflow's dotnet-version, since
+        .NET's dotnet runs the newest SDK it has unless a global.json picks
+        one, on CI's runners too. Such a component runs what one on the
+        default would (installed_version)."""
+        return self._resolve(lang, component)[1]
+
+    def _resolve(self, lang: str, component: str | None) -> tuple[dict, bool]:
+        """(resolve_version's answer, selects_version's)."""
         component = component or self._first_component(lang)
         default = self.default_version(lang)
+        selects = True
         spec, source = self._pin(lang, component)
         if spec is versions.NOT_PINNED:
             spec, source = self._project_version(lang), "project"
             if spec is None:
                 spec, source = default, "default" if default is not None else None
                 if default is not None:
-                    supported, where = self._pin(lang, component, self._support_files(lang), "supports")
+                    supported, where, entry = self._pin_entry(lang, component, self._support_files(lang), "supports")
                     if supported not in (None, versions.NOT_PINNED) and self._older_line(lang, supported, default):
                         spec, source = self._installable(lang, supported), where
+                        selects = entry.get("selects", True)
         if spec is not None:
             versions.Spec(spec)
             if source == "default" or not spec.startswith("="):
                 spec, source = self._as_of_version(lang, spec, source)
-        return {"spec": spec, "source": source, "exact": spec is not None and spec.startswith("=")}
+        return {"spec": spec, "source": source, "exact": spec is not None and spec.startswith("=")}, selects
 
     def _older_line(self, lang: str, supported: str, default: str) -> bool:
         """Whether the line a component supports up to (3.14) is older than
@@ -546,14 +566,21 @@ class Project:
         A component on the default takes any version on the default's release
         line, so a machine that already has, say, Node.js 24.19 needs no
         second 24; a version the project chooses must match as written."""
-        resolved = self.resolve_version(lang, component)
-        spec = resolved["spec"]
+        resolved, selects = self._resolve(lang, component)
+        if not selects:
+            default = self.default_version(lang)
+            return self._installed_match(lang, default, "default") or self._installed_match(lang, "", "newest")
+        return self._installed_match(lang, resolved["spec"], resolved["source"])
+
+    def _installed_match(self, lang: str, spec: str | None, source: str | None) -> tuple[str, str] | None:
+        """The newest installed (version, home) a spec matches ("" matches
+        any): installed_version's, and missing_versions'."""
         if spec is None:
             return None
-        if resolved["source"] == "default":
+        if source == "default":
             spec = self._release_line(lang, spec)
-        wanted = versions.Spec(spec)
-        matching = {v: home for v, home in self.installed(lang) if wanted.matches(v)}
+        wanted = versions.Spec(spec) if spec else None
+        matching = {v: home for v, home in self.installed(lang) if wanted is None or wanted.matches(v)}
         best = versions.newest(list(matching))
         return (best, matching[best]) if best else None
 
@@ -567,7 +594,7 @@ class Project:
         missing = []
         for component in [c for c, _ in self.impl_dirs(lang)] or [self.components[0]]:
             resolved = self.resolve_version(lang, component)
-            if resolved["spec"] is not None and self.installed_version(lang, component) is None:
+            if resolved["spec"] is not None and self._installed_match(lang, resolved["spec"], resolved["source"]) is None:
                 missing.append((component, resolved["spec"], resolved["source"]))
         return missing
 
@@ -577,9 +604,15 @@ class Project:
         saying, since nothing the project pinned chose it."""
         notes = []
         for component in [c for c, _ in self.impl_dirs(lang)] or [self.components[0]]:
-            resolved = self.resolve_version(lang, component)
+            resolved, selects = self._resolve(lang, component)
             source, spec = resolved["source"] or "", (resolved["spec"] or "").lstrip("=")
-            if source.startswith("supports:"):
+            if not selects:
+                where = source.rpartition("supports:")[2].rstrip(")")
+                runs = self.installed_version(lang, component)
+                pins = " or ".join(f"a {entry['file']}" for entry in self._pin_files(lang))
+                notes.append((component, f"{spec} installed for {where}; runs the newest, "
+                                         f"{runs[0] if runs else 'once installed'}" + (f", unless {pins} picks one" if pins else "")))
+            elif source.startswith("supports:"):
                 notes.append((component, f"{spec}, the newest {source[len('supports:'):]} supports"))
             elif source.startswith("as-of:"):
                 when, _, reason = source[len("as-of:"):].partition(" (")

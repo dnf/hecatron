@@ -577,7 +577,13 @@ For a language in a component, the version is the first of:
      `.github/workflows/`, inline, as a list, or through a matrix variable,
      the newest across all workflows. What CI runs a language on is what the
      project has tested. A value with no usable version (`lts/*`, `stable`,
-     Python's `3.x`) is skipped.
+     Python's `3.x`) is skipped. For .NET it says what to install, not what
+     runs (the entry's `"selects": false`): `setup-dotnet` installs those
+     SDKs beside the runner's own, and `dotnet` runs the newest SDK it has
+     unless a `global.json` picks one, so a project's CI builds with the
+     newest (Gherkin's source generator needs SDK 10's compiler although its
+     workflows name 8.0 and 9.0). The SDK is installed, the component runs
+     what one on the default would, and the doctor says both.
    - **A Maven build's source level** (`maven.compiler.source`, `<source>`,
      `<target>`, `<release>`): javac dropped level 6 in JDK 12 and 7 in JDK
      20, so a build at 6 or below gets JDK 11 at the newest, and one at 7

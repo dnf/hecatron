@@ -474,6 +474,46 @@ class DoctorTest(VersionFixture):
         self.assertEqual(self.doctor().returncode, 0)
 
 
+class InstallOnlySupportTest(VersionFixture):
+    """A support file marked "selects": false says what to install, not what
+    runs: a workflow's dotnet-version, since dotnet runs its newest SDK."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.define(version="=2.0.0", pinFiles=[{"file": "global.json", "format": "global-json"}],
+                    supportFiles=[{"file": ".github/workflows/*.y*ml", "format": "github-setup",
+                                   "key": "tool-version", "selects": False}])
+        write(self.path("a", "tool", ".github", "workflows", "test.yml"), "tool-version: 1.8.x\n")
+
+    def test_the_version_is_installed(self):
+        self.installed("2.0.0\t/opt/tool")
+        p = self.load()
+        self.assertEqual(p.resolve_version("tool", "a")["spec"], "1.8")
+        self.assertFalse(p.selects_version("tool", "a"))
+        self.assertTrue(p.selects_version("tool", "b"))
+        self.assertEqual(p.missing_versions("tool"), [("a", "1.8", "supports:a/tool/.github/workflows/test.yml")])
+
+    def test_the_newest_runs(self):
+        self.installed("1.8.2\t/opt/tool-1.8", "2.0.0\t/opt/tool-2.0")
+        p = self.load()
+        self.assertEqual(p.missing_versions("tool"), [])
+        self.assertEqual(p.installed_version("tool", "a"), ("2.0.0", "/opt/tool-2.0"))
+        self.assertEqual(p.version_notes("tool"), [
+            ("a", "1.8 installed for a/tool/.github/workflows/test.yml; runs the newest, 2.0.0, "
+                  "unless a global.json picks one")])
+
+    def test_without_the_default_the_newest_installed_runs(self):
+        self.installed("1.8.2\t/opt/tool-1.8", "1.9.0\t/opt/tool-1.9")
+        self.assertEqual(self.load().installed_version("tool", "a"), ("1.9.0", "/opt/tool-1.9"))
+
+    def test_a_project_version_still_selects(self):
+        self.installed("1.5.1\t/opt/tool-1.5", "2.0.0\t/opt/tool-2.0")
+        self.override(version="1.5")
+        p = self.load()
+        self.assertTrue(p.selects_version("tool", "a"))
+        self.assertEqual(p.installed_version("tool", "a"), ("1.5.1", "/opt/tool-1.5"))
+
+
 class EnvironmentTest(VersionFixture):
     def test_the_newest_installed_match_is_used(self):
         self.installed("1.9.0\t/opt/tool-1.9.0", "2.0.0\t/opt/tool-2.0.0", "1.9.3\t/opt/tool-1.9.3")
