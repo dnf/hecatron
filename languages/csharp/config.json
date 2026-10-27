@@ -27,6 +27,14 @@
       "format": "global-json"
     }
   ],
+  "supportFiles": [
+    {
+      "file": ".github/workflows/*.y*ml",
+      "format": "github-setup",
+      "key": "dotnet-version"
+    }
+  ],
+  "oldestInstallable": "6.0",
   "env": {
     "DOTNET_ROOT": "{home}"
   },

@@ -74,6 +74,51 @@ class PinFormatTest(unittest.TestCase):
         self.assertEqual(self.read("python-classifiers", pyproject), "3.14")
         self.assertIs(self.read("python-classifiers", 'requires-python = ">=3.10"\n'), versions.NOT_PINNED)
 
+    def test_github_setup_reads_plain_values_lists_and_matrices(self):
+        workflow = """\
+jobs:
+  test:
+    strategy:
+      matrix:
+        node-version: ['12.x', '14.x', 16.x]
+        java:
+          - 11
+          - '1.8'
+        include:
+          - node-version: '16.x'
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.java }}
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '3.1.x'  # the tests' runtime
+"""
+        self.assertEqual(self.read("github-setup", workflow, "node-version"), "16")
+        self.assertEqual(self.read("github-setup", workflow, "java-version"), "11")
+        self.assertEqual(self.read("github-setup", workflow, "dotnet-version"), "3.1")
+        self.assertIs(self.read("github-setup", workflow, "go-version"), versions.NOT_PINNED)
+
+    def test_github_setup_skips_values_without_a_usable_version(self):
+        workflow = ("python-version: [ '3.x', '2.x', 'pypy-3.8' ]\nnode-version: lts/*\n"
+                    "go-version: stable\nruby-version: ${{ env.RUBY }}\njava-version: '1.8'\n")
+        for key in ("python-version", "node-version", "go-version", "ruby-version"):
+            self.assertIs(self.read("github-setup", workflow, key), versions.NOT_PINNED, key)
+        self.assertEqual(self.read("github-setup", workflow, "java-version"), "8")
+
+    def test_maven_source_levels_name_the_newest_jdk_that_compiles_them(self):
+        def pom(level):
+            return (f"<project><properties><maven.compiler.source>{level}</maven.compiler.source></properties>"
+                    "<build><source>../common/src/</source></build></project>")
+        self.assertEqual(self.read("maven-source-level", pom("1.6")), "11")
+        self.assertEqual(self.read("maven-source-level", pom("1.7")), "19")
+        self.assertEqual(self.read("maven-source-level", "<configuration><release>7</release></configuration>"), "19")
+        self.assertIs(self.read("maven-source-level", pom("1.8")), versions.NOT_PINNED)
+        self.assertIs(self.read("maven-source-level", pom("${java.version}")), versions.NOT_PINNED)
+
     def test_rust_toolchain_reads_both_layouts(self):
         self.assertEqual(self.read("rust-toolchain", "1.80.1\n"), "=1.80.1")
         toml = '[toolchain]\nchannel = "1.80.1"\ncomponents = ["clippy"]\n'
@@ -135,6 +180,7 @@ class VersionFixture(Fixture):
 
     def setUp(self) -> None:
         super().setUp()
+        self._saved_as_of = os.environ.pop("HECATRON_AS_OF", None)
         self.builtin = self.path("builtin-languages")
         self._saved = project.BUILTIN_LANGUAGES
         project.BUILTIN_LANGUAGES = self.builtin
@@ -145,7 +191,19 @@ class VersionFixture(Fixture):
 
     def tearDown(self) -> None:
         project.BUILTIN_LANGUAGES = self._saved
+        os.environ.pop("HECATRON_AS_OF", None)
+        if self._saved_as_of is not None:
+            os.environ["HECATRON_AS_OF"] = self._saved_as_of
         super().tearDown()
+
+    def supports(self, path: str, *lines: str) -> None:
+        self.define(version="=2.0.0", pinFiles=[{"file": ".tool-version", "format": "python-version"}],
+                    supportFiles=[{"file": "pyproject.toml", "format": "python-classifiers"}])
+        write(self.path(path), "".join(f'"Programming Language :: Python :: {line}",\n' for line in lines))
+
+    def releases(self, *releases: list) -> None:
+        """The built-in definition's release dates."""
+        write(os.path.join(self.builtin, "tool", "releases.json"), json.dumps({"releases": list(releases)}))
 
     def define(self, **config) -> None:
         write(os.path.join(self.builtin, "tool", "config.json"), json.dumps(config))
@@ -203,18 +261,13 @@ class ResolutionTest(VersionFixture):
         self.assertEqual(self.load().versions("tool"),
                          [("1.8", ["pin:a/tool/.tool-version"]), ("=2.0.0", ["default"])])
 
-    def supports(self, path: str, *lines: str) -> None:
-        self.define(version="=2.0.0", pinFiles=[{"file": ".tool-version", "format": "python-version"}],
-                    supportFiles=[{"file": "pyproject.toml", "format": "python-classifiers"}])
-        write(self.path(path), "".join(f'"Programming Language :: Python :: {line}",\n' for line in lines))
-
     def test_a_component_gets_the_newest_line_it_supports_when_the_default_is_newer(self):
         self.supports("a/tool/pyproject.toml", "1.8", "1.9")
         p = self.load()
         self.assertEqual(p.resolve_version("tool", "a"),
                          {"spec": "1.9", "source": "supports:a/tool/pyproject.toml", "exact": False})
         self.assertEqual(p.resolve_version("tool", "b")["source"], "default")
-        self.assertEqual(p.version_notes("tool"), [("a", "1.9", "supports:a/tool/pyproject.toml")])
+        self.assertEqual(p.version_notes("tool"), [("a", "1.9, the newest a/tool/pyproject.toml supports")])
 
     def test_supporting_the_defaults_line_or_newer_keeps_the_default(self):
         self.supports("a/tool/pyproject.toml", "1.9", "2.0")
@@ -229,11 +282,115 @@ class ResolutionTest(VersionFixture):
         self.override(version="1.5")
         self.assertEqual(self.load().resolve_version("tool", "b")["spec"], "1.5")
 
+    def test_ci_workflows_hold_the_default_back(self):
+        self.define(version="=2.0.0",
+                    supportFiles=[{"file": ".github/workflows/*.y*ml", "format": "github-setup", "key": "tool-version"}])
+        write(self.path(".github", "workflows", "old.yml"), "tool-version: '1.4'\n")
+        write(self.path(".github", "workflows", "new.yaml"), "tool-version: [1.7, 1.8.x]\n")
+        self.assertEqual(self.load().resolve_version("tool", "a"),
+                         {"spec": "1.8", "source": "supports:.github/workflows/new.yaml", "exact": False})
+
+    def test_a_supported_line_below_what_hecatron_installs_is_raised(self):
+        self.supports("a/tool/pyproject.toml", "1.2")
+        self.define(version="=2.0.0", oldestInstallable="1.5",
+                    supportFiles=[{"file": "pyproject.toml", "format": "python-classifiers"}])
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "1.5")
+
     def test_check_reports_a_pin_that_disagrees_with_the_project(self):
         self.override(version="1.9")
         write(self.path("a", "tool", ".tool-version"), "1.8\n")
         self.assertEqual(self.load().version_conflicts(),
                          [("tool", "a", "pin:a/tool/.tool-version", "1.8", "1.9")])
+
+
+class AsOfTest(VersionFixture):
+    """An old checkout gets the releases current at its last commit."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.define(version="=2.0.0", track="stable",
+                    pinFiles=[{"file": ".tool-version", "format": "python-version"}],
+                    supportFiles=[{"file": "pyproject.toml", "format": "python-classifiers"}])
+        self.releases(["1.8.0", "2019-01-10"], ["1.9.0", "2020-03-01", "lts"], ["1.8.1", "2020-06-01"],
+                      ["1.9.1", "2020-09-01", "lts"], ["1.10.0", "2021-02-01"], ["2.0.0", "2023-05-01", "lts"])
+
+    def resolve(self, component: str = "a", when: str | None = "2020-07-01") -> dict:
+        if when:
+            os.environ["HECATRON_AS_OF"] = when
+        return self.load().resolve_version("tool", component)
+
+    def test_the_default_becomes_the_newest_release_then(self):
+        self.assertEqual(self.resolve(), {"spec": "=1.9.0", "source": "as-of:2020-07-01 (default)", "exact": True})
+
+    def test_an_lts_default_takes_the_newest_lts_release_then(self):
+        self.define(version="=2.0.0", track="lts")
+        self.assertEqual(self.resolve(when="2021-06-01")["spec"], "=1.9.1")
+
+    def test_a_prefix_pin_takes_its_newest_release_then(self):
+        write(self.path("a", "tool", ".tool-version"), "1.8\n")
+        self.assertEqual(self.resolve(), {"spec": "=1.8.1", "source": "as-of:2020-07-01 (pin:a/tool/.tool-version)",
+                                          "exact": True})
+
+    def test_a_supported_line_takes_its_newest_release_then(self):
+        self.supports("a/tool/pyproject.toml", "1.8")
+        self.assertEqual(self.resolve()["spec"], "=1.8.1")
+        self.assertEqual(self.load().version_notes("tool")[0],
+                         ("a", "1.8.1, current on 2020-07-01, this commit's date (the line from a/tool/pyproject.toml)"))
+
+    def test_an_exact_pin_is_untouched(self):
+        self.override(version="=1.10.0")
+        self.assertEqual(self.resolve()["spec"], "=1.10.0")
+
+    def test_nothing_released_yet_keeps_the_spec(self):
+        self.assertEqual(self.resolve(when="2018-01-01"), {"spec": "=2.0.0", "source": "default", "exact": True})
+
+    def test_a_line_precision_definition_gets_a_line(self):
+        self.define(version="=2.0.0", asOfPrecision="line")
+        self.assertEqual(self.resolve()["spec"], "1.9")
+
+    def test_a_release_older_than_hecatron_installs_is_raised(self):
+        self.supports("a/tool/pyproject.toml", "1.8")
+        self.define(version="=2.0.0", oldestInstallable="1.9",
+                    supportFiles=[{"file": "pyproject.toml", "format": "python-classifiers"}])
+        self.assertEqual(self.resolve()["spec"], "=1.9.0")
+        self.define(version="=2.0.0", oldestInstallable="1.10")
+        self.assertEqual(self.resolve(when="2021-06-01"),
+                         {"spec": "=1.10.0", "source": "as-of:2021-06-01 (default)", "exact": True})
+        self.define(version="=2.0.0", oldestInstallable="2.0")
+        resolved = self.resolve()
+        self.assertEqual(resolved["spec"], "2.0")
+        self.assertIn("raised to 2.0", resolved["source"])
+        # A pin stands, even below what hecatron installs.
+        write(self.path("a", "tool", ".tool-version"), "1.8\n")
+        self.define(version="=2.0.0", oldestInstallable="1.9",
+                    pinFiles=[{"file": ".tool-version", "format": "python-version"}])
+        self.assertEqual(self.resolve()["spec"], "1.8")
+
+    def test_off_turns_it_off(self):
+        self.assertEqual(self.resolve(when="off")["spec"], "=2.0.0")
+
+    def test_a_recent_checkout_keeps_todays_versions(self):
+        self.commit()
+        self.assertEqual(self.resolve(when=None)["source"], "default")
+
+    def test_a_checkout_over_a_year_old_uses_its_commit_date(self):
+        subprocess.run(["git", "add", "-A"], cwd=self.root, check=True)
+        env = dict(os.environ, GIT_COMMITTER_DATE="2020-07-01T12:00:00", GIT_AUTHOR_DATE="2020-07-01T12:00:00")
+        subprocess.run(["git", "-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-qm", "old"],
+                       cwd=self.root, check=True, env=env)
+        self.assertEqual(self.resolve(when=None)["source"], "as-of:2020-07-01 (default)")
+
+    def test_a_bad_date_is_an_error(self):
+        with self.assertRaises(project.ProjectError):
+            self.resolve(when="last year")
+
+    def test_doctor_says_why(self):
+        self.define(version="=2.0.0", dependency="bash")
+        self.installed("1.9.0\t/opt/tool-1.9.0")
+        env = dict(os.environ, HECATRON_BUILTIN_LANGUAGES=self.builtin, HECATRON_AS_OF="2020-07-01")
+        result = subprocess.run(["bash", BIN, "doctor", "tool"], cwd=self.root, capture_output=True, text=True, env=env)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("a: tool 1.9.0, current on 2020-07-01, this commit's date", result.stdout)
 
 
 class CheckTest(VersionFixture):
@@ -442,6 +599,32 @@ class ShippedDefinitionsTest(unittest.TestCase):
                 version = json.load(f).get("version")
             if version is not None:
                 self.assertTrue(str(version).startswith("="), f"{lang}: default version {version!r} isn't exact")
+
+    def test_every_shipped_release_table_parses_and_has_its_default(self):
+        languages = os.path.join(HOME, "languages")
+        for lang in sorted(os.listdir(languages)):
+            path = os.path.join(languages, lang, "releases.json")
+            if not os.path.isfile(path):
+                continue
+            with open(path, encoding="utf-8") as f:
+                releases = json.load(f)["releases"]
+            with open(os.path.join(languages, lang, "config.json"), encoding="utf-8") as f:
+                default = json.load(f)["version"].lstrip("=")
+            for release in releases:
+                self.assertTrue(versions.is_version(release[0]), f"{lang}: {release}")
+                self.assertRegex(release[1], r"^\d{4}-\d{2}-\d{2}$", f"{lang}: {release}")
+            self.assertIn(default, [release[0] for release in releases], f"{lang}: the default isn't in releases.json")
+
+    def test_languages_sharing_a_toolchain_share_its_versions(self):
+        fields = ("version", "track", "releaseLine", "pinFiles", "supportFiles", "oldestInstallable", "asOfPrecision")
+        for lang, owner in (("javascript", "typescript"), ("fsharp", "csharp"), ("vbnet", "csharp")):
+            with open(os.path.join(HOME, "languages", lang, "config.json"), encoding="utf-8") as f:
+                config = json.load(f)
+            with open(os.path.join(HOME, "languages", owner, "config.json"), encoding="utf-8") as f:
+                theirs = json.load(f)
+            self.assertEqual(config.get("releasesOf"), owner, lang)
+            for field in fields:
+                self.assertEqual(config.get(field), theirs.get(field), f"{lang}.{field}")
 
     def test_every_shipped_pin_format_exists(self):
         languages = os.path.join(HOME, "languages")
