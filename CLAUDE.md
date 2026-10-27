@@ -28,7 +28,7 @@ tests/                   # python3 -m unittest discover -s tests
 docs/                    # design.md (keep current), installers.md, adding-a-language.md, build-conventions.md
 examples/sayable/        # sayable's hooks, workflow templates and config at the split (reference only)
 cmd/hecatron/            # the Go core's entry point (docs/design.md §19): ports commands, delegates the rest
-internal/                # Go packages: project (the model, a port of project.py), actions, install
+internal/                # Go packages: project (the model, a port of project.py), runner (jobs, output), actions, install
 ```
 
 Every command finds the project by walking up from the working directory

@@ -1,0 +1,105 @@
+{
+  "command": "test",
+  "status": "failed",
+  "exitCode": 1,
+  "duration": 271.3,
+  "summary": {
+    "passed": 2,
+    "failed": 2,
+    "skipped": 2
+  },
+  "logs": "/repo/.logs/test",
+  "jobs": [
+    {
+      "label": "go",
+      "kind": "language",
+      "language": "go",
+      "status": "failed",
+      "exitCode": 1,
+      "duration": 12,
+      "log": "/repo/.logs/test/go.log",
+      "components": [
+        {
+          "name": ".",
+          "dir": "/repo/go",
+          "failed": true
+        }
+      ],
+      "errors": [
+        {
+          "text": "--- FAIL: TestAdd (0.00s)",
+          "component": "."
+        },
+        {
+          "text": "calc_test.go:7: Add(2, 3) = -1, want 5",
+          "component": ".",
+          "file": "calc_test.go",
+          "line": 7,
+          "message": "Add(2, 3) = -1, want 5"
+        }
+      ],
+      "errorsFrom": "patterns"
+    },
+    {
+      "label": "python",
+      "kind": "language",
+      "language": "python",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 2.5,
+      "log": "/repo/.logs/test/python.log",
+      "components": [
+        {
+          "name": ".",
+          "dir": "/repo/python",
+          "failed": false
+        }
+      ]
+    },
+    {
+      "label": "rust",
+      "kind": "language",
+      "language": "rust",
+      "status": "not installed"
+    },
+    {
+      "label": "zig",
+      "kind": "language",
+      "language": "zig",
+      "status": "disabled"
+    },
+    {
+      "label": "php",
+      "kind": "language",
+      "language": "php",
+      "status": "failed",
+      "exitCode": 1,
+      "duration": 61,
+      "log": "/repo/.logs/test/php.log",
+      "components": [
+        {
+          "name": ".",
+          "dir": "/repo/php",
+          "failed": true,
+          "toolchainMissing": true
+        }
+      ],
+      "errors": [
+        {
+          "text": "bash: line 1: php: command not found",
+          "component": "."
+        }
+      ],
+      "errorsFrom": "tail"
+    },
+    {
+      "label": "docs",
+      "kind": "task",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 0.3,
+      "log": "/repo/.logs/test/docs.log"
+    }
+  ],
+  "rerun": "hct test go php"
+}

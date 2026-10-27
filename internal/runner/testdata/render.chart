@@ -1,0 +1,8 @@
+                     0                  30
+  ✗ go      12.0s ███████
+  ✓ python   2.5s █
+  - rust        - not installed
+  ⊘ zig         ⊘ disabled
+  ✗ php     61.0s ███████████████████████████████████████
+
+  ✓ docs     0.3s █

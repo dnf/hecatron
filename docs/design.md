@@ -825,6 +825,15 @@ entry points' output byte for byte. Decided with the first port
   ported commands run without bash or Python.
 - `bin/hecatron` and the installers keep using bash and Python until the
   switch to the binary is decided separately.
+- **The run commands** (`test` ... `outdated`) ported next (#74), with the
+  runner below; `outdated --json`, and a target run.sh would refuse with
+  its own message (an unknown or unadded language), are delegated. A
+  language's environment for a component still comes from `project.py env`
+  (version resolution, §18, isn't ported), so the run commands check for
+  Python; the hooks stay bash. A git repository without a config is read
+  from `project.py`'s cache of what it detected (`.git/hecatron/detected.json`),
+  which `project.py root` refreshes; with no current cache the command is
+  delegated.
 
 ### Language definitions: data, families, scripts
 
@@ -944,6 +953,50 @@ isn't a terminal and an agent marker is set (`CLAUDECODE=1`, and others
 once verified), else CI when `GITHUB_ACTIONS` is set, else human. Not a
 config setting: the format belongs to whoever is calling, not the project.
 Exit codes: 0 passed, 1 failed, 2 usage, 3 a toolchain missing or broken.
+
+Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
+
+- **Jobs stay one per language**, covering its components (and one per
+  project task), as run-parallel.sh's: the scheduling, `history.log`, the
+  `.lock` and the log paths are shared with it, so the two can alternate.
+  A job's result lists its components, and agent output names the failed
+  ones' directories: `FAIL go (age/go/, date/go/) exit 1, 12s, log
+  .logs/test/go.log`.
+- **Named targets** (`hct test go php`) run one at a time as today. Human
+  and CI output stream them; agent and JSON output keep their output in the
+  logs and report at the end.
+- **Human output** off a terminal is run-parallel.sh's, character for
+  character but the times; on one, a row per job (state, time, a bar on the
+  run's time line) redrawn in place, without the swim lanes; `-s` is
+  accepted and has no effect there yet.
+- **CI output** adds `::error file=,line=,col=,title=::` for each error line
+  naming a file and line (the file joined to its component's directory,
+  relative to `GITHUB_WORKSPACE`), and one annotation without a location for
+  a failure with none. `--output ci` selects it too.
+- **Error patterns** are a definition's `"errorPatterns"`: a list of
+  `{"regex", "tool", "versions", "next"}`, tried in order on each line of
+  the log (colour codes removed, only what a carriage return left last);
+  the first that matches a line takes it. `regex` is RE2 with optional
+  named groups `file`, `line`, `col` and `message`; `next` finds the
+  location on one of the next three lines (rustc's `--> src/lib.rs:2:25`)
+  and adds it to the line; `versions` (`">=7"`, `">=1.2,<3"`) limits a
+  pattern to the versions of `tool` found in the log by the definition's
+  `"errorToolVersions"` (`{"pytest": "pytest-(\\S+)"}`; a version not found
+  doesn't exclude a pattern). Lines matching no language pattern are tried
+  against built-in generic ones (`file:line[:col]: error`, `error:`,
+  `FAIL`). An excerpt is at most 10 distinct lines of at most 240
+  characters; else the log's last 15 lines, without blank lines, download
+  and progress lines or repeated lines. hecatron's own `=== test a (go) ===`
+  and `go: test failed: a` lines are left out of both. A pattern that
+  doesn't compile is skipped, never failing a run.
+- **Exit status 3** when every failed job failed only in components whose
+  language command (the definition's `dependency`) isn't on the PATH the
+  component's hooks run with; whether a toolchain is broken isn't detected.
+  A parallel run still skips a language whose command is missing ("not
+  installed") and doesn't count it as a failure. Usage errors (an unknown
+  component, a bad `-j`, `-s` or `--output`) exit 2; run-parallel.sh's `-j`
+  and `-s` errors exited 1.
+- `rebuild` and `retest` keep `-c` for both steps (run.sh drops it).
 
 ### Migration
 

@@ -129,25 +129,22 @@ var runActions = map[string]struct{ description, hook string }{
 	"format":   {"Format each language's code with its formatter in every component", "format.sh"},
 }
 
-// runHelp is `hecatron test help` and the other run commands' help, as
-// run.sh prints it. Help asked for after flags (`test -j 4 help`) is left
-// to run.sh.
-func (c *cli) runHelp() (int, bool) {
-	if len(c.args) != 1 || !isHelp(c.args[0]) {
-		return 0, false
-	}
+// runHelpText is `hecatron test help` and the other run commands' help, as
+// run.sh prints it; ok is false where the Go model can't say it as run.sh
+// would.
+func (c *cli) runHelpText() (text string, ok bool) {
 	shell, err := c.project.Shell()
 	if err != nil {
-		return 0, false
+		return "", false
 	}
 	tasks, err := c.project.Tasks(c.command)
 	if err != nil {
-		return 0, false
+		return "", false
 	}
 	var taskNames strings.Builder
 	for _, task := range tasks {
 		if strings.ContainsAny(task.Name, "\n") {
-			return 0, false
+			return "", false
 		}
 		taskNames.WriteString(task.Name + " ")
 	}
@@ -184,8 +181,7 @@ func (c *cli) runHelp() (int, bool) {
 		"  hecatron %[1]s               Everything, in parallel\n"+
 		"  hecatron %[1]s go rs         Go and Rust (abbreviations work), every component\n"+
 		"  hecatron %[1]s go -c age     Go, the age component only\n", c.command)
-	fmt.Print(out.String())
-	return 0, true
+	return out.String(), true
 }
 
 // languageGrid is helpers.sh's _lang_grid: a count, then the languages
