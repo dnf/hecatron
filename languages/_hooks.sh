@@ -90,6 +90,50 @@ mix_deps() {
     if [ -f mix.lock ] && [ ! -d deps ]; then run mix deps.get; fi
 }
 
+# Whether composer.json defines a script, e.g. `composer_script test`.
+composer_script() {
+    [ -f composer.json ] && python3 -c '
+import json, sys
+sys.exit(0 if sys.argv[1] in (json.load(open("composer.json")).get("scripts") or {}) else 1)
+' "$1"
+}
+# Composer: dependencies first, when they aren't installed yet.
+composer_deps() {
+    if [ ! -d vendor ]; then run composer install --no-interaction; fi
+}
+
+# Bundler: the bundle first, when it isn't installed yet; then a command
+# through it (or directly, without a Gemfile).
+bundle_deps() {
+    if [ -f Gemfile ] && ! bundle check >/dev/null 2>&1; then run bundle install; fi
+}
+ruby_run() {
+    if [ -f Gemfile ]; then run bundle exec "$@"; else run "$@"; fi
+}
+# Whether the bundle (or the gemspec) names a gem, e.g. `gem_listed rubocop`.
+gem_listed() {
+    grep -qsE "^ {4}$1 \(|['\"]$1['\"]" Gemfile.lock Gemfile ./*.gemspec
+}
+# Whether the Rakefile defines a task, described or not, e.g. `rake_has test`.
+rake_has() {
+    local _tasks
+    if [ -f Gemfile ]; then _tasks="$(bundle exec rake -P 2>/dev/null)"; else _tasks="$(rake -P 2>/dev/null)"; fi
+    grep -qx "rake $1" <<<"${_tasks}"
+}
+
+# Perl: configure once (Makefile.PL writes a Makefile, Build.PL a Build script).
+makemaker_configure() { [ -f Makefile ] || run perl Makefile.PL; }
+module_build_configure() { [ -x Build ] || run perl Build.PL; }
+
+# Dart: the flutter tool for a package on the Flutter SDK, else dart; and
+# the package's dependencies first, when they aren't fetched yet.
+dart_tool() {
+    if grep -qE '^[[:space:]]+sdk:[[:space:]]*flutter' pubspec.yaml; then echo flutter; else echo dart; fi
+}
+dart_deps() {
+    if [ ! -f .dart_tool/package_config.json ]; then run "$(dart_tool)" pub get; fi
+}
+
 # Node.js packages (TypeScript, JavaScript): the package's own npm scripts.
 node_hook() {
     [ -f package.json ] || unknown "no package.json"

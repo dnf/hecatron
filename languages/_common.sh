@@ -101,6 +101,30 @@ apt_has() {
     [[ "${policy}" == *"Candidate: "[!\(]* ]]
 }
 
+# For Ruby's installer and doctor: whether Bundler would install into a gem
+# directory this user can't write (apt's Ruby) with no path configured.
+bundle_needs_user_path() {
+    has ruby && has bundle || return 1
+    [ ! -w "$(ruby -e 'print Gem.default_dir')" ] &&
+        [ -z "$(bundle config get --parseable path 2>/dev/null)" ]
+}
+
+# For Perl's installer and doctor: the tools its components need and lack,
+# one per line (make for Makefile.PL, Module::Build for Build.PL, and
+# Perl::Critic where .perlcriticrc configures it).
+perl_tools_missing() {
+    local _dir _make=0 _build=0 _critic=0
+    while IFS= read -r _dir; do
+        [ -f "${_dir}/Makefile.PL" ] && _make=1
+        [ -f "${_dir}/Build.PL" ] && _build=1
+        [ -f "${_dir}/.perlcriticrc" ] && _critic=1
+    done < <(impl_dirs perl)
+    if [ "${_make}" -eq 1 ] && ! has make; then echo make; fi
+    if [ "${_build}" -eq 1 ] && ! perl -MModule::Build -e 1 2>/dev/null; then echo Module::Build; fi
+    if [ "${_critic}" -eq 1 ] && ! has perlcritic; then echo Perl::Critic; fi
+    return 0
+}
+
 # For the JVM languages' installers: Maven where a component builds with a
 # pom.xml and ships no ./mvnw, Gradle where it builds with build.gradle(.kts)
 # and ships no ./gradlew (the default hooks run the wrapper when there is one),
