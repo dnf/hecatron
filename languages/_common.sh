@@ -153,6 +153,27 @@ elm_review_missing() {
     return 1
 }
 
+# For the .NET languages' installers and doctors: the .NET runtimes the
+# components' projects target (net8.0, net9.0...; not netstandard, which runs
+# on any, nor the Windows-only .NET Framework's net4x), which their tests need.
+dotnet_target_majors() {
+    local _lang _dir
+    for _lang in csharp fsharp vbnet; do impl_dirs "${_lang}"; done | while IFS= read -r _dir; do
+        find "${_dir}" -maxdepth 4 \( -name bin -o -name obj \) -prune -o \
+            \( -name '*.csproj' -o -name '*.fsproj' -o -name '*.vbproj' -o -name '*.props' \) -type f -print
+    done |
+        xargs -r grep -ho '<TargetFrameworks\?[^>]*>[^<]*' 2>/dev/null |
+        sed 's/.*>//' | tr ';' '\n' | sed -n 's/^net\([0-9][0-9]*\)\.0.*$/\1/p' | sort -un
+}
+dotnet_has_runtime() { dotnet --list-runtimes 2>/dev/null | grep -q "^Microsoft.NETCore.App $1\."; }
+dotnet_runtimes_missing() {
+    local _major
+    has dotnet || return 0
+    while IFS= read -r _major; do
+        dotnet_has_runtime "${_major}" || echo "${_major}"
+    done < <(dotnet_target_majors)
+}
+
 # For the native languages' installers (C, C++, Objective-C): the libraries a
 # component's CMake build looks for with find_package(), as distribution
 # packages, for the common ones. A name not in the table is left to the
