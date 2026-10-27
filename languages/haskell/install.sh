@@ -20,7 +20,38 @@ install_linux() {
     _install
 }
 
-deps() { :; }
+# shellcheck source=_tools.sh source-path=SCRIPTDIR
+source "$(dirname "$0")/_tools.sh"
+
+# Stack through ghcup, which this shell's PATH may predate.
+_install_stack() {
+    local ghcup="${HOME}/.ghcup/bin/ghcup"
+    has ghcup && ghcup="ghcup"
+    "${ghcup}" install stack --set recommended
+}
+# HLint: the release build where there is one (x86_64 Linux), else the
+# distribution's or Homebrew's.
+HLINT_VERSION="3.10"
+_install_hlint() {
+    if [ "${OS}" = "macos" ]; then brew_install hlint; return; fi
+    if [ "$(uname -m)" != "x86_64" ]; then apt_install hlint; return; fi
+    log "Downloading HLint ${HLINT_VERSION}..."
+    $SUDO rm -rf /opt/hlint
+    $SUDO mkdir -p /opt/hlint
+    curl -fsSL "https://github.com/ndmitchell/hlint/releases/download/v${HLINT_VERSION}/hlint-${HLINT_VERSION}-x86_64-linux.tar.gz" |
+        $SUDO tar -C /opt/hlint --strip-components=1 -xz
+    $SUDO ln -sfn /opt/hlint/hlint /usr/local/bin/hlint
+}
+
+deps() {
+    local _tool
+    while IFS= read -r _tool; do
+        case "${_tool}" in
+            stack) _install_stack ;;
+            hlint) _install_hlint ;;
+        esac
+    done < <(haskell_tools_missing)
+}
 
 log "Installing Haskell..."
 "install_${OS}"

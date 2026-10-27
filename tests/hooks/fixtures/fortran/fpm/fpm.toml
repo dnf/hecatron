@@ -1,0 +1,9 @@
+name = "add"
+version = "0.1.0"
+
+[build]
+auto-executables = false
+auto-tests = true
+
+[library]
+source-dir = "src"

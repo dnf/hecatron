@@ -1,0 +1,5 @@
+name: adder
+version: 0.1.0
+description: Adds two numbers.
+license: MIT
+crystal: ">= 1.0.0"
