@@ -283,7 +283,24 @@ def workflow_content(project, lang: str) -> str | None:
     return banner + body
 
 
+# Settings for generated files only the Go core writes (docs/design.md §11).
+GO_ONLY_GENERATED = ("ci",)
+GO_ONLY_SECTIONS = ("ci",)
+
+
+def go_only_settings(project) -> list[str]:
+    generated = project.config.get("generated") or {}
+    return ([f"generated.{key}" for key in GO_ONLY_GENERATED if key in generated]
+            + [key for key in GO_ONLY_SECTIONS if key in project.config])
+
+
+def needs_binary(what: str) -> None:
+    die(f"{what} needs hecatron's binary, which install.sh downloads with a release")
+
+
 def write_workflows(project, *, check: bool) -> bool:
+    if settings := go_only_settings(project):
+        needs_binary(f"config.json's {', '.join(settings)}")
     if not workflow_template(project):
         if check:
             return True
@@ -299,6 +316,8 @@ def write_workflows(project, *, check: bool) -> bool:
 
 
 def cmd_workflows(args) -> int:
+    if getattr(args, "ci", None) is not None:
+        needs_binary("hecatron workflows --ci")
     ok = write_workflows(load_project(), check=args.check)
     if args.check and ok:
         print("Workflows are up to date.")
@@ -767,6 +786,8 @@ def main(argv: list[str]) -> int:
     for name, func in (("dockerfile", cmd_dockerfile), ("workflows", cmd_workflows)):
         p = sub.add_parser(name)
         p.add_argument("--check", action="store_true")
+        if name == "workflows":
+            p.add_argument("--ci", help="the CI system to generate for (github, gitlab); needs the binary")
         p.set_defaults(func=func)
 
     sub.add_parser("check").set_defaults(func=cmd_check)

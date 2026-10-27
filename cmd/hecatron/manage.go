@@ -117,20 +117,11 @@ func (c *cli) generatedFiles(workflows, dockerfile bool) ([]generatedFile, *mana
 	p := c.project
 	var files []generatedFile
 	if workflows {
-		for _, lang := range p.Languages {
-			content, ok, err := generate.Workflow(p, lang)
-			if err != nil {
-				return nil, nil, err
-			}
-			if !ok {
-				continue
-			}
-			path, err := generate.WorkflowPath(p, lang)
-			if err != nil {
-				return nil, nil, err
-			}
-			files = append(files, generatedFile{path, project.PyRelpath(path, p.Root), content})
+		ci, err := c.ciFiles()
+		if err != nil {
+			return nil, nil, err
 		}
+		files = append(files, ci...)
 	}
 	if dockerfile {
 		relative, err := p.Generated("dockerfile")
@@ -149,14 +140,72 @@ func (c *cli) generatedFiles(workflows, dockerfile bool) ([]generatedFile, *mana
 	return files, nil, nil
 }
 
-// generates reports which files the project generates.
-func (c *cli) generates() (workflows, dockerfile bool, err error) {
+// ciSettings are the project's CI settings, with the CI system workflows
+// --ci names in place of generated.ci.
+func (c *cli) ciSettings() project.CISettings {
+	settings, _ := c.project.CISettings()
+	if c.ci != "" {
+		settings.Systems = []string{c.ci}
+	}
+	return settings
+}
+
+// generatesGitHub reports whether the project generates GitHub workflows:
+// it names where they go and generated.ci includes github.
+func (c *cli) generatesGitHub() (bool, error) {
 	template, err := c.project.Generated("workflows")
+	return template != "" && contains(c.ciSettings().Systems, project.CIGitHub), err
+}
+
+// ciFiles are the generated CI files: each language's GitHub workflow (with
+// cache steps when ci.cache is on), then the GitLab pipeline.
+func (c *cli) ciFiles() ([]generatedFile, error) {
+	p := c.project
+	settings := c.ciSettings()
+	var files []generatedFile
+	github, err := c.generatesGitHub()
+	if err != nil {
+		return nil, err
+	}
+	for _, lang := range p.Languages {
+		if !github {
+			break
+		}
+		content, ok, err := generate.Workflow(p, lang)
+		if err == nil && ok && settings.Cache {
+			content, ok, err = generate.CachedWorkflow(p, lang, p.Home.Version())
+		}
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			continue
+		}
+		path, err := generate.WorkflowPath(p, lang)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, generatedFile{path, project.PyRelpath(path, p.Root), content})
+	}
+	if contains(settings.Systems, project.CIGitLab) {
+		content, err := generate.GitLabCI(p, settings, p.Home.Version())
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, generatedFile{project.PyJoin(p.Root, generate.GitLabPath), generate.GitLabPath, content})
+	}
+	return files, nil
+}
+
+// generates reports which files the project generates: workflows is any
+// CI file.
+func (c *cli) generates() (workflows, dockerfile bool, err error) {
+	github, err := c.generatesGitHub()
 	if err != nil {
 		return false, false, err
 	}
 	relative, err := c.project.Generated("dockerfile")
-	return template != "", relative != "", err
+	return github || contains(c.ciSettings().Systems, project.CIGitLab), relative != "", err
 }
 
 // writeGenerated writes (or checks) files as write_if_changed does, the
@@ -235,7 +284,11 @@ func (c *cli) changeLanguages(adding bool) (int, bool) {
 		files, failure2, err = c.generatedFiles(workflows, dockerfile)
 	}
 	var removals []string
-	if err == nil && !adding && workflows {
+	github, githubErr := c.generatesGitHub()
+	if err == nil {
+		err = githubErr
+	}
+	if err == nil && !adding && github {
 		for _, lang := range changed {
 			path, pathErr := generate.WorkflowPath(p, lang)
 			if pathErr != nil {
@@ -390,11 +443,26 @@ func (c *cli) workflows() (int, bool) {
 }
 
 func (c *cli) generateCommand(which, unconfigured, current string) (int, bool) {
-	args, ok := parseManageArgs(c.args, []string{"--check"}, nil, 0)
+	var valued []string
+	if which == "workflows" {
+		valued = []string{"--ci"}
+	}
+	args, ok := parseManageArgs(c.args, []string{"--check"}, valued, 0)
 	if !ok {
 		return 0, false
 	}
 	check := args.flags["--check"]
+	if ci, given := args.values["--ci"]; given {
+		if !contains(project.CISystems, ci) {
+			return (&manageFailure{"--ci must be " + strings.Join(project.CISystems, " or "), 2}).report(), true
+		}
+		c.ci = ci
+	}
+	if which == "workflows" {
+		if _, problems := c.project.CISettings(); len(problems) > 0 {
+			return (&manageFailure{".hecatron/config.json: " + strings.Join(problems, "; "), 1}).report(), true
+		}
+	}
 	workflows, dockerfile, err := c.generates()
 	if err != nil {
 		return 0, false
@@ -494,6 +562,8 @@ func (c *cli) check() (int, bool) {
 	if ok {
 		out.WriteString("Generated files are up to date and every workflow covers every component.\n")
 	}
+	_, ciProblems := p.CISettings()
+	problems = append(problems, ciProblems...)
 	for _, problem := range problems {
 		fmt.Fprintf(&out, ".hecatron/config.json: %s\n", problem)
 	}
