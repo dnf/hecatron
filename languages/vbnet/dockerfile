@@ -15,4 +15,14 @@ RUN V="{version}" && \
     fi && \
     { [ -e /usr/local/bin/dotnet ] || ln -s /opt/dotnet/dotnet /usr/local/bin/dotnet; }
 # end-each-version
+# Each SDK's view, as install.sh makes them: /opt/dotnet-views/<version>,
+# where dotnet sees that SDK alone, for the components whose version it is.
+RUN for SDK in /opt/dotnet/sdk/*/; do \
+      V="$(basename "${SDK}")" && mkdir -p "/opt/dotnet-views/${V}/sdk" && \
+      cp -f /opt/dotnet/dotnet "/opt/dotnet-views/${V}/dotnet" && \
+      for ENTRY in /opt/dotnet/*; do \
+        case "$(basename "${ENTRY}")" in dotnet | sdk) ;; *) ln -sfn "${ENTRY}" "/opt/dotnet-views/${V}/" ;; esac; \
+      done && \
+      ln -sfn "${SDK%/}" "/opt/dotnet-views/${V}/sdk/${V}"; \
+    done
 ENV DOTNET_ROOT="/opt/dotnet"

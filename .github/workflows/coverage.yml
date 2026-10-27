@@ -84,6 +84,18 @@ jobs:
           name: coverage-${{ matrix.language }}-${{ matrix.runner }}
           path: check.log
 
+  # Each .NET component runs the SDK hecatron resolves for it, the newest
+  # where only a workflow names a version (tests/docker/dotnet-sdks.sh). Its
+  # own job, on one platform: it downloads two SDKs.
+  dotnet-sdks:
+    if: inputs.languages == '' || contains(inputs.languages, 'csharp')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Each component runs the SDK its version resolves to
+        run: tests/docker/run.sh ubuntu:24.04 bash /hecatron/tests/docker/dotnet-sdks.sh
+
   matrix:
     needs: [linux, macos]
     if: always()

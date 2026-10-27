@@ -3,7 +3,9 @@
 # directory with the dotnet command, its DOTNET_ROOT): hecatron's
 # (install.sh), the one the dotnet on PATH belongs to, and the usual places
 # for distributions' packages, Microsoft's installers and Homebrew. A
-# directory holds many SDKs, in sdk/<version>. Offline.
+# directory holds many SDKs, in sdk/<version>; one install.sh made a view of
+# each (<root>-views/<version>, where dotnet sees that SDK alone) gives the
+# view as the home. Offline.
 source "$(dirname "$0")/../_common.sh"
 
 _roots() {
@@ -23,8 +25,14 @@ _roots() {
     return 0
 }
 
+_home() {
+    local view="$1-views/$2"
+    if [ -x "${view}/dotnet" ] && [ -e "${view}/sdk/$2" ]; then echo "${view}"; else echo "$1"; fi
+}
+
 _roots | while IFS= read -r root; do
+    case "${root}" in *-views/*) continue ;; esac
     for sdk in "${root}"/sdk/*/; do
-        [ -f "${sdk}dotnet.dll" ] && printf '%s\t%s\n' "$(basename "${sdk}")" "${root}"
+        [ -f "${sdk}dotnet.dll" ] && printf '%s\t%s\n' "$(basename "${sdk}")" "$(_home "${root}" "$(basename "${sdk}")")"
     done
 done | sort -u
