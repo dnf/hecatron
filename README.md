@@ -18,7 +18,10 @@
 Hecatron installs, checks and repairs the toolchains of every language in a
 repository, runs each language's tests, linters and builds in parallel, and
 keeps the CI workflows and Dockerfile that cover them in sync. It is for
-repositories where one project is implemented in many programming languages.
+repositories where one project is implemented in many programming languages,
+and works as an adaptor in a
+[single-language repository](#one-language-too) too: the same commands work
+with any language's toolchain.
 
 <p align="center">
   <img alt="hct test running sayable's 51 languages in parallel: a live row per language with its time, swim lanes for the jobs still running, ending in 53/53 passed" src="assets/demo/hct-test.gif" width="720">
@@ -141,6 +144,27 @@ For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
 | 10 test commands to remember | `hct test`, all in parallel |
 | CI and Dockerfile kept in sync by hand | `hct workflows`, `hct dockerfile`<br>`hct check` catches drift |
 | Each project fixes toolchain rot itself | Fixed once, tested on every supported distribution |
+
+## One language, too
+
+In a single-language repository, hecatron is an adaptor between you and that
+language's toolchain. Whether the repository is Elixir, Haskell, Zig or
+Kotlin, the same commands set it up and run it:
+
+```bash
+hct init       # find the language and its build files
+hct install    # the toolchain, at the version the project asks for
+hct test       # mix test, stack test, zig build test, gradle test...
+hct lint
+hct build
+```
+
+That helps whoever moves between repositories: a contributor making a fix in
+a language they don't use every day, a CI setup shared across many
+repositories, or an AI coding agent that should run the tests without first
+working out how. Hecatron also picks the toolchain version from the
+project's own files, gives an old checkout the toolchain of its day, and
+runs the language's dependency auditor with `hct audit`.
 
 ## Compared with other tools
 
