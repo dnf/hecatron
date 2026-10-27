@@ -11,6 +11,7 @@
   ],
   "version": "=25.0.5",
   "track": "lts",
+  "releaseLine": 1,
   "pinFiles": [
     {
       "file": ".java-version",

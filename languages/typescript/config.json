@@ -10,6 +10,7 @@
   ],
   "version": "=24.22.1",
   "track": "lts",
+  "releaseLine": 1,
   "pinFiles": [
     {
       "file": ".nvmrc",
