@@ -32,8 +32,20 @@ _download_pwsh() {
     $SUDO chmod +x "${_pwsh_root}/pwsh"
 }
 
+# Pester, PowerShell's test framework. Install-Module reports a failed
+# download from the PowerShell Gallery without failing, so check, and try
+# once more.
+_has_pester() { pwsh -NoProfile -Command "if (-not (Get-Module -ListAvailable -Name Pester)) { exit 1 }"; }
+_install_pester() {
+    pwsh -NoProfile -Command "Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -ErrorAction Stop"
+}
 deps() {
-    pwsh -Command "if (-not (Get-Module -ListAvailable -Name Pester)) { Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser }"
+    _has_pester && return
+    _install_pester || true
+    _has_pester && return
+    log "Pester didn't install; trying again..."
+    _install_pester
+    _has_pester
 }
 
 log "Installing PowerShell..."
