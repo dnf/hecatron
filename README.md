@@ -7,12 +7,13 @@
 
 <p align="center"><strong>Tools for polyglot repositories.</strong></p>
 
-<p align="center">
-  <a href="https://github.com/dnf/hecatron/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/dnf/hecatron/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/dnf/hecatron/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/dnf/hecatron?sort=semver"></a>
-  <a href="docs/coverage.md"><img alt="Languages" src="https://img.shields.io/badge/languages-54-3B5BFF"></a>
-  <a href="LICENSE.md"><img alt="License: MIT" src="https://img.shields.io/github/license/dnf/hecatron"></a>
-</p>
+<div align="center">
+
+| CI | Release | Languages | License |
+| :-: | :-: | :-: | :-: |
+| [![CI](https://github.com/dnf/hecatron/actions/workflows/ci.yml/badge.svg)](https://github.com/dnf/hecatron/actions/workflows/ci.yml) | [![Latest release](https://img.shields.io/github/v/release/dnf/hecatron?sort=semver)](https://github.com/dnf/hecatron/releases) | [![Languages](https://img.shields.io/badge/languages-54-3B5BFF)](docs/coverage.md) | [![License: MIT](https://img.shields.io/github/license/dnf/hecatron)](LICENSE.md) |
+
+</div>
 
 Hecatron installs, checks and repairs the toolchains of every language in a
 repository, runs each language's tests, linters and builds in parallel, and
