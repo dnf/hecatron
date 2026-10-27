@@ -23,7 +23,9 @@ _failed=0
 for _fixture in "${_names[@]}"; do
     _project="$(mktemp -d)"
     cp -R "${_fixtures}/${_fixture}" "${_project}/${_lang}"
-    (cd "${_project}" && git init -q && git add -A && hecatron init >/dev/null && hecatron add "${_lang}" >/dev/null)
+    # The fixture is the language's directory whatever its files are, also
+    # for languages with no manifest for init to detect (detect: []).
+    (cd "${_project}" && git init -q && git add -A && hecatron init --impl-path '{lang}' >/dev/null && hecatron add "${_lang}" >/dev/null)
     echo "### ${_lang}/${_fixture}: install"
     (cd "${_project}" && hecatron install "${_lang}" && hecatron doctor "${_lang}") || _failed=1
     _results=""

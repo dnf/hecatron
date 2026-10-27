@@ -1,6 +1,6 @@
 {
   "abbreviation": "sh",
   "dependency": "bash",
-  "lintDependency": null,
+  "lintDependency": "shellcheck",
   "detect": []
 }

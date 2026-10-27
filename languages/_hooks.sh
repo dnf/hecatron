@@ -20,6 +20,18 @@ exists() {
     return 1
 }
 
+# The files a find expression matches below this directory, sorted, into the
+# array found_files, e.g. `find_files -name '*.sh'`. Version control and
+# dependency directories aren't searched.
+found_files=()
+find_files() {
+    local _file
+    found_files=()
+    while IFS= read -r -d '' _file; do
+        found_files+=("${_file}")
+    done < <(find . \( -name .git -o -name node_modules \) -prune -o -type f \( "$@" \) -print0 | sort -z)
+}
+
 # Run a command, showing it first, so a log says which build system ran.
 run() {
     echo "+ $*"
@@ -55,6 +67,55 @@ dotnet_target() {
     if [ "$(printf '%s' "${_solutions}" | grep -c .)" -eq 1 ]; then
         echo "${_solutions}"
     fi
+}
+
+# Janet's jpm, in the project's local tree (jpm -l) when it keeps its
+# dependencies in one.
+jpm_() { if [ -d jpm_tree ]; then run jpm -l "$@"; else run jpm "$@"; fi; }
+
+# Common Lisp: ASDF systems on SBCL, found from this directory's .asd files
+# (each a system named after its file; foo-test.asd and foo-tests.asd are
+# left to foo's test-op, unless they are all there is). The test passes when
+# the system's test-op signals no error. The user's init file still loads,
+# so a Quicklisp it sets up finds dependencies.
+asdf_hook() {
+    exists '*.asd' || unknown "no .asd file"
+    local _asd _system _systems=() _tests=()
+    for _asd in *.asd; do
+        _system="${_asd%.asd}"
+        case "${_system}" in
+            *-test | *-tests) _tests+=("${_system}") ;;
+            *) _systems+=("${_system}") ;;
+        esac
+    done
+    [ "${#_systems[@]}" -gt 0 ] || _systems=("${_tests[@]}")
+    case "$1" in
+        test) for _system in "${_systems[@]}"; do asdf_run "(asdf:test-system \"${_system}\")"; done ;;
+        build) for _system in "${_systems[@]}"; do asdf_run "(asdf:load-system \"${_system}\" :force t)"; done ;;
+        lint) skip "Common Lisp has no standard linter" ;;
+        clean) asdf_clean ;;
+    esac
+}
+asdf_run() {
+    run sbcl --noinform --non-interactive \
+        --eval '(require :asdf)' \
+        --eval '(push (uiop:getcwd) asdf:*central-registry*)' \
+        --eval "$1"
+}
+# The fasls compiled in place, and ASDF's cache of this directory's
+# (~/.cache/common-lisp/<implementation>/<this path>), never this directory
+# itself if output translations are off.
+asdf_clean() {
+    local _cache
+    _cache="$(sbcl --noinform --non-interactive --eval '(require :asdf)' \
+        --eval '(format t "~&cache: ~a~%" (namestring (asdf:apply-output-translations (uiop:getcwd))))' |
+        sed -n 's/^cache: //p')"
+    find_files -name '*.fasl'
+    if [ "${#found_files[@]}" -gt 0 ]; then run rm -f "${found_files[@]}"; fi
+    case "${_cache}" in
+        "" | "$(pwd)" | "$(pwd)/") ;;
+        */common-lisp/*) [ ! -d "${_cache}" ] || run rm -rf "${_cache}" ;;
+    esac
 }
 
 # Whether package.json defines an npm script, e.g. `npm_script test`.
