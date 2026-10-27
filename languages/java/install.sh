@@ -78,10 +78,12 @@ _install_jdk() {
 }
 
 _install_versions() {
-    local spec
+    local specs spec
+    specs="$(missing_versions java)"
     while IFS= read -r spec; do
+        [ -n "${spec}" ] || continue
         _install_jdk "${spec}"
-    done < <(missing_versions java)
+    done <<<"${specs}"
 }
 deps() { _install_versions; }
 

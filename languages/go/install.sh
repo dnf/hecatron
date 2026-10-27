@@ -34,8 +34,10 @@ _stable_releases() {
         python3 -c 'import json, sys; [print(r["version"][2:]) for r in json.load(sys.stdin) if r["stable"]]'
 }
 _install_versions() {
-    local spec version
+    local specs spec version
+    specs="$(missing_versions go)"
     while IFS= read -r spec; do
+        [ -n "${spec}" ] || continue
         version="$(_stable_releases | newest_match "${spec}")"
         if [ -z "${version}" ]; then
             echo "No Go release matches ${spec}" >&2
@@ -43,7 +45,7 @@ _install_versions() {
         fi
         log "Downloading Go ${version}..."
         GOTOOLCHAIN="go${version}" go version </dev/null
-    done < <(missing_versions go)
+    done <<<"${specs}"
 }
 
 # golangci-lint must be built with a Go at least as new as the toolchain it

@@ -28,12 +28,14 @@ _toolchain() {
     echo "${version:-${1#=}}"
 }
 _install_versions() {
-    local spec toolchain
+    local specs spec toolchain
+    specs="$(missing_versions rust)"
     while IFS= read -r spec; do
+        [ -n "${spec}" ] || continue
         toolchain="$(_toolchain "${spec}")"
         log "Installing Rust ${toolchain} with rustup..."
         rustup toolchain install "${toolchain}" --profile default </dev/null
-    done < <(missing_versions rust)
+    done <<<"${specs}"
 }
 deps() { _install_versions; }
 

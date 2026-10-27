@@ -46,15 +46,17 @@ _releases() {
         python3 -c 'import json, sys; [print(r["version"].lstrip("v")) for r in json.load(sys.stdin)]'
 }
 _install_versions() {
-    local spec version
+    local specs spec version
+    specs="$(missing_versions typescript)"
     while IFS= read -r spec; do
+        [ -n "${spec}" ] || continue
         version="$(_releases | newest_match "${spec}")"
         if [ -z "${version}" ]; then
             echo "No Node.js release matches ${spec}" >&2
             return 1
         fi
         _download_node "${version}"
-    done < <(missing_versions typescript)
+    done <<<"${specs}"
 }
 
 # Only libraries with a package.json have dependencies to install.
