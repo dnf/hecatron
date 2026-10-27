@@ -1,0 +1,19 @@
+{
+    "_readme": ["This file locks the dependencies of your project to a known state"],
+    "content-hash": "0",
+    "packages": [
+        {"name": "monolog/monolog", "version": "3.5.0", "type": "library", "license": ["MIT"]},
+        {"name": "psr/log", "version": "3.0.0", "type": "library", "license": ["MIT"]}
+    ],
+    "packages-dev": [
+        {"name": "phpunit/php-timer", "version": "6.0.0", "type": "library", "license": ["BSD-3-Clause"]}
+    ],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.6.0"
+}

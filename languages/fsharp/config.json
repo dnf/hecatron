@@ -45,5 +45,19 @@
   "formatting": "Fantomas",
   "notes": {
     "formatting": "Only when Fantomas is in the project's .NET tool manifest."
-  }
+  },
+  "cache": {
+    "dependencies": [
+      "~/.nuget/packages"
+    ],
+    "lockFiles": [
+      "packages.lock.json",
+      "*.fsproj",
+      "Directory.Packages.props"
+    ]
+  },
+  "dependabot": "nuget",
+  "renovate": [
+    "nuget"
+  ]
 }

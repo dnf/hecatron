@@ -27,6 +27,16 @@ outdated_run() {
     "$@" >"${_outdated_report_file}" || true
 }
 
+# libexec/lib/outdated.py's commands, run by hecatron's binary when the run
+# commands give it (HECATRON_BINARY: the same reader, without Python).
+outdated_reader() {
+    if [ -n "${HECATRON_BINARY:-}" ]; then
+        "${HECATRON_BINARY}" _outdated "$@"
+    else
+        python3 "${_outdated_home}/libexec/lib/outdated.py" "$@"
+    fi
+}
+
 # The rows in the report file, in a format outdated.py reads (and the raw
 # report, saved to HECATRON_OUTDATED_REPORT_DIR when set). Exits.
 outdated_finish() {
@@ -35,7 +45,7 @@ outdated_finish() {
         mkdir -p "${HECATRON_OUTDATED_REPORT_DIR}"
         cp "${_outdated_report_file}" "${HECATRON_OUTDATED_REPORT_DIR}/${HECATRON_LANG:-}-${HECATRON_COMPONENT:-}-$1.txt"
     fi
-    python3 "${_outdated_home}/libexec/lib/outdated.py" report "$1" "${_outdated_report_file}" \
+    outdated_reader report "$1" "${_outdated_report_file}" \
         "${HECATRON_LANG:-}" "${HECATRON_COMPONENT:-.}" ${_outdated_direct_file:+"${_outdated_direct_file}"} ||
         _status=$?
     exit "${_status}"

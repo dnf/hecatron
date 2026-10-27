@@ -20,5 +20,15 @@
   "formatting": "JuliaFormatter",
   "notes": {
     "formatting": "Only when the project has a `.JuliaFormatter.toml`."
-  }
+  },
+  "cache": {
+    "dependencies": [
+      "~/.julia"
+    ],
+    "lockFiles": [
+      "Manifest.toml",
+      "Project.toml"
+    ]
+  },
+  "dependabot": "julia"
 }

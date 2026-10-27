@@ -6,6 +6,15 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **`hct licenses`:** every dependency's license, in every language and
+  component, from the lock files (OSV-Scanner with deps.dev for npm, PyPI,
+  Go, crates.io, Maven, NuGet and RubyGems; `composer.lock` for PHP):
+  rolled up per SPDX license, each package with its version, direct or
+  transitive and dev marked, unknown licenses apart, and what isn't covered
+  said so. A `"licenses"` policy in the config (`allow`, `deny`, `ignore`
+  with a reason and an expiry, `includeDev`) fails the command on a package
+  it refuses; `hct check` validates it. `--output human|agent|json`. Needs
+  the binary (#132).
 - **An Agent Skill for hecatron:** AI agents that read Agent Skills learn
   hecatron without the docs: first steps, the test-lint-format loop, exit
   statuses, asking before installs, and what to do when something fails.
@@ -52,6 +61,23 @@ minor version can change behaviour. Numbers are
   `--fix` adds missing pin files at the version in use; `--fail-on
   recommended|suggestion` for CI; `"advisor": {"ignore": [...]}` in config,
   validated by `hct check`. Needs the binary (#105).
+- **GitLab CI and caching in generated CI:** `hct workflows` writes a
+  `.gitlab-ci.yml` with a job per language (install, test and lint through
+  `hct`) when `generated.ci` is `"gitlab"` (or `["github", "gitlab"]`, or
+  with `--ci gitlab`), and `hct check` fails when it falls behind. With
+  `"ci": {"cache": true}` the generated GitHub workflows and GitLab jobs
+  cache each language's toolchain (keyed on its pin files and hecatron's
+  version) and dependencies (keyed on its lock files); each definition
+  lists the directories in its new `cache` key. Off by default, so existing
+  workflows don't change. Needs the binary (#102).
+- **Dependabot and Renovate configuration:** with `generated.dependabot`
+  (or `generated.renovate`), `hct workflows` writes `.github/dependabot.yml`
+  with an `updates` entry for each package ecosystem and component
+  directory (`renovate.json` with the managers and paths), merging the
+  project's `dependabot` (or `renovate`) settings, and `hct check` fails
+  when a language or component was added without regenerating it. Each
+  definition names its ecosystems in new `dependabot` and `renovate` keys.
+  Needs the binary (#103).
 
 ## 0.4.0 (2026-10-27)
 

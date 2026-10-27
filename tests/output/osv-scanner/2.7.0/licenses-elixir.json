@@ -1,0 +1,581 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "/tmp/licenses-fixtures/elixir/mix.lock",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "decimal",
+            "version": "2.1.1",
+            "ecosystem": "Hex",
+            "purl": "pkg:hex/decimal@2.1.1",
+            "commit": "5611dca5d4b2c3dd497dec8f68751f1f1a54755e8ed2a966c2633cf885973ad6"
+          },
+          "groups": [
+            {
+              "ids": [
+                "EEF-CVE-2026-32686",
+                "GHSA-rhv4-8758-jx7v"
+              ],
+              "aliases": [
+                "CVE-2026-32686",
+                "EEF-CVE-2026-32686",
+                "GHSA-rhv4-8758-jx7v"
+              ],
+              "max_severity": "6.9"
+            },
+            {
+              "ids": [
+                "EEF-CVE-2026-97853"
+              ],
+              "aliases": [
+                "CVE-2026-97853",
+                "EEF-CVE-2026-97853",
+                "GHSA-6c27-994x-c52f"
+              ],
+              "max_severity": "6.9"
+            }
+          ],
+          "licenses": [
+            "UNKNOWN"
+          ],
+          "vulnerabilities": [
+            {
+              "affected": [
+                {
+                  "database_specific": {
+                    "source": "https://cna.erlef.org/osv/EEF-CVE-2026-32686.json"
+                  },
+                  "package": {
+                    "ecosystem": "Hex",
+                    "name": "decimal",
+                    "purl": "pkg:hex/decimal"
+                  },
+                  "ranges": [
+                    {
+                      "events": [
+                        {
+                          "introduced": "0.1.0"
+                        },
+                        {
+                          "fixed": "3.0.0"
+                        }
+                      ],
+                      "type": "SEMVER"
+                    }
+                  ],
+                  "versions": [
+                    "0.1.1",
+                    "0.1.2",
+                    "0.2.0",
+                    "0.2.1",
+                    "0.2.2",
+                    "0.2.3",
+                    "0.2.4",
+                    "0.2.5",
+                    "1.0.0",
+                    "1.0.1",
+                    "1.1.0",
+                    "1.1.1",
+                    "1.1.2",
+                    "1.2.0",
+                    "1.3.0",
+                    "1.3.1",
+                    "1.4.0",
+                    "1.4.1",
+                    "1.5.0",
+                    "1.6.0",
+                    "1.7.0",
+                    "1.8.0",
+                    "1.8.1",
+                    "1.9.0",
+                    "1.9.0-rc.0",
+                    "2.0.0",
+                    "2.0.0-rc.0",
+                    "2.1.0",
+                    "2.1.1",
+                    "2.2.0",
+                    "2.3.0",
+                    "2.4.0",
+                    "2.4.1"
+                  ]
+                },
+                {
+                  "database_specific": {
+                    "source": "https://cna.erlef.org/osv/EEF-CVE-2026-32686.json"
+                  },
+                  "ranges": [
+                    {
+                      "events": [
+                        {
+                          "introduced": "bc11f4a2b6fb61fc1360a0ab4e79141bba918841"
+                        },
+                        {
+                          "fixed": "6a523f3a73b8c9974540e21c7aa88f1258bb35ae"
+                        }
+                      ],
+                      "repo": "https://github.com/ericmj/decimal",
+                      "type": "GIT"
+                    }
+                  ],
+                  "versions": [
+                    "v2.4.0",
+                    "v2.3.0",
+                    "v2.2.0",
+                    "v2.1.1",
+                    "v2.1.0",
+                    "v2.0.0",
+                    "v1.9.0-rc.0",
+                    "v2.0.0-rc.0",
+                    "v1.8.1",
+                    "v1.8.0",
+                    "v1.7.0",
+                    "v1.6.0",
+                    "v1.5.0",
+                    "v1.4.1",
+                    "v1.4.0",
+                    "v1.3.1",
+                    "v1.3.0",
+                    "v1.2.0",
+                    "v1.1.2",
+                    "v1.1.1",
+                    "v1.1.0",
+                    "v1.0.1",
+                    "v1.0.0",
+                    "v0.2.5",
+                    "v0.2.4",
+                    "v0.2.3",
+                    "v0.2.2",
+                    "v0.2.1",
+                    "v0.2.0",
+                    "v0.1.2",
+                    "v0.1.1",
+                    "v0.1.0"
+                  ]
+                }
+              ],
+              "aliases": [
+                "CVE-2026-32686",
+                "GHSA-rhv4-8758-jx7v"
+              ],
+              "credits": [
+                {
+                  "name": "Peter Ullrich",
+                  "type": "FINDER"
+                },
+                {
+                  "name": "Eric Meadows-Jönsson / Hex.pm",
+                  "type": "REMEDIATION_DEVELOPER"
+                },
+                {
+                  "name": "José Valim",
+                  "type": "REMEDIATION_REVIEWER"
+                },
+                {
+                  "name": "Wojtek Mach",
+                  "type": "REMEDIATION_REVIEWER"
+                },
+                {
+                  "name": "Jonatan Männchen / EEF",
+                  "type": "ANALYST"
+                },
+                {
+                  "name": "ruslandoga",
+                  "type": "REMEDIATION_REVIEWER"
+                },
+                {
+                  "name": "Matthew Johnston",
+                  "type": "REMEDIATION_REVIEWER"
+                }
+              ],
+              "database_specific": {
+                "capec_ids": [
+                  "CAPEC-130"
+                ],
+                "cpe_ids": [
+                  "cpe:2.3:a:ericmj:decimal:*:*:*:*:*:*:*:*"
+                ],
+                "cwe_ids": [
+                  "CWE-400"
+                ]
+              },
+              "details": "## Summary\n\nUncontrolled Resource Consumption vulnerability in ericmj decimal allows unauthenticated remote Denial of Service.\n\nThe `decimal` library does not bound the exponent on parsed input. Storing a decimal with a very large exponent (e.g. `Decimal.new(\"1e1000000000\")`) is accepted without error. Subsequent calls to arithmetic functions (`Decimal.add/2`, `Decimal.sub/2`, `Decimal.div/2`M), `Decimal.to_string/2`M with `:normal`M or `:xsd`M format, `Decimal.to_integer/1`M, `Decimal.round/3`M, or `Decimal.compare/3`M with a threshold allocate memory proportional to the exponent value, which can exhaust available memory and crash the BEAM VM.\n\nAny application that accepts user-supplied decimal input and subsequently performs arithmetic, rounding, conversion to integer, or string formatting on it is exposed. A single malicious request is sufficient to cause an out-of-memory crash.\n\nThis issue affects decimal: from 0.1.0 before 3.0.0.",
+              "id": "EEF-CVE-2026-32686",
+              "modified": "2026-09-08T13:15:03.575002463Z",
+              "published": "2026-05-07T14:04:47.222Z",
+              "references": [
+                {
+                  "type": "ADVISORY",
+                  "url": "https://github.com/ericmj/decimal/security/advisories/GHSA-rhv4-8758-jx7v"
+                },
+                {
+                  "type": "WEB",
+                  "url": "https://cna.erlef.org/cves/CVE-2026-32686.html"
+                },
+                {
+                  "type": "WEB",
+                  "url": "https://github.com/ericmj/decimal/commit/bc11f4a2b6fb61fc1360a0ab4e79141bba918841"
+                },
+                {
+                  "type": "FIX",
+                  "url": "https://github.com/ericmj/decimal/commit/6a523f3a73b8c9974540e21c7aa88f1258bb35ae"
+                },
+                {
+                  "type": "PACKAGE",
+                  "url": "https://hex.pm/packages/decimal"
+                }
+              ],
+              "schema_version": "1.9.0",
+              "severity": [
+                {
+                  "score": "CVSS:4.0/AV:L/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+                  "type": "CVSS_V4"
+                }
+              ],
+              "summary": "Unbounded exponent in decimal enables unauthenticated DoS"
+            },
+            {
+              "affected": [
+                {
+                  "database_specific": {
+                    "source": "https://cna.erlef.org/osv/EEF-CVE-2026-97853.json"
+                  },
+                  "package": {
+                    "ecosystem": "Hex",
+                    "name": "decimal",
+                    "purl": "pkg:hex/decimal"
+                  },
+                  "ranges": [
+                    {
+                      "events": [
+                        {
+                          "introduced": "0.1.0"
+                        },
+                        {
+                          "fixed": "3.1.2"
+                        }
+                      ],
+                      "type": "SEMVER"
+                    }
+                  ],
+                  "versions": [
+                    "0.1.1",
+                    "0.1.2",
+                    "0.2.0",
+                    "0.2.1",
+                    "0.2.2",
+                    "0.2.3",
+                    "0.2.4",
+                    "0.2.5",
+                    "1.0.0",
+                    "1.0.1",
+                    "1.1.0",
+                    "1.1.1",
+                    "1.1.2",
+                    "1.2.0",
+                    "1.3.0",
+                    "1.3.1",
+                    "1.4.0",
+                    "1.4.1",
+                    "1.5.0",
+                    "1.6.0",
+                    "1.7.0",
+                    "1.8.0",
+                    "1.8.1",
+                    "1.9.0",
+                    "1.9.0-rc.0",
+                    "2.0.0",
+                    "2.0.0-rc.0",
+                    "2.1.0",
+                    "2.1.1",
+                    "2.2.0",
+                    "2.3.0",
+                    "2.4.0",
+                    "2.4.1",
+                    "3.0.0",
+                    "3.1.0",
+                    "3.1.1"
+                  ]
+                },
+                {
+                  "database_specific": {
+                    "source": "https://cna.erlef.org/osv/EEF-CVE-2026-97853.json"
+                  },
+                  "ranges": [
+                    {
+                      "events": [
+                        {
+                          "introduced": "05bb73eb40ddef24eda782d905766f56a3660522"
+                        },
+                        {
+                          "fixed": "338f42c8cf6a9749ab70c5af04734c6050ca3dc6"
+                        },
+                        {
+                          "fixed": "3c90af4c3c2dfa4bb4c138760a326dd0eb91822b"
+                        }
+                      ],
+                      "repo": "https://github.com/ericmj/decimal",
+                      "type": "GIT"
+                    }
+                  ],
+                  "versions": [
+                    "v3.1.1",
+                    "v3.1.0",
+                    "v2.4.0",
+                    "v3.0.0",
+                    "v2.3.0",
+                    "v2.2.0",
+                    "v2.1.1",
+                    "v2.1.0",
+                    "v2.0.0",
+                    "v1.9.0-rc.0",
+                    "v2.0.0-rc.0",
+                    "v1.8.1",
+                    "v1.8.0",
+                    "v1.7.0",
+                    "v1.6.0",
+                    "v1.5.0",
+                    "v1.4.1",
+                    "v1.4.0",
+                    "v1.3.1",
+                    "v1.3.0",
+                    "v1.2.0",
+                    "v1.1.2",
+                    "v1.1.1",
+                    "v1.1.0",
+                    "v1.0.1",
+                    "v1.0.0",
+                    "v0.2.5",
+                    "v0.2.4",
+                    "v0.2.3",
+                    "v0.2.2",
+                    "v0.2.1",
+                    "v0.2.0",
+                    "v0.1.2",
+                    "v0.1.1",
+                    "v0.1.0"
+                  ]
+                }
+              ],
+              "aliases": [
+                "CVE-2026-97853",
+                "GHSA-6c27-994x-c52f"
+              ],
+              "credits": [
+                {
+                  "name": "Peter Ullrich",
+                  "type": "FINDER"
+                },
+                {
+                  "name": "Eric Meadows-Jönsson",
+                  "type": "REMEDIATION_DEVELOPER"
+                },
+                {
+                  "name": "Eric Meadows-Jönsson",
+                  "type": "COORDINATOR"
+                }
+              ],
+              "database_specific": {
+                "capec_ids": [
+                  "CAPEC-130"
+                ],
+                "cpe_ids": [
+                  "cpe:2.3:a:ericmj:decimal:*:*:*:*:*:*:*:*"
+                ],
+                "cwe_ids": [
+                  "CWE-789"
+                ]
+              },
+              "details": "## Summary\n\nMemory Allocation with Excessive Size Value vulnerability in ericmj decimal allows Denial of Service.\n\n`Decimal.round/3` builds the full result for the requested number of decimal places before the context precision (34 digits by default) is applied, so its cost grows with the `places` argument instead of with the size of the result. For positive `places` it appends `places` zero digits to the coefficient as a charlist before converting it to an integer, and for negative `places` it builds a charlist of `-places` zero digits. A single call such as `Decimal.round(Decimal.new(\"1.5\"), -50_000_000)` allocates about 5.5 GB of memory, which can exhaust available memory and get the BEAM VM killed. The oldest releases instead loop once per decimal place, consuming CPU in proportion to `places`.\n\nAny application that passes a user-supplied number of decimal places or scale to `Decimal.round/2` or `Decimal.round/3` without bounding it is exposed. The input limits added for CVE-2026-32686 do not cover the `places` argument.\n\nThis issue affects decimal: from 0.1.0 before 3.1.2.\n\n## Details\n\n`Decimal.round/3` sets the target exponent to `-places` and `do_round/5` materializes the coefficient at that exponent; `context/2` only applies the precision afterwards.\n\n- Positive `places` (introduced in 1.3.0 by commit 7a83d27): `digits ++ Enum.map(1..(exp - target_exp), fn _ -\u003e ?0 end)` followed by `:erlang.list_to_integer/1` (`lib/decimal.ex:2409` in 3.1.1). The list is built before `list_to_integer/1` raises `SystemLimitError` for results over about 1.26 million digits, the BEAM integer size limit.\n- Negative `places` (since 1.4.0): `:lists.duplicate(target_exp - exp, ?0) ++ digits` (`lib/decimal.ex:2385-2386` in 3.1.1).\n- Releases from 0.1.0 before 1.1.0: `do_round` (and in 1.0.1 `split_coef`) recurses once per decimal place for negative `places`; 1.0.1 also multiplies a power of ten by 10 on every iteration. Established by reading the code; these releases do not compile on current Elixir.\n\nMeasured on OTP 29 with 3.1.1, one call per fresh VM:\n\n| Call | Time | Peak VM memory |\n|---|---|---|\n| `Decimal.round(Decimal.new(\"1.5\"), -10_000_000)` | 0.25 s | 0.8 GB |\n| `Decimal.round(Decimal.new(\"1.5\"), -50_000_000)` | 1.2 s | 5.5 GB |\n| `Decimal.round(Decimal.new(\"1.5\"), 50_000_000)` | 2.1 s, then `SystemLimitError` | 2.4 GB |\n\nIn an `elixir:1.20.4` container started with `--memory=2g`, either of the last two calls got the VM killed (exit status 137). Over HTTP (Plug and Bandit) a 34-byte JSON body carrying `places: -50_000_000` returned after 1.25 s with server memory at 4.3 GB.\n\n## Proof of concept\n\n```elixir\nMix.install([{:decimal, \"3.1.1\"}])\n\n# Allocates about 5.5 GB.\nDecimal.round(Decimal.new(\"1.5\"), -50_000_000)\n\n# Builds a 50 million element list, then raises SystemLimitError.\nDecimal.round(Decimal.new(\"1.5\"), 50_000_000)\n```\n\n## Impact\n\nAn attacker who controls the number of decimal places an application rounds to makes one `Decimal.round/2,3` call allocate memory in proportion to that number. A value of 50 million needs about 5.5 GB, enough to get the BEAM VM killed on hosts with less memory and take down every request it serves.\n\n## Workarounds\n\nBound `places` before calling `Decimal.round/2,3`, for example to `-34..34` or to the scales the application supports.",
+              "id": "EEF-CVE-2026-97853",
+              "modified": "2026-10-10T19:56:02.464793251Z",
+              "published": "2026-10-10T19:43:45.217Z",
+              "references": [
+                {
+                  "type": "ADVISORY",
+                  "url": "https://github.com/ericmj/decimal/security/advisories/GHSA-6c27-994x-c52f"
+                },
+                {
+                  "type": "WEB",
+                  "url": "https://cna.erlef.org/cves/CVE-2026-97853.html"
+                },
+                {
+                  "type": "WEB",
+                  "url": "https://github.com/ericmj/decimal/commit/05bb73eb40ddef24eda782d905766f56a3660522"
+                },
+                {
+                  "type": "FIX",
+                  "url": "https://github.com/ericmj/decimal/commit/338f42c8cf6a9749ab70c5af04734c6050ca3dc6"
+                },
+                {
+                  "type": "FIX",
+                  "url": "https://github.com/ericmj/decimal/commit/3c90af4c3c2dfa4bb4c138760a326dd0eb91822b"
+                },
+                {
+                  "type": "PACKAGE",
+                  "url": "https://hex.pm/packages/decimal"
+                }
+              ],
+              "schema_version": "1.9.0",
+              "severity": [
+                {
+                  "score": "CVSS:4.0/AV:L/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+                  "type": "CVSS_V4"
+                }
+              ],
+              "summary": "Unbounded allocation in decimal Decimal.round/3 driven by the places argument enables DoS"
+            },
+            {
+              "affected": [
+                {
+                  "database_specific": {
+                    "source": "https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2026/05/GHSA-rhv4-8758-jx7v/GHSA-rhv4-8758-jx7v.json"
+                  },
+                  "package": {
+                    "ecosystem": "Hex",
+                    "name": "decimal",
+                    "purl": "pkg:hex/decimal"
+                  },
+                  "ranges": [
+                    {
+                      "events": [
+                        {
+                          "introduced": "0.1.0"
+                        },
+                        {
+                          "fixed": "3.0.0"
+                        }
+                      ],
+                      "type": "SEMVER"
+                    }
+                  ],
+                  "versions": [
+                    "0.1.1",
+                    "0.1.2",
+                    "0.2.0",
+                    "0.2.1",
+                    "0.2.2",
+                    "0.2.3",
+                    "0.2.4",
+                    "0.2.5",
+                    "1.0.0",
+                    "1.0.1",
+                    "1.1.0",
+                    "1.1.1",
+                    "1.1.2",
+                    "1.2.0",
+                    "1.3.0",
+                    "1.3.1",
+                    "1.4.0",
+                    "1.4.1",
+                    "1.5.0",
+                    "1.6.0",
+                    "1.7.0",
+                    "1.8.0",
+                    "1.8.1",
+                    "1.9.0",
+                    "1.9.0-rc.0",
+                    "2.0.0",
+                    "2.0.0-rc.0",
+                    "2.1.0",
+                    "2.1.1",
+                    "2.2.0",
+                    "2.3.0",
+                    "2.4.0",
+                    "2.4.1"
+                  ]
+                }
+              ],
+              "aliases": [
+                "CVE-2026-32686",
+                "EEF-CVE-2026-32686"
+              ],
+              "database_specific": {
+                "cwe_ids": [
+                  "CWE-400"
+                ],
+                "github_reviewed": true,
+                "github_reviewed_at": "2026-05-12T15:09:20Z",
+                "nvd_published_at": "2026-05-07T15:16:05Z",
+                "severity": "MODERATE"
+              },
+              "details": "Summary\n`decimal` doesn't bound the exponent on parsed input, so something like `\"1e10000000\"` is parsed fine but then explodes the memory to more than 7GB if you run e.g. `Decimal.add(Decimal.parse(\"1e10000000\"), 1)` because for positive `exp`, the function tail-recurses with `coef * 10` and `exp - 1` per iteration, growing the bignum coefficient by one digit each step. In the worst case, one request is enough to OOM the BEAM.\n\n### Details\n`Decimal.new/parse/cast` happily store huge exponents. After that, a bunch of core paths allocate proportional to `exp`:\n- `add/sub/div` go through `add_align`, which calls `pow10(exp1 - exp2)` and builds a giant bignum (lib/decimal.ex:1734-1738, 1827).\n- `to_string/2` with `:normal` (also `:xsd` and the `String.Chars` impl) does `:lists.duplicate(exp, ?0)` (lib/decimal.ex:1506, 1513).\n- `to_integer/1` recurses `coef * 10`, `exp - 1` once per unit of `exp` (lib/decimal.ex:1603-1605).\n- `round/3` does the same `:lists.duplicate` trick on the exp difference (lib/decimal.ex:1850, 1874).\n- `compare/3` with a threshold argument loops back into `add`/`sub`, so it's vulnerable too (lib/decimal.ex:331-332).\n\n### PoC\nAny of these will hang or OOM the BEAM:\n```elixir\nDecimal.add(Decimal.new(\"1\"), Decimal.new(\"1e1000000000\"))\nDecimal.to_string(Decimal.new(\"1e1000000000\"), :normal)\nDecimal.to_integer(Decimal.new(\"1e1000000000\"))\nDecimal.round(Decimal.new(\"1e1000000000\"))\n```\n\n### Impact\nUnauthenticated remote DoS. Anything that takes a user-supplied decimal (JSON, form field, Ecto `:decimal` field — basically everywhere) and then does arithmetic, rounding, `to_integer`, or `to_string` on it is exposed. One request can kill the node with a Out-of-Memory exception.\n\n### Note on the security fixes done in version 2.4.0\nWhile `2.4.0` has the changes to mitigate this issue it's not considered as a patched version because it doesn't have them enabled by default.",
+              "id": "GHSA-rhv4-8758-jx7v",
+              "modified": "2026-08-05T12:45:47.358985491Z",
+              "published": "2026-05-12T15:09:20Z",
+              "references": [
+                {
+                  "type": "WEB",
+                  "url": "https://github.com/ericmj/decimal/security/advisories/GHSA-rhv4-8758-jx7v"
+                },
+                {
+                  "type": "ADVISORY",
+                  "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-32686"
+                },
+                {
+                  "type": "WEB",
+                  "url": "https://github.com/ericmj/decimal/commit/6a523f3a73b8c9974540e21c7aa88f1258bb35ae"
+                },
+                {
+                  "type": "WEB",
+                  "url": "https://cna.erlef.org/cves/CVE-2026-32686.html"
+                },
+                {
+                  "type": "PACKAGE",
+                  "url": "https://github.com/ericmj/decimal"
+                },
+                {
+                  "type": "WEB",
+                  "url": "https://github.com/ericmj/decimal/releases/tag/v2.4.0"
+                },
+                {
+                  "type": "WEB",
+                  "url": "https://github.com/ericmj/decimal/releases/tag/v3.0.0"
+                },
+                {
+                  "type": "WEB",
+                  "url": "https://osv.dev/vulnerability/EEF-CVE-2026-32686"
+                }
+              ],
+              "schema_version": "1.9.0",
+              "severity": [
+                {
+                  "score": "CVSS:4.0/AV:L/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+                  "type": "CVSS_V4"
+                }
+              ],
+              "summary": "Decimal: Unbounded exponent in `Decimal.new` enables unauthenticated DoS"
+            }
+          ]
+        },
+        {
+          "package": {
+            "name": "jason",
+            "version": "1.4.1",
+            "ecosystem": "Hex",
+            "purl": "pkg:hex/jason@1.4.1",
+            "commit": "af1504e35f629ddcdd6addb3513c3853991f694921b1b9368b0bd32beb9f1b63"
+          },
+          "licenses": [
+            "UNKNOWN"
+          ]
+        }
+      ]
+    }
+  ],
+  "experimental_config": {
+    "licenses": {
+      "summary": true,
+      "allowlist": []
+    }
+  },
+  "license_summary": [
+    {
+      "name": "UNKNOWN",
+      "count": 2
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "/tmp/licenses-fixtures/go/go.mod",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "github.com/go-sql-driver/mysql",
+            "version": "1.7.1",
+            "ecosystem": "Go",
+            "purl": "pkg:golang/github.com/go-sql-driver/mysql@1.7.1"
+          },
+          "licenses": [
+            "MPL-2.0"
+          ]
+        },
+        {
+          "package": {
+            "name": "github.com/google/uuid",
+            "version": "1.6.0",
+            "ecosystem": "Go",
+            "purl": "pkg:golang/github.com/google/uuid@1.6.0"
+          },
+          "licenses": [
+            "BSD-3-Clause"
+          ]
+        },
+        {
+          "package": {
+            "name": "github.com/inconshreveable/mousetrap",
+            "version": "1.1.0",
+            "ecosystem": "Go",
+            "purl": "pkg:golang/github.com/inconshreveable/mousetrap@1.1.0"
+          },
+          "licenses": [
+            "Apache-2.0"
+          ]
+        },
+        {
+          "package": {
+            "name": "github.com/spf13/cobra",
+            "version": "1.8.0",
+            "ecosystem": "Go",
+            "purl": "pkg:golang/github.com/spf13/cobra@1.8.0"
+          },
+          "licenses": [
+            "Apache-2.0"
+          ]
+        },
+        {
+          "package": {
+            "name": "github.com/spf13/pflag",
+            "version": "1.0.5",
+            "ecosystem": "Go",
+            "purl": "pkg:golang/github.com/spf13/pflag@1.0.5"
+          },
+          "licenses": [
+            "BSD-3-Clause"
+          ]
+        }
+      ]
+    }
+  ],
+  "experimental_config": {
+    "licenses": {
+      "summary": true,
+      "allowlist": []
+    }
+  },
+  "license_summary": [
+    {
+      "name": "Apache-2.0",
+      "count": 2
+    },
+    {
+      "name": "BSD-3-Clause",
+      "count": 2
+    },
+    {
+      "name": "MPL-2.0",
+      "count": 1
+    }
+  ]
+}

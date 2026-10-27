@@ -37,6 +37,7 @@ type cli struct {
 	project *project.Project // nil when the Go model can't read the project
 
 	pythonChecked bool
+	ci            string // workflows --ci: the CI system to generate for
 }
 
 func run(argv []string) int {
@@ -56,10 +57,16 @@ func run(argv []string) int {
 		return plan(c.home, c.args)
 	case "status":
 		return c.status()
+	case "licenses":
+		return c.licenses()
 	case "skill":
 		return c.skill()
 	case "advisor":
 		return c.advisor()
+	case "_audit":
+		return c.auditTool()
+	case "_outdated":
+		return c.outdatedTool()
 	case "self-test":
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
 	}

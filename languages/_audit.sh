@@ -1,6 +1,7 @@
 # Shared helpers for the default audit hooks (languages/<lang>/hooks/audit.sh;
 # sourced after _hooks.sh). Each runs its ecosystem's dependency auditor in
-# JSON mode and hands the report to libexec/lib/audit.py, which prints the
+# JSON mode and hands the report to libexec/lib/audit.py (or hecatron's
+# binary, which reads it alike: audit_reader), which prints the
 # findings and a summary, applies the project's accepted risks and fails at
 # the threshold (docs/audit.md). Auditors read advisory databases online.
 # shellcheck shell=bash
@@ -43,6 +44,16 @@ audit_run() {
     "$@" >"${_audit_report_file}" || true
 }
 
+# libexec/lib/audit.py's commands, run by hecatron's binary when the run
+# commands give it (HECATRON_BINARY: the same reader, without Python).
+audit_reader() {
+    if [ -n "${HECATRON_BINARY:-}" ]; then
+        "${HECATRON_BINARY}" _audit "$@"
+    else
+        python3 "${_audit_home}/libexec/lib/audit.py" "$@"
+    fi
+}
+
 # The findings in the report file, in a format audit.py reads; then the
 # toolchain's support status. Exits with the audit's status.
 audit_finish() {
@@ -51,8 +62,7 @@ audit_finish() {
         mkdir -p "${HECATRON_AUDIT_REPORT_DIR}"
         cp "${_audit_report_file}" "${HECATRON_AUDIT_REPORT_DIR}/${HECATRON_LANG:-}-${HECATRON_COMPONENT:-}-$1.json"
     fi
-    python3 "${_audit_home}/libexec/lib/audit.py" report "$1" "${_audit_report_file}" \
-        "${HECATRON_LANG:-}" "${HECATRON_COMPONENT:-.}" || _status=$?
+    audit_reader report "$1" "${_audit_report_file}" "${HECATRON_LANG:-}" "${HECATRON_COMPONENT:-.}" || _status=$?
     audit_toolchain
     exit "${_status}"
 }
@@ -66,7 +76,7 @@ audit_toolchain() {
     _version="$(python3 "${_audit_home}/libexec/lib/project.py" version "${HECATRON_LANG:-}" "${HECATRON_COMPONENT:-}" \
         2>/dev/null | cut -f3)"
     [ -n "${_version}" ] && [ "${_version}" != - ] || return 0
-    bash "${_releases}" 2>/dev/null | python3 "${_audit_home}/libexec/lib/audit.py" eol "${HECATRON_LANG:-}" "${_version}" || true
+    bash "${_releases}" 2>/dev/null | audit_reader eol "${HECATRON_LANG:-}" "${_version}" || true
 }
 
 # Nothing this auditor can read here: say so, and succeed.

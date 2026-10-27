@@ -32,6 +32,7 @@ Run (every component of each language; no languages means all, in parallel):
   rebuild, retest [lang...]  Clean, then build or test
   audit [lang...]            Check dependencies for known vulnerabilities (--fail-on SEVERITY)
   outdated [lang...]         Report newer versions of dependencies (--json, --fail)
+  licenses [lang...]         Every dependency's license, rolled up; fails on the project's policy
   deps [lang...]             Fetch dependencies, held to each component's lock file
   format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
 
@@ -43,7 +44,7 @@ Languages:
 
 Generated files:
   dockerfile [--check]       Generate the Dockerfile from language snippets
-  workflows [--check]        Generate each language's CI workflow
+  workflows [--check]        Generate CI: each language's workflow (--ci gitlab: one pipeline)
   check                      Verify every generated file is current
   banner --generator PATH    Print a DO NOT EDIT banner for a code generator
 

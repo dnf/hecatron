@@ -1,2 +1,3 @@
 ::error file=go/calc_test.go,line=7,title=hct test go::Add(2, 3) = -1, want 5
 ::error title=hct test php::php failed (exit 1); log /repo/.logs/test/php.log%0Abash: line 1: php: command not found
+::error title=hct test kotlin::kotlin timed out: stopped at its 10m limit (the 10m minimum (5× its median 1m10s over 5 passing runs is less)) after 10m00s; log /repo/.logs/test/kotlin.log%0A> Task :test

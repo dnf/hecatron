@@ -145,5 +145,55 @@
   ],
   "notes": {
     "formatting": "Only when the build applies one; hecatron runs it through the build."
-  }
+  },
+  "cache": {
+    "dependencies": [
+      "~/.m2/repository",
+      "~/.gradle/caches",
+      "~/.gradle/wrapper",
+      "~/.cache/coursier",
+      "~/.ivy2/cache",
+      "~/.sbt"
+    ],
+    "lockFiles": [
+      "pom.xml",
+      "build.gradle",
+      "build.gradle.kts",
+      "settings.gradle",
+      "settings.gradle.kts",
+      "gradle.lockfile",
+      "gradle/wrapper/gradle-wrapper.properties",
+      "build.sbt"
+    ]
+  },
+  "dependabot": [
+    {
+      "ecosystem": "maven",
+      "files": [
+        "pom.xml"
+      ]
+    },
+    {
+      "ecosystem": "gradle",
+      "files": [
+        "build.gradle",
+        "build.gradle.kts",
+        "settings.gradle",
+        "settings.gradle.kts"
+      ]
+    },
+    {
+      "ecosystem": "sbt",
+      "files": [
+        "build.sbt"
+      ]
+    }
+  ],
+  "renovate": [
+    "maven",
+    "maven-wrapper",
+    "gradle",
+    "gradle-wrapper",
+    "sbt"
+  ]
 }

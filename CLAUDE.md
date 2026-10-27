@@ -31,7 +31,8 @@ examples/sayable/        # sayable's hooks, workflow templates and config at the
 cmd/hecatron/            # the Go core's entry point (docs/design.md §19): ports commands, delegates the rest
 internal/                # Go packages: project (the model and version resolution, a port of project.py and
                          # versions.py, and detection), generate (Dockerfile, workflows), runner (jobs, output),
-                         # status (hct status), advisor (hct advisor), actions, install
+                         # status (hct status), deps (audit and outdated reports), licenses and spdx
+                         # (hct licenses), advisor (hct advisor), actions, install
 ```
 
 Every command finds the project by walking up from the working directory

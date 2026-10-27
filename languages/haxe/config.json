@@ -16,5 +16,13 @@
     "haxelib (.hxml)"
   ],
   "testing": "utest",
-  "linting": null
+  "linting": null,
+  "cache": {
+    "dependencies": [
+      "~/haxelib"
+    ],
+    "lockFiles": [
+      "*.hxml"
+    ]
+  }
 }

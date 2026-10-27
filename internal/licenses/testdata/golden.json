@@ -1,0 +1,883 @@
+{
+  "packages": [
+    {
+      "ecosystem": "crates.io",
+      "name": "itoa",
+      "version": "1.0.9",
+      "license": "Apache-2.0 OR MIT",
+      "declared": [
+        "Apache-2.0 OR MIT"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "rust",
+      "component": "rust-app",
+      "source": "rust/Cargo.lock"
+    },
+    {
+      "ecosystem": "crates.io",
+      "name": "ryu",
+      "version": "1.0.15",
+      "license": "Apache-2.0 OR BSL-1.0",
+      "declared": [
+        "Apache-2.0 OR BSL-1.0"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "rust",
+      "component": "rust-app",
+      "source": "rust/Cargo.lock"
+    },
+    {
+      "ecosystem": "crates.io",
+      "name": "serde",
+      "version": "1.0.193",
+      "license": "Apache-2.0 OR MIT",
+      "declared": [
+        "Apache-2.0 OR MIT"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "rust",
+      "component": "rust-app",
+      "source": "rust/Cargo.lock"
+    },
+    {
+      "ecosystem": "crates.io",
+      "name": "serde_json",
+      "version": "1.0.108",
+      "license": "Apache-2.0 OR MIT",
+      "declared": [
+        "Apache-2.0 OR MIT"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "rust",
+      "component": "rust-app",
+      "source": "rust/Cargo.lock"
+    },
+    {
+      "ecosystem": "Go",
+      "name": "github.com/go-sql-driver/mysql",
+      "version": "1.7.1",
+      "license": "MPL-2.0",
+      "declared": [
+        "MPL-2.0"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "go",
+      "component": "go-app",
+      "source": "go/go.mod"
+    },
+    {
+      "ecosystem": "Go",
+      "name": "github.com/google/uuid",
+      "version": "1.6.0",
+      "license": "BSD-3-Clause",
+      "declared": [
+        "BSD-3-Clause"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "go",
+      "component": "go-app",
+      "source": "go/go.mod"
+    },
+    {
+      "ecosystem": "Go",
+      "name": "github.com/inconshreveable/mousetrap",
+      "version": "1.1.0",
+      "license": "Apache-2.0",
+      "declared": [
+        "Apache-2.0"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "go",
+      "component": "go-app",
+      "source": "go/go.mod"
+    },
+    {
+      "ecosystem": "Go",
+      "name": "github.com/spf13/cobra",
+      "version": "1.8.0",
+      "license": "Apache-2.0",
+      "declared": [
+        "Apache-2.0"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "go",
+      "component": "go-app",
+      "source": "go/go.mod"
+    },
+    {
+      "ecosystem": "Go",
+      "name": "github.com/spf13/pflag",
+      "version": "1.0.5",
+      "license": "BSD-3-Clause",
+      "declared": [
+        "BSD-3-Clause"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "go",
+      "component": "go-app",
+      "source": "go/go.mod"
+    },
+    {
+      "ecosystem": "Maven",
+      "name": "com.google.protobuf:protobuf-java",
+      "version": "3.21.9",
+      "license": "BSD-3-Clause",
+      "declared": [
+        "BSD-3-Clause"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "java",
+      "component": "java-app",
+      "source": "java/pom.xml"
+    },
+    {
+      "ecosystem": "Maven",
+      "name": "com.mysql:mysql-connector-j",
+      "version": "8.2.0",
+      "license": "",
+      "declared": [
+        "non-standard"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "java",
+      "component": "java-app",
+      "source": "java/pom.xml"
+    },
+    {
+      "ecosystem": "Maven",
+      "name": "junit:junit",
+      "version": "4.13.2",
+      "license": "",
+      "declared": [
+        "non-standard"
+      ],
+      "dependency": "direct",
+      "dev": true,
+      "language": "java",
+      "component": "java-app",
+      "source": "java/pom.xml"
+    },
+    {
+      "ecosystem": "Maven",
+      "name": "org.apache.commons:commons-lang3",
+      "version": "3.14.0",
+      "license": "Apache-2.0",
+      "declared": [
+        "Apache-2.0"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "java",
+      "component": "java-app",
+      "source": "java/pom.xml"
+    },
+    {
+      "ecosystem": "Maven",
+      "name": "org.hamcrest:hamcrest-core",
+      "version": "1.3",
+      "license": "",
+      "declared": [
+        "non-standard"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "java",
+      "component": "java-app",
+      "source": "java/pom.xml"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ansi-styles",
+      "version": "4.3.0",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "typescript",
+      "component": "typescript-app",
+      "source": "typescript/package-lock.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "caniuse-lite",
+      "version": "1.0.30001570",
+      "license": "CC-BY-4.0",
+      "declared": [
+        "CC-BY-4.0"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "typescript",
+      "component": "typescript-app",
+      "source": "typescript/package-lock.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "chalk",
+      "version": "4.1.2",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "typescript",
+      "component": "typescript-app",
+      "source": "typescript/package-lock.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "color-convert",
+      "version": "2.0.1",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "typescript",
+      "component": "typescript-app",
+      "source": "typescript/package-lock.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "color-name",
+      "version": "1.1.4",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "typescript",
+      "component": "typescript-app",
+      "source": "typescript/package-lock.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "has-flag",
+      "version": "4.0.0",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "typescript",
+      "component": "typescript-app",
+      "source": "typescript/package-lock.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "is-number",
+      "version": "7.0.0",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "direct",
+      "dev": true,
+      "language": "typescript",
+      "component": "typescript-app",
+      "source": "typescript/package-lock.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "left-pad",
+      "version": "1.3.0",
+      "license": "WTFPL",
+      "declared": [
+        "WTFPL"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "typescript",
+      "component": "typescript-app",
+      "source": "typescript/package-lock.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "lodash",
+      "version": "4.17.21",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "typescript",
+      "component": "typescript-app",
+      "source": "typescript/package-lock.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "supports-color",
+      "version": "7.2.0",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "typescript",
+      "component": "typescript-app",
+      "source": "typescript/package-lock.json"
+    },
+    {
+      "ecosystem": "NuGet",
+      "name": "Newtonsoft.Json",
+      "version": "13.0.3",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "csharp",
+      "component": "csharp-app",
+      "source": "csharp/packages.lock.json"
+    },
+    {
+      "ecosystem": "NuGet",
+      "name": "Serilog",
+      "version": "3.1.1",
+      "license": "Apache-2.0",
+      "declared": [
+        "Apache-2.0"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "csharp",
+      "component": "csharp-app",
+      "source": "csharp/packages.lock.json"
+    },
+    {
+      "ecosystem": "NuGet",
+      "name": "System.Memory",
+      "version": "4.5.5",
+      "license": "",
+      "declared": [
+        "non-standard"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "csharp",
+      "component": "csharp-app",
+      "source": "csharp/packages.lock.json"
+    },
+    {
+      "ecosystem": "Packagist",
+      "name": "monolog/monolog",
+      "version": "3.5.0",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "php",
+      "component": "php-app",
+      "source": "php/composer.lock"
+    },
+    {
+      "ecosystem": "Packagist",
+      "name": "phpunit/php-timer",
+      "version": "6.0.0",
+      "license": "BSD-3-Clause",
+      "declared": [
+        "BSD-3-Clause"
+      ],
+      "dependency": "direct",
+      "dev": true,
+      "language": "php",
+      "component": "php-app",
+      "source": "php/composer.lock"
+    },
+    {
+      "ecosystem": "Packagist",
+      "name": "psr/log",
+      "version": "3.0.0",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "php",
+      "component": "php-app",
+      "source": "php/composer.lock"
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "certifi",
+      "version": "2023.7.22",
+      "license": "MPL-2.0",
+      "declared": [
+        "MPL-2.0"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "python",
+      "component": "python-app",
+      "source": "python/requirements.txt"
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "chardet",
+      "version": "5.2.0",
+      "license": "",
+      "declared": [
+        "non-standard"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "python",
+      "component": "python-app",
+      "source": "python/requirements.txt"
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "charset-normalizer",
+      "version": "3.5.2",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "python",
+      "component": "python-app",
+      "source": "python/requirements.txt"
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "idna",
+      "version": "3.9.0",
+      "license": "",
+      "declared": [
+        "non-standard"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "python",
+      "component": "python-app",
+      "source": "python/requirements.txt"
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "pycrypto",
+      "version": "2.6.1",
+      "license": "",
+      "declared": [
+        "non-standard"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "python",
+      "component": "python-app",
+      "source": "python/requirements.txt"
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "pyqt5",
+      "version": "5.15.10",
+      "license": "GPL-3.0-only",
+      "declared": [
+        "GPL-3.0"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "python",
+      "component": "python-app",
+      "source": "python/requirements.txt"
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "pyqt5-qt5",
+      "version": "5.15.2",
+      "license": "LGPL-3.0-only",
+      "declared": [
+        "LGPL-3.0"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "python",
+      "component": "python-app",
+      "source": "python/requirements.txt"
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "pyqt5-sip",
+      "version": "12.20.0",
+      "license": "BSD-2-Clause",
+      "declared": [
+        "BSD-2-Clause"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "python",
+      "component": "python-app",
+      "source": "python/requirements.txt"
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "requests",
+      "version": "2.31.0",
+      "license": "Apache-2.0",
+      "declared": [
+        "Apache-2.0"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "python",
+      "component": "python-app",
+      "source": "python/requirements.txt"
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "urllib3",
+      "version": "2.8.0",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "python",
+      "component": "python-app",
+      "source": "python/requirements.txt"
+    },
+    {
+      "ecosystem": "RubyGems",
+      "name": "mini_portile2",
+      "version": "2.8.5",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "ruby",
+      "component": "ruby-app",
+      "source": "ruby/Gemfile.lock"
+    },
+    {
+      "ecosystem": "RubyGems",
+      "name": "nokogiri",
+      "version": "1.15.5",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "ruby",
+      "component": "ruby-app",
+      "source": "ruby/Gemfile.lock"
+    },
+    {
+      "ecosystem": "RubyGems",
+      "name": "racc",
+      "version": "1.7.3",
+      "license": "Ruby OR BSD-2-Clause",
+      "declared": [
+        "Ruby",
+        "BSD-2-Clause"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "ruby",
+      "component": "ruby-app",
+      "source": "ruby/Gemfile.lock"
+    },
+    {
+      "ecosystem": "RubyGems",
+      "name": "rack",
+      "version": "2.2.8",
+      "license": "MIT",
+      "declared": [
+        "MIT"
+      ],
+      "dependency": "direct",
+      "dev": false,
+      "language": "ruby",
+      "component": "ruby-app",
+      "source": "ruby/Gemfile.lock"
+    }
+  ],
+  "licenses": [
+    {
+      "license": "MIT",
+      "packages": 16,
+      "languages": [
+        "csharp",
+        "php",
+        "python",
+        "ruby",
+        "typescript"
+      ],
+      "components": [
+        "csharp-app",
+        "php-app",
+        "python-app",
+        "ruby-app",
+        "typescript-app"
+      ]
+    },
+    {
+      "license": "Apache-2.0",
+      "packages": 5,
+      "languages": [
+        "csharp",
+        "go",
+        "java",
+        "python"
+      ],
+      "components": [
+        "csharp-app",
+        "go-app",
+        "java-app",
+        "python-app"
+      ]
+    },
+    {
+      "license": "BSD-3-Clause",
+      "packages": 4,
+      "languages": [
+        "go",
+        "java",
+        "php"
+      ],
+      "components": [
+        "go-app",
+        "java-app",
+        "php-app"
+      ]
+    },
+    {
+      "license": "Apache-2.0 OR MIT",
+      "packages": 3,
+      "languages": [
+        "rust"
+      ],
+      "components": [
+        "rust-app"
+      ]
+    },
+    {
+      "license": "MPL-2.0",
+      "packages": 2,
+      "languages": [
+        "go",
+        "python"
+      ],
+      "components": [
+        "go-app",
+        "python-app"
+      ]
+    },
+    {
+      "license": "Apache-2.0 OR BSL-1.0",
+      "packages": 1,
+      "languages": [
+        "rust"
+      ],
+      "components": [
+        "rust-app"
+      ]
+    },
+    {
+      "license": "BSD-2-Clause",
+      "packages": 1,
+      "languages": [
+        "python"
+      ],
+      "components": [
+        "python-app"
+      ]
+    },
+    {
+      "license": "CC-BY-4.0",
+      "packages": 1,
+      "languages": [
+        "typescript"
+      ],
+      "components": [
+        "typescript-app"
+      ]
+    },
+    {
+      "license": "GPL-3.0-only",
+      "packages": 1,
+      "languages": [
+        "python"
+      ],
+      "components": [
+        "python-app"
+      ]
+    },
+    {
+      "license": "LGPL-3.0-only",
+      "packages": 1,
+      "languages": [
+        "python"
+      ],
+      "components": [
+        "python-app"
+      ]
+    },
+    {
+      "license": "Ruby OR BSD-2-Clause",
+      "packages": 1,
+      "languages": [
+        "ruby"
+      ],
+      "components": [
+        "ruby-app"
+      ]
+    },
+    {
+      "license": "WTFPL",
+      "packages": 1,
+      "languages": [
+        "typescript"
+      ],
+      "components": [
+        "typescript-app"
+      ]
+    }
+  ],
+  "notCovered": [
+    {
+      "language": "dart",
+      "reason": "deps.dev, where OSV-Scanner finds licenses, has none for pub.dev"
+    },
+    {
+      "language": "elixir",
+      "reason": "deps.dev, where OSV-Scanner finds licenses, has none for Hex"
+    },
+    {
+      "language": "zig",
+      "reason": "no package registry hecatron reads licenses from"
+    }
+  ],
+  "warnings": [
+    "java-app: java: java/pom.xml isn't a lock file, so its dependencies are the versions it resolves to today: approximate",
+    "python-app: python: python/requirements.txt isn't a lock file, so its dependencies are the versions it resolves to today: approximate"
+  ],
+  "policy": {
+    "allow": [
+      "MIT",
+      "Apache-2.0",
+      "BSD-2-Clause",
+      "BSD-3-Clause",
+      "ISC",
+      "MPL-2.0"
+    ],
+    "deny": [
+      "GPL-3.0-only"
+    ],
+    "includeDev": false,
+    "violations": [
+      {
+        "package": "maven:com.mysql:mysql-connector-j",
+        "version": "8.2.0",
+        "license": "",
+        "reason": "unknown license; licenses.allow lists what's allowed",
+        "language": "java",
+        "component": "java-app"
+      },
+      {
+        "package": "maven:org.hamcrest:hamcrest-core",
+        "version": "1.3",
+        "license": "",
+        "reason": "unknown license; licenses.allow lists what's allowed",
+        "language": "java",
+        "component": "java-app"
+      },
+      {
+        "package": "npm:left-pad",
+        "version": "1.3.0",
+        "license": "WTFPL",
+        "reason": "WTFPL not allowed",
+        "language": "typescript",
+        "component": "typescript-app"
+      },
+      {
+        "package": "nuget:System.Memory",
+        "version": "4.5.5",
+        "license": "",
+        "reason": "unknown license; licenses.allow lists what's allowed",
+        "language": "csharp",
+        "component": "csharp-app"
+      },
+      {
+        "package": "pypi:chardet",
+        "version": "5.2.0",
+        "license": "",
+        "reason": "unknown license; licenses.allow lists what's allowed",
+        "language": "python",
+        "component": "python-app"
+      },
+      {
+        "package": "pypi:idna",
+        "version": "3.9.0",
+        "license": "",
+        "reason": "unknown license; licenses.allow lists what's allowed",
+        "language": "python",
+        "component": "python-app"
+      },
+      {
+        "package": "pypi:pycrypto",
+        "version": "2.6.1",
+        "license": "",
+        "reason": "unknown license; licenses.allow lists what's allowed",
+        "language": "python",
+        "component": "python-app"
+      },
+      {
+        "package": "pypi:pyqt5",
+        "version": "5.15.10",
+        "license": "GPL-3.0-only",
+        "reason": "GPL-3.0-only denied",
+        "language": "python",
+        "component": "python-app"
+      },
+      {
+        "package": "pypi:pyqt5-qt5",
+        "version": "5.15.2",
+        "license": "LGPL-3.0-only",
+        "reason": "LGPL-3.0-only not allowed",
+        "language": "python",
+        "component": "python-app"
+      }
+    ],
+    "accepted": [
+      {
+        "package": "npm:caniuse-lite",
+        "version": "1.0.30001570",
+        "license": "CC-BY-4.0",
+        "reason": "CC-BY-4.0 data, reviewed",
+        "language": "typescript",
+        "component": "typescript-app",
+        "until": "2999-01-01"
+      }
+    ],
+    "expired": [
+      "the accepted package PyPI:pycrypto@2.6.1 expired on 2001-01-01"
+    ]
+  }
+}

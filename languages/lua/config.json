@@ -22,5 +22,10 @@
   "formatting": "StyLua",
   "notes": {
     "formatting": "Only when the project has a `stylua.toml`."
+  },
+  "cache": {
+    "toolchain": [
+      "~/.luarocks"
+    ]
   }
 }
