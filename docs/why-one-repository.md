@@ -16,9 +16,10 @@ write; until now, writing and maintaining a native, idiomatic
 implementation per language needed a team fluent in each one, so almost
 nobody did it.
 
-That doesn't have to be the case any more. AI coding agents change the cost. An agent can write, port and maintain an
-implementation in a language its human maintainer doesn't know, so one person
-can ship the same library natively in a dozen or fifty languages. Once
+That doesn't have to be the case any more. AI coding agents change the cost.
+An agent can write, port and maintain an implementation in a language its
+human maintainer doesn't know, so one person can ship the same library
+natively in a dozen or fifty languages. Once
 implementations are cheap, the best place for them is **one repository**:
 
 - **One change lands everywhere.** A bug fix or a new feature is one pull
