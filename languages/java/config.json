@@ -67,5 +67,6 @@
     "Gradle"
   ],
   "testing": "JUnit",
-  "linting": "Gradle check"
+  "linting": "Gradle check",
+  "family": "jvm"
 }

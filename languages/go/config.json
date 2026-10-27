@@ -51,5 +51,67 @@
     "go modules"
   ],
   "testing": "go test",
-  "linting": "golangci-lint"
+  "linting": "golangci-lint",
+  "actions": {
+    "test": {
+      "find": "above-first",
+      "files": [
+        "go.mod"
+      ],
+      "steps": [
+        {
+          "run": [
+            "go",
+            "test",
+            "./..."
+          ]
+        }
+      ]
+    },
+    "lint": {
+      "find": "above-first",
+      "files": [
+        "go.mod"
+      ],
+      "steps": [
+        {
+          "run": [
+            "golangci-lint",
+            "run",
+            "./..."
+          ]
+        }
+      ]
+    },
+    "build": {
+      "find": "above-first",
+      "files": [
+        "go.mod"
+      ],
+      "steps": [
+        {
+          "run": [
+            "go",
+            "build",
+            "./..."
+          ]
+        }
+      ]
+    },
+    "clean": {
+      "find": "above-first",
+      "files": [
+        "go.mod"
+      ],
+      "steps": [
+        {
+          "run": [
+            "go",
+            "clean",
+            "./..."
+          ]
+        }
+      ]
+    }
+  }
 }
