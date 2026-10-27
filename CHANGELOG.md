@@ -23,7 +23,7 @@ minor version can change behaviour. Numbers are
   `pkg_check_modules()` and `pkg_search_module()` lookups, headers looked
   for by hand (`gtest/gtest.h`), files `include()`d from outside the
   component, the enclosing project's own lookups, and more libraries (GLib,
-  Abseil, RE2, ICU, Jansson, Snappy, zstd, LZ4, libevent, flex, bison...).
+  RE2, ICU, Jansson, Snappy, zstd, LZ4, libevent, flex, bison...).
 - **Perl installs Module::Install** and the extensions a `Makefile.PL`
   written with it names (`configure_requires`), which a checkout doesn't
   bundle, and installs the CPAN dependencies a `Makefile.PL` or `Build.PL`

@@ -257,7 +257,10 @@ dotnet_runtimes_missing() {
 # pkg_check_modules() or pkg_search_module()) as "pkg-config:<module>". A name
 # not in the table is left to the project (its README, or a vcpkg or Conan
 # manifest), except that on Debian and Ubuntu a pkg-config module <name> is
-# looked for as lib<name>-dev, the usual package for it.
+# looked for as lib<name>-dev, the usual package for it. Abseil is left out:
+# projects built on it track its LTS releases and fetch the one they need when
+# none is found, and a distribution's older one would be found first (and
+# fail: protobuf links absl::absl_check, which Ubuntu 24.04's lacks).
 _cmake_package() {
     local _name="${1#pkg-config:}"
     if [ "${OS}" = "macos" ]; then
@@ -272,7 +275,6 @@ _cmake_package() {
             doctest) echo doctest ;;
             benchmark) echo google-benchmark ;;
             Protobuf | protobuf) echo protobuf ;;
-            absl) echo abseil ;;
             re2) echo re2 ;;
             ICU | icu-uc | icu-i18n) echo icu4c ;;
             OpenSSL | openssl | libssl) echo openssl ;;
@@ -302,7 +304,6 @@ _cmake_package() {
             doctest) echo doctest-dev ;;
             benchmark) echo libbenchmark-dev ;;
             Protobuf | protobuf) echo "libprotobuf-dev protobuf-compiler" ;;
-            absl) echo libabsl-dev ;;
             re2) echo libre2-dev ;;
             ICU | icu-uc | icu-i18n) echo libicu-dev ;;
             OpenSSL | openssl | libssl) echo libssl-dev ;;
