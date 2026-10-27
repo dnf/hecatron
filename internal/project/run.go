@@ -19,6 +19,16 @@ func (p *Project) Dependency(name string) (string, error) {
 	return optionalField(defs.Get(name), "dependency")
 }
 
+// LintDependency is the command a language's linter needs, from its
+// definition's "lintDependency": "" when it names none.
+func (p *Project) LintDependency(lang string) (string, error) {
+	defs, err := p.Definitions()
+	if err != nil {
+		return "", err
+	}
+	return optionalField(defs.Get(lang), "lintDependency")
+}
+
 // StaticPath are the existing directories of a language's "path" entries
 // that need no resolved version (no {home}...), "~" expanded and globs
 // matched, as project.py's _static_path finds them.

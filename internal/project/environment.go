@@ -45,6 +45,14 @@ func (p *Project) InstalledVersions(lang string) ([]Installed, error) {
 	return found, nil
 }
 
+// ForgetInstalled drops what installed.sh said, so it runs again: after an
+// installer ran (doctor --fix), as each project.py query found it afresh.
+func (p *Project) ForgetInstalled() {
+	p.cacheMu.Lock()
+	p.cache.installed = nil
+	p.cacheMu.Unlock()
+}
+
 func (p *Project) runInstalled(lang string) ([]Installed, error) {
 	script := p.Resolve(lang, "installed.sh")
 	if script == "" {
