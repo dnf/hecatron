@@ -143,6 +143,11 @@ class ProjectModelTest(Fixture):
                     self.assertTrue(os.path.isfile(os.path.join(directory, script)), script)
 
 
+def holding(dirs: dict[str, set[str]]):
+    """infer_layout's holds: the directories holding each language's files."""
+    return lambda lang, directory: directory in dirs.get(lang, set())
+
+
 class InitTest(Fixture):
     def test_infers_one_component_per_language_directory(self):
         self.assertEqual(manage.infer_layout({"go": {"go"}, "rust": {"rust", "rust/src"}}), (["."], "{lang}", {}))
@@ -173,15 +178,22 @@ class InitTest(Fixture):
     def test_a_directory_fitting_the_layout_counts_without_a_build_file(self):
         # Thrift: go.mod at the root, the code in lib/go.
         found = {"go": {"."}, "java": {"lib/java"}, "ruby": {"lib/rb"}}
-        self.assertEqual(manage.infer_layout(found, {"ruby": ["ruby", "rb"]}, {"lib", "lib/go", "lib/java", "lib/rb"}),
-                         (["."], "lib/{lang}", {}))
+        holds = holding({"go": {"lib", "lib/go"}, "java": {"lib", "lib/java"}, "ruby": {"lib", "lib/rb"}})
+        self.assertEqual(manage.infer_layout(found, {"ruby": ["ruby", "rb"]}, holds), (["."], "lib/{lang}", {}))
+
+    def test_a_directory_named_for_a_language_but_holding_none_of_it_doesnt_fit(self):
+        # hecatron itself: go.mod at the root, a language definition (no Go)
+        # in languages/go/ beside languages/tcl/'s Tcl.
+        found = {"go": {"."}, "tcl": {"languages/tcl"}}
+        self.assertEqual(manage.infer_layout(found, {}, holding({"tcl": {"languages", "languages/tcl"}})),
+                         (["."], "languages/{lang}", {"go": "."}))
 
     def test_a_directory_another_language_was_found_in_isnt_borrowed(self):
         # Cucumber messages: javascript/ is TypeScript's (it has a tsconfig.json),
         # so JavaScript's package.json in jsonschema/ gets its own path.
         found = {"go": {"go"}, "java": {"java"}, "typescript": {"javascript"}, "javascript": {"jsonschema"}}
         self.assertEqual(manage.infer_layout(found, {"javascript": ["javascript", "js"]},
-                                             {"go", "java", "javascript", "jsonschema"}),
+                                             holding({"javascript": {"javascript", "jsonschema"}})),
                          (["."], "{lang}", {"javascript": "jsonschema", "typescript": "javascript"}))
 
     def detect(self, files: dict[str, str], defs: dict[str, dict]):
@@ -264,6 +276,42 @@ class InitTest(Fixture):
         defs = {"cpp": {"detect": ["CMakeLists.txt"]}, "c": {"detectSources": ["*.c"]}}
         found, _ = self.detect({"cpp/CMakeLists.txt": "", "cpp/x.c": "", "c/y.c": ""}, defs)
         self.assertEqual(found, {"cpp": {"cpp"}, "c": {"c"}})
+
+    def test_hooks_are_tooling_not_a_language(self):
+        defs = {"go": {"detect": ["go.mod"]}, "tcl": {"detect": ["pkgIndex.tcl"], "detectSources": ["*.tcl"]}}
+        found, not_added = self.detect({"go.mod": "", "languages/tcl/hooks/run.tcl": "", ".githooks/hooks/x.tcl": ""},
+                                       defs)
+        self.assertEqual(found, {"go": {"."}})
+        self.assertEqual(not_added, {"tcl": "found only in examples, tests or vendored code"})
+
+    def detected(self, files: dict[str, str]) -> dict:
+        for path, content in files.items():
+            write(self.path(path), content)
+        self.commit()
+        return manage.detected_config(self.root)[0]
+
+    def test_a_build_file_at_the_root_beats_a_directory_named_for_the_language(self):
+        # hecatron itself: the Go module at the root, Go's and Tcl's
+        # definitions (no Go, a Tcl hook) under languages/.
+        config = self.detected({"go.mod": "module x\n", "cmd/x/main.go": "", "internal/a/a.go": "",
+                                "languages/go/config.json": "{}", "languages/go/install.sh": "",
+                                "languages/tcl/config.json": "{}", "languages/tcl/hooks/run.tcl": "",
+                                "languages/rust/Cargo.toml": ""})
+        self.assertEqual((config["languages"], config["implPath"], config.get("implPaths")),
+                         (["go", "rust"], "languages/{lang}", {"go": "."}))
+
+    def test_a_directory_named_for_the_language_holding_its_code_still_counts(self):
+        # Thrift: go.mod at the root, the Go code in lib/go.
+        config = self.detected({"go.mod": "module x\n", "lib/go/thrift/a.go": "", "lib/java/pom.xml": "",
+                                "lib/rb/x.gemspec": ""})
+        self.assertEqual((config["languages"], config["implPath"], config.get("implPaths")),
+                         (["go", "java", "ruby"], "lib/{lang}", None))
+
+    def test_a_go_directory_holding_the_module_is_chosen(self):
+        config = self.detected({"go/go.mod": "module x\n", "go/a.go": "", "rust/Cargo.toml": "",
+                                "go.work": ""})
+        self.assertEqual((config["languages"], config["implPath"], config.get("implPaths")),
+                         (["go", "rust"], "{lang}", None))
 
     def test_init_writes_a_path_for_a_language_outside_the_layout(self):
         write(self.path("go", "go.mod"), "module x\n")
