@@ -35,6 +35,9 @@ minor version can change behaviour. Numbers are
   JDKs a Gradle or Maven toolchain names, and a build whose Gradle wrapper
   (before 9.1) or Kotlin compiler (before 2.3) can't run on the default
   JDK runs on the newest LTS JDK it supports, which they install too.
+- **Python installs a C compiler on Linux,** for dependencies that build a
+  C extension from source.
+
 - **Rust repairs an interrupted install:** a rustup left with no default
   toolchain (an install killed mid-download) is reported by the doctor and
   fixed by the installer.
