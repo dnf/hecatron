@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: polyglot-orientation
+description: A repository with Go and Python side by side; the agent should orient with hct and give one command that tests both.
+context:
+  scaffold_script: scaffold.sh

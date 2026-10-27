@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: missing-toolchain
+description: An Elixir project on a machine without Elixir; the agent must not install toolchains itself, and should say what to install.
+context:
+  scaffold_script: scaffold.sh
