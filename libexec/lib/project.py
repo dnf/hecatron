@@ -22,6 +22,7 @@ Shell queries:
 
 from __future__ import annotations
 
+import fnmatch
 import glob
 import json
 import os
@@ -125,14 +126,44 @@ class Project:
             return self.config["implPath"]
         return "{lang}" if self.components == ["."] else "{component}/{lang}"
 
+    def impl_template(self, lang: str) -> str:
+        """A language's implPath: the project's "implPaths" entry for it, else
+        the shared one."""
+        return (self.config.get("implPaths") or {}).get(lang) or self.impl_path
+
+    def dir_names(self, lang: str) -> list[str]:
+        """The names a language's directory goes by, its own first (C#'s
+        dotnet/, Python's py/): the definition's "dirNames"."""
+        names = self.definitions.get(lang, {}).get("dirNames", [])
+        return [lang] + [name for name in names if name != lang]
+
+    def _find_impl_dir(self, component: str, lang: str) -> tuple[str | None, str]:
+        """(the directory found or None, the one to fall back to). A directory
+        found by a language's name is its only when none of its "detectUnless"
+        files sit there: a javascript/ holding a tsconfig.json is TypeScript's.
+        A template without {lang} names its directory outright."""
+        template = self.impl_template(lang).replace("{component}", component)
+        candidates = [os.path.normpath(os.path.join(self.root, template.replace("{lang}", name)))
+                      for name in self.dir_names(lang)]
+        unless = self.definitions.get(lang, {}).get("detectUnless", []) if "{lang}" in template else []
+
+        def is_own(directory: str) -> bool:
+            return os.path.isdir(directory) and not any(
+                fnmatch.fnmatch(name, pattern) for name in os.listdir(directory) for pattern in unless)
+
+        return next((c for c in candidates if is_own(c)), None), candidates[0]
+
     def impl_dir(self, component: str, lang: str) -> str:
-        relative = self.impl_path.replace("{component}", component).replace("{lang}", lang)
-        return os.path.normpath(os.path.join(self.root, relative))
+        """Where a component's code in a language lives: the template filled
+        with the first of the language's directory names that is the
+        language's, else with its own name."""
+        found, fallback = self._find_impl_dir(component, lang)
+        return found or fallback
 
     def impl_dirs(self, lang: str) -> list[tuple[str, str]]:
         """(component, directory) for each component implemented in `lang`."""
-        return [(c, self.impl_dir(c, lang)) for c in self.components
-                if os.path.isdir(self.impl_dir(c, lang))]
+        return [(c, found) for c in self.components
+                for found in [self._find_impl_dir(c, lang)[0]] if found]
 
     @property
     def languages(self) -> list[str]:

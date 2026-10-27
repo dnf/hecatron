@@ -1,16 +1,13 @@
 #!/usr/bin/env bash
-# Uninstall Java (OpenJDK 17)
+# Uninstall Java (Temurin JDKs)
 source "$(dirname "$0")/../_common.sh"
 
-uninstall_macos() {
-    echo "JDK 17 is shared by Java, Kotlin, Scala, and Groovy — not removing."
-    echo "To force: brew uninstall openjdk@17"
+_message() {
+    echo "JDKs are shared by Java, Kotlin, Scala, and Groovy, and by other projects — not removing."
+    echo "To force, remove the JDK directories: $1"
 }
-
-uninstall_linux() {
-    echo "JDK 17 is shared by Java, Kotlin, Scala, and Groovy — not removing."
-    echo "To force: sudo apt-get remove -y openjdk-17-jdk-headless"
-}
+uninstall_macos() { _message "${HOME}/Library/Java/JavaVirtualMachines/temurin-*"; }
+uninstall_linux() { _message "/usr/lib/jvm/temurin-* (and their links in /usr/local/bin)"; }
 
 log "Uninstalling Java..."
 "uninstall_${OS}"

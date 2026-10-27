@@ -1,5 +1,9 @@
 # apt: python3 python3-venv
 
-# uv (Python package manager)
+# uv (Python package manager), and each Python version the components use,
+# where installed.sh finds them (uv resolves a prefix itself)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
+# each-version
+RUN uv python install {version}
+# end-each-version

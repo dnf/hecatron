@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install Kotlin (uses JDK 17 — delegates to Java)
+# Install Kotlin (uses the JDK — delegates to Java)
 source "$(dirname "$0")/../_common.sh"
 
 install_macos() {
@@ -16,6 +16,6 @@ install_linux() {
 
 deps() { :; }
 
-log "Installing Kotlin (JDK 17)..."
+log "Installing Kotlin..."
 "install_${OS}"
 deps

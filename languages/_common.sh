@@ -22,10 +22,15 @@ ROOT="${HECATRON_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
 log() { echo "==> $*"; }
 
-# Each component's directory for a language, one per line: the project's
-# HECATRON_IMPL_PATH template (e.g. {component}/impl/{lang}) filled in for each
-# of HECATRON_COMPONENTS.
+# Each component's directory for a language, one per line, as hecatron
+# resolves it (a language's own implPath and directory names); outside a
+# hecatron run, the HECATRON_IMPL_PATH template (e.g. {component}/impl/{lang})
+# filled in for each of HECATRON_COMPONENTS. Nothing outside a project.
 impl_dirs() {
+    if [ -n "${HECATRON_HOME:-}" ]; then
+        (cd "${ROOT}" && python3 "${HECATRON_HOME}/libexec/lib/project.py" impl-dirs "$1" </dev/null 2>/dev/null) | cut -f2
+        return 0
+    fi
     local _component _relative
     for _component in ${HECATRON_COMPONENTS:-.}; do
         _relative="${HECATRON_IMPL_PATH:-{lang\}}"
@@ -99,6 +104,30 @@ apt_has() {
     apt_refresh
     policy="$(apt-cache policy "$1" 2>/dev/null)"
     [[ "${policy}" == *"Candidate: "[!\(]* ]]
+}
+
+# Toolchain versions (docs/design.md §18). For an installer: each version the
+# project's components resolve to that isn't installed yet, one spec per line
+# ("1.22" or "=1.22.5"); nothing outside a hecatron run.
+missing_versions() {
+    [ -n "${HECATRON_HOME:-}" ] || return 0
+    (cd "${ROOT}" && python3 "${HECATRON_HOME}/libexec/lib/project.py" missing-versions "$1" </dev/null) |
+        cut -f2 | sort -u
+}
+# The newest of the versions on stdin, one per line, that a spec matches.
+newest_match() {
+    python3 -c '
+import sys
+sys.path.insert(0, sys.argv[2])
+from versions import Spec, newest
+spec = Spec(sys.argv[1])
+print(newest([v.strip() for v in sys.stdin if spec.matches(v.strip())]) or "")
+' "$1" "${HECATRON_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/libexec/lib"
+}
+# A definition's default version (its config.json's "version", without "=").
+default_version() {
+    python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["version"].lstrip("="))' \
+        "$(dirname "$0")/config.json"
 }
 
 # For a definition's releases.sh: the latest release of each of a product's

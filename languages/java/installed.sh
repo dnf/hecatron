@@ -8,6 +8,7 @@ _homes() {
     local home
     for home in /usr/lib/jvm/* \
                 /Library/Java/JavaVirtualMachines/*/Contents/Home \
+                "${HOME}"/Library/Java/JavaVirtualMachines/*/Contents/Home \
                 /opt/homebrew/opt/openjdk*/libexec/openjdk.jdk/Contents/Home \
                 /usr/local/opt/openjdk*/libexec/openjdk.jdk/Contents/Home; do
         [ -f "${home}/release" ] && [ -x "${home}/bin/javac" ] && echo "${home}"
