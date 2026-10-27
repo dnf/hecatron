@@ -1,0 +1,4 @@
+(library
+ (name add_sexp)
+ (public_name add_sexp)
+ (libraries add sexplib0))
