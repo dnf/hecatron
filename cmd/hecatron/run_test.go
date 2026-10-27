@@ -209,7 +209,7 @@ func TestAgentOutput(t *testing.T) {
 			t.Errorf("no %s in:\n%s", part, jsonRun.stdout)
 		}
 	}
-	ci := runIn(t, root, append(env, "HECATRON_OUTPUT=", "CLAUDECODE=", "GITHUB_ACTIONS=true"), binary, "test", "beta")
+	ci := runIn(t, root, append(env, "HECATRON_OUTPUT=", "CLAUDECODE=", "GITHUB_ACTIONS=true", "GITHUB_WORKSPACE="+root), binary, "test", "beta")
 	if !strings.Contains(ci.stdout, "::error file=a/beta/beta.src,line=3,title=hct test beta::broken\n") {
 		t.Errorf("no annotation in:\n%s", ci.stdout)
 	}
