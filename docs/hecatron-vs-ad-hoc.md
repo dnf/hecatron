@@ -53,7 +53,8 @@ and Debian 13, and every project gets the fix by updating.
 
 - **Young:** version 0.2; expect changes before 1.0, and bugs (the failures
   above were hecatron's).
-- **Requirements:** bash 4+ and Python 3.9+.
+- **Requirements:** the bash and Python 3 that current macOS and Linux ship
+  (bash 3.2+, Python 3.9+).
 - **Conventions:** hooks run per component; unusual layouts need describing.
 - **Installers change your machine**, some with sudo, only when you ask.
 - **No Windows.**

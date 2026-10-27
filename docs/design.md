@@ -381,8 +381,8 @@ dnf/tap/hecatron`. The formula:
 
 - installs the release tarball into `libexec/` and a `bin/hecatron` wrapper
   that sets `HECATRON_HOME`;
-- depends on `bash` (the runner needs bash 4+; macOS ships 3.2) and `python@3`
-  (macOS has no Python without the Command Line Tools); uses the system perl;
+- depends on `python@3` (macOS has no Python without the Command Line
+  Tools); uses the system bash (3.2 or later) and perl;
 - runs a `test do` block that inits a temporary repo and runs `hecatron
   doctor` on an empty language list.
 
@@ -400,7 +400,7 @@ message instead of misbehaving.
 **Language.** Keep bash for the entry point, installers, hooks and runner,
 and Python 3 (standard library only) for config handling and generators, as
 today: it reuses the existing, working code. A single static binary (Go) would
-drop the Python and bash 4 dependencies, but means rewriting the runner and
+drop the Python dependency, but means rewriting the runner and
 config bridge; worth revisiting after 1.0.
 
 **Testing hecatron.**

@@ -76,14 +76,11 @@ For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
 | CI and Dockerfile kept in sync by hand | `hct workflows`, `hct dockerfile`<br>`hct check` catches drift |
 | Each project fixes toolchain rot itself | Fixed once, tested on every supported distribution |
 
-The cost: a young dependency (0.2), bash 4+ and Python 3.9+, and no Windows.
-Skip it for two or three mainstream languages, or if Bazel or Nx already owns
-your toolchains.
-
 ## Quick start
 
-Hecatron needs bash 4 or later and Python 3.9 or later. macOS ships bash 3.2;
-`brew install bash` gets a current one.
+Hecatron runs on the bash and Python 3 that current macOS and Linux ship (bash
+3.2 or later, Python 3.9 or later). On macOS, `python3` comes with the Command
+Line Tools (`xcode-select --install`); hecatron says so if it's missing.
 
 ```bash
 git clone https://github.com/dnf/hecatron && export PATH="$PWD/hecatron/bin:$PATH"
@@ -158,12 +155,8 @@ but expect changes before 1.0.
 
 ## Contributing
 
-Issues and pull requests are welcome. Before sending a change, run the checks:
-
-```bash
-bash libexec/lint/shellcheck.sh            # zero warnings
-python3 -m unittest discover -s tests
-```
+Issues and pull requests are welcome. Before sending a change, run
+`hct self-test`, which runs ShellCheck (zero warnings) and the unit tests.
 
 [CLAUDE.md](CLAUDE.md) has the conventions the code follows (shell style,
 idempotent installers, generic language definitions), for people and coding
@@ -174,18 +167,18 @@ agents alike. Changes to how hecatron works start in
 
 | Path | Contents |
 | --- | --- |
-| `bin/hecatron`, `bin/hct` | The command |
-| `languages/<lang>/` | Language definitions: `config.json`, `install.sh`, `uninstall.sh`, `doctor.sh`, Dockerfile snippet |
-| `languages/_common.sh` | Shared installer helpers |
-| `libexec/lib/` | The project model (`project.py`), shell helpers, per-component dispatch |
-| `libexec/commands/` | The commands (`run.sh` for test/lint/build/clean, `manage.py` for configuration) |
-| `libexec/runner/` | The parallel runner and its docs |
-| `libexec/codegen/` | DO NOT EDIT banners and the Dockerfile generator |
-| `libexec/{metadata,onboarding,bootstrap,lint}/` | Metadata updates, onboarding, machine bootstrap, shellcheck |
-| `tests/` | Unit and command tests against fixture repositories |
+| [`bin/hecatron`](bin/hecatron), [`bin/hct`](bin/hct) | The command |
+| [`languages/<lang>/`](languages/) | Language definitions: `config.json`, `install.sh`, `uninstall.sh`, `doctor.sh`, Dockerfile snippet, and default `hooks/` |
+| [`languages/_common.sh`](languages/_common.sh) | Shared installer helpers |
+| [`libexec/lib/`](libexec/lib/) | The project model (`project.py`), shell helpers, per-component dispatch |
+| [`libexec/commands/`](libexec/commands/) | The commands (`run.sh` for test/lint/build/clean, `manage.py` for configuration, `self-test.sh`) |
+| [`libexec/runner/`](libexec/runner/) | The parallel runner and its docs |
+| [`libexec/codegen/`](libexec/codegen/) | DO NOT EDIT banners and the Dockerfile generator |
+| [`libexec/`](libexec/)`{metadata,onboarding,bootstrap,lint}/` | Metadata updates, onboarding, machine bootstrap, shellcheck |
+| [`tests/`](tests/) | Unit and command tests against fixture repositories, and the Docker install tests |
 | [`docs/`](docs/) | Design, installers, adding a language, build conventions |
 | [`assets/logo/`](assets/logo/) | The logo, favicons and social preview, and the script that builds them |
-| `examples/sayable/` | Sayable's project hooks, CI workflow templates and config at the time of the split |
+| [`examples/sayable/`](examples/sayable/) | Sayable's project hooks, CI workflow templates and config at the time of the split |
 
 ## Acknowledgements
 

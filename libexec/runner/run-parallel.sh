@@ -82,7 +82,7 @@ Log files:
   .logs/<name>/history.log       Duration history for prediction (last 50 runs)
 
 Requirements:
-  bash 4+, perl (Time::HiRes for sub-second timing), tput (optional, for
+  bash 3.2+, perl (Time::HiRes for sub-second timing), tput (optional, for
   terminal width detection and cursor control)
 HELP
     exit 0

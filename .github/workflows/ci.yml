@@ -18,9 +18,24 @@ jobs:
       - name: Install shellcheck (macOS)
         if: runner.os == 'macOS'
         run: brew install shellcheck
-      - name: shellcheck every shell script
-        run: bash libexec/lint/shellcheck.sh
-      - name: Unit and command tests
-        run: python3 -m unittest discover -s tests -v
+      - name: shellcheck and the unit tests
+        run: bin/hecatron self-test
       - name: The command runs
         run: bin/hecatron --version && bin/hct help
+
+  # Hecatron runs on the bash macOS ships (3.2); the runners' bash is newer,
+  # so run the tests under 3.2 itself.
+  bash-3-2:
+    runs-on: ubuntu-latest
+    container: bash:3.2
+    steps:
+      - name: Install Python, git and perl
+        run: apk add --no-cache python3 git perl ncurses
+      - uses: actions/checkout@v4
+      - name: Unit and command tests under bash 3.2
+        run: |
+          git config --global --add safe.directory "*"
+          git config --global user.email ci@example.com
+          git config --global user.name CI
+          bash --version | head -1
+          python3 -m unittest discover -s tests
