@@ -109,6 +109,7 @@ type Project struct {
 	Disabled   []string // sorted, from local.json
 	Logs       string
 	Metadata   string // the metadata file's path, or ""
+	Detected   bool   // a git repository without a config of its own
 
 	config      *Object
 	implPaths   map[string]string
@@ -291,13 +292,15 @@ func (p *Project) readConfig() error {
 	return nil
 }
 
-func (p *Project) readLocal() error {
-	local, err := readJSON(pyJoin(p.Dir, "local.json"))
+func (p *Project) readLocal() error { return p.readLocalFrom(pyJoin(p.Dir, "local.json")) }
+
+func (p *Project) readLocalFrom(path string) error {
+	local, err := readJSON(path)
 	if err != nil {
 		return err
 	}
 	if local == nil {
-		if isFile(pyJoin(p.Dir, "local.json")) {
+		if isFile(path) {
 			return unsupported("local.json is null")
 		}
 		return nil

@@ -96,13 +96,20 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 }
 
 // findProject finds the project (like git). A git repository with no
-// config of its own is read as detected, which only project.py does yet, so
-// the root then comes from it, and the command is delegated.
+// config of its own is read as detected, which only project.py does: the
+// root then comes from it, and the Go model reads what it detected from
+// its cache (or the command is delegated).
 func (c *cli) findProject() int {
-	if c.locateProject(false) || c.rootFromPython(true) {
+	if c.locateProject(false) {
 		return 0
 	}
-	return 1
+	if !c.rootFromPython(true) {
+		return 1
+	}
+	if p, err := project.LoadDetected(c.root, c.home); err == nil {
+		c.project = p
+	}
+	return 0
 }
 
 // locateProject sets the project root and, when the Go model reads it, the
