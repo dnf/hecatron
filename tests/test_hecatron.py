@@ -277,6 +277,31 @@ class InitTest(Fixture):
         with open(self.path(".hecatron", "config.json"), encoding="utf-8") as f:
             self.assertEqual(json.load(f)["languages"], ["go"])
 
+    def test_a_command_sets_up_a_git_repository_on_first_use(self):
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        write(self.path("go", "go.mod"), "module example.com/m\n")
+        os.makedirs(self.path("go", "sub"))
+        self.commit()
+        result = self.hecatron("list", cwd=self.path("go", "sub"))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("set up", result.stderr)
+        self.assertIn("go", result.stdout)
+        with open(self.path(".hecatron", "config.json"), encoding="utf-8") as f:
+            self.assertEqual(json.load(f)["languages"], ["go"])
+
+    def test_outside_git_a_command_needs_a_project(self):
+        with tempfile.TemporaryDirectory() as outside:
+            result = subprocess.run(["bash", BIN, "list"], cwd=outside, capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("not inside a git repository", result.stderr)
+            self.assertFalse(os.path.exists(os.path.join(outside, ".hecatron")))
+
+    def test_an_unknown_command_sets_nothing_up(self):
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        result = self.hecatron("frobnicate")
+        self.assertEqual(result.returncode, 2)
+        self.assertFalse(os.path.exists(self.path(".hecatron")))
+
     def test_init_refuses_a_directory_outside_git(self):
         with tempfile.TemporaryDirectory() as outside:
             result = subprocess.run(["bash", BIN, "init", outside], capture_output=True, text=True)

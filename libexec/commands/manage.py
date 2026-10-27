@@ -625,6 +625,10 @@ def cmd_init(args) -> int:
     if args.justfile:
         with open(os.path.join(root, ".hecatron", "hecatron.just"), "w", encoding="utf-8") as f:
             f.write(JUSTFILE)
+    if args.auto:
+        print(f"hecatron: set up {root} for hecatron (hecatron init): "
+              f"{', '.join(languages) or 'no languages detected; add them with hecatron add <lang>'}")
+        return 0
     print(f"Initialised {root}")
     print(f"  languages:  {', '.join(languages) or '(none detected; add with hecatron add <lang>)'}")
     print(f"  components: {', '.join(components)}   implPath: {impl_path}")
@@ -651,6 +655,7 @@ def main(argv: list[str]) -> int:
     p.add_argument("--languages")
     p.add_argument("--justfile", action="store_true")
     p.add_argument("--force", action="store_true")
+    p.add_argument("--auto", action="store_true", help=argparse.SUPPRESS)
     p.set_defaults(func=cmd_init)
 
     for name, func in (("install", cmd_install), ("uninstall", cmd_uninstall),

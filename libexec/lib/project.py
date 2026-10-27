@@ -60,8 +60,8 @@ def find_root(start: str | None = None) -> str:
         parent = os.path.dirname(directory)
         if parent == directory:
             raise ProjectError(
-                "not a hecatron project (no .hecatron/config.json here or above); "
-                "run 'hecatron init' to set one up")
+                "not a hecatron project (no .hecatron/config.json here or above) and not inside "
+                "a git repository; hecatron init sets up a git repository")
         directory = parent
 
 
