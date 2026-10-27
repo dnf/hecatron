@@ -1,0 +1,15 @@
+{
+  "name": "hecatron",
+  "owner": {
+    "name": "dnf",
+    "url": "https://github.com/dnf"
+  },
+  "description": "hecatron's plugin for Claude Code: one interface to every language's toolchain, for agents.",
+  "plugins": [
+    {
+      "name": "hecatron",
+      "source": "./plugins/hecatron",
+      "description": "Teaches agents to build, test, lint and format code in almost any language through hecatron's hct."
+    }
+  ]
+}
