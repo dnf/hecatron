@@ -859,6 +859,21 @@ entry points' output byte for byte. Decided with the first port
   pin file is read alike. It runs a language's `installed.sh` once per
   command rather than once per component.
 
+- **`hct status`** (#121; `internal/status`) is native only, a command the
+  scripts never had: hecatron's version, the config saved or detected, and
+  per language its directories, the version it resolves to and why (§18),
+  whether the toolchain's command is on each component's PATH (with its
+  version's environment), the last run of each action, and its uncommitted
+  changes, then the commands worth running next, marking those that
+  install. One `git status` (`--porcelain -z`, mapped to languages and
+  components by their directories, deepest first) and no doctor scripts;
+  `--output` chosen as the runner chooses it (CI output is human). A last
+  run is the action's log for the language: when it was written, passed or
+  failed from the summary line both runners end it with (named runs, which
+  `history.log` doesn't record, included), and its duration from
+  `history.log` when the log is from the last run recorded there.
+  `bin/hecatron status` without the binary says so.
+
 ### Language definitions: data, families, scripts
 
 A definition says what to do in the most declarative of three tiers that can

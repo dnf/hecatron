@@ -15,6 +15,7 @@ import (
 const usageText = `Usage: hecatron <command> [arguments]     (or: hct <command>)
 
 Set up:
+  status                     Languages, toolchain versions, last runs and changes at a glance
   init [dir]                 Set up a repository for hecatron
   doctor [--fix] [lang...]   Check toolchains; --fix runs installers to repair them
   install [lang...]          Install toolchains (all of the project's when none named)

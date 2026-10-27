@@ -342,6 +342,28 @@ func (h History) Order(jobs []Job, queue []int) ([]int, map[int]bool) {
 	return ordered, failedLast
 }
 
+// Last is a job's entry in the last run history.log records: its duration
+// and exit status (0 passed), and false when that run didn't include it.
+func (h History) Last(label string) (time.Duration, int, bool) {
+	if len(h.lines) == 0 {
+		return 0, 0, false
+	}
+	for _, pair := range strings.Fields(h.lines[len(h.lines)-1]) {
+		value, ok := strings.CutPrefix(pair, label+"=")
+		if !ok {
+			continue
+		}
+		ds, status, _ := strings.Cut(value, ":")
+		n, err := strconv.ParseInt(ds, 10, 64)
+		code, statusErr := strconv.Atoi(status)
+		if err != nil || statusErr != nil {
+			return 0, 0, false
+		}
+		return time.Duration(n) * 100 * time.Millisecond, code, true
+	}
+	return 0, 0, false
+}
+
 // Append records a run and keeps the last 50.
 func (h History) Append(path string, results []Result) {
 	var pairs []string

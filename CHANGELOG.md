@@ -6,6 +6,14 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **`hct status`**: what to know first in a repository, in one command:
+  hecatron's version, whether the config is saved or detected, and for each
+  language its directories, the toolchain version it resolves to and why,
+  whether that toolchain is installed, the last run of each action, and its
+  uncommitted changes; then the commands worth running next, marking those
+  that install something. `--output human|agent|json`, chosen as for
+  `hct test`. Needs the binary that releases ship (#121).
+
 ## 0.4.0 (2026-10-27)
 
 - **A fast binary:** installing a release also installs the Go core for

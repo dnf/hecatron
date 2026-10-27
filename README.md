@@ -82,6 +82,7 @@ git clone https://github.com/dnf/hecatron ~/.hecatron && . ~/.hecatron/install.s
 
 ```bash
 cd your-repo
+hct status        # each language, its toolchain, its last runs and changes
 hct doctor --fix  # installs and repairs every language's toolchain
 hct test          # every language's tests, in parallel
 hct test go       # one language

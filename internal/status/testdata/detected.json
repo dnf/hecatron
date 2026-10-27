@@ -1,0 +1,43 @@
+{
+  "version": "VERSION",
+  "runner": "binary",
+  "root": "/repo",
+  "config": "detected",
+  "languages": [
+    {
+      "name": "go",
+      "disabled": false,
+      "components": [
+        {
+          "name": ".",
+          "dir": "go",
+          "toolchainFound": true
+        }
+      ],
+      "versions": [
+        {
+          "spec": "1.22.3",
+          "exact": true,
+          "sources": [
+            "pin:go/go.mod"
+          ]
+        }
+      ],
+      "dependency": "sh",
+      "toolchain": "installed",
+      "runs": {},
+      "changes": [
+        "go/main.go"
+      ]
+    }
+  ],
+  "otherChanges": [],
+  "git": true,
+  "next": [
+    {
+      "command": "hct test go",
+      "why": "has changes",
+      "askUser": false
+    }
+  ]
+}

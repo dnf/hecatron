@@ -29,7 +29,7 @@ docs/                    # design.md (keep current), installers.md, adding-a-lan
 examples/sayable/        # sayable's hooks, workflow templates and config at the split (reference only)
 cmd/hecatron/            # the Go core's entry point (docs/design.md §19): ports commands, delegates the rest
 internal/                # Go packages: project (the model and version resolution, a port of project.py and
-                         # versions.py), runner (jobs, output), actions, install
+                         # versions.py), runner (jobs, output), status (hct status), actions, install
 ```
 
 Every command finds the project by walking up from the working directory

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Needs the hct command (macOS or Linux), installed with hecatron's install.sh.
 metadata:
   hecatron-version: "0.4.0"
-allowed-tools: Bash(hct --version) Bash(hct help:*) Bash(hct list:*) Bash(hct check) Bash(hct doctor)
+allowed-tools: Bash(HECATRON_OUTPUT=agent hct status) Bash(hct status:*) Bash(hct --version) Bash(hct help:*) Bash(hct list:*) Bash(hct check) Bash(hct doctor)
 ---
 
 # Using hecatron (`hct`)
@@ -16,14 +16,20 @@ each language's test, lint or build command.
 
 ## First
 
-1. `hct --version`. Not found: tell the user hecatron isn't installed and
-   that `curl -fsSL https://raw.githubusercontent.com/dnf/hecatron/main/install.sh | sh`
+1. `HECATRON_OUTPUT=agent hct status`. Not found: tell the user hecatron
+   isn't installed and that
+   `curl -fsSL https://raw.githubusercontent.com/dnf/hecatron/main/install.sh | sh`
    installs it (it changes their shell startup files); don't install it
    yourself unless they say to. Meanwhile, run the language's own command
    if you know it, and say that's what you did.
-2. `hct list`: the languages and where each one's code is. Any git
-   repository works; without `.hecatron/config.json`, hecatron detects them
-   and writes nothing.
+2. Read it: each language and where its code is, the toolchain version it
+   uses and whether that's installed, the last run of each action, the
+   uncommitted changes, and the commands worth running next (those marked
+   "ask the user first" install something). Any git repository works;
+   without `.hecatron/config.json`, hecatron detects the languages and
+   writes nothing. If it says status needs hecatron's binary (an older or
+   source install), `hct list` gives the languages and `hct doctor` the
+   toolchains.
 3. Set `HECATRON_OUTPUT=agent` on every `hct` command (or pass
    `--output agent`): one summary line, then only the failures, each with
    its log path and its key error lines.

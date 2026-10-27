@@ -19,6 +19,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | Fetch dependencies | `hct deps [lang...]` | Held to the lock file; a stale lock fails |
 | Known vulnerabilities | `hct audit [lang...]` | `--fail-on critical\|high\|moderate\|low` (default high) |
 | Newer dependency versions | `hct outdated [lang...]` | Report only; `--json`, `--fail` |
+| Where to start | `HECATRON_OUTPUT=agent hct status` | Each language's directories, toolchain version and whether it's installed, last runs, uncommitted changes, and what to run next; one `git status`, installs nothing |
 | Which languages, where | `hct list` | `hct list --all`: every supported language |
 | Is each toolchain working | `hct doctor [lang...]` | Read-only; see Installing |
 | Validate config and generated files | `hct check` | |
