@@ -195,13 +195,17 @@ agents alike. Changes to how hecatron works start in
 
 ## The name
 
-Hecatron comes from the Hecatoncheires, the "hundred-handed ones" of Greek
-myth (*hekaton*, a hundred, and *cheir*, a hand). Hesiod tells of three
-brothers, Briareus, Cottus and Gyges, each with a hundred hands and fifty
-heads, who turned the war against the Titans by hurling three hundred boulders
-at once. A repository in a dozen languages needs that many hands: one for each
-toolchain, package manager, test runner and CI job, all working at once.
+Hecatron comes from the [Hecatoncheires](https://en.wikipedia.org/wiki/Hecatoncheires),
+the "hundred-handed ones" of [Greek myth](https://en.wikipedia.org/wiki/Greek_mythology)
+(*hekaton*, a hundred, and *cheir*, a hand). [Hesiod](https://en.wikipedia.org/wiki/Hesiod)'s
+[*Theogony*](https://en.wikipedia.org/wiki/Theogony) tells of three brothers,
+Briareus, Cottus and Gyges, each with a hundred hands and fifty heads, who
+turned the [war against the Titans](https://en.wikipedia.org/wiki/Titanomachy)
+by hurling three hundred boulders at once. A repository in a dozen languages
+needs that many hands: one for each toolchain, package manager, test runner
+and CI job, all working at once.
 
-The logo draws on another figure from the same myths: Hecate, goddess of
-crossroads. Its three angle brackets are the roads, pointing in at the point
-where they meet, as every language's tooling meets in one command.
+The logo draws on another figure from the same myths:
+[Hecate](https://en.wikipedia.org/wiki/Hecate), goddess of crossroads. Its
+three angle brackets are the roads, pointing in at the point where they meet,
+as every language's tooling meets in one command.
