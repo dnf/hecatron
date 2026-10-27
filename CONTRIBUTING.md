@@ -18,7 +18,7 @@ language's Docker tests. They install the toolchain in a throwaway container
 and never change your machine:
 
 ```bash
-tests/docker/install-test.sh ubuntu:24.04 go     # install, doctor, reinstall, hello world
+tests/docker/install-test.sh ubuntu:24.04 go     # install, doctor, reinstall, smoke test
 tests/docker/run.sh ubuntu:24.04 bash /hecatron/tests/hooks/check.sh go
                                                   # test, lint, build and clean on fixture projects
 ```

@@ -38,8 +38,8 @@ PLATFORMS = [
 LEGEND = """\
 | Mark | Meaning |
 | --- | --- |
-| ✓ | Installs on a fresh machine, passes `doctor` (also from a new shell), reinstalls cleanly, and builds and runs a hello world |
-| ○ | The same, but the language has no hello-world smoke test yet |
+| ✓ | Installs on a fresh machine, passes `doctor` (also from a new shell), reinstalls cleanly, and passes its smoke test (builds and runs a small program) |
+| ○ | The same, but the language has no smoke test yet |
 | ◆ | Works on a developer machine (`doctor` and the project's tests pass), but a fresh install wasn't checked |
 | ✗ | Fails |
 | – | No toolchain exists for this platform upstream |

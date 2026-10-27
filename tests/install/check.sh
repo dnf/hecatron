@@ -2,9 +2,10 @@
 # Check one language's toolchain on this machine, as a fresh developer would
 # meet it: install it with doctor --fix, check it again from a new login
 # shell (so the PATH the installer persisted is what counts), rerun the
-# installer to show it is idempotent, then build and run a hello world with
-# it (tests/docker/smoke/<lang>.sh) with the language's PATH entries, as its
-# hooks see them, because a command being on PATH doesn't mean it works.
+# installer to show it is idempotent, then run its smoke test
+# (tests/docker/smoke/<lang>.sh, which builds and runs a small program) with
+# the language's PATH entries, as its hooks see them, because a command being
+# on PATH doesn't mean it works.
 #
 # Runs anywhere hecatron is on PATH: inside a container (tests/docker/) or
 # directly on a machine, e.g. a CI runner. Prints a "### result" line for

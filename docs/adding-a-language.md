@@ -70,6 +70,8 @@ tracked files.
 - [ ] `install.sh` and `uninstall.sh` for macOS and Linux, idempotent
 - [ ] `doctor.sh` if the toolchain can be present but broken
 - [ ] `dockerfile` snippet
-- [ ] `tests/docker/smoke/<lang>.sh`, building and running a hello world, and
-      `tests/docker/install-test.sh ubuntu:24.04 <lang>` passing
-- [ ] `bash libexec/lint/shellcheck.sh` and `python3 -m unittest discover -s tests` pass
+- [ ] `tests/docker/smoke/<lang>.sh`, a smoke test that builds and runs a small
+      program and checks its output (and runs the language's linter, where
+      hecatron installs one), and `tests/docker/install-test.sh ubuntu:24.04 <lang>`
+      passing
+- [ ] `hct self-test` passes

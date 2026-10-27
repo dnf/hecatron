@@ -1,4 +1,4 @@
-# Smoke test for objectivec: build and run a Foundation hello world in a
+# Smoke test for objectivec: build and run a small Foundation program in a
 # scratch directory, with GNUstep's flags on Linux and Foundation.framework
 # on macOS.
 # shellcheck shell=bash

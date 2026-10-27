@@ -1,4 +1,4 @@
-# Smoke test for haxe: build and run a hello world in a scratch directory,
+# Smoke test for haxe: build and run a small program in a scratch directory,
 # on Haxe's interpreter, and check that haxelib starts.
 # shellcheck shell=bash
 set -euo pipefail

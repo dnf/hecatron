@@ -1,3 +1,4 @@
+# apt: unzip
 # JDKs: Temurin, each version the components use (java's config.json and pin
 # files), in /usr/lib/jvm/temurin-<version> as java's install.sh installs
 # them, checksum verified; the default version, installed first, is linked as
@@ -15,3 +16,10 @@ RUN ARCH="$(dpkg --print-architecture | sed 's/amd64/x64/;s/arm64/aarch64/')" &&
 # end-each-version
 ENV JAVA_HOME="/usr/lib/jvm/hecatron-default"
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+# Groovy 5.1.3's own compiler, where groovy's install.sh puts it
+RUN curl -fsSL -o /tmp/groovy.zip https://repo1.maven.org/maven2/org/apache/groovy/groovy-binary/5.1.3/groovy-binary-5.1.3.zip && \
+    unzip -q /tmp/groovy.zip -d /tmp/groovy && mkdir -p /opt/groovy && \
+    mv /tmp/groovy/* /opt/groovy/5.1.3 && rm -rf /tmp/groovy /tmp/groovy.zip && \
+    ln -sfn /opt/groovy/5.1.3/bin/groovy /usr/local/bin/groovy && \
+    ln -sfn /opt/groovy/5.1.3/bin/groovyc /usr/local/bin/groovyc

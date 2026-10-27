@@ -1,4 +1,4 @@
-# Smoke test for ruby: build and run a hello world in a scratch directory.
+# Smoke test for ruby: build and run a small program in a scratch directory.
 # shellcheck shell=bash
 set -euo pipefail
 # racc has a native extension, so this also checks gems can compile.

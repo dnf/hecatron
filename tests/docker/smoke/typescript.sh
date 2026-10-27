@@ -1,4 +1,4 @@
-# Smoke test for typescript: build and run a hello world in a scratch directory.
+# Smoke test for typescript: build and run a small program in a scratch directory.
 # shellcheck shell=bash
 set -euo pipefail
 mkdir hello && cd hello && npm init -y >/dev/null && npm install --silent typescript
