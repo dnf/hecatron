@@ -199,5 +199,9 @@
     "lockFiles": [
       "mix.lock"
     ]
-  }
+  },
+  "dependabot": "mix",
+  "renovate": [
+    "mix"
+  ]
 }

@@ -81,5 +81,28 @@
       "gradle.lockfile",
       "gradle/wrapper/gradle-wrapper.properties"
     ]
-  }
+  },
+  "dependabot": [
+    {
+      "ecosystem": "maven",
+      "files": [
+        "pom.xml"
+      ]
+    },
+    {
+      "ecosystem": "gradle",
+      "files": [
+        "build.gradle",
+        "build.gradle.kts",
+        "settings.gradle",
+        "settings.gradle.kts"
+      ]
+    }
+  ],
+  "renovate": [
+    "maven",
+    "maven-wrapper",
+    "gradle",
+    "gradle-wrapper"
+  ]
 }

@@ -251,5 +251,27 @@
       "requirements*.txt",
       "pyproject.toml"
     ]
-  }
+  },
+  "dependabot": [
+    {
+      "ecosystem": "uv",
+      "files": [
+        "uv.lock"
+      ]
+    },
+    {
+      "ecosystem": "pip",
+      "unless": [
+        "uv.lock"
+      ]
+    }
+  ],
+  "renovate": [
+    "pep621",
+    "pip_requirements",
+    "pip_setup",
+    "setup-cfg",
+    "pipenv",
+    "poetry"
+  ]
 }

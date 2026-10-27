@@ -164,5 +164,9 @@
     "lockFiles": [
       "go.sum"
     ]
-  }
+  },
+  "dependabot": "gomod",
+  "renovate": [
+    "gomod"
+  ]
 }

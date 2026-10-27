@@ -21,5 +21,9 @@
     "lockFiles": [
       "pubspec.lock"
     ]
-  }
+  },
+  "dependabot": "pub",
+  "renovate": [
+    "pub"
+  ]
 }

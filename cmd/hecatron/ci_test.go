@@ -90,3 +90,65 @@ func TestGeneratedCI(t *testing.T) {
 		}
 	})
 }
+
+// hct workflows writes the dependency update configuration, and hct check
+// fails once a language or a component is added without regenerating it.
+func TestGeneratedDependencyUpdates(t *testing.T) {
+	home := repoHome(t)
+	env := []string{"HECATRON_HOME=" + home, "HECATRON_BUILTIN_LANGUAGES="}
+	hct := func(root string, args ...string) result {
+		return runIn(t, root, env, append([]string{binary}, args...)...)
+	}
+	config := `{"schema": 1, "components": ["age", "date"], "languages": [%s],
+		"generated": {"dependabot": true, "renovate": true}, "dependabot": {"schedule": {"interval": "monthly"}}}`
+	root := fixture(t, map[string]string{
+		".hecatron/config.json": strings.Replace(config, "%s", `"go"`, 1),
+		"age/go/go.mod":         "module a\n",
+		"age/rust/Cargo.toml":   "",
+	})
+	if got := hct(root, "workflows"); got.status != 0 || got.stdout != "wrote .github/dependabot.yml\nwrote renovate.json\n" {
+		t.Fatalf("workflows: %+v", got)
+	}
+	if got := hct(root, "check"); got.status != 0 {
+		t.Fatalf("check: %+v", got)
+	}
+	text, _ := os.ReadFile(filepath.Join(root, ".github", "dependabot.yml"))
+	if !strings.Contains(string(text), "package-ecosystem: gomod\n    directory: /age/go\n    schedule:\n      interval: monthly\n") {
+		t.Errorf("dependabot.yml:\n%s", text)
+	}
+	stale := func(what string) {
+		t.Helper()
+		got := hct(root, "check")
+		if got.status != 1 || !strings.Contains(got.stdout, "out of date: .github/dependabot.yml") ||
+			!strings.Contains(got.stdout, "out of date: renovate.json") {
+			t.Errorf("check after %s: %+v", what, got)
+		}
+		if got := hct(root, "workflows"); got.status != 0 {
+			t.Errorf("workflows: %+v", got)
+		}
+	}
+	writeFile(t, filepath.Join(root, ".hecatron", "config.json"), strings.Replace(config, "%s", `"go", "rust"`, 1))
+	stale("adding a language to config.json")
+	writeFile(t, filepath.Join(root, "date", "go", "go.mod"), "module d\n")
+	stale("adding a component's directory")
+	if got := hct(root, "remove", "rust"); got.status != 0 || !strings.Contains(got.stdout, "wrote .github/dependabot.yml") {
+		t.Errorf("remove: %+v", got)
+	}
+
+	t.Run("bin/hecatron without the binary", func(t *testing.T) {
+		got := runIn(t, root, []string{"HECATRON_HOME=" + home, "HECATRON_NO_GO=1"}, "bash", filepath.Join(home, "bin", "hecatron"), "check")
+		if got.status != 1 || !strings.Contains(got.stderr, "generated.dependabot, generated.renovate, dependabot needs hecatron's binary") {
+			t.Errorf("%+v", got)
+		}
+	})
+}
+
+func writeFile(t *testing.T, path, content string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}

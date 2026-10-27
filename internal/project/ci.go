@@ -179,3 +179,161 @@ func (p *Project) GeneratedValue(key string) (any, bool) {
 	}
 	return object.Get(key)
 }
+
+// Default paths of the dependency update configuration.
+const (
+	DefaultDependabotPath = ".github/dependabot.yml"
+	DefaultRenovatePath   = "renovate.json"
+)
+
+// UpdateSettings are config.json's settings for the dependency update
+// configuration hecatron generates (only the Go core reads them).
+type UpdateSettings struct {
+	Dependabot string // generated.dependabot: where it goes, "" for none
+	Renovate   string // generated.renovate: where it goes, "" for none
+	// DependabotOptions go into every Dependabot "updates" entry (the
+	// "dependabot" section but its "ecosystems"); DependabotEcosystems
+	// into those of one package ecosystem.
+	DependabotOptions    *Object
+	DependabotEcosystems *Object
+	RenovateOptions      *Object // the "renovate" section, at the top of renovate.json
+}
+
+// renovateGenerated are the renovate.json keys hecatron writes itself.
+var renovateGenerated = []string{"enabledManagers", "includePaths"}
+
+// UpdateSettings reads generated.dependabot, generated.renovate and the
+// "dependabot" and "renovate" sections, and says what's wrong with them.
+func (p *Project) UpdateSettings() (UpdateSettings, []string) {
+	var settings UpdateSettings
+	var problems []string
+	for _, entry := range []struct {
+		key, fallback string
+		dest          *string
+	}{{"dependabot", DefaultDependabotPath, &settings.Dependabot}, {"renovate", DefaultRenovatePath, &settings.Renovate}} {
+		value, present := p.GeneratedValue(entry.key)
+		switch v := value.(type) {
+		case bool:
+			if v {
+				*entry.dest = entry.fallback
+			}
+		case string:
+			if strings.TrimSpace(v) != "" {
+				*entry.dest = v
+				continue
+			}
+			problems = append(problems, fmt.Sprintf("generated.%s must be true or a path (%s)", entry.key, entry.fallback))
+		case nil:
+			if present {
+				problems = append(problems, fmt.Sprintf("generated.%s must be true or a path (%s)", entry.key, entry.fallback))
+			}
+		default:
+			problems = append(problems, fmt.Sprintf("generated.%s must be true or a path (%s)", entry.key, entry.fallback))
+		}
+	}
+	if section, present := p.config.Get("dependabot"); present {
+		object, ok := section.(*Object)
+		if !ok {
+			problems = append(problems, `"dependabot" must be an object of settings for each "updates" entry`)
+		} else {
+			settings.DependabotOptions = &Object{Values: map[string]any{}}
+			for _, key := range object.Keys {
+				value := object.Values[key]
+				switch key {
+				case "package-ecosystem", "directory", "directories":
+					problems = append(problems, fmt.Sprintf("dependabot.%s is generated", key))
+				case "ecosystems":
+					ecosystems, ok := value.(*Object)
+					if !ok {
+						problems = append(problems, "dependabot.ecosystems must be an object of package ecosystems to settings")
+						continue
+					}
+					for _, name := range ecosystems.Keys {
+						if _, ok := ecosystems.Values[name].(*Object); !ok {
+							problems = append(problems, fmt.Sprintf("dependabot.ecosystems.%s must be an object of settings", name))
+						}
+					}
+					settings.DependabotEcosystems = ecosystems
+				default:
+					settings.DependabotOptions.set(key, value)
+				}
+			}
+		}
+	}
+	if section, present := p.config.Get("renovate"); present {
+		object, ok := section.(*Object)
+		if !ok {
+			problems = append(problems, `"renovate" must be an object of Renovate settings`)
+		} else {
+			for _, key := range renovateGenerated {
+				if _, set := object.Get(key); set {
+					problems = append(problems, fmt.Sprintf("renovate.%s is generated", key))
+				}
+			}
+			settings.RenovateOptions = object
+		}
+	}
+	return settings, problems
+}
+
+// EcosystemRule is one of a definition's "dependabot" entries: the package
+// ecosystem a component's directory is updated as, when one of files is
+// there (or always, without files) and none of unless is.
+type EcosystemRule struct {
+	Ecosystem string
+	Files     []string
+	Unless    []string
+}
+
+// DependabotRules are a language's "dependabot": a name, or a list of
+// rules.
+func (p *Project) DependabotRules(lang string) ([]EcosystemRule, error) {
+	value, err := p.DefinitionValue(lang, "dependabot")
+	if err != nil || value == nil {
+		return nil, err
+	}
+	if name, ok := value.(string); ok {
+		return []EcosystemRule{{Ecosystem: name}}, nil
+	}
+	bad := &Error{lang + `: "dependabot" must be a package ecosystem or a list of {"ecosystem", "files", "unless"}`}
+	list, ok := value.([]any)
+	if !ok {
+		return nil, bad
+	}
+	var rules []EcosystemRule
+	for _, raw := range list {
+		object, ok := raw.(*Object)
+		if !ok {
+			return nil, bad
+		}
+		var rule EcosystemRule
+		name, _ := object.Get("ecosystem")
+		if rule.Ecosystem, ok = name.(string); !ok || rule.Ecosystem == "" {
+			return nil, bad
+		}
+		for _, field := range []struct {
+			key  string
+			dest *[]string
+		}{{"files", &rule.Files}, {"unless", &rule.Unless}} {
+			if raw, present := object.Get(field.key); present {
+				if *field.dest, err = toStrings(raw, lang+" dependabot "+field.key); err != nil {
+					return nil, bad
+				}
+			}
+		}
+		rules = append(rules, rule)
+	}
+	return rules, nil
+}
+
+// RenovateManagers are a language's "renovate": the Renovate managers that
+// update its dependencies.
+func (p *Project) RenovateManagers(lang string) ([]string, error) {
+	return p.definitionStrings(lang, "renovate")
+}
+
+// NewObject is an empty JSON object.
+func NewObject() *Object { return &Object{Values: map[string]any{}} }
+
+// Set sets a key, keeping its place if it is already there.
+func (o *Object) Set(key string, value any) { o.set(key, value) }

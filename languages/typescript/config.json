@@ -125,5 +125,25 @@
       "bun.lock",
       "bun.lockb"
     ]
-  }
+  },
+  "dependabot": [
+    {
+      "ecosystem": "bun",
+      "files": [
+        "bun.lock",
+        "bun.lockb"
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "unless": [
+        "bun.lock",
+        "bun.lockb"
+      ]
+    }
+  ],
+  "renovate": [
+    "npm",
+    "bun"
+  ]
 }

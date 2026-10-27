@@ -194,7 +194,37 @@ func (c *cli) ciFiles() ([]generatedFile, error) {
 		}
 		files = append(files, generatedFile{project.PyJoin(p.Root, generate.GitLabPath), generate.GitLabPath, content})
 	}
+	updates, _ := p.UpdateSettings()
+	githubActions := generate.HasGitHubWorkflows(p, github)
+	for _, f := range []struct {
+		path     string
+		generate func(*project.Project, project.UpdateSettings, bool) (string, error)
+	}{{updates.Dependabot, generate.Dependabot}, {updates.Renovate, generate.Renovate}} {
+		if f.path == "" {
+			continue
+		}
+		content, err := f.generate(p, updates, githubActions)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, generatedFile{project.PyJoin(p.Root, f.path), f.path, content})
+	}
 	return files, nil
+}
+
+// generatesUpdates reports whether the project generates dependency update
+// configuration (generated.dependabot, generated.renovate).
+func (c *cli) generatesUpdates() bool {
+	updates, _ := c.project.UpdateSettings()
+	return updates.Dependabot != "" || updates.Renovate != ""
+}
+
+// generatedProblems are what's wrong with the settings for the files only
+// the Go core generates.
+func (c *cli) generatedProblems() []string {
+	_, problems := c.project.CISettings()
+	_, updateProblems := c.project.UpdateSettings()
+	return append(problems, updateProblems...)
 }
 
 // generates reports which files the project generates: workflows is any
@@ -205,7 +235,7 @@ func (c *cli) generates() (workflows, dockerfile bool, err error) {
 		return false, false, err
 	}
 	relative, err := c.project.Generated("dockerfile")
-	return github || contains(c.ciSettings().Systems, project.CIGitLab), relative != "", err
+	return github || contains(c.ciSettings().Systems, project.CIGitLab) || c.generatesUpdates(), relative != "", err
 }
 
 // writeGenerated writes (or checks) files as write_if_changed does, the
@@ -459,7 +489,7 @@ func (c *cli) generateCommand(which, unconfigured, current string) (int, bool) {
 		c.ci = ci
 	}
 	if which == "workflows" {
-		if _, problems := c.project.CISettings(); len(problems) > 0 {
+		if problems := c.generatedProblems(); len(problems) > 0 {
 			return (&manageFailure{".hecatron/config.json: " + strings.Join(problems, "; "), 1}).report(), true
 		}
 	}
@@ -562,8 +592,7 @@ func (c *cli) check() (int, bool) {
 	if ok {
 		out.WriteString("Generated files are up to date and every workflow covers every component.\n")
 	}
-	_, ciProblems := p.CISettings()
-	problems = append(problems, ciProblems...)
+	problems = append(problems, c.generatedProblems()...)
 	for _, problem := range problems {
 		fmt.Fprintf(&out, ".hecatron/config.json: %s\n", problem)
 	}

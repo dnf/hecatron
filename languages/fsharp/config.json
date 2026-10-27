@@ -55,5 +55,9 @@
       "*.fsproj",
       "Directory.Packages.props"
     ]
-  }
+  },
+  "dependabot": "nuget",
+  "renovate": [
+    "nuget"
+  ]
 }

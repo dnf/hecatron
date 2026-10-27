@@ -46,22 +46,14 @@ minor version can change behaviour. Numbers are
   version) and dependencies (keyed on its lock files); each definition
   lists the directories in its new `cache` key. Off by default, so existing
   workflows don't change. Needs the binary (#102).
-
-- **Time limits:** a job that hangs is stopped with everything it started
-  and reported as timed out, saying its limit and how it was set; the run
-  exits 1. Each job's limit is 5× its usual time from its own history, at
-  least 10 minutes; `--timeout 30m` or `HECATRON_TIMEOUT` sets one for every
-  job, `--timeout 0` none. Needs the binary (#124).
-- **Only what changed:** `hct test --changed [ref]` (and `lint`, `build`,
-  `format`, `deps`, `rebuild`, `retest`) runs only the languages and
-  components whose files changed since the merge base with `ref` (default:
-  the default branch; in CI, the pull or merge request's base from GitHub,
-  GitLab, Bitbucket or Azure), uncommitted and untracked files included. A
-  hook selects its language, a shared build or lock file the components
-  below it, `.hecatron/config.json` everything; project tasks run when a
-  file matches their new `taskPaths`, else on any change. The first line
-  says what runs and why; nothing to run exits 0. A shallow clone without
-  the base runs everything, with a note. Needs the binary (#91, #99).
+- **Dependabot and Renovate configuration:** with `generated.dependabot`
+  (or `generated.renovate`), `hct workflows` writes `.github/dependabot.yml`
+  with an `updates` entry for each package ecosystem and component
+  directory (`renovate.json` with the managers and paths), merging the
+  project's `dependabot` (or `renovate`) settings, and `hct check` fails
+  when a language or component was added without regenerating it. Each
+  definition names its ecosystems in new `dependabot` and `renovate` keys.
+  Needs the binary (#103).
 
 ## 0.4.0 (2026-10-27)
 

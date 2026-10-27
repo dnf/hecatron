@@ -199,5 +199,9 @@
     "lockFiles": [
       "Cargo.lock"
     ]
-  }
+  },
+  "dependabot": "cargo",
+  "renovate": [
+    "cargo"
+  ]
 }

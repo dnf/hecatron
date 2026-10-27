@@ -98,5 +98,9 @@
     "lockFiles": [
       "Gemfile.lock"
     ]
-  }
+  },
+  "dependabot": "bundler",
+  "renovate": [
+    "bundler"
+  ]
 }
