@@ -57,6 +57,21 @@ dotnet_target() {
     fi
 }
 
+# .NET (C#, F#, VB.NET): the solution or project in the directory. `dotnet
+# format` checks C# and VB.NET only, so F#'s lint hook is its own.
+dotnet_hook() {
+    exists '*.sln' || exists '*.slnx' || exists '*.csproj' || exists '*.fsproj' || exists '*.vbproj' ||
+        unknown "no .sln, .slnx or project file"
+    local _target
+    _target="$(dotnet_target)"
+    case "$1" in
+        test) run dotnet test ${_target:+"${_target}"} ;;
+        build) run dotnet build ${_target:+"${_target}"} ;;
+        clean) run dotnet clean ${_target:+"${_target}"} ;;
+        lint) run dotnet format ${_target:+"${_target}"} --verify-no-changes ;;
+    esac
+}
+
 # Whether package.json defines an npm script, e.g. `npm_script test`.
 npm_script() {
     [ -f package.json ] && python3 -c '
