@@ -434,6 +434,51 @@ class LanguageDirectoryTest(Fixture):
             self.assertEqual(os.path.realpath(f.read().strip()), os.path.realpath(self.path("golang")))
 
 
+class InstallTest(Fixture):
+    """Installers fetch dependencies through impl_deps (languages/_common.sh)."""
+
+    def language(self, lang: str, install: str = "", deps: str = "", fetches: bool = True) -> None:
+        directory = self.path(".hecatron", "languages", lang)
+        write(os.path.join(directory, "config.json"), json.dumps({"dependency": "true", "detect": []}))
+        write(os.path.join(directory, "install.sh"),
+              f'source "${{HECATRON_HOME}}/languages/_common.sh"\n{install}\n'
+              + (f"impl_deps {lang}\n" if fetches else ""))
+        write(os.path.join(directory, "deps.sh"), f"#!/usr/bin/env bash\nset -e\n{deps}\n", 0o755)
+        os.makedirs(self.path(lang), exist_ok=True)
+
+    def test_installing_everything_fetches_dependencies_after_every_toolchain(self):
+        # TypeScript's npm ci in cucumber/messages runs a generator needing Ruby,
+        # which installs later.
+        self.configure(languages=["a", "b"])
+        self.language("a", deps="test -e ../b-installed\ntouch ../a-deps")
+        self.language("b", install="touch b-installed")
+        result = self.hecatron("install")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue(os.path.exists(self.path("a-deps")))
+
+    def test_installing_one_language_fetches_its_dependencies(self):
+        self.configure(languages=["a"])
+        self.language("a", deps="touch ../a-deps")
+        result = self.hecatron("install", "a")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue(os.path.exists(self.path("a-deps")))
+
+    def test_only_languages_whose_installer_fetches_dependencies_get_them(self):
+        self.configure(languages=["a"])
+        self.language("a", deps="touch ../a-deps", fetches=False)
+        result = self.hecatron("install")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertFalse(os.path.exists(self.path("a-deps")))
+
+    def test_dependencies_failing_after_the_installs_fail_the_command(self):
+        self.configure(languages=["a", "b"])
+        self.language("a", deps="exit 1")
+        self.language("b")
+        result = self.hecatron("install")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("Failed to fetch dependencies: a", result.stderr)
+
+
 class LanguageCommandsTest(Fixture):
     def test_add_remove_enable_disable(self):
         self.configure()

@@ -83,11 +83,17 @@ each_impl_versioned() {
 # deps): the same code, frozen to each lock file, that the hooks use
 # (languages/_deps.sh), and a project's own deps.sh where it has one.
 # Only for a language the project has (TypeScript's installer also runs for
-# JavaScript's Node.js) with a deps hook.
+# JavaScript's Node.js) with a deps hook. While `hecatron install` installs
+# every language, the language is only listed in the HECATRON_DEFER_DEPS
+# file: the dependencies are fetched once every toolchain is in.
 impl_deps() {
     [ -n "${HECATRON_HOME:-}" ] || return 0
     (cd "${ROOT}" && eval "$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env </dev/null)" &&
         printf '%s\n' "${_DEPS_LANGS}") | grep -qx "$1" || return 0
+    if [ -n "${HECATRON_DEFER_DEPS:-}" ]; then
+        echo "$1" >>"${HECATRON_DEFER_DEPS}"
+        return 0
+    fi
     (cd "${ROOT}" && bash "${HECATRON_HOME}/bin/hecatron" deps "$1" </dev/null)
 }
 

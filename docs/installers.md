@@ -88,7 +88,7 @@ Each script sources `languages/_common.sh` for shared helpers:
 - `impl_dirs <lang>` — each component's directory for the language (from the project's `components` and `implPath`), one per line
 - `each_impl <lang> <command...>` — run a command in each of them (e.g. `each_impl ruby bundle install`)
 - `each_impl_versioned <lang> <command...>` — the same, with each component's toolchain version on PATH
-- `impl_deps <lang>` — install each component's dependencies with `hecatron deps` (its deps hook, held to the lock file)
+- `impl_deps <lang>` — install each component's dependencies with `hecatron deps` (its deps hook, held to the lock file); when `hecatron install` installs every language, after all the installers have run
 - `impl_configures <lang> <file...>` — whether a component (or a directory above it) has one of the files, for a tool installed only where it's configured
 - `release_binary_install <name> <url> <sha256> [path]` — a pinned release download, checked against its checksum, into `/usr/local/bin`
 - `uv_install` — uv into `~/.local/bin`

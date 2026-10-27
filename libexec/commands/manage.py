@@ -17,6 +17,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 
 HOME = os.environ.get("HECATRON_HOME", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.insert(0, os.path.join(HOME, "libexec", "lib"))
@@ -69,12 +70,13 @@ def hook_env(project: projectlib.Project) -> dict[str, str]:
 # -- install / uninstall ------------------------------------------------------
 
 
-def run_definition_script(project, lang: str, script: str) -> int:
+def run_definition_script(project, lang: str, script: str, extra_env: dict[str, str] | None = None) -> int:
     path = project.resolve(lang, script)
     if path is None:
         print(f"{lang}: no {script}", file=sys.stderr)
         return 1
     env = hook_env(project)
+    env.update(extra_env or {})
     environment = project.language_env(lang)
     env.update(environment["vars"])
     env["PATH"] = os.pathsep.join(environment["path"] + [env.get("PATH", "")])
@@ -82,19 +84,32 @@ def run_definition_script(project, lang: str, script: str) -> int:
 
 
 def cmd_install(args) -> int:
+    """Installing everything fetches dependencies after every toolchain is
+    in, since one language's can need another's toolchain (cucumber/messages'
+    npm ci runs a generator needing Ruby): each installer lists the languages
+    it would fetch them for in the HECATRON_DEFER_DEPS file. Installing named
+    languages fetches theirs as each installs."""
     project = load_project()
     install_all = not args.languages
     langs = project.languages if install_all else resolve_all(project, args.languages, added_only=True)
-    failed = []
-    for lang in langs:
-        if run_definition_script(project, lang, "install.sh") != 0:
-            if not install_all:
-                return 1
-            failed.append(lang)
+    with tempfile.NamedTemporaryFile("r", prefix="hecatron-deps-", suffix=".txt") as deferred:
+        failed = []
+        for lang in langs:
+            env = {"HECATRON_DEFER_DEPS": deferred.name} if install_all else None
+            if run_definition_script(project, lang, "install.sh", env) != 0:
+                if not install_all:
+                    return 1
+                failed.append(lang)
+        deps_langs = list(dict.fromkeys(deferred.read().split()))
+    deps_failed = [lang for lang in deps_langs if lang not in failed and
+                   subprocess.run(["bash", os.path.join(HOME, "bin", "hecatron"), "deps", lang],
+                                  cwd=project.root).returncode != 0]
     if failed:
         print(f"\nFailed to install: {' '.join(failed)}", file=sys.stderr)
-        return 1
-    return 0
+    if deps_failed:
+        print(f"{'' if failed else chr(10)}Failed to fetch dependencies: {' '.join(deps_failed)}"
+              f" (retry with: hct deps {' '.join(deps_failed)})", file=sys.stderr)
+    return 1 if failed or deps_failed else 0
 
 
 def cmd_uninstall(args) -> int:
