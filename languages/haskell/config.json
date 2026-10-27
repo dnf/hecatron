@@ -25,5 +25,23 @@
   "formatting": "Fourmolu, Ormolu",
   "notes": {
     "formatting": "Only when the project configures one."
+  },
+  "cache": {
+    "toolchain": [
+      "~/.ghcup"
+    ],
+    "dependencies": [
+      "~/.cabal/packages",
+      "~/.cabal/store",
+      "~/.cache/cabal",
+      "~/.local/state/cabal",
+      "~/.stack"
+    ],
+    "lockFiles": [
+      "cabal.project.freeze",
+      "*.cabal",
+      "stack.yaml",
+      "stack.yaml.lock"
+    ]
   }
 }

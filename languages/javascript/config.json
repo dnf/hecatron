@@ -110,5 +110,22 @@
   ],
   "notes": {
     "formatting": "Only when the project depends on one, at the version it locks."
+  },
+  "cache": {
+    "dependencies": [
+      "~/.npm",
+      "~/.cache/yarn",
+      "~/.local/share/pnpm/store",
+      "~/.bun/install/cache",
+      "~/.cache/node/corepack"
+    ],
+    "lockFiles": [
+      "package-lock.json",
+      "npm-shrinkwrap.json",
+      "yarn.lock",
+      "pnpm-lock.yaml",
+      "bun.lock",
+      "bun.lockb"
+    ]
   }
 }

@@ -20,5 +20,13 @@
   "formatting": "erlfmt",
   "notes": {
     "formatting": "As a rebar3 plugin, when the project's rebar.config has it."
+  },
+  "cache": {
+    "dependencies": [
+      "~/.cache/rebar3"
+    ],
+    "lockFiles": [
+      "rebar.lock"
+    ]
   }
 }

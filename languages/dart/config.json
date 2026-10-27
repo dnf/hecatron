@@ -13,5 +13,13 @@
   ],
   "testing": "package:test",
   "linting": "dart analyze",
-  "formatting": "dart format"
+  "formatting": "dart format",
+  "cache": {
+    "dependencies": [
+      "~/.pub-cache"
+    ],
+    "lockFiles": [
+      "pubspec.lock"
+    ]
+  }
 }

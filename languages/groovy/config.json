@@ -19,5 +19,21 @@
   "formatting": "Spotless",
   "notes": {
     "formatting": "Only when the build applies it; hecatron runs it through the build."
+  },
+  "cache": {
+    "dependencies": [
+      "~/.m2/repository",
+      "~/.gradle/caches",
+      "~/.gradle/wrapper"
+    ],
+    "lockFiles": [
+      "pom.xml",
+      "build.gradle",
+      "build.gradle.kts",
+      "settings.gradle",
+      "settings.gradle.kts",
+      "gradle.lockfile",
+      "gradle/wrapper/gradle-wrapper.properties"
+    ]
   }
 }
