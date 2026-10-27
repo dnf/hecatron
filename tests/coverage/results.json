@@ -1,14 +1,47 @@
 [
  {
   "language": "ada",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ada",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ada",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ada",
   "platform": "linux-x86_64-debian13",
   "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ada",
@@ -17,9 +50,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ada",
@@ -28,20 +61,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ada",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "fail",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ada",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "bash",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "bash",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "bash",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "bash",
@@ -50,9 +127,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "bash",
@@ -61,9 +138,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "bash",
@@ -72,20 +149,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "bash",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "bash",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "c",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "c",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "c",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "c",
@@ -95,8 +216,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105d090f4a0662a94d526273f3a6b1b0c82a"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "c",
@@ -106,8 +227,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105d090f4a0662a94d526273f3a6b1b0c82a"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "c",
@@ -117,19 +238,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "c",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "c",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "clojure",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "clojure",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "clojure",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "clojure",
@@ -138,9 +303,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "clojure",
@@ -149,9 +314,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "clojure",
@@ -160,20 +325,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "clojure",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "clojure",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "cobol",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "cobol",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "cobol",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "cobol",
@@ -182,9 +391,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "cobol",
@@ -193,9 +402,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "cobol",
@@ -204,20 +413,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "cobol",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "cobol",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "cpp",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "cpp",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "cpp",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "cpp",
@@ -226,9 +479,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "cpp",
@@ -237,9 +490,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "cpp",
@@ -248,20 +501,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "cpp",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "cpp",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "crystal",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "crystal",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "crystal",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "crystal",
@@ -271,8 +568,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "crystal",
@@ -282,8 +579,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "crystal",
@@ -293,19 +590,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "crystal",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "crystal",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "csharp",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "csharp",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "csharp",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "csharp",
@@ -315,8 +656,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "csharp",
@@ -326,8 +667,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "csharp",
@@ -337,19 +678,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "csharp",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "csharp",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "d",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "d",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "d",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "d",
@@ -358,9 +743,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "d",
@@ -369,9 +754,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "d",
@@ -380,20 +765,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "d",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "d",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "dart",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "dart",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "dart",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "dart",
@@ -403,8 +832,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "dart",
@@ -414,8 +843,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "dart",
@@ -425,19 +854,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "dart",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "dart",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "elixir",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "elixir",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "elixir",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "elixir",
@@ -446,9 +919,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "elixir",
@@ -457,9 +930,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "elixir",
@@ -468,20 +941,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "elixir",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "elixir",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "elm",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "unsupported",
+  "doctor": "unsupported",
+  "rerun": "unsupported",
+  "smoke": "unsupported",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "elm",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "unsupported",
+  "doctor": "unsupported",
+  "rerun": "unsupported",
+  "smoke": "unsupported",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "elm",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "unsupported",
+  "doctor": "unsupported",
+  "rerun": "unsupported",
+  "smoke": "unsupported",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "elm",
@@ -491,8 +1008,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "elm",
@@ -502,8 +1019,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "elm",
@@ -513,19 +1030,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "elm",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "elm",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "erlang",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "erlang",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "erlang",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "erlang",
@@ -534,9 +1095,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "erlang",
@@ -545,9 +1106,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "erlang",
@@ -556,20 +1117,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "erlang",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "erlang",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "fortran",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "fortran",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "fortran",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "fortran",
@@ -578,9 +1183,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "fortran",
@@ -589,9 +1194,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "fortran",
@@ -600,20 +1205,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "fortran",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "fail",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "fortran",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "fail",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "fsharp",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "fsharp",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "fsharp",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "fsharp",
@@ -623,8 +1272,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "fsharp",
@@ -634,8 +1283,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "fsharp",
@@ -645,19 +1294,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "fsharp",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "fsharp",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "gleam",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "gleam",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "gleam",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "gleam",
@@ -666,9 +1359,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "gleam",
@@ -677,9 +1370,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "gleam",
@@ -688,20 +1381,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "gleam",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "gleam",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "go",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "go",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "go",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "go",
@@ -711,8 +1448,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105d090f4a0662a94d526273f3a6b1b0c82a"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "go",
@@ -722,8 +1459,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105d090f4a0662a94d526273f3a6b1b0c82a"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "go",
@@ -733,19 +1470,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "go",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "go",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "goose",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "unsupported",
+  "doctor": "unsupported",
+  "rerun": "unsupported",
+  "smoke": "unsupported",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "goose",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "unsupported",
+  "doctor": "unsupported",
+  "rerun": "unsupported",
+  "smoke": "unsupported",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "goose",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "unsupported",
+  "doctor": "unsupported",
+  "rerun": "unsupported",
+  "smoke": "unsupported",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "goose",
@@ -754,9 +1535,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "goose",
@@ -765,9 +1546,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "goose",
@@ -776,20 +1557,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "goose",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "goose",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "groovy",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "groovy",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "groovy",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "groovy",
@@ -798,9 +1623,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "groovy",
@@ -809,9 +1634,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "groovy",
@@ -820,20 +1645,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "groovy",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "groovy",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haskell",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haskell",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haskell",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "haskell",
@@ -843,8 +1712,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "haskell",
@@ -854,8 +1723,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "haskell",
@@ -865,19 +1734,151 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "haskell",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haskell",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haxe",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haxe",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haxe",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haxe",
+  "platform": "linux-x86_64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haxe",
+  "platform": "linux-x86_64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haxe",
+  "platform": "linux-x86_64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haxe",
+  "platform": "macos-aarch64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "haxe",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "janet",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "janet",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "janet",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "janet",
@@ -886,9 +1887,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "janet",
@@ -897,9 +1898,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "janet",
@@ -908,20 +1909,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "janet",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "janet",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "java",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "java",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "java",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "java",
@@ -931,8 +1976,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "java",
@@ -942,8 +1987,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "java",
@@ -953,19 +1998,151 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "java",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "java",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "javascript",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "javascript",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "javascript",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "javascript",
+  "platform": "linux-x86_64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "javascript",
+  "platform": "linux-x86_64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "javascript",
+  "platform": "linux-x86_64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "javascript",
+  "platform": "macos-aarch64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "javascript",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "julia",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "julia",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "julia",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "julia",
@@ -975,8 +2152,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "julia",
@@ -986,8 +2163,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "julia",
@@ -997,19 +2174,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "julia",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "julia",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "kotlin",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "kotlin",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "kotlin",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "kotlin",
@@ -1019,8 +2240,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105d090f4a0662a94d526273f3a6b1b0c82a"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "kotlin",
@@ -1030,8 +2251,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105d090f4a0662a94d526273f3a6b1b0c82a"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "kotlin",
@@ -1041,19 +2262,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "kotlin",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "kotlin",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "lisp",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "lisp",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "lisp",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "lisp",
@@ -1062,9 +2327,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "lisp",
@@ -1073,9 +2338,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "lisp",
@@ -1084,20 +2349,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "lisp",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "lisp",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "lua",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "lua",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "lua",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "lua",
@@ -1107,8 +2416,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "lua",
@@ -1118,8 +2427,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "lua",
@@ -1129,19 +2438,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "lua",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "lua",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "mojo",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "mojo",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "mojo",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "mojo",
@@ -1150,9 +2503,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "mojo",
@@ -1161,9 +2514,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "mojo",
@@ -1172,20 +2525,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "mojo",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "mojo",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "unsupported",
+  "doctor": "unsupported",
+  "rerun": "unsupported",
+  "smoke": "unsupported",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "nim",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "nim",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "nim",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "nim",
@@ -1195,8 +2592,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "nim",
@@ -1206,8 +2603,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "nim",
@@ -1217,19 +2614,151 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "nim",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "nim",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "objectivec",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "objectivec",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "objectivec",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "objectivec",
+  "platform": "linux-x86_64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "objectivec",
+  "platform": "linux-x86_64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "objectivec",
+  "platform": "linux-x86_64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "objectivec",
+  "platform": "macos-aarch64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "objectivec",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ocaml",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ocaml",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ocaml",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ocaml",
@@ -1238,9 +2767,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ocaml",
@@ -1249,9 +2778,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ocaml",
@@ -1260,20 +2789,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ocaml",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ocaml",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "octave",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "octave",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "octave",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "octave",
@@ -1282,9 +2855,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "octave",
@@ -1293,9 +2866,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "octave",
@@ -1304,20 +2877,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "octave",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "octave",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "odin",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "odin",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "odin",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "odin",
@@ -1327,8 +2944,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "odin",
@@ -1338,8 +2955,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "odin",
@@ -1349,19 +2966,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "odin",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "odin",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "pascal",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "pascal",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "pascal",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "pascal",
@@ -1370,9 +3031,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "pascal",
@@ -1381,9 +3042,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "pascal",
@@ -1392,20 +3053,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "pascal",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "pascal",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "perl",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "perl",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "perl",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "perl",
@@ -1414,9 +3119,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "perl",
@@ -1425,9 +3130,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "perl",
@@ -1436,20 +3141,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "perl",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "perl",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "pharo",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "pharo",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "pharo",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "pharo",
@@ -1459,8 +3208,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "pharo",
@@ -1470,8 +3219,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "pharo",
@@ -1481,8 +3230,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "pharo",
+  "platform": "macos-aarch64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "pharo",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "php",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "php",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "php",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "php",
@@ -1491,9 +3295,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "php",
@@ -1502,9 +3306,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "php",
@@ -1513,20 +3317,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "php",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "php",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "powershell",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "powershell",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "powershell",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "powershell",
@@ -1536,8 +3384,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "powershell",
@@ -1547,8 +3395,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "powershell",
@@ -1558,19 +3406,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "powershell",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "powershell",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "prolog",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "prolog",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "prolog",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "prolog",
@@ -1579,9 +3471,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "prolog",
@@ -1590,9 +3482,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "prolog",
@@ -1601,20 +3493,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "prolog",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "prolog",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "python",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "python",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "python",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "python",
@@ -1624,8 +3560,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "python",
@@ -1635,8 +3571,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "python",
@@ -1646,19 +3582,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "python",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "python",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "r",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "r",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "r",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "r",
@@ -1668,8 +3648,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "r",
@@ -1679,8 +3659,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "r",
@@ -1690,19 +3670,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "r",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "r",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "racket",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "racket",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "racket",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "racket",
@@ -1711,9 +3735,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "racket",
@@ -1722,9 +3746,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "racket",
@@ -1733,20 +3757,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "racket",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "racket",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "raku",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "raku",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "raku",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "raku",
@@ -1755,9 +3823,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "raku",
@@ -1766,9 +3834,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "raku",
@@ -1777,20 +3845,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "raku",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "raku",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ruby",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ruby",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ruby",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ruby",
@@ -1799,9 +3911,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ruby",
@@ -1810,9 +3922,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ruby",
@@ -1821,20 +3933,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "ruby",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
+  "install": "fail",
+  "doctor": "fail",
+  "rerun": "fail",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "ruby",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "fail",
+  "doctor": "fail",
+  "rerun": "fail",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "rust",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "rust",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "rust",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "rust",
@@ -1844,8 +4000,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105d090f4a0662a94d526273f3a6b1b0c82a"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "rust",
@@ -1855,8 +4011,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105d090f4a0662a94d526273f3a6b1b0c82a"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "rust",
@@ -1866,19 +4022,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "rust",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "rust",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "scala",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "scala",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "scala",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "scala",
@@ -1887,9 +4087,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "scala",
@@ -1898,9 +4098,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "scala",
@@ -1909,20 +4109,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "scala",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "fail",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "scala",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "fail",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "swift",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "swift",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "swift",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "swift",
@@ -1932,8 +4176,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105d090f4a0662a94d526273f3a6b1b0c82a"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "swift",
@@ -1943,8 +4187,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105d090f4a0662a94d526273f3a6b1b0c82a"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "swift",
@@ -1954,19 +4198,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "swift",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "swift",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "tcl",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "tcl",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "tcl",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "tcl",
@@ -1975,9 +4263,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "tcl",
@@ -1986,9 +4274,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "tcl",
@@ -1997,20 +4285,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "tcl",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "tcl",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "typescript",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "typescript",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "typescript",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "typescript",
@@ -2020,8 +4352,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "typescript",
@@ -2031,8 +4363,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "typescript",
@@ -2042,19 +4374,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "typescript",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "typescript",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "v",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "v",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "v",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "v",
@@ -2063,9 +4439,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "v",
@@ -2074,9 +4450,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "v",
@@ -2085,20 +4461,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "v",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "v",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "vbnet",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "vbnet",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "vbnet",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "vbnet",
@@ -2108,8 +4528,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "vbnet",
@@ -2119,8 +4539,8 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "vbnet",
@@ -2130,19 +4550,63 @@
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": ""
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "vbnet",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "vbnet",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "wren",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "wren",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "wren",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "wren",
@@ -2151,9 +4615,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "wren",
@@ -2162,9 +4626,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "wren",
@@ -2173,20 +4637,64 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "wren",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "wren",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "zig",
+  "platform": "linux-aarch64-debian13",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "zig",
+  "platform": "linux-aarch64-ubuntu24.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "zig",
+  "platform": "linux-aarch64-ubuntu26.04",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "zig",
@@ -2195,9 +4703,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "zig",
@@ -2206,9 +4714,9 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "zig",
@@ -2217,19 +4725,30 @@
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
-  "smoke": "none",
-  "date": "2026-10-26",
-  "commit": ""
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  },
  {
   "language": "zig",
   "platform": "macos-aarch64",
-  "evidence": "in-use",
+  "evidence": "fresh",
   "install": "pass",
   "doctor": "pass",
   "rerun": "pass",
   "smoke": "pass",
-  "date": "2026-10-26",
-  "commit": "8d88105"
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
+ },
+ {
+  "language": "zig",
+  "platform": "macos-x86_64",
+  "evidence": "fresh",
+  "install": "pass",
+  "doctor": "pass",
+  "rerun": "pass",
+  "smoke": "pass",
+  "date": "2026-10-27",
+  "commit": "038fda3024fcf05eb7736b3af5dc59f7f1e0b217"
  }
 ]
