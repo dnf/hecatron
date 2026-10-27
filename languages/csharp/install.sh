@@ -22,7 +22,28 @@ _add_microsoft_source() {
     $SUDO apt-get update -qq
 }
 
-deps() { :; }
+# The .NET runtimes the components' projects target, so their tests can run
+# (dotnet_runtimes_missing in _common.sh): from apt where the distribution
+# packages that version, else Microsoft's dotnet-install.sh, into the SDK's
+# own directory.
+_install_runtime() {
+    local _root
+    if [ "${OS}" = "linux" ] && apt_has "dotnet-runtime-$1.0"; then
+        apt_install "dotnet-runtime-$1.0"
+        return
+    fi
+    _root="$(dirname "$(dotnet --list-runtimes | sed -n 's/^Microsoft.NETCore.App [^ ]* \[\(.*\)\]$/\1/p' | head -1)")"
+    _root="$(dirname "${_root}")"
+    log "Installing the .NET $1 runtime into ${_root}..."
+    curl -fsSL https://dot.net/v1/dotnet-install.sh |
+        $SUDO bash -s -- --runtime dotnet --channel "$1.0" --install-dir "${_root}" --no-path
+}
+deps() {
+    local _major
+    while IFS= read -r _major; do
+        [ -n "${_major}" ] && _install_runtime "${_major}"
+    done < <(dotnet_runtimes_missing)
+}
 
 log "Installing C#..."
 "install_${OS}"

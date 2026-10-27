@@ -2,7 +2,18 @@
   "abbreviation": null,
   "dependency": "cmake",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.c"
+  ],
+  "sharedBuildFiles": [
+    "CMakeLists.txt",
+    "meson.build",
+    "configure.ac",
+    "Makefile"
+  ],
+  "dirNames": [
+    "c",
+    "c_glib"
   ]
 }

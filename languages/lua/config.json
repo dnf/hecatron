@@ -3,8 +3,10 @@
   "dependency": "lua",
   "lintDependency": "luacheck",
   "detect": [
-    "*.lua",
     "*.rockspec"
+  ],
+  "detectSources": [
+    "*.lua"
   ],
   "path": [
     "~/.luarocks/bin"

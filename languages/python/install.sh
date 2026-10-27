@@ -2,14 +2,30 @@
 # Install Python 3 + uv
 source "$(dirname "$0")/../_common.sh"
 
-install_macos() { brew_install python uv; }
+# uv from Astral's installer on both platforms, into ~/.local/bin: Homebrew's
+# uv trails Astral's releases, and a uv's list of Python builds is fixed at
+# its release, so an older one can't install a newer Python. The installer's
+# uv can update itself (_uv_python_install).
+install_macos() {
+    brew_install python
+    _install_uv
+}
 install_linux() {
     apt_install python3 python3-venv
-    if ! has uv; then
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-    fi
+    _install_uv
+}
+_install_uv() {
+    [ -x "${HOME}/.local/bin/uv" ] || curl -LsSf https://astral.sh/uv/install.sh | sh
     # uv lands in ~/.local/bin, which this shell's PATH may predate.
     export PATH="${HOME}/.local/bin:${PATH}"
+}
+# A Python released after this uv has no build in its list: update uv, then
+# try again.
+_uv_python_install() {
+    uv python install "$1" </dev/null && return
+    log "Updating uv, which has no build of Python $1..."
+    uv self update </dev/null
+    uv python install "$1" </dev/null
 }
 
 # A .venv copied or moved from another checkout keeps scripts whose shebangs
@@ -20,7 +36,7 @@ _sync_venv() {
         log "Recreating moved virtualenv in ${PWD}"
         rm -rf .venv
     fi
-    uv sync --extra dev
+    uv sync --all-extras
 }
 # Every Python version the project's components resolve to (pin files, the
 # project's config, else the default; docs/design.md §18), through uv, which
@@ -31,7 +47,7 @@ _install_versions() {
     while IFS=$'\t' read -r spec _; do
         [ "${spec}" = "-" ] && continue
         log "Installing Python ${spec#=} with uv..."
-        uv python install "${spec#=}" </dev/null
+        _uv_python_install "${spec#=}"
     done < <(cd "${ROOT}" && python3 "${HECATRON_HOME}/libexec/lib/project.py" versions python)
 }
 deps() {

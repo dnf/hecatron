@@ -2,7 +2,8 @@
   "abbreviation": "od",
   "dependency": "odin",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.odin"
   ]
 }

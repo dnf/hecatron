@@ -2,10 +2,14 @@
   "abbreviation": "mj",
   "dependency": "mojo",
   "lintDependency": null,
-  "detect": [
+  "detect": [],
+  "detectSources": [
     "*.mojo"
   ],
   "path": [
     "~/.local/bin"
+  ],
+  "unsupported": [
+    "macos-x86_64"
   ]
 }

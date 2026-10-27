@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.16)
+project(add CXX)
+set(CMAKE_CXX_STANDARD 17)
+enable_testing()
+add_library(add add.cpp)
+add_executable(add_test add_test.cpp)
+target_link_libraries(add_test add)
+add_test(NAME add_test COMMAND add_test)

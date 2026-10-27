@@ -1,0 +1,5 @@
+use Test;
+use Add;
+
+plan 1;
+is add(2, 3), 5, 'adds two numbers';

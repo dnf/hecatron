@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install Scala (uses JDK 17 — delegates to Java)
+# Install Scala (uses the JDK — delegates to Java)
 source "$(dirname "$0")/../_common.sh"
 
 install_macos() {
@@ -14,8 +14,8 @@ install_linux() {
     fi
 }
 
-deps() { :; }
+deps() { jvm_build_tools scala; }
 
-log "Installing Scala (JDK 17)..."
+log "Installing Scala..."
 "install_${OS}"
 deps

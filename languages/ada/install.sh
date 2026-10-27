@@ -2,7 +2,7 @@
 # Install Ada toolchain (GNAT + GPRbuild via Alire on macOS, apt on Linux)
 source "$(dirname "$0")/../_common.sh"
 
-ALIRE_VERSION="2.1.0"
+ALIRE_VERSION="2.1.1"
 
 _alire_toolchain_bin() {
     local pattern="$1"
@@ -27,7 +27,7 @@ _install_alire() {
     if has alr; then return; fi
     local arch; arch="$(uname -m)"
     if [ "$arch" = "arm64" ]; then arch="aarch64"; fi
-    local os_name="macos"
+    local os_name="${OS}"
     local url="https://github.com/alire-project/alire/releases/download/v${ALIRE_VERSION}/alr-${ALIRE_VERSION}-bin-${arch}-${os_name}.zip"
     local tmp; tmp="$(mktemp -d)"
     log "  Downloading Alire ${ALIRE_VERSION}..."
@@ -40,6 +40,7 @@ _install_alire() {
 }
 
 install_macos() {
+    has unzip || apt_install unzip
     _install_alire
     if ! has gnat || ! has gprbuild; then
         log "  Installing GNAT + GPRbuild via Alire..."
@@ -60,7 +61,27 @@ install_macos() {
 
 install_linux() { apt_install gnat gprbuild; }
 
-deps() { :; }
+# Alire where a component is a crate (alire.toml), using the GNAT and
+# GPRbuild installed above rather than downloading its own.
+alire_needed() {
+    local _dir
+    while IFS= read -r _dir; do
+        [ -f "${_dir}/alire.toml" ] && return 0
+    done < <(impl_dirs ada)
+    return 1
+}
+_alire_use_system_toolchain() {
+    alr settings --global --get toolchain.use.gnat >/dev/null 2>&1 && return
+    log "  Selecting the system GNAT and GPRbuild for Alire..."
+    alr --non-interactive toolchain --select gnat_external gprbuild
+}
+
+deps() {
+    [ "${OS}" = "linux" ] && alire_needed || return 0
+    has unzip || apt_install unzip
+    _install_alire
+    _alire_use_system_toolchain
+}
 
 log "Installing Ada..."
 "install_${OS}"

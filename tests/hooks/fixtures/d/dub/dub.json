@@ -1,0 +1,6 @@
+{
+    "name": "adder",
+    "description": "Adds two numbers.",
+    "license": "MIT",
+    "targetType": "library"
+}

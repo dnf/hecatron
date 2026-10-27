@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Add/Add.vbproj" />
+  <Project Path="Add.Tests/Add.Tests.vbproj" />
+</Solution>

@@ -4,5 +4,9 @@
   "lintDependency": null,
   "detect": [
     "*.fsproj"
+  ],
+  "dirNames": [
+    "fsharp",
+    "fs"
   ]
 }

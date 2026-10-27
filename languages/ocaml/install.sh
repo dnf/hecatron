@@ -20,7 +20,18 @@ install_linux() {
     opam install dune alcotest --yes
 }
 
-deps() { :; }
+# shellcheck source=_ocamlformat.sh source-path=SCRIPTDIR
+source "$(dirname "$0")/_ocamlformat.sh"
+deps() {
+    local _version
+    while IFS= read -r _version; do
+        if [ "${_version}" = "(any)" ]; then
+            opam install ocamlformat --yes
+        else
+            opam install "ocamlformat.${_version}" --yes
+        fi </dev/null
+    done < <(ocamlformat_missing)
+}
 
 log "Installing OCaml..."
 "install_${OS}"

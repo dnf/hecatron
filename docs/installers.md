@@ -31,8 +31,8 @@ Some languages share a toolchain. Uninstalling one affects the others.
 | ---------- | --------------------- | ----------------------------------------------------------------------- |
 | .NET SDK   | C#, F#                | Both share the same SDK; uninstalling one removes the other             |
 | cmake      | C, C++, Fortran       | All three lose build capability until reinstalled                       |
-| JDK 17     | Java, Kt, Scala, Gy   | Protected: `hecatron uninstall java` is a no-op (prints a message)          |
-| Node.js    | TypeScript, Elm       | Elm depends on npm; Elm installer auto-installs Node if missing         |
+| JDK        | Java, Kt, Scala, Gy   | Protected: `hecatron uninstall java` is a no-op (prints a message)      |
+| Node.js    | TypeScript, JS, Elm   | JavaScript's installer is TypeScript's; Elm's installs Node if missing  |
 | Erlang/OTP | Erlang, Elixir, Gleam | Elixir and Gleam depend on Erlang runtime; uninstall Erlang breaks both |
 
 ## Architecture limitations
@@ -64,10 +64,9 @@ Languages install via a mix of apt packages and direct downloads:
 | Method           | Languages                                                                         |
 | ---------------- | --------------------------------------------------------------------------------- |
 | apt packages     | Ada, C/C++ (cmake), C#/F# (dotnet), Elixir, Erlang, Fortran, Lua, Perl, PHP, Ruby |
-| Direct download  | Dart, Gleam, Go, Swift, Zig                                                       |
+| Direct download  | Dart, Gleam, Go, Java/Kotlin/Scala/Groovy (Temurin), Node.js, Swift, Zig          |
 | Installer script | Clojure, Haskell (ghcup), Rust (rustup), Python (uv)                              |
-| npm global       | Elm, TypeScript (Node via NodeSource apt)                                         |
-| Shared           | Java/Kotlin/Scala/Groovy (OpenJDK 17 via apt)                                     |
+| npm global       | Elm                                                                               |
 
 ### Uninstall caveats
 

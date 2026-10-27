@@ -20,7 +20,13 @@ _install() {
     uv tool install --force "mojo==${MOJO_VERSION}" --with-executables-from mojo-compiler
 }
 
-install_macos() { _install; }
+install_macos() {
+    if [ "$(uname -m)" = "x86_64" ]; then
+        echo "Mojo has no build for Intel Macs (only Apple silicon); skipping." >&2
+        return 1
+    fi
+    _install
+}
 install_linux() { _install; }
 
 deps() { :; }

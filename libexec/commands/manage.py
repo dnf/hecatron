@@ -527,8 +527,9 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
     `{lang}`. A directory may carry any of a language's names (dotnet/ for C#).
     With one component, a language whose directory doesn't fit the shared
     implPath gets its own entry in implPaths, unless the shared one names a
-    directory in the repository (`directories`): Thrift's lib/go, whose
-    go.mod is at the root.
+    directory in the repository (`directories`) that no other language was
+    found in: Thrift's lib/go, whose go.mod is at the root, but not
+    Cucumber's javascript/, which is TypeScript's.
     """
     names = names or {}
     roots = {lang: _language_roots(dirs, names.get(lang, [lang])) for lang, dirs in found.items()}
@@ -549,8 +550,10 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
     overrides = {}
     for lang, dirs in sorted(found.items()):
         lang_names = names.get(lang, [lang])
+        others = set().union(*(d for other, d in found.items() if other != lang))
+        unclaimed = (directories or set()) - others
         fitting = [template.replace("{lang}", name) for name in lang_names
-                   if template.replace("{lang}", name) in roots[lang] | (directories or set())]
+                   if template.replace("{lang}", name) in roots[lang] | unclaimed]
         if fitting:
             continue
         overrides[lang] = (min(roots[lang], key=lambda r: (_preference(r), r)) if roots[lang]

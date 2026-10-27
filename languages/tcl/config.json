@@ -3,6 +3,9 @@
   "dependency": "tclsh",
   "lintDependency": null,
   "detect": [
+    "pkgIndex.tcl"
+  ],
+  "detectSources": [
     "*.tcl"
   ]
 }

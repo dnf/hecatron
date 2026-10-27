@@ -3,9 +3,11 @@
   "dependency": "gnat",
   "lintDependency": null,
   "detect": [
+    "alire.toml",
     "*.gpr"
   ],
   "path": [
+    "~/.local/bin",
     "~/.local/share/alire/toolchains/*/bin"
   ]
 }

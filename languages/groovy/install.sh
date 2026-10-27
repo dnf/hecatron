@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install Groovy (uses JDK 17 — delegates to Java)
+# Install Groovy (uses the JDK — delegates to Java)
 source "$(dirname "$0")/../_common.sh"
 
 install_macos() {
@@ -14,8 +14,8 @@ install_linux() {
     fi
 }
 
-deps() { :; }
+deps() { jvm_build_tools groovy; }
 
-log "Installing Groovy (JDK 17)..."
+log "Installing Groovy..."
 "install_${OS}"
 deps

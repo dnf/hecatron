@@ -1,0 +1,25 @@
+cabal-version: 2.4
+name:          add
+version:       0.1.0.0
+synopsis:      Adds two numbers
+description:   Adds two numbers: a fixture for hecatron's default hooks.
+category:      Math
+license:       MIT
+license-file:  LICENSE
+maintainer:    hecatron@example.com
+build-type:    Simple
+
+library
+  exposed-modules:  Add
+  hs-source-dirs:   src
+  build-depends:    base >=4.14 && <5
+  default-language: Haskell2010
+  ghc-options:      -Wall
+
+test-suite add-test
+  type:             exitcode-stdio-1.0
+  main-is:          Main.hs
+  hs-source-dirs:   test
+  build-depends:    base >=4.14 && <5, add
+  default-language: Haskell2010
+  ghc-options:      -Wall
