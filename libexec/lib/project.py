@@ -302,11 +302,25 @@ class Project:
                             self._installed[lang].append((version.strip(), os.path.expanduser(home.strip())))
         return self._installed[lang]
 
+    def _release_line(self, lang: str, default: str) -> str:
+        """The default's release line, as a prefix: its first "releaseLine"
+        parts (Node.js 24.22.1 is line 24 with 1), else all but the last
+        (Go 1.27.3 is line 1.27)."""
+        parts = default.lstrip("=").split(".")
+        count = self._layer(lang, True).get("releaseLine", max(len(parts) - 1, 1))
+        return ".".join(parts[:count])
+
     def installed_version(self, lang: str, component: str | None = None) -> tuple[str, str] | None:
-        """The newest installed (version, home) matching the component's spec."""
-        spec = self.resolve_version(lang, component)["spec"]
+        """The newest installed (version, home) matching the component's spec.
+        A component on the default takes any version on the default's release
+        line, so a machine that already has, say, Node.js 24.19 needs no
+        second 24; a version the project chooses must match as written."""
+        resolved = self.resolve_version(lang, component)
+        spec = resolved["spec"]
         if spec is None:
             return None
+        if resolved["source"] == "default":
+            spec = self._release_line(lang, spec)
         wanted = versions.Spec(spec)
         matching = {v: home for v, home in self.installed(lang) if wanted.matches(v)}
         best = versions.newest(list(matching))
