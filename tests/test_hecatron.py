@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import re
 import os
 import subprocess
 import sys
@@ -295,6 +296,20 @@ class InitTest(Fixture):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("not inside a git repository", result.stderr)
             self.assertFalse(os.path.exists(os.path.join(outside, ".hecatron")))
+
+    def test_every_command_in_help_is_dispatched(self):
+        usage = self.hecatron("help").stdout
+        commands = set(re.findall(r"^  ([a-z][a-z-]+)", usage, re.M))
+        with open(BIN, encoding="utf-8") as f:
+            arms = re.findall(r"^    ([a-z|-]+)\)$", f.read(), re.M)
+        dispatched = {name for arm in arms for name in arm.split("|")}
+        self.assertEqual(commands - dispatched - {"self-test"}, set())  # self-test runs outside any project
+
+    def test_a_per_language_command_runs_in_a_project(self):
+        self.configure()
+        for command in ("deps", "format", "audit"):
+            with self.subTest(command=command):
+                self.assertNotIn("unknown command", self.hecatron(command).stderr)
 
     def test_an_unknown_command_sets_nothing_up(self):
         subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
