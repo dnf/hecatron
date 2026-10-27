@@ -56,6 +56,8 @@ func run(argv []string) int {
 		return plan(c.home, c.args)
 	case "status":
 		return c.status()
+	case "licenses":
+		return c.licenses()
 	case "skill":
 		return c.skill()
 	case "self-test":
