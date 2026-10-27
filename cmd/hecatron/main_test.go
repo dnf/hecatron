@@ -274,9 +274,10 @@ func TestRootThroughALinkMatchesBinHecatron(t *testing.T) {
 	}
 }
 
-// In a git repository hecatron hasn't set up, the first project command
-// sets it up (manage.py init --auto, reporting on stderr), then runs.
-func TestFirstUseSetsUpAGitRepositoryAsBinHecatron(t *testing.T) {
+// In a git repository hecatron hasn't set up, a project command reads it as
+// detected (project.py's detected_config, reporting on stderr the first
+// time), writing nothing in the working tree.
+func TestAGitRepositoryWithoutConfigIsReadAsBinHecatronReadsIt(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("bin/hecatron needs bash and Python")
 	}
@@ -312,11 +313,11 @@ func TestFirstUseSetsUpAGitRepositoryAsBinHecatron(t *testing.T) {
 				if results[0] != results[1] {
 					t.Errorf("bin/hecatron: %+v\nGo:          %+v", results[0], results[1])
 				}
-				config0, _ := os.ReadFile(filepath.Join(roots[0], ".hecatron", "config.json"))
-				config1, _ := os.ReadFile(filepath.Join(roots[1], ".hecatron", "config.json"))
-				if !bytes.Equal(bytes.ReplaceAll(config0, []byte(filepath.Base(roots[0])), nil),
-					bytes.ReplaceAll(config1, []byte(filepath.Base(roots[1])), nil)) {
-					t.Errorf("config.json differs:\n%s\n%s", config0, config1)
+				for _, root := range roots {
+					status := runIn(t, root, nil, "git", "status", "--porcelain", "--untracked-files=all")
+					if strings.Contains(status.stdout, "??") {
+						t.Errorf("wrote into the working tree:\n%s", status.stdout)
+					}
 				}
 			})
 		}

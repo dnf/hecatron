@@ -52,17 +52,72 @@ class ProjectError(Exception):
 
 
 def find_root(start: str | None = None) -> str:
-    """The nearest directory at or above `start` holding .hecatron/config.json."""
+    """The nearest directory at or above `start` holding .hecatron/config.json;
+    else the top of the git repository around it, which hecatron reads as
+    detected (detected_config)."""
     directory = os.path.abspath(start or os.getcwd())
     while True:
         if os.path.isfile(os.path.join(directory, ".hecatron", "config.json")):
             return directory
         parent = os.path.dirname(directory)
         if parent == directory:
-            raise ProjectError(
-                "not a hecatron project (no .hecatron/config.json here or above) and not inside "
-                "a git repository; hecatron init sets up a git repository")
+            break
         directory = parent
+    top = _git(os.path.abspath(start or os.getcwd()), "rev-parse", "--show-toplevel")
+    if top is None:
+        raise ProjectError(
+            "not a hecatron project (no .hecatron/config.json here or above) and not inside "
+            "a git repository; hecatron init sets up a git repository")
+    return top
+
+
+def ignore_project_files(root: str) -> None:
+    """Add what a project writes but doesn't commit to its .gitignore."""
+    path = os.path.join(root, ".gitignore")
+    existing = open(path, encoding="utf-8").read() if os.path.isfile(path) else ""
+    missing = [entry for entry in (".hecatron/local.json", ".logs/") if entry not in existing.split("\n")]
+    if missing:
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(("" if not existing or existing.endswith("\n") else "\n") + "\n".join(missing) + "\n")
+
+
+def _git(directory: str, *args: str) -> str | None:
+    """A git command's output in directory, or None when it fails."""
+    try:
+        result = subprocess.run(["git", *args], cwd=directory, capture_output=True, text=True)
+    except OSError:
+        return None
+    return result.stdout.strip() if result.returncode == 0 else None
+
+
+def hecatron_dir_in_git(root: str) -> str:
+    """Where hecatron keeps what it detects and records about a repository with
+    no .hecatron/ of its own: inside .git, so nothing appears in the working
+    tree or in git status."""
+    return os.path.join(_git(root, "rev-parse", "--absolute-git-dir") or os.path.join(root, ".git"), "hecatron")
+
+
+def detected_config(root: str) -> dict:
+    """The config.json hecatron init would write for the repository, cached
+    in .git/hecatron/ until the commit, git's index (what's tracked) or
+    hecatron changes. Said on stderr the first time."""
+    cache = os.path.join(hecatron_dir_in_git(root), "detected.json")
+    index = os.path.join(_git(root, "rev-parse", "--absolute-git-dir") or "", "index")
+    stat = os.stat(index) if os.path.isfile(index) else None
+    key = [_git(root, "rev-parse", "-q", "--verify", "HEAD") or "", stat.st_mtime_ns if stat else 0,
+           stat.st_size if stat else 0, hecatron_version()]
+    cached = _read_json(cache, None) if os.path.isfile(cache) else None
+    if cached and cached.get("key") == key:
+        return cached["config"]
+    sys.path.insert(0, os.path.join(HECATRON_HOME, "libexec", "commands"))
+    import manage  # noqa: E402 - only when detecting: it is the init command's module
+    config, _ = manage.detected_config(root)
+    del config["logs"]
+    if cached is None:
+        print(f"hecatron: {root} has no .hecatron/config.json; detected "
+              f"{', '.join(config['languages']) or 'no languages'} (hecatron init saves this)", file=sys.stderr)
+    _write_json(cache, {"key": key, "config": config})
+    return config
 
 
 def _read_json(path: str, default):
@@ -100,7 +155,14 @@ class Project:
         self.dir = os.path.join(root, ".hecatron")
         self.config_path = os.path.join(self.dir, "config.json")
         self.local_path = os.path.join(self.dir, "local.json")
-        self.config = _read_json(self.config_path, None)
+        # A git repository with no config of its own: detected, and its local
+        # settings and logs kept inside .git, so the working tree stays as it is.
+        self.detected = not os.path.exists(self.config_path)
+        if self.detected:
+            self.config = detected_config(root)
+            self.local_path = os.path.join(hecatron_dir_in_git(root), "local.json")
+        else:
+            self.config = _read_json(self.config_path, None)
         if self.config is None:
             raise ProjectError(f"{self.config_path} not found")
         schema = self.config.get("schema")
@@ -185,6 +247,8 @@ class Project:
 
     @property
     def logs(self) -> str:
+        if self.detected and "logs" not in self.config:
+            return os.path.join(hecatron_dir_in_git(self.root), "logs")
         return os.path.join(self.root, self.config.get("logs", ".logs"))
 
     def tasks(self, action: str) -> dict[str, str]:
@@ -195,8 +259,12 @@ class Project:
         return (self.config.get("generated") or {}).get(key)
 
     def save_config(self) -> None:
+        """Write config.json; a detected project becomes one with its own, as
+        hecatron init would make it."""
         self.config["languages"] = sorted(set(self.config.get("languages", [])))
         _write_json(self.config_path, self.config)
+        if self.detected:
+            ignore_project_files(self.root)
 
     def save_local(self) -> None:
         _write_json(self.local_path, self.local)

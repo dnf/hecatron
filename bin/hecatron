@@ -103,18 +103,12 @@ if [ "${_command}" = "self-test" ]; then
 fi
 
 # Every command but init and banner runs inside a project; each finds it
-# (like git) before running. A git repository that hecatron hasn't set up yet
-# is set up on first use, at its top level, as `hecatron init` would; init's
-# report goes to stderr, so the command's own output stays as it is. Unknown
-# commands never get this far.
-_find_root() { python3 "${HECATRON_HOME}/libexec/lib/project.py" root; }
+# (like git) before running: the nearest .hecatron/config.json, else the git
+# repository around it, read as hecatron init would set it up but without
+# writing anything (project.py's detected_config). Unknown commands never
+# get this far.
 _project() {
-    if ! HECATRON_ROOT="$(_find_root 2>/dev/null)"; then
-        if _top="$(git rev-parse --show-toplevel 2>/dev/null)"; then
-            python3 "${HECATRON_HOME}/libexec/commands/manage.py" init --auto "${_top}" >&2 || exit 1
-        fi
-        HECATRON_ROOT="$(_find_root)" || exit 1
-    fi
+    HECATRON_ROOT="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" root)" || exit 1
     export HECATRON_ROOT
 }
 

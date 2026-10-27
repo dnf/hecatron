@@ -81,10 +81,12 @@ hct test          # every language's tests, in parallel
 hct test go       # one language
 ```
 
-The first command in a git repository sets it up: it detects each language
-and where its code lives, and writes `.hecatron/config.json` (what `hct init`
-does; run that yourself to choose the layout). `hct` is short for `hecatron`. `hct help` lists every command, and
-`hct <command> help` its options.
+There's no setup step: in a git repository, hecatron detects each language
+and where its code lives, and remembers it inside `.git/` until the tracked
+files change, writing nothing else. `hct init` saves that as
+`.hecatron/config.json`, to commit and adjust. `hct` is short for
+`hecatron`. `hct help` lists every command, and `hct <command> help` its
+options.
 
 ## What it does
 
@@ -195,7 +197,7 @@ runs the language's dependency auditor with `hct audit`.
 
 ## Configuring a project
 
-`hct init`, or the first command, writes `.hecatron/config.json`, committed with the code:
+`hct init` writes `.hecatron/config.json`, committed with the code:
 
 ```json
 {
