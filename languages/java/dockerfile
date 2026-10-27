@@ -1,9 +1,17 @@
-# JDK: Temurin, the default version (java's config.json), as java's install.sh
-# installs it (shared by Java, Kotlin, Scala, Groovy; installed once)
-RUN [ -d /usr/lib/jvm/temurin-25.0.5 ] || { \
-      ARCH="$(dpkg --print-architecture | sed 's/amd64/x64/;s/arm64/aarch64/')" && \
-      mkdir -p /usr/lib/jvm/temurin-25.0.5 && \
-      curl -fsSL "https://api.adoptium.net/v3/binary/version/jdk-25.0.5%2B8/linux/${ARCH}/jdk/hotspot/normal/eclipse" | \
-      tar -C /usr/lib/jvm/temurin-25.0.5 --strip-components=1 -xz; }
-ENV JAVA_HOME="/usr/lib/jvm/temurin-25.0.5"
+# JDKs: Temurin, each version the components use (java's config.json and pin
+# files), in /usr/lib/jvm/temurin-<version> as java's install.sh installs
+# them, checksum verified; the default version, installed first, is linked as
+# /usr/lib/jvm/hecatron-default. Shared by Java, Kotlin, Scala and Groovy, and
+# each installed once. A prefix resolves to its newest release.
+# each-version
+RUN ARCH="$(dpkg --print-architecture | sed 's/amd64/x64/;s/arm64/aarch64/')" && \
+    set -- $(curl -fsSL "https://api.adoptium.net/v3/assets/feature_releases/{major}/ga?os=linux&architecture=${ARCH}&image_type=jdk&jvm_impl=hotspot&page_size=100" | python3 -c 'import json, sys; spec, exact = sys.argv[1], sys.argv[2]; p = spec.split("."); rs = [(r["release_name"][4:].split("+")[0], r["binaries"][0]["package"]) for r in json.load(sys.stdin)]; rs = [(v, b) for v, b in rs if (v == spec if exact else v.split(".")[:len(p)] == p)]; v, b = max(rs, key=lambda r: [int(x) for x in r[0].split(".")]); print(v, b["link"], b["checksum"])' "{version}" "{exact}") && \
+    if [ ! -d "/usr/lib/jvm/temurin-$1" ]; then \
+      curl -fsSL -o /tmp/jdk.tar.gz "$2" && echo "$3  /tmp/jdk.tar.gz" | sha256sum -c - && \
+      mkdir -p "/usr/lib/jvm/temurin-$1" && tar -C "/usr/lib/jvm/temurin-$1" --strip-components=1 -xzf /tmp/jdk.tar.gz && \
+      rm -f /tmp/jdk.tar.gz; \
+    fi && \
+    { [ -e /usr/lib/jvm/hecatron-default ] || ln -s "temurin-$1" /usr/lib/jvm/hecatron-default; }
+# end-each-version
+ENV JAVA_HOME="/usr/lib/jvm/hecatron-default"
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
