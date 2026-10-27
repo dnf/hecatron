@@ -509,7 +509,16 @@ For a language in a component, the version is the first of:
    in `config.json` (`pinFiles`). Using these means a project declares a
    version once, where its other tools already look.
 2. **`version` in the project's `.hecatron/languages/<lang>/config.json`.**
-3. **The definition's default `version`.**
+3. **The definition's default `version`**, unless the component says it
+   supports only older lines: then the newest release of the newest line it
+   supports. A definition lists the files saying so in `supportFiles`, read
+   like pin files; Python reads its trove classifiers (`Programming Language
+   :: Python :: 3.14`) from `pyproject.toml`, `setup.cfg` or `setup.py`. The
+   newest Python often breaks projects for months while compiled
+   dependencies catch up, and a project's classifiers already say how far it
+   has. This only holds a component back, never ahead of the default, and
+   the doctor says when it applies. `requires-python` isn't read: it almost
+   never has an upper bound.
 
 Components can resolve to different versions; installers install each one.
 When a pin file and the project's `version` both apply and disagree, the pin

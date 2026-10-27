@@ -41,6 +41,20 @@
       "key": "python"
     }
   ],
+  "supportFiles": [
+    {
+      "file": "pyproject.toml",
+      "format": "python-classifiers"
+    },
+    {
+      "file": "setup.cfg",
+      "format": "python-classifiers"
+    },
+    {
+      "file": "setup.py",
+      "format": "python-classifiers"
+    }
+  ],
   "env": {
     "UV_PYTHON": "{home}/bin/python3"
   },

@@ -6,6 +6,10 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Python follows the versions a project supports:** with no pin file, a
+  component whose classifiers stop at an older Python than the default
+  (Avro's at 3.14) gets that line's newest release, since compiled
+  dependencies often lag a new Python. `hecatron doctor` says when.
 - **elm-review is on PATH:** global npm commands Elm installs are all linked
   onto PATH, now that Node.js comes from its official builds.
 
