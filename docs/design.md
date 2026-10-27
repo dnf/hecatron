@@ -510,6 +510,19 @@ version in it (`stable`, `lts/*`, `nightly`) is left to the ecosystem's own
 tool: hecatron neither installs nor checks that language's version for that
 component, and the doctor says so.
 
+Some files name a floor rather than a version, and a format keeps the part
+the ecosystem holds fixed: `global.json`'s `rollForward` decides how far the
+.NET SDK may move from `sdk.version`, so `latestFeature` from 8.0.100 reads as
+`8.0` and `latestMajor` as `8`, the newest release of which always qualifies;
+`disable` is exact, and `patch`, the default, keeps the version as written,
+since its scope, a feature band (8.0.1xx), isn't a prefix. In
+`composer.json`, `config.platform.php` (the PHP Composer resolves for) is a
+pin on its line (`8.4.0` reads as `8.4`); the `require` constraint on `php`
+isn't, because it is the range a library supports, which the default
+normally satisfies. PHP's doctor checks instead that each component's PHP
+satisfies what its lock file requires. (Owner's decision pending; this is
+the implementation's.)
+
 ### Version syntax
 
 In hecatron's configuration:

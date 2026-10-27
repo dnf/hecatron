@@ -6,6 +6,11 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **global.json's `rollForward` counts:** a .NET SDK pin of 8.0.100 with
+  `latestFeature` asks for the newest 8.0 SDK, and with `latestMajor` the
+  newest 8; `.php-version` and composer.json's `config.platform.php` pin
+  PHP.
+
 - **Rust repairs an interrupted install:** a rustup left with no default
   toolchain (an install killed mid-download) is reported by the doctor and
   fixed by the installer.
