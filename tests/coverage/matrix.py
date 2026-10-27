@@ -35,15 +35,15 @@ PLATFORMS = [
     ("macos-x86_64", "macOS x86_64"),
 ]
 
-LEGEND = """\
-| Mark | Meaning |
-| --- | --- |
-| ✓ | Installs on a fresh machine, passes `doctor` (also from a new shell), reinstalls cleanly, and passes its smoke test (builds and runs a small program) |
-| ○ | The same, but the language has no smoke test yet |
-| ◆ | Works on a developer machine (`doctor` and the project's tests pass), but a fresh install wasn't checked |
-| ✗ | Fails |
-| – | No toolchain exists for this platform upstream |
-| ? | Not checked yet |"""
+# Each status, in the order the totals list them, and what it means.
+MARKS = [
+    ("✅", "Installs on a fresh machine, passes `doctor` (also from a new shell), reinstalls cleanly, and passes its smoke test (builds and runs a small program)"),
+    ("💻", "Works on a developer machine (`doctor` and the project's tests pass), but a fresh install wasn't checked"),
+    ("❌", "Fails"),
+    ("➖", "No toolchain exists for this platform upstream"),
+    ("❔", "Not checked yet, or not since the language's smoke test was added"),
+]
+LEGEND = "| Status | Meaning |\n| --- | --- |\n" + "\n".join(f"| {mark} | {meaning} |" for mark, meaning in MARKS)
 
 
 def load() -> dict[str, dict]:
@@ -74,19 +74,30 @@ def collect(commit: str, logs: list[str]) -> None:
 
 def mark(result: dict | None) -> str:
     if result is None:
-        return "?"
+        return "❔"
     steps = [result[k] for k in ("install", "doctor", "rerun", "smoke")]
     if "unsupported" in steps:
-        return "–"
+        return "➖"
     if "fail" in steps:
-        return "✗"
+        return "❌"
     if result.get("evidence") == "in-use":
-        return "◆"
-    return "○" if result["smoke"] == "none" else "✓"
+        return "💻"
+    # Every language has a smoke test, so a result without one predates it.
+    return "❔" if result["smoke"] == "none" else "✅"
 
 
-def render() -> None:
-    results = load()
+def checked_at(results: dict[str, dict], platform: str) -> str:
+    """When a platform's results were last checked: the newest date, and the
+    commit, when the results record it."""
+    dates = sorted({(r["date"], (r.get("commit") or "")[:7]) for r in results.values() if r["platform"] == platform})
+    if not dates:
+        return "never"
+    date, commit = dates[-1]
+    return f"{date} at {commit}" if commit else date
+
+
+def render_text(results: dict[str, dict]) -> str:
+    """docs/coverage.md for these results."""
     languages = sorted(
         d for d in os.listdir(os.path.join(ROOT, "languages"))
         if os.path.isdir(os.path.join(ROOT, "languages", d)) and not d.startswith("_")
@@ -113,18 +124,24 @@ def render() -> None:
     for lang in languages:
         cells = [mark(results.get(f"{lang} {key}")) for key, _ in PLATFORMS]
         out.append(f"| {lang} | " + " | ".join(cells) + " |")
-    out += ["", "## Totals", "", "| Platform | ✓ | ○ | ◆ | ✗ | – | ? | Last checked |", "| --- |" + " --: |" * 6 + " --- |"]
+    symbols = [symbol for symbol, _ in MARKS]
+    out += ["", "## Totals", "", "| Platform | " + " | ".join(symbols) + " |", "| --- |" + " --: |" * len(symbols)]
     for key, name in PLATFORMS:
         marks = [mark(results.get(f"{lang} {key}")) for lang in languages]
-        checked = sorted(
-            {(r["date"], r.get("commit") or "") for r in results.values() if r["platform"] == key}
-        )
-        last = checked[-1] if checked else None
-        when = f"{last[0]}" + (f" at {last[1][:7]}" if last and last[1] else "") if last else "never"
-        counts = " | ".join(str(marks.count(m)) for m in "✓○◆✗–?")
-        out.append(f"| {name} | {counts} | {when} |")
+        out.append(f"| {name} | " + " | ".join(str(marks.count(symbol)) for symbol in symbols) + " |")
+    # When each platform was checked: one line when a single run checked
+    # them all, else one per platform.
+    when = {name: checked_at(results, key) for key, name in PLATFORMS}
+    if len(set(when.values())) == 1:
+        out += ["", f"Last checked: {next(iter(when.values()))}."]
+    else:
+        out += ["", "Last checked:", ""] + [f"- {name}: {checked}" for name, checked in when.items()]
+    return "\n".join(out) + "\n"
+
+
+def render() -> None:
     with open(DOC, "w") as f:
-        f.write("\n".join(out) + "\n")
+        f.write(render_text(load()))
 
 
 def main() -> None:
