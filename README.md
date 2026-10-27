@@ -5,7 +5,7 @@
   </picture>
 </h1>
 
-<p align="center"><strong>One interface to every programming language, for people and AI agents.</strong></p>
+<p align="center"><strong>A universal adaptor for programming languages in the age of AI.</strong></p>
 
 <div align="center">
 
@@ -15,11 +15,11 @@
 
 </div>
 
-Hecatron is an adaptor between you and the toolchains of 54 languages. `hct test`,
-`hct lint`, `hct build`, `hct format`, `hct deps` and `hct audit` do the same
-thing in an Elixir library, a Go service or a Haskell compiler; hecatron
-installs and repairs the toolchain at the version the project asks for,
-then calls the language's own tools. It works with no setup step in any git
+Hecatron is an adaptor between you and the toolchains of 54 languages. <!-- language-count -->
+`hct test`, `hct lint`, `hct build`, `hct format`, `hct deps` and `hct audit`
+do the same thing in an Elixir library, a Go service or a Haskell compiler;
+hecatron installs and repairs the toolchain at the version the project asks
+for, then calls the language's own tools. It works with no setup step in any git
 repository, and is written to be driven by AI coding agents as much as by
 people.
 
