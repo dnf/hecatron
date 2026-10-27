@@ -38,6 +38,14 @@ jobs:
           if [ -n "${unformatted}" ]; then echo "Not gofmt-formatted: ${unformatted}"; exit 1; fi
           go vet ./...
           go test ./...
+      - name: Cross-compile for every platform the binary ships for
+        run: |
+          for os in linux darwin windows; do
+            for arch in amd64 arm64; do
+              echo "${os}/${arch}"
+              GOOS="${os}" GOARCH="${arch}" go build -o /dev/null ./cmd/hecatron
+            done
+          done
 
   # Hecatron runs on the bash macOS ships (3.2); the runners' bash is newer,
   # so run the tests under 3.2 itself.

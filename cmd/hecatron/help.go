@@ -1,0 +1,237 @@
+package main
+
+import (
+	"errors"
+	"fmt"
+	"io/fs"
+	"os"
+	"strings"
+	"syscall"
+	"unicode"
+	"unicode/utf8"
+)
+
+// usageText is `hecatron help`, as bin/hecatron prints it.
+const usageText = `Usage: hecatron <command> [arguments]     (or: hct <command>)
+
+Set up:
+  init [dir]                 Set up a repository for hecatron
+  doctor [--fix] [lang...]   Check toolchains; --fix runs installers to repair them
+  install [lang...]          Install toolchains (all of the project's when none named)
+  uninstall <lang...>        Uninstall toolchains
+  get-started                Status table and install menu
+  bootstrap                  Set up a fresh machine for the project (base packages + install)
+
+Run (every component of each language; no languages means all, in parallel):
+  test [lang...]             Tests
+  lint [lang...|shell]       Linters (shell: shellcheck on every shell script)
+  build [lang...]            Builds
+  clean [lang...]            Remove build artifacts
+  rebuild, retest [lang...]  Clean, then build or test
+  audit [lang...]            Check dependencies for known vulnerabilities (--fail-on SEVERITY)
+  outdated [lang...]         Report newer versions of dependencies (--json, --fail)
+  deps [lang...]             Fetch dependencies, held to each component's lock file
+  format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
+
+Languages:
+  list [languages] [--all]   Show the project's (or every known) language
+  add <lang...>              Add languages to the project
+  remove <lang...>           Remove languages from the project
+  enable, disable <lang...>  Re-enable or skip languages in parallel runs, for you only
+
+Generated files:
+  dockerfile [--check]       Generate the Dockerfile from language snippets
+  workflows [--check]        Generate each language's CI workflow
+  check                      Verify every generated file is current
+  banner --generator PATH    Print a DO NOT EDIT banner for a code generator
+
+Project:
+  parallel <name> "job"...   Run your own jobs (just recipes by default) with the live display
+  env                        Print shell code for a project's own recipes: eval "$(hecatron env)"
+  env LANG [-c COMPONENT]    Print a language's environment (its version's PATH and variables)
+                             gives HECATRON_* variables, the language lists and helpers
+                             (_name, _check, _dep_available, _lang_grid, _ada_env, ...)
+  version <version>          Bump versions through each language's version.sh
+  metadata                   Update package metadata through metadata.sh hooks
+
+Hecatron itself:
+  self-test                  Check hecatron's own code: shellcheck and the unit tests
+
+Run 'hecatron <command> help' for a command's options.
+hecatron %s
+`
+
+func (c *cli) usage() int {
+	version, _ := c.readVersion()
+	fmt.Printf(usageText, strings.TrimRight(string(version), "\n"))
+	return 0
+}
+
+func (c *cli) version() int {
+	version, err := c.readVersion()
+	if err != nil {
+		return 1
+	}
+	os.Stdout.Write(version)
+	return 0
+}
+
+// readVersion is <home>/VERSION as `cat` gives it, reporting a missing file
+// as cat does.
+func (c *cli) readVersion() ([]byte, error) {
+	path := c.homePath("VERSION")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		reason := err.Error()
+		var errno syscall.Errno
+		if errors.As(err, &errno) {
+			reason = capitalize(errno.Error())
+		} else if errors.Is(err, fs.ErrNotExist) {
+			reason = "No such file or directory"
+		}
+		fmt.Fprintf(os.Stderr, "cat: %s: %s\n", path, reason)
+	}
+	return data, err
+}
+
+func capitalize(s string) string {
+	r, size := utf8.DecodeRuneInString(s)
+	return string(unicode.ToUpper(r)) + s[size:]
+}
+
+// isHelp is how hecatron's commands ask for their help.
+func isHelp(arg string) bool { return arg == "help" || arg == "--help" }
+
+// runActions are what each run command describes itself as, and the hook
+// that decides which languages it covers.
+var runActions = map[string]struct{ description, hook string }{
+	"test":     {"Run each language's tests for every component", "test.sh"},
+	"lint":     {"Run each language's linter for every component", "lint.sh"},
+	"build":    {"Build each language for every component", "build.sh"},
+	"clean":    {"Remove each language's build artifacts for every component (keeps installed dependencies)", "clean.sh"},
+	"rebuild":  {"Clean, then build", "build.sh"},
+	"retest":   {"Clean, then test", "test.sh"},
+	"audit":    {"Check each language's dependencies for known vulnerabilities in every component", "audit.sh"},
+	"deps":     {"Fetch each language's dependencies for every component, held to its lock file", "deps.sh"},
+	"outdated": {"Report newer versions of each language's dependencies in every component", "outdated.sh"},
+	"format":   {"Format each language's code with its formatter in every component", "format.sh"},
+}
+
+// runHelp is `hecatron test help` and the other run commands' help, as
+// run.sh prints it. Help asked for after flags (`test -j 4 help`) is left
+// to run.sh.
+func (c *cli) runHelp() (int, bool) {
+	if len(c.args) != 1 || !isHelp(c.args[0]) {
+		return 0, false
+	}
+	shell, err := c.project.Shell()
+	if err != nil {
+		return 0, false
+	}
+	tasks, err := c.project.Tasks(c.command)
+	if err != nil {
+		return 0, false
+	}
+	var taskNames strings.Builder
+	for _, task := range tasks {
+		if strings.ContainsAny(task.Name, "\n") {
+			return 0, false
+		}
+		taskNames.WriteString(task.Name + " ")
+	}
+	action := runActions[c.command]
+	var out strings.Builder
+	fmt.Fprintf(&out, "Usage: hecatron %s [flags] [target ...]\n\n", c.command)
+	fmt.Fprintf(&out, "%s. With no targets, runs them all in parallel.\n\n", action.description)
+	out.WriteString(languageGrid("Languages", shell.HookLanguages(action.hook), shell.Abbreviations))
+	if taskNames.Len() > 0 {
+		fmt.Fprintf(&out, "\nProject tasks: %s\n", taskNames.String())
+	}
+	if c.command == "lint" {
+		out.WriteString("\nTools:\n  shell      shellcheck on every tracked shell script\n")
+	}
+	out.WriteString("\nFlags:\n" +
+		"  -j VALUE   Concurrency: integer, percentage (default 50%), or 'unlimited'\n" +
+		"  -s MODE    Display: scroll (default), full, or zoom\n" +
+		"  -c NAME    Only this component (repeatable); components: " + strings.Join(c.project.Components, " ") + "\n")
+	if c.command == "audit" {
+		out.WriteString("  --fail-on SEVERITY\n" +
+			"             Fail on a finding at or above critical, high (default), moderate or low;\n" +
+			"             a project sets its own with \"audit\": {\"failOn\": ...} (docs/audit.md)\n")
+	}
+	if c.command == "outdated" {
+		out.WriteString("  --json     Print one JSON array of every outdated dependency (component, language,\n" +
+			"             package, current, wanted, latest); the languages run one at a time\n" +
+			"  --fail     Fail when anything is outdated (by default this only reports)\n")
+	}
+	if c.command == "format" {
+		out.WriteString("  --check    Change nothing; fail, listing the files the formatter would change\n" +
+			"             (hecatron lint runs this check too; docs/format.md)\n")
+	}
+	fmt.Fprintf(&out, "\nExamples:\n"+
+		"  hecatron %[1]s               Everything, in parallel\n"+
+		"  hecatron %[1]s go rs         Go and Rust (abbreviations work), every component\n"+
+		"  hecatron %[1]s go -c age     Go, the age component only\n", c.command)
+	fmt.Print(out.String())
+	return 0, true
+}
+
+// languageGrid is helpers.sh's _lang_grid: a count, then the languages
+// (with their abbreviations) five to a row.
+func languageGrid(label string, langs []string, abbreviations map[string]string) string {
+	const columns, width = 5, 16
+	var out strings.Builder
+	fmt.Fprintf(&out, "%s (%d):\n", label, len(langs))
+	for i, lang := range langs {
+		if i%columns == 0 {
+			out.WriteString("  ")
+		}
+		item := lang
+		if abbreviation := abbreviations[lang]; abbreviation != "" {
+			item += " (" + abbreviation + ")"
+		}
+		fmt.Fprintf(&out, "%-*s", width, item)
+		if (i+1)%columns == 0 {
+			out.WriteString("\n")
+		}
+	}
+	if len(langs)%columns != 0 {
+		out.WriteString("\n")
+	}
+	return out.String()
+}
+
+// doctorHelp is `hecatron doctor help`, as doctor.sh prints it once
+// helpers.sh has loaded the project.
+func (c *cli) doctorHelp() (int, bool) {
+	if len(c.args) == 0 || !isHelp(c.args[0]) {
+		return 0, false
+	}
+	if _, err := c.project.Shell(); err != nil {
+		return 0, false
+	}
+	fmt.Print("Usage: hecatron doctor [--fix] [language ...]\n" +
+		"\n" +
+		"Check that each language's toolchain works: its build and lint tools run, and\n" +
+		"known breakages are absent. With no languages, checks every added, enabled one.\n" +
+		"\n" +
+		"Flags:\n" +
+		"  --fix      Run each unhealthy language's installer, then check it again\n")
+	return 0, true
+}
+
+// versionHelp is version.sh's usage: asked for, or no version given (a
+// usage error).
+func (c *cli) versionHelp() (int, bool) {
+	if len(c.args) > 0 && c.args[0] != "" && !isHelp(c.args[0]) {
+		return 0, false
+	}
+	if _, err := c.project.Shell(); err != nil {
+		return 0, false
+	}
+	fmt.Println("Usage: hecatron version <version>   (runs each language's version.sh)")
+	if len(c.args) == 0 || c.args[0] == "" {
+		return 2, true
+	}
+	return 0, true
+}

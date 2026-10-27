@@ -781,6 +781,38 @@ the runner, and contributors pick it up quickly; both start fast enough.
 `install.sh` and a new `install.ps1` download the binary; nothing else is
 needed to run it (no Python, bash or perl).
 
+#### Replacing bin/hecatron a command at a time
+
+The binary takes over from `bin/hecatron` gradually (#73, #76). It finds
+`HECATRON_HOME` (the environment, else the checkout or install it sits in:
+`bin/hct`'s parent, or the directory it was built in) and the project root
+as `bin/hecatron` and `project.find_root` do, sets the same environment, and
+then either runs a command itself or hands it to today's implementation
+(`run.sh`, `manage.py`, ...) with the same arguments, environment and exit
+status, replacing its own process where the platform allows. So a command
+is ported without changing what anyone sees, and tests compare the two
+entry points' output byte for byte. Decided with the first port
+(2026-10-27):
+
+- **Ported first:** `--version`, `help`, the run commands', `doctor`'s and
+  `version`'s help, `list`, and `env` without a language. Help that
+  `manage.py`'s argparse generates is delegated: its wrapping follows the
+  terminal width and its wording the Python version, so it is ported with
+  the command, not copied.
+- **The Go model may decline, never differ.** Where `project.py`'s answer
+  rests on how Python treats an odd value (a `"components"` string iterates
+  as its letters; `true == 1`; JSON's `NaN`), the Go model says
+  "unsupported" and the command is delegated, `project.py` finding the root
+  and reporting any error in its own words. Errors the model reports itself
+  (no project, an unknown schema, too old a hecatron) use `project.py`'s
+  messages. Parity tests run both on fixture projects and fail where Go
+  answers differently or answers where `project.py` fails.
+- **Python is checked only when needed:** before delegating, the binary
+  checks for Python 3.9 as `bin/hecatron` does, with the same message;
+  ported commands run without bash or Python.
+- `bin/hecatron` and the installers keep using bash and Python until the
+  switch to the binary is decided separately.
+
 ### Language definitions: data, families, scripts
 
 A definition says what to do in the most declarative of three tiers that can
