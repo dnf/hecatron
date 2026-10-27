@@ -31,10 +31,14 @@ import os
 import shlex
 import subprocess
 import sys
+from datetime import date, timedelta
 
 import versions
 
 SCHEMA = 1
+# How old a checkout's last commit is before its toolchains are the releases
+# current then (Project.as_of).
+AS_OF_AFTER_DAYS = 365
 HECATRON_HOME = os.environ.get(
     "HECATRON_HOME", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 # HECATRON_BUILTIN_LANGUAGES points the tests at fixture definitions.
@@ -267,22 +271,41 @@ class Project:
         directory = self.impl_dir(component, lang)
         while True:
             for entry in entries:
-                path = os.path.join(directory, entry["file"])
-                if os.path.isfile(path):
-                    with open(path, encoding="utf-8") as f:
-                        spec = versions.read_pin(entry["format"], f.read(), entry.get("key"))
-                    if spec is not versions.NOT_PINNED:
-                        return spec, f"{kind}:" + os.path.relpath(path, self.root)
+                spec, path = self._read_entry(directory, entry)
+                if spec is not versions.NOT_PINNED:
+                    return spec, f"{kind}:" + os.path.relpath(path, self.root)
             if os.path.normpath(directory) == os.path.normpath(self.root) or len(directory) <= len(self.root):
                 return versions.NOT_PINNED, None
             directory = os.path.dirname(directory)
+
+    @staticmethod
+    def _read_entry(directory: str, entry: dict):
+        """(spec, path) for one pin or support file entry in a directory. An
+        entry may name a pattern (".github/workflows/*.y*ml"): then the
+        newest version any matching file gives, and that file."""
+        found = []
+        for path in sorted(glob.glob(os.path.join(directory, entry["file"]))):
+            if os.path.isfile(path):
+                with open(path, encoding="utf-8", errors="replace") as f:
+                    spec = versions.read_pin(entry["format"], f.read(), entry.get("key"))
+                if spec is not versions.NOT_PINNED:
+                    found.append((spec, path))
+        if not found:
+            return versions.NOT_PINNED, None
+        named = [(spec, path) for spec, path in found if spec is not None]
+        if not named:
+            return found[0]
+        return max(named, key=lambda item: versions.sort_key(item[0].lstrip("=")))
 
     def resolve_version(self, lang: str, component: str | None = None) -> dict:
         """The version a component uses: its nearest pin file, else the
         project's "version", else the definition's default, or the newest
         line the component says it supports when the default is newer
-        (Python's classifiers). spec is None when a pin file names no version
-        ("stable"), or nothing gives one."""
+        (Python's classifiers, CI workflows' setup steps, a Maven build's
+        source level). In an old checkout, anything short of an exact version
+        then becomes the release that was current at its last commit
+        (as_of). spec is None when a pin file names no version ("stable"),
+        or nothing gives one."""
         component = component or self._first_component(lang)
         default = self.default_version(lang)
         spec, source = self._pin(lang, component)
@@ -292,18 +315,106 @@ class Project:
                 spec, source = default, "default" if default is not None else None
                 if default is not None:
                     supported, where = self._pin(lang, component, self._support_files(lang), "supports")
-                    if supported not in (None, versions.NOT_PINNED) and self._older_line(supported, default):
-                        spec, source = supported, where
+                    if supported not in (None, versions.NOT_PINNED) and self._older_line(lang, supported, default):
+                        spec, source = self._installable(lang, supported), where
         if spec is not None:
             versions.Spec(spec)
+            if source == "default" or not spec.startswith("="):
+                spec, source = self._as_of_version(lang, spec, source)
         return {"spec": spec, "source": source, "exact": spec is not None and spec.startswith("=")}
 
-    @staticmethod
-    def _older_line(supported: str, default: str) -> bool:
+    def _older_line(self, lang: str, supported: str, default: str) -> bool:
         """Whether the line a component supports up to (3.14) is older than
-        the default's (=3.15.1)."""
-        line = versions.Spec(supported).numbers
+        the default's (=3.15.1). Compared by release line: a CI workflow
+        naming Ruby 4.0.6 says nothing against the default 4.0.9."""
+        parts = len(self._release_line(lang, default).split("."))
+        line = versions.Spec(supported).numbers[:parts]
         return line < versions.Spec(default).numbers[:len(line)]
+
+    def _oldest_installable(self, lang: str) -> str | None:
+        return self._layer(lang, True).get("oldestInstallable")
+
+    def _below_installable(self, lang: str, version: str) -> bool:
+        oldest = self._oldest_installable(lang)
+        if oldest is None:
+            return False
+        numbers = versions.Spec(oldest).numbers
+        return versions.Spec(version.lstrip("=")).numbers[:len(numbers)] < numbers
+
+    def _installable(self, lang: str, spec: str) -> str:
+        """A supported line older than the installer can install (Java 8:
+        Temurin's Java 8 releases aren't named like the rest) becomes the
+        oldest it can."""
+        return self._oldest_installable(lang) if self._below_installable(lang, spec) else spec
+
+    def as_of(self) -> str | None:
+        """The date an old checkout's toolchains should be current at: its
+        last commit's, when that is over AS_OF_AFTER_DAYS old. Code from the
+        last year built fine with today's releases when it was written, and
+        older code may not: a newer compiler rejects what an older one
+        accepted, or a release breaks a tool its lock file pins.
+        HECATRON_AS_OF=YYYY-MM-DD sets the date, =off turns this off."""
+        if not hasattr(self, "_as_of"):
+            self._as_of = None
+            wanted = os.environ.get("HECATRON_AS_OF", "")
+            if wanted == "off":
+                return None
+            if wanted:
+                try:
+                    self._as_of = date.fromisoformat(wanted).isoformat()
+                except ValueError:
+                    raise ProjectError(f"HECATRON_AS_OF={wanted!r} isn't a date (YYYY-MM-DD) or off")
+                return self._as_of
+            try:
+                committed = subprocess.run(["git", "log", "-1", "--format=%cs"], cwd=self.root, capture_output=True,
+                                           text=True, check=True, stdin=subprocess.DEVNULL).stdout.strip()
+                if date.today() - date.fromisoformat(committed) > timedelta(days=AS_OF_AFTER_DAYS):
+                    self._as_of = committed
+            except (OSError, ValueError, subprocess.CalledProcessError):
+                pass
+        return self._as_of
+
+    def release_dates(self, lang: str) -> list[tuple[str, str, bool]]:
+        """(version, date, lts) for each of a language's releases, from its
+        definition's releases.json (or the language named by "releasesOf",
+        whose toolchain it shares); empty without one."""
+        owner = self._layer(lang, True).get("releasesOf", lang)
+        data = _read_json(os.path.join(BUILTIN_LANGUAGES, owner, "releases.json"), {})
+        return [(release[0], release[1], "lts" in release[2:]) for release in data.get("releases", [])]
+
+    def _as_of_version(self, lang: str, spec: str, source: str):
+        """(spec, source) as of the checkout's date (as_of): the newest
+        release then that the spec matches, or, for the default, the newest
+        on the definition's track (stable, or LTS). Unchanged when the
+        checkout is recent, the language has no release dates, or nothing
+        matched yet then."""
+        when = self.as_of()
+        releases = self.release_dates(lang) if when else []
+        if not releases:
+            return spec, source
+        builtin = self._layer(lang, True)
+        if source == "default":
+            lts_only = builtin.get("track") == "lts"
+            candidates = [v for v, released, lts in releases if released <= when and (lts or not lts_only)]
+        else:
+            wanted = versions.Spec(spec)
+            candidates = [v for v, released, _ in releases if released <= when and wanted.matches(v)]
+        picked = versions.newest(candidates)
+        if picked is None:
+            return spec, source
+        note = ""
+        if self._below_installable(lang, picked):
+            if source == "project" or source.startswith("pin:"):
+                return spec, source  # what the project chose stands, installable or not
+            oldest = versions.Spec(self._oldest_installable(lang))
+            picked = versions.newest([v for v, released, _ in releases if released <= when and oldest.matches(v)])
+            note = f"; raised to {self._oldest_installable(lang)}, the oldest hecatron installs"
+            if picked is None:
+                return self._oldest_installable(lang), f"as-of:{when} ({source}{note})"
+        # Where the installer takes a line, not a release (uv's Pythons, a
+        # PHP package), the release's line: the newest patch of it.
+        dated = self._release_line(lang, picked) if builtin.get("asOfPrecision") == "line" else "=" + picked
+        return dated, f"as-of:{when} ({source}{note})"
 
     def _first_component(self, lang: str) -> str:
         dirs = self.impl_dirs(lang)
@@ -380,8 +491,10 @@ class Project:
 
     def missing_versions(self, lang: str) -> list[tuple[str, str, str]]:
         """(component, spec, source) for each component whose spec has no
-        installed match. Empty without installed.sh: nothing to check against."""
-        if not self.resolve(lang, "installed.sh"):
+        installed match. Empty without installed.sh: nothing to check against,
+        and for a language the project doesn't use (Node.js's installer asks
+        for both TypeScript's and JavaScript's)."""
+        if lang not in self.languages or not self.resolve(lang, "installed.sh"):
             return []
         missing = []
         for component in [c for c, _ in self.impl_dirs(lang)] or [self.components[0]]:
@@ -390,15 +503,22 @@ class Project:
                 missing.append((component, resolved["spec"], resolved["source"]))
         return missing
 
-    def version_notes(self, lang: str) -> list[tuple[str, str, str]]:
-        """(component, spec, source) for each component that isn't on the
-        default because of the versions it supports: worth saying, since
-        nothing the project pinned chose it."""
+    def version_notes(self, lang: str) -> list[tuple[str, str]]:
+        """(component, note) for each component whose version neither a pin
+        nor the default chose: what it supports, or its commit's date. Worth
+        saying, since nothing the project pinned chose it."""
         notes = []
         for component in [c for c, _ in self.impl_dirs(lang)] or [self.components[0]]:
             resolved = self.resolve_version(lang, component)
-            if (resolved["source"] or "").startswith("supports:"):
-                notes.append((component, resolved["spec"], resolved["source"]))
+            source, spec = resolved["source"] or "", (resolved["spec"] or "").lstrip("=")
+            if source.startswith("supports:"):
+                notes.append((component, f"{spec}, the newest {source[len('supports:'):]} supports"))
+            elif source.startswith("as-of:"):
+                when, _, reason = source[len("as-of:"):].partition(" (")
+                reason = reason[:-1]
+                because = f" (the line from {reason[len('supports:'):]})" if reason.startswith("supports:") else (
+                    f" ({reason})" if reason not in ("default", "project") else "")
+                notes.append((component, f"{spec}, current on {when}, this commit's date{because}"))
         return notes
 
     def _static_path(self, lang: str) -> list[str]:
@@ -556,8 +676,8 @@ def _query(project: Project, query: str, args: list[str]) -> int:
         for component, spec, source in project.missing_versions(args[0]):
             print(f"{component}\t{spec}\t{source}")
     elif query == "version-notes" and len(args) == 1:
-        for component, spec, source in project.version_notes(args[0]):
-            print(f"{component}\t{spec}\t{source}")
+        for component, note in project.version_notes(args[0]):
+            print(f"{component}\t{note}")
     elif query == "versions" and len(args) == 1:
         for spec, sources in project.versions(args[0]):
             print(f"{spec or '-'}\t{','.join(sources) or '-'}")

@@ -49,7 +49,8 @@ _releases() {
 }
 _install_versions() {
     local specs spec version
-    specs="$(missing_versions typescript)"
+    # JavaScript's components run on the same Node.js.
+    specs="$( (missing_versions typescript; missing_versions javascript) | sort -u)"
     while IFS= read -r spec; do
         [ -n "${spec}" ] || continue
         version="$(_releases | newest_match "${spec}")"

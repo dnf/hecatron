@@ -47,6 +47,18 @@
       "key": "java"
     }
   ],
+  "supportFiles": [
+    {
+      "file": "pom.xml",
+      "format": "maven-source-level"
+    },
+    {
+      "file": ".github/workflows/*.y*ml",
+      "format": "github-setup",
+      "key": "java-version"
+    }
+  ],
+  "oldestInstallable": "11",
   "env": {
     "JAVA_HOME": "{home}"
   },

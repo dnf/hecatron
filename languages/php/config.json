@@ -38,6 +38,14 @@
       "key": "php"
     }
   ],
+  "supportFiles": [
+    {
+      "file": ".github/workflows/*.y*ml",
+      "format": "github-setup",
+      "key": "php-version"
+    }
+  ],
+  "asOfPrecision": "line",
   "buildSystems": [
     "Composer"
   ],

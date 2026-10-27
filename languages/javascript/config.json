@@ -16,6 +16,45 @@
     "js",
     "nodejs"
   ],
+  "path": [
+    "{home}/bin"
+  ],
+  "version": "=24.22.1",
+  "track": "lts",
+  "releaseLine": 1,
+  "pinFiles": [
+    {
+      "file": ".nvmrc",
+      "format": "nvmrc"
+    },
+    {
+      "file": ".node-version",
+      "format": "node-version"
+    },
+    {
+      "file": ".tool-versions",
+      "format": "tool-versions",
+      "key": "nodejs"
+    },
+    {
+      "file": "mise.toml",
+      "format": "mise",
+      "key": "node"
+    },
+    {
+      "file": ".mise.toml",
+      "format": "mise",
+      "key": "node"
+    }
+  ],
+  "supportFiles": [
+    {
+      "file": ".github/workflows/*.y*ml",
+      "format": "github-setup",
+      "key": "node-version"
+    }
+  ],
+  "releasesOf": "typescript",
   "buildSystems": [
     "npm, pnpm, Yarn or Bun"
   ],

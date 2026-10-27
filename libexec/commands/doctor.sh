@@ -85,11 +85,11 @@ for _lang in "${_langs[@]}"; do
         printf '%s\n' "${_found}" | sed 's/^/          /'
         _unhealthy+=("${_lang}")
     fi
-    # A component held below the default by what it says it supports
-    # (docs/design.md §18), so nobody wonders where the version came from.
+    # A component whose version comes from what it supports or its commit's
+    # date (docs/design.md §18), so nobody wonders where the version came from.
     python3 "${HECATRON_HOME}/libexec/lib/project.py" version-notes "${_lang}" |
-        while IFS=$'\t' read -r _component _spec _source; do
-            printf '          %s: %s %s, the newest %s supports\n' "${_component}" "${_lang}" "${_spec}" "${_source#supports:}"
+        while IFS=$'\t' read -r _component _note; do
+            printf '          %s: %s %s\n' "${_component}" "${_lang}" "${_note}"
         done
 done
 

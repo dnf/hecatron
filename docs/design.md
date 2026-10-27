@@ -480,7 +480,8 @@ Settled on 2026-10-26:
    with the CLI.
 7. **Toolchain versions (§18).** A project chooses each language's version
    through the ecosystem's own pin file, else `version` in its config, else
-   hecatron's default. `=` marks an exact version. Defaults are pinned, follow
+   hecatron's default, held back to what the project supports; an old
+   checkout gets the releases current at its last commit. `=` marks an exact version. Defaults are pinned, follow
    the language's LTS line where it has one and its newest stable release
    otherwise, and a weekly job updates them. (Owner's decision.)
 
@@ -512,18 +513,70 @@ For a language in a component, the version is the first of:
 3. **The definition's default `version`**, unless the component says it
    supports only older lines: then the newest release of the newest line it
    supports. A definition lists the files saying so in `supportFiles`, read
-   like pin files; Python reads its trove classifiers (`Programming Language
-   :: Python :: 3.14`) from `pyproject.toml`, `setup.cfg` or `setup.py`. The
-   newest Python often breaks projects for months while compiled
-   dependencies catch up, and a project's classifiers already say how far it
-   has. This only holds a component back, never ahead of the default, and
-   the doctor says when it applies. `requires-python` isn't read: it almost
-   never has an upper bound.
+   like pin files (an entry may name a pattern, and then the newest version
+   any matching file gives counts). This only holds a component back, never
+   ahead of the default, and the doctor says when it applies:
+   - **Python's trove classifiers** (`Programming Language :: Python ::
+     3.14`) in `pyproject.toml`, `setup.cfg` or `setup.py`. The newest
+     Python often breaks projects for months while compiled dependencies
+     catch up, and a project's classifiers already say how far it has.
+     `requires-python` isn't read: it almost never has an upper bound.
+   - **The project's CI workflows**: the version inputs of GitHub Actions'
+     setup steps (`node-version`, `java-version`, `dotnet-version`,
+     `go-version`, `python-version`, `ruby-version`, `php-version`) in
+     `.github/workflows/`, inline, as a list, or through a matrix variable,
+     the newest across all workflows. What CI runs a language on is what the
+     project has tested. A value with no usable version (`lts/*`, `stable`,
+     Python's `3.x`) is skipped.
+   - **A Maven build's source level** (`maven.compiler.source`, `<source>`,
+     `<target>`, `<release>`): javac dropped level 6 in JDK 12 and 7 in JDK
+     20, so a build at 6 or below gets JDK 11 at the newest, and one at 7
+     JDK 19.
+
+   A supported line older than the installer can install is raised to the
+   definition's `oldestInstallable` (below).
+4. **In an old checkout, the release current at its last commit.** When the
+   repository's last commit is over a year old, every version above short
+   of an exact one (a prefix pin, a supported line, the default) becomes
+   the newest release then that it matches; the default becomes the newest
+   release then on its track (LTS for an LTS track). Old code was built and
+   tested with the toolchains of its day, and today's can reject it: a
+   newer javac drops the source level it targets, a newer Node.js breaks
+   the `ts-node` its lock file pins (Node.js 16.17 did, so even the newest
+   16 is too new for a 2021 checkout). An exact version is the project's
+   own choice and stands. `HECATRON_AS_OF=YYYY-MM-DD` sets the date, and
+   `HECATRON_AS_OF=off` turns this off. (Owner's decision: automatic.)
 
 Components can resolve to different versions; installers install each one.
 When a pin file and the project's `version` both apply and disagree, the pin
 file wins and `hecatron check` reports the disagreement: two sources for one
 version are almost always a mistake.
+
+### Release dates and what can be installed
+
+The dates come from tables shipped with each definition
+(`languages/<lang>/releases.json`: version, date, and whether it was an LTS
+release), so resolution stays offline and two machines agree.
+`libexec/maintenance/release_dates.py` writes them from each language's
+release source: nodejs.org, python.org, go.dev's release history, Rust's
+`RELEASES.md`, Adoptium, ruby-lang.org, php.net and Microsoft's .NET release
+metadata. A language sharing another's toolchain names it in `releasesOf`
+(JavaScript's Node.js is TypeScript's, F#'s and VB.NET's SDK C#'s), and
+shares its version settings.
+
+A dated version is exact where the installer can install any release (a
+Node.js build, a Go toolchain, a rustup toolchain, a Temurin JDK, a
+ruby-build Ruby, a .NET SDK) and a line where it can't (`asOfPrecision`
+`"line"`: uv has only some patch releases of each Python, and a PHP package
+is the newest of its line). A definition's `oldestInstallable` is the oldest
+version its installer installs and runs on the supported platforms, checked
+in an Ubuntu 24.04 container: Python 3.8 (uv has nothing older), Java 11
+(Temurin's Java 8 releases are named differently, and its dates start in
+2021), .NET 6.0 (older runtimes need OpenSSL 1.1). Node.js back to 10, Go
+toolchains back to 1.18, Rust back to 1.40, Ruby back to 2.7 (ruby-build
+builds OpenSSL 1.1 for it) and PHP back to 5.6 install, so those have none.
+A dated release older than that is raised to the newest release then of the
+oldest line it can install, and the doctor says so; a pin stands as written.
 
 ### Reading pin files
 

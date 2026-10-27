@@ -47,6 +47,13 @@
       "key": "node"
     }
   ],
+  "supportFiles": [
+    {
+      "file": ".github/workflows/*.y*ml",
+      "format": "github-setup",
+      "key": "node-version"
+    }
+  ],
   "buildSystems": [
     "npm, pnpm, Yarn or Bun (tsc)"
   ],

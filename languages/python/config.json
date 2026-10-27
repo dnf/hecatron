@@ -53,8 +53,15 @@
     {
       "file": "setup.py",
       "format": "python-classifiers"
+    },
+    {
+      "file": ".github/workflows/*.y*ml",
+      "format": "github-setup",
+      "key": "python-version"
     }
   ],
+  "oldestInstallable": "3.8",
+  "asOfPrecision": "line",
   "env": {
     "UV_PYTHON": "{home}/bin/python3"
   },

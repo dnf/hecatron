@@ -246,6 +246,77 @@ def _python_classifiers(text, key):
     return _plain(newest(found)) if found else NOT_PINNED
 
 
+# A GitHub Actions setup step's version input ("node-version: 16.x",
+# "java-version: ['11', '17']", "python-version: ${{ matrix.python }}"): the
+# newest version the project's CI runs the language on, a line hecatron holds
+# the default back to. Read without a YAML parser: the input's values, inline
+# or as a list, and a matrix variable's values wherever the file sets it.
+# Inputs whose bare major says nothing ("python-version: 3.x") need two parts.
+_SETUP_PARTS = {"python-version": 2, "go-version": 2, "ruby-version": 2, "php-version": 2}
+
+
+def _yaml_values(text: str, key: str) -> list[str]:
+    """Every value a key is given in a workflow: inline, a [list], or the
+    "- item" lines under it."""
+    values = []
+    lines = text.splitlines()
+    pattern = re.compile(rf"^(\s*)(?:-\s+)?{re.escape(key)}\s*:\s*(.*?)\s*$")
+    for i, line in enumerate(lines):
+        match = pattern.match(line)
+        if not match:
+            continue
+        value = re.sub(r"\s+#.*$", "", match.group(2))
+        if value.startswith("["):
+            values += [item.strip() for item in value.strip("[]").split(",")]
+        elif value:
+            values.append(value)
+        else:
+            for item in lines[i + 1:]:
+                listed = re.match(r"^\s*-\s+(\S+)\s*$", item)
+                if not listed:
+                    break
+                values.append(listed.group(1))
+    return values
+
+
+def _setup_version(value: str, key: str) -> str | None:
+    value = value.strip().strip("\"'")
+    while value.endswith(".x"):
+        value = value[:-2]
+    if key == "java-version" and value.startswith("1."):
+        value = value[2:]  # 1.8 is Java 8
+    if not re.fullmatch(r"\d+(\.\d+)*", value) or len(value.split(".")) < _SETUP_PARTS.get(key, 1):
+        return None
+    return value
+
+
+def _github_setup(text, key):
+    found = []
+    for value in _yaml_values(text, key):
+        matrix = re.fullmatch(r"\$\{\{\s*matrix\.([\w-]+)\s*\}\}", value.strip("\"'"))
+        candidates = [v for v in _yaml_values(text, matrix.group(1)) if "${{" not in v] if matrix else [value]
+        found += [v for v in (_setup_version(c, key) for c in candidates) if v]
+    return _plain(newest(found)) if found else NOT_PINNED
+
+
+# javac's oldest --source/--target levels: JDK 12 dropped 6, JDK 20 dropped
+# 7, so a Maven build at level 6 or below needs JDK 11 at the newest, and one
+# at 7 needs 19. Level 8 still compiles on today's JDKs.
+_NEWEST_JDK_FOR_LEVEL = ((6, "11"), (7, "19"))
+
+
+def _maven_source_level(text, key):
+    levels = []
+    for value in re.findall(r"<(?:maven\.compiler\.)?(?:source|target|release)>\s*([\d.]+)\s*</", text):
+        level = value[2:] if value.startswith("1.") else value
+        if level.isdigit():
+            levels.append(int(level))
+    for oldest, jdk in _NEWEST_JDK_FOR_LEVEL:
+        if levels and min(levels) <= oldest:
+            return jdk
+    return NOT_PINNED
+
+
 FORMATS = {
     "python-version": _python_version,
     "nvmrc": _node_version,
@@ -264,6 +335,8 @@ FORMATS = {
     "mise": _mise,
     "sdkmanrc": _sdkmanrc,
     "python-classifiers": _python_classifiers,
+    "github-setup": _github_setup,
+    "maven-source-level": _maven_source_level,
 }
 
 

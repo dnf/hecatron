@@ -40,6 +40,13 @@
       "key": "go"
     }
   ],
+  "supportFiles": [
+    {
+      "file": ".github/workflows/*.y*ml",
+      "format": "github-setup",
+      "key": "go-version"
+    }
+  ],
   "buildSystems": [
     "go modules"
   ],

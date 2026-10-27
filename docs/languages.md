@@ -35,7 +35,7 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [Haxe](https://haxe.org) | One language that compiles to many targets: JS, C++, JVM, Python... | haxelib (.hxml) | utest | – | – |
 | [Janet](https://janet-lang.org) | Small, embeddable Lisp-like scripting language. | jpm | jpm test | – | – |
 | [Java](https://dev.java) | The JVM's flagship language. | Maven, Gradle | JUnit | Gradle check | 25.0.5 (LTS) |
-| [JavaScript](https://developer.mozilla.org/docs/Web/JavaScript) | The web's language, on Node.js. | npm, pnpm, Yarn or Bun | npm test (node:test, Jest...) | npm run lint (ESLint...) | – |
+| [JavaScript](https://developer.mozilla.org/docs/Web/JavaScript) | The web's language, on Node.js. | npm, pnpm, Yarn or Bun | npm test (node:test, Jest...) | npm run lint (ESLint...) | 24.22.1 (LTS) |
 | [Julia](https://julialang.org) | Fast dynamic language for numerical and scientific computing. | Pkg | Test (Pkg.test) | – | – |
 | [Kotlin](https://kotlinlang.org) | Concise, null-safe language for the JVM, Android and beyond. | Gradle, Maven, kotlinc | JUnit, kotlin.test | Gradle check (detekt, ktlint) | – |
 | [Lua](https://www.lua.org) | Lightweight embeddable scripting language. | LuaRocks | busted | luacheck | – |
