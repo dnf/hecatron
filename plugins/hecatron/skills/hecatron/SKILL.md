@@ -36,9 +36,10 @@ each language's test, lint or build command.
 
 ## The loop
 
-- Tests: `hct test <lang>` while working on one language; `hct test` for
-  every language at once before you finish. `-c <component>` narrows to one
-  component.
+- Tests: `hct test <lang>` while working on one language; before you
+  finish, `hct test --changed` and `hct lint --changed` (every language and
+  component your changes touch, uncommitted ones included), or `hct test`
+  for everything. `-c <component>` narrows to one component.
 - Lint: `hct lint <lang>`. It includes the formatter's check; on a
   formatting failure run `hct format <lang>`, then lint again.
 - Build: `hct build <lang>`. Dependencies: `hct deps <lang>`.

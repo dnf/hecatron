@@ -22,5 +22,27 @@
   "formatting": "cljfmt",
   "notes": {
     "formatting": "Only when the project has a `cljfmt.edn`."
-  }
+  },
+  "cache": {
+    "dependencies": [
+      "~/.m2/repository",
+      "~/.gitlibs"
+    ],
+    "lockFiles": [
+      "deps.edn",
+      "project.clj"
+    ]
+  },
+  "dependabot": [
+    {
+      "ecosystem": "maven",
+      "files": [
+        "pom.xml"
+      ]
+    }
+  ],
+  "renovate": [
+    "deps-edn",
+    "leiningen"
+  ]
 }

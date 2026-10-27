@@ -21,5 +21,13 @@
     "Metacello (Tonel)"
   ],
   "testing": "SUnit",
-  "linting": null
+  "linting": null,
+  "cache": {
+    "toolchain": [
+      "~/.pharo"
+    ],
+    "dependencies": [
+      "~/.cache/hecatron/pharo"
+    ]
+  }
 }

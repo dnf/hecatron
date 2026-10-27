@@ -16,5 +16,13 @@
     "zef"
   ],
   "testing": "Test (prove6, zef test)",
-  "linting": null
+  "linting": null,
+  "cache": {
+    "dependencies": [
+      "~/.raku"
+    ],
+    "lockFiles": [
+      "META6.json"
+    ]
+  }
 }

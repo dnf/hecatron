@@ -20,5 +20,13 @@
   "formatting": "Air",
   "notes": {
     "formatting": "Only when the project has an `air.toml`."
+  },
+  "cache": {
+    "dependencies": [
+      "~/.cache/R/renv"
+    ],
+    "lockFiles": [
+      "renv.lock"
+    ]
   }
 }

@@ -186,5 +186,22 @@
       "tool": "cargo",
       "regex": "^test (?P<message>\\S+ \\.\\.\\. FAILED)$"
     }
+  ],
+  "cache": {
+    "toolchain": [
+      "~/.rustup",
+      "~/.cargo/bin"
+    ],
+    "dependencies": [
+      "~/.cargo/registry",
+      "~/.cargo/git"
+    ],
+    "lockFiles": [
+      "Cargo.lock"
+    ]
+  },
+  "dependabot": "cargo",
+  "renovate": [
+    "cargo"
   ]
 }

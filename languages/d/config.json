@@ -13,5 +13,15 @@
     "dub"
   ],
   "testing": "unittest blocks (dub test)",
-  "linting": "D-Scanner"
+  "linting": "D-Scanner",
+  "cache": {
+    "dependencies": [
+      "~/.dub/packages"
+    ],
+    "lockFiles": [
+      "dub.selections.json",
+      "dub.json",
+      "dub.sdl"
+    ]
+  }
 }

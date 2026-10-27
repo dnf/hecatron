@@ -76,5 +76,17 @@
   ],
   "notes": {
     "formatting": "Only when the project installs one with Composer."
-  }
+  },
+  "cache": {
+    "dependencies": [
+      "~/.cache/composer"
+    ],
+    "lockFiles": [
+      "composer.lock"
+    ]
+  },
+  "dependabot": "composer",
+  "renovate": [
+    "composer"
+  ]
 }

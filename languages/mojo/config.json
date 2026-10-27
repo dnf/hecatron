@@ -20,5 +20,13 @@
   ],
   "testing": "test programs",
   "linting": "mojo format",
-  "formatting": "mojo format"
+  "formatting": "mojo format",
+  "cache": {
+    "toolchain": [
+      "~/.local/share/uv/tools"
+    ],
+    "dependencies": [
+      "~/.cache/uv"
+    ]
+  }
 }

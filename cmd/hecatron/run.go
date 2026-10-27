@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dnf/hecatron/internal/changed"
 	"github.com/dnf/hecatron/internal/project"
 	"github.com/dnf/hecatron/internal/runner"
 )
@@ -29,6 +30,10 @@ type runArgs struct {
 	components    []string
 	targets       []string
 	output        string
+	changed       bool   // --changed
+	changedRef    string // its ref, "" for the default
+	timeout       string // --timeout
+	timeoutGiven  bool
 	env           []string // what the flags export to the hooks
 	outdatedJSON  bool
 	rest          []string // the arguments without --output, for run.sh
@@ -66,6 +71,20 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 			if a.output == "" {
 				return a, fmt.Errorf("--output needs a format: human, agent, json or ci")
 			}
+		case arg == "--changed":
+			a.changed = true
+			if i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
+				a.changedRef = value()
+			}
+		case strings.HasPrefix(arg, "--changed="):
+			a.changed, a.changedRef = true, strings.TrimPrefix(arg, "--changed=")
+		case arg == "--timeout":
+			if i+1 >= len(args) {
+				return a, fmt.Errorf("--timeout needs a duration (90s, 30m, 1h30m), or 0 for none")
+			}
+			a.timeout, a.timeoutGiven = value(), true
+		case strings.HasPrefix(arg, "--timeout="):
+			a.timeout, a.timeoutGiven = strings.TrimPrefix(arg, "--timeout="), true
 		case arg == "--fail-on" && action == "audit":
 			a.env = append(a.env, "HECATRON_AUDIT_FAIL_ON="+value())
 		case strings.HasPrefix(arg, "--fail-on="):
@@ -82,9 +101,9 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 	}
 	for i := 0; i < len(args); i++ {
 		switch {
-		case args[i] == "--output":
+		case args[i] == "--output", args[i] == "--timeout":
 			i++
-		case strings.HasPrefix(args[i], "--output="):
+		case strings.HasPrefix(args[i], "--output="), strings.HasPrefix(args[i], "--timeout="):
 		default:
 			a.rest = append(a.rest, args[i])
 		}
@@ -100,9 +119,19 @@ func (c *cli) runCommand() (int, bool) {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 2, true
 	}
+	if a.changed {
+		if !changedActions[c.command] {
+			fmt.Fprintf(os.Stderr, "hecatron: --changed works with test, lint, build, format, deps, rebuild and retest, not %s\n", c.command)
+			return 2, true
+		}
+		if len(a.targets) > 0 {
+			fmt.Fprintf(os.Stderr, "hecatron: --changed picks the languages itself; name none (or leave out --changed)\n")
+			return 2, true
+		}
+	}
 	shell, err := c.project.Shell()
 	if err != nil {
-		return 0, false
+		return a.declineChanged()
 	}
 	for _, component := range a.components {
 		if !contains(c.project.Components, component) {
@@ -128,9 +157,19 @@ func (c *cli) runCommand() (int, bool) {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 2, true
 	}
-	r := &invocation{cli: c, shell: shell, args: a, format: format, patterns: map[string]*runner.Patterns{}}
+	timeout, err := runner.SelectTimeout(a.timeout, a.timeoutGiven, os.Getenv)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "hecatron:", err)
+		return 2, true
+	}
+	r := &invocation{cli: c, shell: shell, args: a, format: format, timeout: timeout, patterns: map[string]*runner.Patterns{}}
 	if !r.resolveTargets() {
-		return 0, false
+		return a.declineChanged()
+	}
+	if a.changed {
+		if status := r.selectChanged(); status != 0 {
+			return status, true
+		}
 	}
 	if status := c.requirePython(); status != 0 {
 		return status, true
@@ -145,6 +184,92 @@ func (c *cli) runCommand() (int, bool) {
 	return status, true
 }
 
+// changedActions are the commands --changed narrows: those whose result
+// follows from the files (not audit's or outdated's, which follow the
+// advisories and releases; nor clean).
+var changedActions = map[string]bool{"test": true, "lint": true, "build": true, "format": true, "deps": true, "rebuild": true, "retest": true}
+
+// declineChanged leaves the command to run.sh, which has no --changed: an
+// error with it, else delegated.
+func (a runArgs) declineChanged() (int, bool) {
+	if a.changed {
+		fmt.Fprintln(os.Stderr, "hecatron: --changed needs hecatron's binary to read this project, and it can't (try without --changed)")
+		return 2, true
+	}
+	return 0, false
+}
+
+// selectChanged works out what --changed runs; non-zero is the exit
+// status of a usage error.
+func (r *invocation) selectChanged() int {
+	base, note, err := changed.FindBase(r.root, r.args.changedRef, os.Getenv)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "hecatron:", err)
+		return 2
+	}
+	var files []string
+	if note == "" {
+		if files, err = changed.Files(r.root, base.Commit); err != nil {
+			fmt.Fprintln(os.Stderr, "hecatron:", err)
+			return 1
+		}
+	}
+	var tasks []string
+	for _, action := range []string{r.command, "clean", runThen[r.command]} {
+		list, _ := r.project.Tasks(action)
+		for _, task := range list {
+			tasks = append(tasks, task.Name)
+		}
+	}
+	r.selection, err = changed.Select(r.project, base, files, tasks)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "hecatron:", err)
+		return 2
+	}
+	r.selection.Note = note
+	return 0
+}
+
+// runThen is what rebuild and retest run after clean.
+var runThen = map[string]string{"rebuild": "build", "retest": "test"}
+
+// changedReport is the selection as the report carries it.
+func (r *invocation) changedReport() *runner.Changed {
+	s := r.selection
+	if s == nil {
+		return nil
+	}
+	c := &runner.Changed{Line: s.Line(), Base: s.Base.Ref, MergeBase: s.Base.Commit, Files: append([]string{}, s.Files...), Everything: s.All()}
+	for _, l := range s.Languages {
+		if !s.All() {
+			c.Languages = append(c.Languages, l.Name)
+		}
+	}
+	return c
+}
+
+// wantedComponents are the components a language job runs for: -c's,
+// narrowed to those --changed selected; ok is false when none is left.
+func (r *invocation) wantedComponents(lang string) ([]string, bool) {
+	if r.selection == nil {
+		return r.args.components, true
+	}
+	selected, ok := r.selection.Language(lang)
+	if !ok {
+		return nil, false
+	}
+	if selected == nil || len(r.args.components) == 0 {
+		return selected, true
+	}
+	var both []string
+	for _, component := range r.args.components {
+		if contains(selected, component) {
+			both = append(both, component)
+		}
+	}
+	return both, len(both) > 0
+}
+
 func contains(list []string, item string) bool {
 	for _, x := range list {
 		if x == item {
@@ -157,12 +282,14 @@ func contains(list []string, item string) bool {
 // invocation is one run command's invocation.
 type invocation struct {
 	*cli
-	ctx      context.Context
-	shell    *project.Shell
-	args     runArgs
-	format   runner.Format
-	named    []runner.Job // the targets, resolved
-	patterns map[string]*runner.Patterns
+	ctx       context.Context
+	shell     *project.Shell
+	args      runArgs
+	format    runner.Format
+	timeout   runner.Override
+	named     []runner.Job       // the targets, resolved
+	selection *changed.Selection // --changed's, else nil
+	patterns  map[string]*runner.Patterns
 }
 
 // resolveTargets turns the targets into jobs as run.sh's _run_target would
@@ -212,7 +339,7 @@ func (r *invocation) run() int {
 	r.project.Environ = r.environment()
 	switch r.command {
 	case "rebuild", "retest":
-		then := map[string]string{"rebuild": "build", "retest": "test"}[r.command]
+		then := runThen[r.command]
 		clean := r.sub("clean")
 		if status := clean.run(); status != 0 {
 			return status
@@ -230,7 +357,7 @@ func (r *invocation) run() int {
 func (r *invocation) sub(action string) *invocation {
 	c := *r.cli
 	c.command = action
-	s := &invocation{cli: &c, ctx: r.ctx, shell: r.shell, args: r.args, format: r.format, patterns: r.patterns}
+	s := &invocation{cli: &c, ctx: r.ctx, shell: r.shell, args: r.args, format: r.format, timeout: r.timeout, patterns: r.patterns, selection: r.selection}
 	s.resolveTargets()
 	return s
 }
@@ -239,6 +366,11 @@ func (r *invocation) sub(action string) *invocation {
 // helpers.sh's exports, run.sh's, and the flags'.
 func (r *invocation) environment() []string {
 	extra := []string{"HECATRON_JOB_COMMAND=" + r.homePath("bin/hecatron")}
+	if exe, err := os.Executable(); err == nil {
+		// The audit and outdated hooks read their tools' reports with it
+		// (languages/_audit.sh, _outdated.sh; internal/deps).
+		extra = append(extra, "HECATRON_BINARY="+exe)
+	}
 	for _, export := range r.shell.Exports {
 		extra = append(extra, export[0]+"="+export[1])
 	}
@@ -246,6 +378,17 @@ func (r *invocation) environment() []string {
 }
 
 func (r *invocation) logDir() string { return filepath.Join(r.project.Logs, r.command) }
+
+// limit sets each job's time limit, from the override or the action's
+// history.log (which named runs read but, as run.sh's, don't write).
+func (r *invocation) limit(jobs []runner.Job) {
+	history := runner.ReadHistory(filepath.Join(r.logDir(), "history.log"))
+	for i := range jobs {
+		if jobs[i].Kind == runner.Runnable {
+			jobs[i].Limit = history.Limit(jobs[i].Label, r.timeout)
+		}
+	}
+}
 
 // runNamed runs the targets one at a time. Human (and CI) output streams
 // each one's output as run.sh does; agent and JSON output keep it in the
@@ -256,10 +399,11 @@ func (r *invocation) runNamed() int {
 		return 1
 	}
 	stream := r.format == runner.Human || r.format == runner.CI
+	r.limit(r.named)
 	start := time.Now()
 	var results []runner.Result
 	for _, job := range r.named {
-		result := runner.Result{Label: job.Label, Lang: job.Lang, Task: job.Task,
+		result := runner.Result{Label: job.Label, Lang: job.Lang, Task: job.Task, Limit: job.Limit,
 			Log: filepath.Join(r.logDir(), job.Label+".log")}
 		log, err := os.Create(result.Log)
 		if err != nil {
@@ -271,13 +415,10 @@ func (r *invocation) runNamed() int {
 			out = io.MultiWriter(os.Stdout, log)
 		}
 		began := time.Now()
-		outcome := job.Exec(r.ctx, out)
+		outcome, status := runner.Execute(r.ctx, job, out)
 		log.Close()
 		result.Duration, result.ExitCode, result.Components = time.Since(began), outcome.ExitCode, outcome.Components
-		result.Status = runner.Passed
-		if outcome.ExitCode != 0 {
-			result.Status = runner.Failed
-		}
+		result.Status = status
 		results = append(results, result)
 		if r.ctx.Err() != nil {
 			break
@@ -298,7 +439,7 @@ func (r *invocation) runNamed() int {
 // report adds each failure's excerpt.
 func (r *invocation) report(results []runner.Result, wall time.Duration) *runner.Report {
 	for i := range results {
-		if results[i].Status != runner.Failed {
+		if !results[i].Unsuccessful() {
 			continue
 		}
 		if log, err := os.ReadFile(results[i].Log); err == nil {
@@ -307,7 +448,7 @@ func (r *invocation) report(results []runner.Result, wall time.Duration) *runner
 	}
 	cwd, _ := workingDir()
 	return &runner.Report{Action: r.command, Targets: r.args.targets, Components: r.args.components,
-		Results: results, Wall: wall, LogDir: r.logDir(), Root: r.root, Cwd: cwd}
+		Results: results, Wall: wall, LogDir: r.logDir(), Root: r.root, Cwd: cwd, Changed: r.changedReport()}
 }
 
 // errorPatterns are a language's, from its definition; nil for none.
@@ -334,12 +475,16 @@ func (r *invocation) errorPatterns(lang string) *runner.Patterns {
 func (r *invocation) jobs() []runner.Job {
 	var jobs []runner.Job
 	for _, lang := range r.shell.HookLanguages(runActions[r.command].hook) {
+		wanted, selected := r.wantedComponents(lang)
+		if !selected {
+			continue
+		}
 		job := runner.Job{Label: lang, Lang: lang}
 		switch {
 		case contains(r.shell.Disabled, lang):
 			job.Kind = runner.Disabled
 		case r.dependencyAvailable(lang):
-			job.Exec = r.languageExec(r.command, lang, r.args.components)
+			job.Exec = r.languageExec(r.command, lang, wanted)
 		default:
 			job.Kind = runner.NotInstalled
 		}
@@ -349,6 +494,9 @@ func (r *invocation) jobs() []runner.Job {
 	if len(r.args.components) == 0 {
 		tasks, _ := r.project.Tasks(r.command)
 		for _, task := range tasks {
+			if _, selected := r.selectedTask(task.Name); !selected {
+				continue
+			}
 			fields := strings.Fields(task.Name)
 			label := ""
 			if len(fields) > 0 {
@@ -357,7 +505,7 @@ func (r *invocation) jobs() []runner.Job {
 			extra = append(extra, runner.Job{Label: strings.ReplaceAll(label, "/", "_"), Task: true, Exec: r.taskExec(task.Command)})
 		}
 	}
-	if tools, _ := r.project.Tools(); r.command == "lint" && hasKey(tools, "shell") {
+	if tools, _ := r.project.Tools(); r.command == "lint" && hasKey(tools, "shell") && (r.selection == nil || r.selection.Shell()) {
 		job := runner.Job{Label: "shell", Kind: runner.NotInstalled}
 		if _, found := lookPath("shellcheck", os.Getenv("PATH")); found {
 			job.Kind, job.Exec = runner.Runnable, r.shellcheckExec()
@@ -370,6 +518,13 @@ func (r *invocation) jobs() []runner.Job {
 	return jobs
 }
 
+func (r *invocation) selectedTask(name string) (string, bool) {
+	if r.selection == nil {
+		return "", true
+	}
+	return r.selection.Task(name)
+}
+
 func hasKey(m map[string]string, key string) bool {
 	_, ok := m[key]
 	return ok
@@ -379,9 +534,16 @@ func hasKey(m map[string]string, key string) bool {
 func (r *invocation) runAll() int {
 	jobs := r.jobs()
 	if len(jobs) == 0 {
-		if r.format == runner.JSON {
+		switch {
+		case r.format == runner.JSON:
 			runner.WriteJSON(os.Stdout, r.report(nil, 0))
-		} else {
+		case r.selection != nil && !r.selection.Empty() && len(r.args.components) > 0:
+			fmt.Printf("%s; none in -c %s\n", r.selection.Line(), strings.Join(r.args.components, " "))
+		case r.selection != nil && !r.selection.Empty():
+			fmt.Printf("%s; nothing to %s there\n", r.selection.Line(), r.command)
+		case r.selection != nil:
+			fmt.Println(r.selection.Line())
+		default:
 			fmt.Printf("Nothing to %s.\n", r.command)
 		}
 		return 0
@@ -409,6 +571,10 @@ func (r *invocation) runAll() int {
 	defer unlock()
 
 	human := r.format == runner.Human || r.format == runner.CI
+	if human && r.selection != nil {
+		fmt.Println(r.selection.Line())
+	}
+	r.limit(jobs)
 	if runner.Runnables(jobs) == 0 {
 		results, _ := runner.Run(r.ctx, jobs, runner.Options{LogDir: r.logDir()})
 		report := r.report(results, 0)

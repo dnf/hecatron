@@ -42,5 +42,19 @@
   ],
   "testing": "dotnet test",
   "linting": "dotnet format",
-  "formatting": "dotnet format"
+  "formatting": "dotnet format",
+  "cache": {
+    "dependencies": [
+      "~/.nuget/packages"
+    ],
+    "lockFiles": [
+      "packages.lock.json",
+      "*.vbproj",
+      "Directory.Packages.props"
+    ]
+  },
+  "dependabot": "nuget",
+  "renovate": [
+    "nuget"
+  ]
 }

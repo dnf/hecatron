@@ -12,5 +12,14 @@
     "Nimble"
   ],
   "testing": "nimble test",
-  "linting": null
+  "linting": null,
+  "cache": {
+    "dependencies": [
+      "~/.nimble"
+    ],
+    "lockFiles": [
+      "nimble.lock",
+      "*.nimble"
+    ]
+  }
 }

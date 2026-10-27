@@ -12,5 +12,14 @@
     "jpm"
   ],
   "testing": "jpm test",
-  "linting": null
+  "linting": null,
+  "cache": {
+    "dependencies": [
+      "jpm_tree"
+    ],
+    "lockFiles": [
+      "project.janet",
+      "lockfile.jdn"
+    ]
+  }
 }
