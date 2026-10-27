@@ -341,6 +341,37 @@ class InitTest(Fixture):
         self.assertEqual(result.returncode, 2)
         self.assertFalse(os.path.exists(self.path(".hecatron")))
 
+    def test_init_writes_instructions_for_agents(self):
+        write(self.path("go", "go.mod"), "module example.com/m\n")
+        self.commit()
+        self.hecatron("init")
+        with open(self.path("AGENTS.md"), encoding="utf-8") as f:
+            agents = f.read()
+        self.assertIn("hct help agents", agents)
+        self.assertIn(".logs/<action>/<language>.log", agents)
+
+    def test_init_keeps_agents_md_and_replaces_its_own_section(self):
+        write(self.path("AGENTS.md"), "# Notes\n\nUse tabs.\n")
+        write(self.path("CLAUDE.md"), "Be brief.\n")
+        self.commit()
+        self.hecatron("init")
+        self.hecatron("init", "--force")
+        with open(self.path("AGENTS.md"), encoding="utf-8") as f:
+            agents = f.read()
+        self.assertTrue(agents.startswith("# Notes\n\nUse tabs.\n\n<!-- hecatron:begin -->"))
+        self.assertEqual(agents.count("<!-- hecatron:begin -->"), 1)
+        with open(self.path("CLAUDE.md"), encoding="utf-8") as f:
+            self.assertEqual(f.read(), "Be brief.\n\n@AGENTS.md\n")
+
+    def test_init_no_agents_writes_none(self):
+        self.hecatron("init", "--no-agents")
+        self.assertFalse(os.path.exists(self.path("AGENTS.md")))
+
+    def test_help_agents_prints_the_reference(self):
+        result = self.hecatron("help", "agents")
+        self.assertEqual(result.returncode, 0)
+        self.assertTrue(result.stdout.startswith("# hecatron for AI agents"))
+
     def test_init_refuses_a_directory_outside_git(self):
         with tempfile.TemporaryDirectory() as outside:
             result = subprocess.run(["bash", BIN, "init", outside], capture_output=True, text=True)

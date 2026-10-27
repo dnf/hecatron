@@ -589,6 +589,57 @@ install *args:
 """
 
 
+AGENTS_BEGIN = "<!-- hecatron:begin -->"
+AGENTS_END = "<!-- hecatron:end -->"
+
+# What init writes into AGENTS.md: short, since agents load it every
+# session, and nothing about the project's languages, which would go stale.
+# `hct help agents` (docs/agents.md) has the rest.
+AGENTS_SECTION = f"""{AGENTS_BEGIN}
+## Building and testing (hecatron)
+
+This repository uses [hecatron](https://github.com/dnf/hecatron): the same
+commands for every language. `hct help agents` is a compact reference.
+
+- `hct test`, `hct lint`, `hct build`: every language; name one to run only
+  it (`hct test go`). `hct format` fixes formatting; `hct deps` fetches
+  dependencies.
+- Exit status 0 passed, 1 failed. Each language's log is in
+  `{{logs}}/<action>/<language>.log`.
+- Ask before `hct install` or `hct doctor --fix`: they install toolchains
+  on this machine. `hct doctor` alone only checks.
+- To change how a language is built or tested, write
+  `.hecatron/languages/<lang>/<action>.sh`.
+{AGENTS_END}
+"""
+
+
+def write_agent_instructions(root: str, logs: str) -> list[str]:
+    """Put hecatron's section in AGENTS.md (replacing an earlier one), and
+    have an existing CLAUDE.md load AGENTS.md. The files changed."""
+    section = AGENTS_SECTION.replace("{logs}", logs)
+    changed = []
+    path = os.path.join(root, "AGENTS.md")
+    text = open(path, encoding="utf-8").read() if os.path.isfile(path) else ""
+    if AGENTS_BEGIN in text and AGENTS_END in text:
+        start, end = text.index(AGENTS_BEGIN), text.index(AGENTS_END) + len(AGENTS_END) + 1
+        updated = text[:start] + section + text[end:]
+    else:
+        updated = text + ("\n" if text and not text.endswith("\n") else "") + ("\n" if text else "") + section
+    if updated != text:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(updated)
+        changed.append("AGENTS.md")
+    claude = os.path.join(root, "CLAUDE.md")
+    if os.path.isfile(claude):
+        text = open(claude, encoding="utf-8").read()
+        if "@AGENTS.md" not in text and AGENTS_BEGIN not in text:
+            with open(claude, "a", encoding="utf-8") as f:
+                f.write(("" if text.endswith("\n") or not text else "\n") + "\n@AGENTS.md\n")
+            changed.append("CLAUDE.md")
+    return changed
+
+
 def detected_config(root: str, components: str | None = None, impl_path: str | None = None,
                     languages: str | None = None) -> tuple[dict, dict[str, str]]:
     """The config.json init writes for a repository: its languages and layout
@@ -630,6 +681,7 @@ def cmd_init(args) -> int:
     if args.justfile:
         with open(os.path.join(root, ".hecatron", "hecatron.just"), "w", encoding="utf-8") as f:
             f.write(JUSTFILE)
+    agent_files = [] if args.no_agents else write_agent_instructions(root, config.get("logs", ".logs"))
     print(f"Initialised {root}")
     print(f"  languages:  {', '.join(languages) or '(none detected; add with hecatron add <lang>)'}")
     print(f"  components: {', '.join(components)}   implPath: {impl_path}")
@@ -637,6 +689,8 @@ def cmd_init(args) -> int:
         print(f"  {lang} lives in {path} (implPaths)")
     for lang, reason in sorted(not_added.items()):
         print(f"  not added: {lang} ({reason})")
+    if agent_files:
+        print(f"  instructions for AI agents: {', '.join(agent_files)} (--no-agents to skip)")
     print("Next: hecatron doctor   (checks each language's toolchain)")
     return 0
 
@@ -656,6 +710,8 @@ def main(argv: list[str]) -> int:
     p.add_argument("--languages")
     p.add_argument("--justfile", action="store_true")
     p.add_argument("--force", action="store_true")
+    p.add_argument("--no-agents", action="store_true",
+                   help="don't write instructions for AI agents to AGENTS.md")
     p.set_defaults(func=cmd_init)
 
     for name, func in (("install", cmd_install), ("uninstall", cmd_uninstall),

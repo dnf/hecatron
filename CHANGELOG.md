@@ -6,6 +6,9 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Instructions for AI agents:** `hct init` writes a short section to
+  `AGENTS.md` (and has an existing `CLAUDE.md` load it); `--no-agents` skips
+  it. `hct help agents` prints a compact reference written for agents.
 - **No setup step:** in a git repository without `.hecatron/config.json`,
   every command works on what `hct init` would detect, remembered inside
   `.git/` until the tracked files change; nothing is written to the working

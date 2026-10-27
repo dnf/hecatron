@@ -43,6 +43,9 @@ func run(argv []string) int {
 	}
 	switch c.command {
 	case "help", "-h", "--help":
+		if len(c.args) > 0 && c.args[0] == "agents" {
+			return c.agentsHelp()
+		}
 		return c.usage()
 	case "--version", "-V", "version-of-hecatron":
 		return c.version()

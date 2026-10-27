@@ -187,6 +187,11 @@ working out how. Hecatron also picks the toolchain version from the
 project's own files, gives an old checkout the toolchain of its day, and
 runs the language's dependency auditor with `hct audit`.
 
+**For AI agents:** `hct init` adds a short section to `AGENTS.md` telling
+coding agents how to build and test the repository, and `hct help agents`
+prints [a compact reference](docs/agents.md) written for them
+([llms.txt](llms.txt) points there too).
+
 ## Compared with other tools
 
 | Tool | What it does | Next to hecatron |

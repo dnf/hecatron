@@ -57,13 +57,25 @@ Project:
 Hecatron itself:
   self-test                  Check hecatron's own code: shellcheck and the unit tests
 
-Run 'hecatron <command> help' for a command's options.
+Run 'hecatron <command> help' for a command's options, and 'hecatron help agents'
+for a compact reference for AI coding agents.
 hecatron %s
 `
 
 func (c *cli) usage() int {
 	version, _ := c.readVersion()
 	fmt.Printf(usageText, strings.TrimRight(string(version), "\n"))
+	return 0
+}
+
+// agentsHelp prints the reference for AI coding agents (docs/agents.md).
+func (c *cli) agentsHelp() int {
+	text, err := os.ReadFile(c.homePath("docs/agents.md"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "hecatron:", err)
+		return 1
+	}
+	os.Stdout.Write(text)
 	return 0
 }
 
