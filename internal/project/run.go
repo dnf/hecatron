@@ -1,9 +1,6 @@
 package project
 
 import (
-	"os"
-	"path/filepath"
-	"sort"
 	"strings"
 )
 
@@ -24,29 +21,27 @@ func (p *Project) Dependency(name string) (string, error) {
 
 // StaticPath are the existing directories of a language's "path" entries
 // that need no resolved version (no {home}...), "~" expanded and globs
-// matched, in the order helpers.sh's _use_lang_path visits them.
+// matched, as project.py's _static_path finds them.
 func (p *Project) StaticPath(lang string) ([]string, error) {
 	patterns, err := p.definitionStrings(lang, "path")
 	if err != nil {
 		return nil, err
 	}
+	home, haveHome := p.lookupEnv("HOME")
 	var dirs []string
 	for _, pattern := range patterns {
 		if strings.Contains(pattern, "{") {
 			continue
 		}
-		if pattern == "~" || strings.HasPrefix(pattern, "~/") {
-			if home, err := os.UserHomeDir(); err == nil {
-				pattern = home + pattern[1:]
-			}
+		expanded, err := pyExpandUser(pattern, home, haveHome)
+		if err != nil {
+			return nil, err
 		}
-		matches, _ := filepath.Glob(pattern)
-		sort.Strings(matches)
-		for _, match := range matches {
-			if isDir(match) {
-				dirs = append(dirs, match)
-			}
+		matches, err := pyGlob(expanded)
+		if err != nil {
+			return nil, err
 		}
+		dirs = append(dirs, sortedDirs(matches)...)
 	}
 	return dirs, nil
 }
