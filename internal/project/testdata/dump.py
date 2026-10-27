@@ -20,6 +20,11 @@ sys.path.insert(0, os.path.join(os.environ["HECATRON_HOME"], "libexec", "lib"))
 import audit  # noqa: E402
 import project  # noqa: E402
 
+# The platform project.py takes the path of (HOST_OS), for the parity tests
+# of macOS-only behaviour on other platforms.
+if os.environ.get("HECATRON_DUMP_HOST_OS"):
+    project.HOST_OS = os.environ["HECATRON_DUMP_HOST_OS"]
+
 FILES = ["config.json", "install.sh", "doctor.sh", "workflow.yml", "dockerfile", "installed.sh", *project.HOOKS]
 ACTIONS = ["test", "lint", "build", "clean", "audit"]
 

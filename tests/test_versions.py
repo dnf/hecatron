@@ -576,6 +576,56 @@ class EnvironmentTest(VersionFixture):
         return subprocess.run(["bash", BIN, *args], cwd=self.root, capture_output=True, text=True, env=env)
 
 
+class SdkrootFromXcrunTest(VersionFixture):
+    """On macOS, "sdkrootFromXcrun" gives SDKROOT the selected Xcode's SDK."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.define(version="=2.0.0", sdkrootFromXcrun=True)
+        self._saved_os, self._saved_sdk = project.HOST_OS, list(project._xcrun_sdk)
+        self._saved_sdkroot = os.environ.pop("SDKROOT", None)
+        project.HOST_OS = "darwin"
+        project._xcrun_sdk[:] = ["/sdk/MacOSX26.sdk"]
+
+    def tearDown(self) -> None:
+        project.HOST_OS = self._saved_os
+        project._xcrun_sdk[:] = self._saved_sdk
+        os.environ.pop("SDKROOT", None)
+        if self._saved_sdkroot is not None:
+            os.environ["SDKROOT"] = self._saved_sdkroot
+        super().tearDown()
+
+    def test_sdkroot_is_set_on_macos(self):
+        self.assertEqual(self.load().language_env("tool", "a")["vars"], {"SDKROOT": "/sdk/MacOSX26.sdk"})
+
+    def test_an_sdkroot_already_set_stands(self):
+        os.environ["SDKROOT"] = "/mine"
+        self.assertEqual(self.load().language_env("tool", "a")["vars"], {})
+
+    def test_not_elsewhere(self):
+        project.HOST_OS = "linux"
+        self.assertEqual(self.load().language_env("tool", "a")["vars"], {})
+
+    def test_a_failing_xcrun_leaves_it_unset(self):
+        project._xcrun_sdk[:] = [None]
+        self.assertEqual(self.load().language_env("tool", "a")["vars"], {})
+
+    def test_xcrun_is_asked_once(self):
+        project._xcrun_sdk.clear()
+        bin_dir = self.path("bin")
+        write(os.path.join(bin_dir, "xcrun"), f"#!/bin/sh\necho x >> {self.path('asked')}\necho /sdk/X.sdk\n", 0o755)
+        saved_path = os.environ["PATH"]
+        os.environ["PATH"] = bin_dir + os.pathsep + saved_path
+        try:
+            p = self.load()
+            for component in ("a", "b", "a"):
+                self.assertEqual(p.language_env("tool", component)["vars"], {"SDKROOT": "/sdk/X.sdk"})
+        finally:
+            os.environ["PATH"] = saved_path
+        with open(self.path("asked"), encoding="utf-8") as f:
+            self.assertEqual(f.read(), "x\n")
+
+
 class DockerfileTest(VersionFixture):
     """A snippet's each-version block, written once per version (§18,
     "Generated files")."""

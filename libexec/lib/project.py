@@ -634,7 +634,11 @@ class Project:
         """PATH entries (to prepend, in order) and variables for a language's
         work in a component. Entries and variables naming {home}, {version},
         {major} or {minor} need an installed version matching the spec;
-        without one they're left out and the doctor reports it."""
+        without one they're left out and the doctor reports it. On macOS, a
+        definition's "sdkrootFromXcrun" adds SDKROOT, the selected Xcode's
+        SDK, unless it's set: GNAT's gcc links against the Command Line
+        Tools' SDK, which can be newer than the selected Xcode's ld knows
+        (clang asks xcrun instead)."""
         definition = self.definitions.get(lang, {})
         match = self.installed_version(lang, component)
         fields = {}
@@ -650,6 +654,10 @@ class Project:
                 continue
             path += sorted(d for d in glob.glob(os.path.expanduser(expand(pattern))) if os.path.isdir(d))
         variables = {name: expand(value) for name, value in definition.get("env", {}).items()} if fields else {}
+        if definition.get("sdkrootFromXcrun") and HOST_OS == "darwin" and "SDKROOT" not in os.environ:
+            sdk = xcrun_sdk_path()
+            if sdk:
+                variables["SDKROOT"] = sdk
         return {"path": path, "vars": variables}
 
     def language_path(self, lang: str) -> list[str]:
@@ -665,6 +673,27 @@ class Project:
             if data.get("abbreviation") == name:
                 return lang
         return None
+
+
+# sys.platform, which the parity tests (internal/project) set to take
+# macOS's path elsewhere.
+HOST_OS = sys.platform
+
+_xcrun_sdk: list[str | None] = []
+
+
+def xcrun_sdk_path() -> str | None:
+    """The selected Xcode's (or Command Line Tools') SDK, from
+    `xcrun --show-sdk-path`, asked once per process: a definition's
+    "sdkrootFromXcrun" sets SDKROOT to it. None when xcrun fails."""
+    if not _xcrun_sdk:
+        try:
+            result = subprocess.run(["xcrun", "--show-sdk-path"], capture_output=True, text=True,
+                                    timeout=30, stdin=subprocess.DEVNULL)
+            _xcrun_sdk.append((result.stdout.strip() or None) if result.returncode == 0 else None)
+        except (OSError, subprocess.TimeoutExpired):
+            _xcrun_sdk.append(None)
+    return _xcrun_sdk[0]
 
 
 def load(start: str | None = None) -> Project:
