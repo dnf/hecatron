@@ -71,5 +71,113 @@
   ],
   "testing": "pytest",
   "linting": "Ruff",
-  "formatting": "Ruff, or Black where configured"
+  "formatting": "Ruff, or Black where configured",
+  "actions": {
+    "test": {
+      "steps": [
+        {
+          "run": [
+            "uv",
+            "run",
+            "--all-extras",
+            "--with",
+            "pytest",
+            "pytest"
+          ],
+          "if": {
+            "any": [
+              {
+                "file": "pyproject.toml"
+              },
+              {
+                "file": "setup.py"
+              },
+              {
+                "file": "setup.cfg"
+              }
+            ]
+          }
+        },
+        {
+          "run": [
+            "uv",
+            "run",
+            "--with",
+            "pytest",
+            "pytest"
+          ],
+          "if": {
+            "not": {
+              "any": [
+                {
+                  "file": "pyproject.toml"
+                },
+                {
+                  "file": "setup.py"
+                },
+                {
+                  "file": "setup.cfg"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "lint": {
+      "steps": [
+        {
+          "run": [
+            "uvx",
+            "ruff",
+            "check",
+            "."
+          ]
+        }
+      ]
+    },
+    "build": {
+      "steps": [
+        {
+          "if": {
+            "not": {
+              "any": [
+                {
+                  "file": "pyproject.toml"
+                },
+                {
+                  "file": "setup.py"
+                }
+              ]
+            }
+          },
+          "skip": "no pyproject.toml or setup.py to build"
+        },
+        {
+          "run": [
+            "uv",
+            "build"
+          ]
+        }
+      ]
+    },
+    "clean": {
+      "steps": [
+        {
+          "remove": [
+            "dist",
+            "build",
+            ".pytest_cache",
+            ".ruff_cache",
+            "*.egg-info",
+            "src/*.egg-info",
+            "**/__pycache__"
+          ],
+          "keep": [
+            ".venv"
+          ]
+        }
+      ]
+    }
+  }
 }

@@ -442,11 +442,9 @@ message instead of misbehaving.
 
 ## 14. Implementation and testing
 
-**Language.** Keep bash for the entry point, installers, hooks and runner,
-and Python 3 (standard library only) for config handling and generators, as
-today: it reuses the existing, working code. A single static binary (Go) would
-drop the Python dependency, but means rewriting the runner and
-config bridge; worth revisiting after 1.0.
+**Language.** Bash for the entry point, installers, hooks and runner, and
+Python 3 (standard library only) for config handling and generators, until
+the Go core (§19) replaces them.
 
 **Testing hecatron.**
 
@@ -511,6 +509,10 @@ Settled on 2026-10-26:
    checkout gets the releases current at its last commit. `=` marks an exact version. Defaults are pinned, follow
    the language's LTS line where it has one and its newest stable release
    otherwise, and a weekly job updates them. (Owner's decision.)
+8. **A Go core and native Windows (§19).** Hecatron becomes one compiled
+   binary, starting fast and running natively on Windows, with language
+   definitions that are data where they can be. (Owner's decision,
+   2026-10-27.)
 
 ## 18. Toolchain versions
 
@@ -755,3 +757,151 @@ The configuration, version resolution and per-language environment (the
 `libexec/lib/` and `libexec/commands/` side) are one piece of work; the
 installers, doctor checks, `update-versions` and the weekly workflow are
 another.
+
+## 19. A Go core and native Windows
+
+Status: **accepted** 2026-10-27 (#71; tracked in #80). Hecatron has two users, people
+and AI agents, and two requirements bash and Python can't meet: fast startup
+(one `hct test` starts bash and Python again for every component, and a
+process costs far more on Windows) and native Windows, which has no bash.
+
+### The binary
+
+One Go program, `hecatron` (and `hct`), built for macOS, Linux and Windows on
+x86_64 and arm64 and published with each release. It owns everything that is
+logic: argument parsing and help, the project model and config validation
+(§6–§7), version resolution and release tables (§18), the job runner and its
+output, generated files (§11), audit and outdated parsing, and running
+hooks. Target: `hct --version` and `hct list` under 10 ms. Go rather than
+Rust because cross-compiling to all six targets is built in, goroutines fit
+the runner, and contributors pick it up quickly; both start fast enough.
+`install.sh` and a new `install.ps1` download the binary; nothing else is
+needed to run it (no Python, bash or perl).
+
+### Language definitions: data, families, scripts
+
+A definition says what to do in the most declarative of three tiers that can
+express it.
+
+1. **Rules in `config.json`** for what is a lookup: which build files mean
+   which commands. An action names the build files to look for and where
+   (`find`: here, `above-first` or `below-first`, as `find_build` does
+   today; found only in directories below, the action runs in each), then
+   its steps, in order:
+
+   ```json
+   "lint": {"files": ["mix.exs"], "unknown": "no mix.exs", "steps": [
+     {"if": {"not": {"any": [{"file": ".formatter.exs"}, {"contains": ["mix.exs", ":credo"]}]}},
+      "skip": "no .formatter.exs and no Credo dependency"},
+     {"use": "deps"},
+     {"if": {"file": ".formatter.exs"}, "run": ["mix", "format", "--check-formatted"]},
+     {"if": {"contains": ["mix.exs", ":credo"]}, "run": ["mix", "credo", "--strict"]}
+   ]}
+   ```
+
+   A step runs an argv (never a shell string) with optional `env`, removes
+   files (`remove` globs, `keep` directories; no `rm`, so it works on
+   Windows), stops with a `skip` or `unknown` reason, or uses steps the
+   definition shares between actions (`shared`, e.g. fetching
+   dependencies). Its `if` tests files: `file`, `missing`, `contains`, and
+   `all`, `any`, `not`.
+
+2. **Families in Go** for build systems several languages share, whose logic
+   is more than a lookup: `jvm` (Maven, Gradle, sbt, wrappers, choosing a JDK
+   the build can run on), `node` (package manager detection, scripts, `tsc`
+   fallback), `dotnet`, `native` (CMake, Meson, autotools, Make targets
+   above), `mix`, `cabal-stack`, `swiftpm`, `pub`. A definition names its
+   family (`"family": "jvm"`) and its rules extend or override it. Families
+   replace `_hooks.sh`'s helpers; they are ordinary Go code with unit tests.
+
+3. **Scripts** for what is neither: a step only one language needs, or an
+   installer with custom steps. `install.sh` on macOS and Linux,
+   `install.ps1` on Windows; same for doctor checks and hooks.
+
+**Installs** are data too, in the shapes the installers take today:
+
+| Shape | Example | Declared as |
+| --- | --- | --- |
+| Archive | Go, Node.js, Zig, Temurin, Julia | URL template per OS and CPU, checksum source, directories to put on PATH |
+| Vendor installer | rustup, dotnet-install, ghcup, uv | its URL and arguments per OS |
+| Package manager | apt, Homebrew, winget, Scoop | the package name per manager |
+| Tool | golangci-lint, ruff, ktlint | `go install`, `uv tool`, `npm -g`, `cargo install`, or an archive, at a pinned version |
+| Script | the rest | `install.sh` / `install.ps1` |
+
+Versions install side by side under hecatron's own directory
+(`~/.local/share/hecatron/toolchains/<lang>/<version>`, `%LOCALAPPDATA%` on
+Windows) where the shape allows, so installing no longer needs root or
+edits to shell startup files: the binary puts the right version on `PATH`
+when it runs a hook, and `hct env` prints it for a shell. Package-manager
+installs stay system-wide.
+
+**Doctor checks** are a version command and the pattern its output must
+match, plus checks that need logic (a linter built with an older compiler)
+in the language's family or script.
+
+### When a tool's output changes
+
+Hecatron reads tools' output in four places: doctor's version checks, the
+installed versions it finds, the error lines in agent output, and the
+reports `audit` and `outdated` parse. New releases of a tool change that
+output from time to time (npm 7 rewrote `npm audit --json`), so:
+
+- **Machine-readable output first.** Where a tool has `--json` or
+  `--format`, hecatron uses it, and checks the schema version where the
+  tool states one.
+- **Patterns and parsers per version.** A definition's patterns are a list
+  tried in order, each optionally limited to tool versions (`"versions":
+  ">=7"`); a parser in Go recognises each known layout, as `audit` does for
+  npm 6 and 7.
+- **Recorded output as tests.** Each parser and pattern is tested against
+  output captured from real versions of the tool (`tests/output/<tool>/<version>/`),
+  so a new layout is added as a new sample beside the old ones.
+- **Failing soft.** Output hecatron can't read never fails a run on its own:
+  agent output falls back to the log's last lines, a version it can't read
+  is reported as such by doctor, and an unreadable audit report is an error
+  that names the tool and version.
+- **Noticed weekly.** The weekly coverage run saves each tool's output with
+  the newest versions and fails when a parser or pattern no longer matches,
+  so a change shows up as a failing check, not as a user's bug report.
+
+### Project hooks
+
+A project's `.hecatron/languages/<lang>/<action>` overrides the default as
+today. On Windows the binary runs `<action>.ps1`, `.cmd` or `.exe`; elsewhere
+`<action>.sh` or any executable. A project that wants one hook for every
+platform declares rules in its config instead of a script.
+
+### Output
+
+The runner renders each finished job (label, component, exit code,
+duration, log path, error excerpt) in one of four formats:
+
+- **human** (default on a terminal): today's live display and summary;
+- **agent**: one summary line, then only the failures, each with its log
+  path and up to ten lines matching the language's error patterns (else the
+  last fifteen, without colour codes or download noise), and a `Rerun:`
+  line; one line when everything passes;
+- **json**, for scripts;
+- **CI**: human output plus GitHub annotations for each error line.
+
+`--output` chooses, else `HECATRON_OUTPUT`, else agent output when stdout
+isn't a terminal and an agent marker is set (`CLAUDECODE=1`, and others
+once verified), else CI when `GITHUB_ACTIONS` is set, else human. Not a
+config setting: the format belongs to whoever is calling, not the project.
+Exit codes: 0 passed, 1 failed, 2 usage, 3 a toolchain missing or broken.
+
+### Migration
+
+1. This design and a prototype of the schema on Go, Rust, Python, Java and
+   Elixir (#72).
+2. The Go core (#73–#75) runs today's shell definitions unchanged on macOS
+   and Linux (#76), so nothing breaks while definitions are converted.
+3. Definitions converted in batches (#77), checked by the Docker install
+   tests and the fixtures.
+4. Windows (#78): a CI job, then installers language by language; the
+   coverage matrix gets a Windows column.
+5. 1.0 (#79), when the Go core passes everything the bash and Python
+   version does on macOS and Linux.
+
+Project hooks written in bash keep working on macOS and Linux throughout.
+The bash 3.2 rule (§14) then applies only to hooks and install scripts.
