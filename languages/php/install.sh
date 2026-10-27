@@ -91,10 +91,9 @@ _install_versions() {
 
 # Only libraries with a composer.json have dependencies to install; each with
 # its own PHP, since Composer resolves for the PHP it runs on.
-_composer_install() { [ ! -f composer.json ] || composer install; }
 deps() {
     _install_versions
-    each_impl_versioned php _composer_install
+    impl_deps php
 }
 
 log "Installing PHP..."

@@ -18,7 +18,7 @@ combine.
 | `installed.sh` | The versions installed on this machine, one `version<TAB>home` line each; offline and fast. The core picks the version a component needs from it ([design.md §18](design.md)) | No |
 | `releases.sh` | The language's releases, newest first, as `version<TAB>flags` (`lts`, `eol`); `endoflife_releases <product>` from `_common.sh` covers languages endoflife.date tracks | No |
 | `dockerfile` | Snippet for `hecatron dockerfile`: `# apt:` packages, `# after: <lang>`, `RUN`/`ENV` blocks, an `# each-version` … `# end-each-version` block repeated per version ([design §18](design.md#18-toolchain-versions)) | No |
-| `hooks/test.sh`, `lint.sh`, `build.sh`, `clean.sh`, `audit.sh`, `format.sh` | Default hooks for a conventional layout (design.md §9) | No |
+| `hooks/test.sh`, `lint.sh`, `build.sh`, `clean.sh`, `audit.sh`, `format.sh`, `deps.sh` | Default hooks for a conventional layout (design.md §9) | No |
 
 `config.json`:
 
@@ -52,7 +52,8 @@ deps
 `_common.sh` provides `$OS`, `$SUDO`, `$ROOT` (the project), `log`, `has`,
 `brew_install`, `brew_ensure_linked`, `apt_install`, `impl_dirs`,
 `each_impl` (run a command in every component's implementation, e.g.
-`each_impl ruby bundle install`), and `problem`/`doctor_done` for doctor
+`each_impl ruby bundle install`), `impl_deps` (a component's dependencies,
+through its deps hook), and `problem`/`doctor_done` for doctor
 scripts. See [installers.md](installers.md) for platform behaviour and shared
 toolchains.
 
@@ -66,7 +67,10 @@ tracked files. `format.sh` rewrites files with the language's formatter, or
 with `HECATRON_FORMAT_CHECK=1` changes nothing and fails listing the files
 it would change (`languages/_format.sh` has the shared helpers); a lint hook
 whose linter already checks formatting calls `checks_format` so `hct lint`
-doesn't check twice ([format.md](format.md)).
+doesn't check twice ([format.md](format.md)). `deps.sh` fetches the
+component's dependencies, held to its lock file; where other hooks install
+missing dependencies too, both call one `*_fetch` function in
+`languages/_hooks.sh` (the rest are in `languages/_deps.sh`).
 
 ## Checklist
 

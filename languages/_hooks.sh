@@ -368,10 +368,14 @@ haxe_hook() {
     esac
 }
 haxe_build() {
+    haxe_fetch "$1"
+    run haxe "$1"
+}
+# The haxelib libraries an .hxml file names.
+haxe_fetch() {
     if grep -qE '^[[:space:]]*(-lib|-L|--library)[[:space:]]' "$1"; then
         run haxelib install --always "$1"
     fi
-    run haxe "$1"
 }
 # Each target's output path in the .hxml files here (--js out.js, --cpp
 # dir...), when it is relative and stays inside this directory.
@@ -412,16 +416,28 @@ import json, sys
 sys.exit(0 if sys.argv[1] in (json.load(open("package.json")).get("scripts") or {}) else 1)
 ' "$1"
 }
-# Dependencies first, when they aren't installed yet (in node_modules, or
-# Yarn Plug'n'Play's .pnp.cjs), with the package's own package manager.
+# Each ecosystem's dependencies come from one function, *_fetch, which
+# `hecatron deps` runs (languages/<lang>/hooks/deps.sh) and the hooks that
+# need them run first when they aren't there yet (*_deps). Each installs
+# what the lock file says when there is one, and fails rather than change it.
+
+# Node.js: with the package's own package manager (node_pm_command first).
+node_fetch() {
+    node_install_command
+    run "${node_pm[@]}" "${node_install_args[@]}"
+}
+# When they aren't installed yet (in node_modules, or Yarn Plug'n'Play's
+# .pnp.cjs).
 npm_deps() {
     { [ -d node_modules ] || [ -f .pnp.cjs ]; } && return
-    run "${node_pm[@]}" "$(node_install_command)"
+    node_fetch
 }
 
-# Mix: a locked project's dependencies first, when they aren't fetched yet.
+# Mix: deps.get, which installs what mix.lock locks.
+mix_fetch() { run mix deps.get; }
+# A locked project's dependencies, when they aren't fetched yet.
 mix_deps() {
-    if [ -f mix.lock ] && [ ! -d deps ]; then run mix deps.get; fi
+    if [ -f mix.lock ] && [ ! -d deps ]; then mix_fetch; fi
 }
 
 # Whether composer.json defines a script, e.g. `composer_script test`.
@@ -431,9 +447,12 @@ import json, sys
 sys.exit(0 if sys.argv[1] in (json.load(open("composer.json")).get("scripts") or {}) else 1)
 ' "$1"
 }
-# Composer: dependencies first, when they aren't installed yet.
+# Composer: install, which installs what composer.lock locks (and without
+# one, resolves and writes it).
+composer_fetch() { run composer install --no-interaction; }
+# When they aren't installed yet.
 composer_deps() {
-    if [ ! -d vendor ]; then run composer install --no-interaction; fi
+    if [ ! -d vendor ]; then composer_fetch; fi
 }
 
 # Ruby: the bundle and Rakefile here, else the nearest above (Bundler and
@@ -448,10 +467,14 @@ ruby_project() {
         if [ -f "${ruby_root}/Gemfile" ]; then export BUNDLE_GEMFILE="${ruby_root}/Gemfile"; fi
     fi
 }
-# Bundler: the bundle first, when it isn't installed yet; then a command
-# through it (or directly, without a Gemfile).
+# Bundler: the bundle, frozen to Gemfile.lock when there is one.
+bundle_fetch() {
+    if [ -f "${ruby_root}/Gemfile.lock" ]; then BUNDLE_FROZEN=true run bundle install; else run bundle install; fi
+}
+# The bundle, when it isn't installed yet; then a command through it (or
+# directly, without a Gemfile).
 bundle_deps() {
-    if [ -f "${ruby_root}/Gemfile" ] && ! bundle check >/dev/null 2>&1; then run bundle install; fi
+    if [ -f "${ruby_root}/Gemfile" ] && ! bundle check >/dev/null 2>&1; then bundle_fetch; fi
 }
 ruby_run() {
     if [ -f "${ruby_root}/Gemfile" ]; then run bundle exec "$@"; else run "$@"; fi
@@ -472,12 +495,16 @@ makemaker_configure() { [ -f Makefile ] || run perl Makefile.PL; }
 module_build_configure() { [ -x Build ] || run perl Build.PL; }
 
 # Dart: the flutter tool for a package on the Flutter SDK, else dart; and
-# the package's dependencies first, when they aren't fetched yet.
+# the package's dependencies (pub get, held to pubspec.lock), first when they
+# aren't fetched yet.
 dart_tool() {
     if grep -qE 'sdk:[[:space:]]*flutter([^[:alnum:]_]|$)' pubspec.yaml; then echo flutter; else echo dart; fi
 }
+dart_fetch() {
+    if [ -f pubspec.lock ]; then run "$(dart_tool)" pub get --enforce-lockfile; else run "$(dart_tool)" pub get; fi
+}
 dart_deps() {
-    if [ ! -f .dart_tool/package_config.json ]; then run "$(dart_tool)" pub get; fi
+    if [ ! -f .dart_tool/package_config.json ]; then dart_fetch; fi
 }
 
 # Node.js packages (TypeScript, JavaScript): the package's own scripts, run
@@ -537,6 +564,7 @@ jvm_hook() {
             clean) maven clean ;;
             lint) skip "Maven has no standard lint goal" ;;
             format) jvm_format_maven ;;
+            deps) maven dependency:go-offline ;;
         esac
     elif is_gradle || [ -n "${_gradle_above}" ]; then
         case "$1" in
@@ -545,6 +573,9 @@ jvm_hook() {
             clean) gradle_ clean ;;
             lint) gradle_ check -x test ;;
             format) jvm_format_gradle "${_gradle_above:-.}" ;;
+            # Resolving the dependency report downloads what it lists
+            # (held to gradle.lockfile where the build locks).
+            deps) gradle_ dependencies ;;
         esac
     elif [ -f build.sbt ]; then
         case "$1" in
@@ -553,6 +584,7 @@ jvm_hook() {
             clean) run sbt clean ;;
             lint) skip "sbt has no standard lint task" ;;
             format) jvm_format_sbt ;;
+            deps) run sbt update ;;
         esac
     else
         unknown "no pom.xml, build.gradle(.kts) or build.sbt"
@@ -755,6 +787,7 @@ make_target_above() {
             clean) _targets="clean_${_name} clean-${_name}" ;;
             lint) _targets="lint_${_name} lint-${_name}" ;;
             format) _targets="format_${_name} format-${_name}" ;;
+            deps) _targets="deps_${_name} deps-${_name}" ;;
         esac
         for _target in ${_targets}; do
             if make_defines "${_dir}" "${_target}"; then
@@ -765,7 +798,7 @@ make_target_above() {
         done
     done
     case "$1" in
-        clean | lint | format) skip "the Makefile in ${_dir} has no ${1} target for $(basename "$(pwd)")" ;;
+        clean | lint | format | deps) skip "the Makefile in ${_dir} has no ${1} target for $(basename "$(pwd)")" ;;
     esac
 }
 make_defines() {

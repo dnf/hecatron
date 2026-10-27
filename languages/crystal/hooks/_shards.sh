@@ -2,10 +2,14 @@
 # _hooks.sh).
 # shellcheck shell=bash
 
-# The shard's dependencies, when it has some and they aren't installed in lib/.
+# The shard's dependencies, frozen to shard.lock when there is one.
+shards_fetch() {
+    if [ -f shard.lock ]; then run shards install --frozen; else run shards install; fi
+}
+# When it has some and they aren't installed in lib/.
 shards_deps() {
     grep -Eq '^(development_)?dependencies:' shard.yml || return 0
-    shards check >/dev/null 2>&1 || run shards install
+    shards check >/dev/null 2>&1 || shards_fetch
 }
 
 shard_name() { sed -n 's/^name:[[:space:]]*//p' shard.yml | head -1; }

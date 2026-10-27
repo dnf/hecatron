@@ -61,13 +61,9 @@ _install_flutter_linux() {
     flutter --disable-analytics >/dev/null 2>&1 || true
 }
 
-# Only libraries with a pubspec.yaml have packages to get; a Flutter
-# package's through flutter.
-_pub_get() {
-    [ -f pubspec.yaml ] || return 0
-    if is_flutter_package .; then flutter pub get; else dart pub get; fi
-}
-deps() { each_impl dart _pub_get; }
+# Each package's dependencies (hecatron deps: pub get, a Flutter package's
+# through flutter).
+deps() { impl_deps dart; }
 
 log "Installing Dart..."
 "install_${OS}"

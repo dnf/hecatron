@@ -97,7 +97,6 @@ _bundle_user_path() {
 }
 # Only libraries with a Gemfile have a bundle to install; each with its own
 # Ruby, since native extensions are built for one.
-_bundle_install() { [ ! -f Gemfile ] || bundle install; }
 deps() {
     local default_bin
     _install_versions
@@ -105,7 +104,7 @@ deps() {
     export PATH="${default_bin}:${PATH}"
     _bundle_user_path
     _bundler_audit
-    each_impl_versioned ruby _bundle_install
+    impl_deps ruby
 }
 
 # bundler-audit, the dependency auditor hecatron audit uses for Ruby, in the

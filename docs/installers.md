@@ -87,7 +87,11 @@ Each script sources `languages/_common.sh` for shared helpers:
 - `brew_ensure_linked <formula> <command>` — link a formula Homebrew installed but left unlinked
 - `impl_dirs <lang>` — each component's directory for the language (from the project's `components` and `implPath`), one per line
 - `each_impl <lang> <command...>` — run a command in each of them (e.g. `each_impl ruby bundle install`)
-- `each_impl_versioned <lang> <command...>` — the same, with each component's toolchain version on PATH (for dependencies built for one version: bundles, Composer locks)
+- `each_impl_versioned <lang> <command...>` — the same, with each component's toolchain version on PATH
+- `impl_deps <lang>` — install each component's dependencies with `hecatron deps` (its deps hook, held to the lock file)
+- `impl_configures <lang> <file...>` — whether a component (or a directory above it) has one of the files, for a tool installed only where it's configured
+- `release_binary_install <name> <url> <sha256> [path]` — a pinned release download, checked against its checksum, into `/usr/local/bin`
+- `uv_install` — uv into `~/.local/bin`
 - `problem` / `doctor_done` — for `doctor.sh`: report a problem; exit non-zero if any were reported
 - `$OS` — `"macos"` or `"linux"`
 - `$SUDO` — `"sudo"` or `""` (when root)
@@ -128,8 +132,8 @@ busted --version >/dev/null 2>&1 || problem "busted fails to start"
 doctor_done
 ```
 
-Project dependencies install into every component's implementation:
-`deps() { each_impl ruby bundle install; }`.
+Project dependencies install into every component's implementation through
+the language's deps hook: `deps() { impl_deps ruby; }`.
 
 Templates:
 
