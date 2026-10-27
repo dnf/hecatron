@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common.sh"
 
 uninstall_macos() {
-    rm -rf "${HOME}/.local/share/hecatron/ruby"
+    rm -rf "${HOME}/.local/share/hecatron/ruby" "${HOME}/.local/share/hecatron/ruby-build"
     brew uninstall ruby-build ruby 2>/dev/null || true
 }
 uninstall_linux() {

@@ -8,12 +8,13 @@ source "$(dirname "$0")/../_common.sh"
 # One directory per version. macOS's is per-user and needs no sudo.
 if [ "${OS}" = "macos" ]; then
     _ruby_root="${HOME}/.local/share/hecatron/ruby"
+    _ruby_build_dir="${HOME}/.local/share/hecatron/ruby-build"
     _sudo=""
 else
     _ruby_root="/opt/ruby"
+    _ruby_build_dir="/opt/ruby-build"
     _sudo="${SUDO}"
 fi
-_ruby_build_dir="/opt/ruby-build"
 
 # ruby-build from Homebrew, which brings the OpenSSL and libyaml it builds
 # against.
@@ -44,15 +45,20 @@ _ruby_build_path() {
     if [ -x "${_ruby_build_dir}/bin/ruby-build" ]; then echo "${_ruby_build_dir}/bin/ruby-build"; else command -v ruby-build; fi
 }
 # The releases ruby-build knows how to build. A Ruby released after this
-# ruby-build has no definition yet, so update it first.
+# ruby-build has no definition yet, so update it first. Homebrew's formula
+# can lag a Ruby release by weeks (its 20261013 has no 4.0.9), so on macOS
+# that means ruby-build's repository, as on Linux, in a per-user directory;
+# Homebrew's still brings the libraries it builds against.
 _definitions() { "$(_ruby_build_path)" --definitions | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$'; }
 _update_ruby_build() {
     log "Updating ruby-build, which has no definition of Ruby $1..."
     if [ -d "${_ruby_build_dir}/.git" ]; then
-        $SUDO git -C "${_ruby_build_dir}" fetch --quiet --depth 1 origin
-        $SUDO git -C "${_ruby_build_dir}" reset --quiet --hard FETCH_HEAD
+        ${_sudo} git -C "${_ruby_build_dir}" fetch --quiet --depth 1 origin
+        ${_sudo} git -C "${_ruby_build_dir}" reset --quiet --hard FETCH_HEAD
     else
-        brew upgrade ruby-build || true
+        ${_sudo} rm -rf "${_ruby_build_dir}"
+        ${_sudo} mkdir -p "$(dirname "${_ruby_build_dir}")"
+        ${_sudo} git clone --quiet --depth 1 https://github.com/rbenv/ruby-build.git "${_ruby_build_dir}"
     fi
 }
 _install_ruby() {
