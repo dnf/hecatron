@@ -905,6 +905,29 @@ entry points' output byte for byte. Decided with the first port
   script prints a NUL byte (dropped, as bash drops it, without the
   warning).
 
+- **Audit and outdated parsing** (#75; `internal/deps`) ported next:
+  every report `audit.py` and `outdated.py` read (npm, pnpm, Yarn 1 and
+  2+, Bun, pip-audit, govulncheck, bundler-audit, Composer, .NET and
+  OSV-Scanner; npm, pnpm, Yarn 1, uv, Go, Cargo, Bundler, Composer, .NET,
+  Hex, pub, Maven, Gradle and cabal), the threshold (`--fail-on`,
+  `audit.failOn`, unrated counting as high), accepted risks and their
+  expiry, the end-of-life warning and `--json`'s saved rows. The hooks
+  still run the tools and save the raw reports
+  (`HECATRON_AUDIT_REPORT_DIR`, `HECATRON_OUTDATED_REPORT_DIR`); the run
+  commands give them the binary as `HECATRON_BINARY`, and
+  `languages/_audit.sh` and `_outdated.sh` call its `_audit` and
+  `_outdated` commands (the Python scripts' arguments) instead of Python
+  when it's set. Reports are read with Python's `json` module's rules and
+  messages and Python's notion of a value (a null where a string belongs,
+  a dict key Python can't hash), so a report gives the same findings or
+  the same error. Parity tests run both on every captured report
+  (`tests/audit/reports`, `tests/outdated/reports`,
+  `tests/output/<tool>/<version>/`, captured by
+  `tests/output/capture-deps.sh`), the Python tests' hand-written ones, and
+  thousands of variants with one value replaced or removed, comparing
+  output and status byte for byte; the one wording left out is which pair
+  of values a failed sort names.
+
 ### Language definitions: data, families, scripts
 
 A definition says what to do in the most declarative of three tiers that can
