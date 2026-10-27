@@ -3,6 +3,7 @@
   "dependency": "cmake",
   "lintDependency": null,
   "detect": [
+    "fpm.toml",
     "*.f90"
   ]
 }
