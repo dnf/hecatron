@@ -31,6 +31,31 @@ installer on macOS):
 tests/docker/run.sh ubuntu:24.04 bash /hecatron/tests/installer/check.sh
 ```
 
+### The Go core
+
+The Go core (docs/design.md §19) is growing in place of `bin/hecatron`;
+`bin/hecatron` doesn't call it yet. To try it, build it at the top of the
+checkout and run it from a project:
+
+```bash
+go build -o hct ./cmd/hecatron    # needs Go 1.24 or later; the standard library only
+cd ~/your-project && ~/hecatron/hct list
+```
+
+It finds its checkout from its own location (or `HECATRON_HOME`), runs the
+commands ported so far itself and hands every other one to the existing
+scripts. Its checks, which CI runs too:
+
+```bash
+gofmt -l cmd internal && go vet ./... && go test ./...
+for os in linux darwin windows; do for arch in amd64 arm64; do
+    GOOS=${os} GOARCH=${arch} go build -o /dev/null ./cmd/hecatron; done; done
+```
+
+The tests compare the Go project model with `libexec/lib/project.py`, and
+the binary's output with `bin/hecatron`'s, byte for byte, on fixture
+projects; those comparisons need bash and Python and are skipped on Windows.
+
 The [coverage workflow](.github/workflows/coverage.yml) runs the install test
 for every language on every platform each week and writes
 [docs/coverage.md](docs/coverage.md).
