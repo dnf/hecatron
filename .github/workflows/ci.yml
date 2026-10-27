@@ -51,6 +51,13 @@ jobs:
           fetch-depth: 0
       - name: install.sh in a container
         run: tests/docker/run.sh ubuntu:24.04 bash /hecatron/tests/installer/check.sh
+      - name: install.sh on bare images, which lack git, Python and curl
+        run: |
+          for image in ubuntu:24.04 debian:13 fedora:42; do
+            docker run --rm -v "$PWD:/hecatron:ro" "$image" sh -c '
+              printf "[safe]\n\tdirectory = *\n" > /root/.gitconfig
+              HECATRON_REPO=/hecatron sh < /hecatron/install.sh && bash -lc "hct --version"'
+          done
 
   installer-macos:
     runs-on: macos-latest
