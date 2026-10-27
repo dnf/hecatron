@@ -28,16 +28,6 @@ _uv_python_install() {
     uv python install "$1" </dev/null
 }
 
-# A .venv copied or moved from another checkout keeps scripts whose shebangs
-# point at the old location, so `uv run pyright` can't start; rebuild it.
-_sync_venv() {
-    [ -f pyproject.toml ] || return 0
-    if [ -f .venv/bin/pytest ] && ! head -1 .venv/bin/pytest | grep -qF "${PWD}/.venv/"; then
-        log "Recreating moved virtualenv in ${PWD}"
-        rm -rf .venv
-    fi
-    uv sync --all-extras
-}
 # Every Python version the project's components resolve to (pin files, the
 # project's config, else the default; docs/design.md §18), through uv, which
 # takes a prefix ("3.12") or an exact version.
@@ -52,7 +42,9 @@ _install_versions() {
 }
 deps() {
     _install_versions
-    each_impl python _sync_venv
+    # Each component's environment (a .venv moved from another checkout,
+    # whose scripts can't start, is made again: deps_python).
+    impl_deps python
 }
 
 log "Installing Python..."

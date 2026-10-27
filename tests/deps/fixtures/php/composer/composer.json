@@ -1,0 +1,6 @@
+{
+    "name": "example/fixture",
+    "require": {
+        "psr/log": "1.1.3"
+    }
+}

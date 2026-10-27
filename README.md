@@ -108,6 +108,13 @@ hct test go       # one language
   audit`, `dotnet list package --vulnerable`, bundler-audit, OSV-Scanner for
   the rest) and fails at a severity you choose, with accepted risks that
   expire ([docs/audit.md](docs/audit.md)).
+- **Dependencies, held to the lock file.** `hct deps` fetches every
+  component's dependencies with its ecosystem's tool (`npm ci`, `uv sync
+  --locked`, `bundle install` frozen, `composer install`, `dotnet restore
+  --locked-mode`, `cargo fetch --locked`, `go mod download`, `pub get
+  --enforce-lockfile`, `mix deps.get`...), so CI can fetch once and fail on
+  a lock file that's out of date. Tests and builds still fetch what's
+  missing themselves, the same way.
 - **One formatter per language.** `hct format` rewrites each component's
   code with its language's formatter and the project's own configuration
   (gofmt, rustfmt, Ruff, `dotnet format`, `mix format`, `dart format`, and

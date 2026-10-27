@@ -13,7 +13,18 @@ minor version can change behaviour. Numbers are
   check off in `.hecatron/config.json` with `"lint": {"format": false}` (or
   `{"format": {"haskell": false}}` for one language). See
   [docs/format.md](docs/format.md).
-- **`hecatron format`:** rewrites every component's code with its
+- **`hecatron deps`:** fetches every component's dependencies with its
+  ecosystem's tool, held to the lock file where there is one: npm, pnpm,
+  Yarn or Bun's frozen install, `uv sync --locked`, Bundler frozen,
+  `composer install`, `dotnet restore --locked-mode`, `go mod download`,
+  `cargo fetch --locked`, `mix deps.get`, `pub get --enforce-lockfile`,
+  `swift package resolve`, Maven's `dependency:go-offline`, Gradle, sbt,
+  Stack or cabal, and more. Languages without a dependency manager say so.
+  The test, lint and build hooks that install missing dependencies, and the
+  installers, now do it the same way, so **pnpm, Yarn, Bun, Bundler, Dart
+  and Shards installs no longer change a lock file**: one that's out of
+  date fails, as `npm ci` already did.
+ rewrites every component's code with its
   language's formatter, using the project's own configuration: gofmt,
   rustfmt, Ruff (or Black), `dotnet format`, `mix format`, `dart format`,
   `zig fmt`, swift-format, elm-format..., and where the project configures

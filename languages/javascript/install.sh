@@ -8,14 +8,16 @@ install_macos() { brew_install node; }
 # Node.js is TypeScript's; its installer knows where Linux gets it.
 install_linux() { bash "$(dirname "$0")/../typescript/install.sh"; }
 
-# Only packages with a package.json have dependencies to install, with the
-# package manager each declares.
-_node_install() {
+# The package manager each package declares, which its dependencies (hecatron
+# deps) are then installed with.
+_node_package_manager() {
     [ -f package.json ] || return 0
     node_package_manager_ensure
-    "${node_pm[@]}" install
 }
-deps() { each_impl javascript _node_install; }
+deps() {
+    each_impl javascript _node_package_manager
+    impl_deps javascript
+}
 
 log "Installing JavaScript (Node.js)..."
 "install_${OS}"

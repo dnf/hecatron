@@ -63,10 +63,40 @@ node_pm_command() {
     esac
 }
 
-# The subcommand that installs the package's dependencies: npm ci with a
-# package-lock.json, for an install that matches it.
+# The arguments that install the package's dependencies, frozen to its lock
+# file when it has one: npm ci (with a package-lock.json here), else pnpm's,
+# Yarn's or Bun's install refusing to change the lock (theirs here or in the
+# workspace above), into node_install_args.
+# shellcheck disable=SC2034 # node_install_args is read by the hooks that source this
+node_install_args=(install)
+# shellcheck disable=SC2034 # as above
 node_install_command() {
-    if [ "${node_pm_name}" = npm ] && [ -f package-lock.json ]; then echo ci; else echo install; fi
+    node_install_args=(install)
+    case "${node_pm_name}" in
+        npm) if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then node_install_args=(ci); fi ;;
+        pnpm) if node_lock_file pnpm-lock.yaml; then node_install_args=(install --frozen-lockfile); fi ;;
+        yarn)
+            if node_lock_file yarn.lock; then
+                if [ "$("${node_pm[@]}" --version 2>/dev/null | cut -d. -f1)" = 1 ]; then
+                    node_install_args=(install --frozen-lockfile)
+                else
+                    node_install_args=(install --immutable)
+                fi
+            fi ;;
+        bun) if node_lock_file bun.lock || node_lock_file bun.lockb; then node_install_args=(install --frozen-lockfile); fi ;;
+    esac
+}
+# Whether the lock file is here or in a directory above, within the project.
+node_lock_file() {
+    local _dir _root
+    _dir="$(pwd -P)"
+    _root="$(cd "${HECATRON_ROOT:-.}" 2>/dev/null && pwd -P)" || _root="${_dir}"
+    case "${_dir}/" in "${_root}/"*) ;; *) _root="${_dir}" ;; esac
+    while :; do
+        [ -f "${_dir}/$1" ] && return 0
+        [ "${_dir}" != "${_root}" ] || return 1
+        _dir="$(dirname "${_dir}")"
+    done
 }
 
 # For installers (with _common.sh): the package manager this package needs,

@@ -79,6 +79,18 @@ each_impl_versioned() {
     done < <(cd "${ROOT}" && python3 "${HECATRON_HOME}/libexec/lib/project.py" impl-dirs "${_lang}" </dev/null 2>/dev/null)
 }
 
+# Each component's dependencies, through the language's deps hook (hecatron
+# deps): the same code, frozen to each lock file, that the hooks use
+# (languages/_deps.sh), and a project's own deps.sh where it has one.
+# Only for a language the project has (TypeScript's installer also runs for
+# JavaScript's Node.js) with a deps hook.
+impl_deps() {
+    [ -n "${HECATRON_HOME:-}" ] || return 0
+    (cd "${ROOT}" && eval "$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env </dev/null)" &&
+        printf '%s\n' "${_DEPS_LANGS}") | grep -qx "$1" || return 0
+    (cd "${ROOT}" && bash "${HECATRON_HOME}/bin/hecatron" deps "$1" </dev/null)
+}
+
 # Whether any of a language's components has a file a find expression
 # matches, e.g. `impl_has bash -name '*.bats'`: for installing a tool only
 # where a component needs it.

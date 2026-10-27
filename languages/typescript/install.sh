@@ -62,16 +62,16 @@ _install_versions() {
     done <<<"${specs}"
 }
 
-# Only libraries with a package.json have dependencies to install, with the
-# package manager each declares.
-_node_install() {
+# The package manager each package declares, which its dependencies (hecatron
+# deps) are then installed with.
+_node_package_manager() {
     [ -f package.json ] || return 0
     node_package_manager_ensure
-    "${node_pm[@]}" install
 }
 deps() {
     _install_versions
-    each_impl typescript _node_install
+    each_impl typescript _node_package_manager
+    impl_deps typescript
 }
 
 log "Installing TypeScript (Node.js)..."

@@ -31,10 +31,9 @@ _download_crystal() {
 }
 
 # Only libraries with a shard.yml have dependencies to install.
-_shards_install() { [ ! -f shard.yml ] || shards install; }
 deps() {
     if has crystal; then
-        each_impl crystal _shards_install
+        impl_deps crystal
     fi
 }
 

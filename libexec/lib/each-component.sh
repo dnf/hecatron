@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run one of a language's hooks (test, lint, build, clean, audit or format)
+# Run one of a language's hooks (test, lint, build, clean, audit, format or deps)
 # for every component, or the ones named. Lint also runs the format hook's
 # check (docs/format.md).
 #

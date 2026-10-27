@@ -38,6 +38,7 @@ Run (every component of each language; no languages means all, in parallel):
   clean [lang...]            Remove build artifacts
   rebuild, retest [lang...]  Clean, then build or test
   audit [lang...]            Check dependencies for known vulnerabilities (--fail-on SEVERITY)
+  deps [lang...]             Fetch dependencies, held to each component's lock file
   format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
 
 Languages:
@@ -109,7 +110,7 @@ if [ "${_command}" != "init" ] && [ "${_command}" != "banner" ]; then
 fi
 
 case "${_command}" in
-    test|lint|build|clean|rebuild|retest|audit|format)
+    test|lint|build|clean|rebuild|retest|audit|format|deps)
         exec bash "${HECATRON_HOME}/libexec/commands/run.sh" "${_command}" "$@" ;;
     doctor)
         exec bash "${HECATRON_HOME}/libexec/commands/doctor.sh" "$@" ;;

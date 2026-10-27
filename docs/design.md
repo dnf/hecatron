@@ -102,7 +102,7 @@ has one, implicitly. Each language's code for a component lives at a path
 built from a template, e.g. `{component}/impl/{lang}`.
 
 **Action.** Something done to one component in one language: `test`, `lint`,
-`build`, `clean`, `audit`, `format`. A project hook script implements it; hecatron runs it once
+`build`, `clean`, `audit`, `format`, `deps`. A project hook script implements it; hecatron runs it once
 per component (the "every library" rule sayable adopted: a command for one
 language acts on all of that language's components).
 
@@ -239,6 +239,7 @@ recipes do today. Output of single-language runs streams and is also saved to
 | `hecatron test [lang...]` | Run `test` for every component of each language; no languages means every language in parallel, plus project checks | `just test` |
 | `hecatron lint [lang...\|shell]` | Same for `lint`; languages without a lint hook rely on warnings-as-errors builds; `shell` runs shellcheck on every tracked shell script | `just lint` |
 | `hecatron build [lang...]`, `hecatron clean [lang...]` | Same for `build`/`clean` | `just build`, `just clean` |
+| `hecatron deps [lang...]` | Same for `deps`: fetch each component's dependencies with its ecosystem's tool, held to its lock file | new |
 | `hecatron format [--check] [lang...]` | Same for `format`: rewrite the code with the language's formatter; `--check` changes nothing and fails listing what would change ([format.md](format.md)) | new |
 | `hecatron rebuild`, `hecatron retest` | clean then build/test | same |
 | `hecatron install [lang...]`, `uninstall` | Run definition installers; all languages when none are named, continuing past failures | `just install` |
@@ -312,6 +313,17 @@ and a root Makefile only through a target named for the directory or language
 the package declares (`packageManager`, else its lockfile, here or in the
 workspace above; pnpm and Yarn through Corepack), installing Corepack or Bun
 only when a component needs them.
+
+**Dependencies.** A `deps` hook fetches a component's dependencies with its
+ecosystem's tool, held to the lock file when there is one (it fails rather
+than change it). Hooks that need dependencies installed (Node.js's
+`node_modules`, Bundler's bundle, Composer's `vendor/`, Mix's, pub's,
+Shards') install them when they're missing through the same function
+(`node_fetch`, `bundle_fetch`... in `languages/_hooks.sh`), so `deps` is
+never a required first step; where the build tool fetches by itself (go,
+cargo, dotnet, `uv run`, SwiftPM, Maven, Gradle) the hooks leave it to the
+tool. Installers install each component's dependencies by running
+`hecatron deps`, so a project's own `deps.sh` applies there too.
 
 **Formatting.** A `format` hook rewrites files with the language's
 formatter, or with `HECATRON_FORMAT_CHECK=1` only checks. `lint` runs that
@@ -401,8 +413,8 @@ idempotent and repair what their doctor detects (a linter built with an older
 Go, luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula).
 `doctor --fix` runs the installer of each unhealthy language and checks
 again. Installers that install project dependencies (`bundle install`, `uv
-sync`) do so in every component, through `each_impl`, which now reads
-`components` and `implPath` from the project config.
+sync`) do so in every component by running `hecatron deps` (`impl_deps` in
+`_common.sh`; §9).
 
 ## 13. Distribution
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hecatron test|lint|build|clean|rebuild|retest|audit|format [-j N] [-s MODE] [-c COMPONENT]... [target ...]
+# hecatron test|lint|build|clean|rebuild|retest|audit|format|deps [-j N] [-s MODE] [-c COMPONENT]... [target ...]
 #
 # With targets, runs each one in turn, streaming its output and saving it to
 # <logs>/<action>/<target>.log. A target is a language (every component), a
@@ -51,6 +51,7 @@ _describe() {
         retest) echo "Clean, then test" ;;
         audit) echo "Check each language's dependencies for known vulnerabilities in every component" ;;
         format) echo "Format each language's code with its formatter in every component" ;;
+        deps) echo "Fetch each language's dependencies for every component, held to its lock file" ;;
     esac
 }
 
@@ -63,6 +64,7 @@ _action_langs() {
         clean) echo "${_CLEAN_LANGS}" ;;
         audit) echo "${_AUDIT_LANGS}" ;;
         format) echo "${_FORMAT_LANGS}" ;;
+        deps) echo "${_DEPS_LANGS}" ;;
     esac
 }
 
@@ -182,6 +184,7 @@ _run_target() {
         clean) echo "No build artifacts for: ${name}" ;;
         audit) echo "Nothing to audit for: ${name} (hecatron has no auditor for its dependencies)" ;;
         format) echo "No formatter for ${name} (skipping)" ;;
+        deps) echo "No dependency manager for ${name} (skipping)" ;;
         *) echo "error: ${name} has no ${_action} hook (.hecatron/languages/${name}/${_action}.sh)" >&2; return 1 ;;
     esac
 }
