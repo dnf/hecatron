@@ -1,4 +1,7 @@
 {
+  "name": "Kotlin",
+  "homepage": "https://kotlinlang.org",
+  "summary": "Concise, null-safe language for the JVM, Android and beyond.",
   "abbreviation": "kt",
   "dependency": "kotlinc",
   "lintDependency": null,
@@ -9,5 +12,12 @@
   "dirNames": [
     "kotlin",
     "kt"
-  ]
+  ],
+  "buildSystems": [
+    "Gradle",
+    "Maven",
+    "kotlinc"
+  ],
+  "testing": "JUnit, kotlin.test",
+  "linting": "Gradle check (detekt, ktlint)"
 }

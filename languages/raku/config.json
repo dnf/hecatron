@@ -1,4 +1,7 @@
 {
+  "name": "Raku",
+  "homepage": "https://raku.org",
+  "summary": "Perl's expressive sister language, formerly Perl 6.",
   "abbreviation": "rk",
   "dependency": "raku",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   "dirNames": [
     "raku",
     "perl6"
-  ]
+  ],
+  "buildSystems": [
+    "zef"
+  ],
+  "testing": "Test (prove6, zef test)",
+  "linting": null
 }

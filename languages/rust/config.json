@@ -1,4 +1,7 @@
 {
+  "name": "Rust",
+  "homepage": "https://www.rust-lang.org",
+  "summary": "Memory safety without garbage collection, and fearless concurrency.",
   "abbreviation": "rs",
   "dependency": "cargo",
   "lintDependency": null,
@@ -39,5 +42,10 @@
       "format": "mise",
       "key": "rust"
     }
-  ]
+  ],
+  "buildSystems": [
+    "Cargo"
+  ],
+  "testing": "cargo test",
+  "linting": "Clippy, rustfmt"
 }

@@ -1,4 +1,7 @@
 {
+  "name": "Erlang",
+  "homepage": "https://www.erlang.org",
+  "summary": "Fault-tolerant concurrency on the BEAM, born at Ericsson.",
   "abbreviation": "erl",
   "dependency": "rebar3",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   "dirNames": [
     "erlang",
     "erl"
-  ]
+  ],
+  "buildSystems": [
+    "rebar3"
+  ],
+  "testing": "EUnit, Common Test",
+  "linting": "Dialyzer"
 }

@@ -1,4 +1,7 @@
 {
+  "name": "VB.NET",
+  "homepage": "https://learn.microsoft.com/dotnet/visual-basic/",
+  "summary": "Visual Basic for .NET.",
   "abbreviation": "vb",
   "dependency": "dotnet",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   "dirNames": [
     "vbnet",
     "vb"
-  ]
+  ],
+  "buildSystems": [
+    ".NET SDK (dotnet)"
+  ],
+  "testing": "dotnet test",
+  "linting": "dotnet format"
 }

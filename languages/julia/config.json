@@ -1,4 +1,7 @@
 {
+  "name": "Julia",
+  "homepage": "https://julialang.org",
+  "summary": "Fast dynamic language for numerical and scientific computing.",
   "abbreviation": "jl",
   "dependency": "julia",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   "dirNames": [
     "julia",
     "jl"
-  ]
+  ],
+  "buildSystems": [
+    "Pkg"
+  ],
+  "testing": "Test (Pkg.test)",
+  "linting": null
 }

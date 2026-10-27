@@ -1,9 +1,17 @@
 {
+  "name": "Wren",
+  "homepage": "https://wren.io",
+  "summary": "Small, fast, class-based scripting language for embedding.",
   "abbreviation": null,
   "dependency": "wren_cli",
   "lintDependency": null,
   "detect": [],
   "detectSources": [
     "*.wren"
-  ]
+  ],
+  "buildSystems": [
+    "wren_cli"
+  ],
+  "testing": "test scripts",
+  "linting": null
 }

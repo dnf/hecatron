@@ -1,4 +1,7 @@
 {
+  "name": "Objective-C",
+  "homepage": "https://developer.apple.com/documentation/objectivec",
+  "summary": "Smalltalk-style messaging on C; Apple's language before Swift.",
   "abbreviation": "objc",
   "dependency": "cc",
   "lintDependency": null,
@@ -20,5 +23,13 @@
     "meson.build",
     "configure.ac",
     "Makefile"
-  ]
+  ],
+  "buildSystems": [
+    "Xcode",
+    "GNUstep make",
+    "CMake",
+    "make"
+  ],
+  "testing": "XCTest, test programs",
+  "linting": null
 }

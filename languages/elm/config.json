@@ -1,4 +1,7 @@
 {
+  "name": "Elm",
+  "homepage": "https://elm-lang.org",
+  "summary": "Pure functional language for web front ends, with no runtime exceptions.",
   "abbreviation": "el",
   "dependency": "elm",
   "lintDependency": null,
@@ -7,5 +10,10 @@
   ],
   "unsupported": [
     "linux-aarch64"
-  ]
+  ],
+  "buildSystems": [
+    "elm"
+  ],
+  "testing": "elm-test",
+  "linting": "elm-review"
 }

@@ -1,8 +1,16 @@
 {
+  "name": "Nim",
+  "homepage": "https://nim-lang.org",
+  "summary": "Python-like syntax compiled to C, with powerful macros.",
   "abbreviation": "ni",
   "dependency": "nim",
   "lintDependency": null,
   "detect": [
     "*.nimble"
-  ]
+  ],
+  "buildSystems": [
+    "Nimble"
+  ],
+  "testing": "nimble test",
+  "linting": null
 }

@@ -1,4 +1,7 @@
 {
+  "name": "C",
+  "homepage": "https://www.open-std.org/jtc1/sc22/wg14/",
+  "summary": "The portable systems language most others build on.",
   "abbreviation": null,
   "dependency": "cmake",
   "lintDependency": null,
@@ -15,5 +18,13 @@
   "dirNames": [
     "c",
     "c_glib"
-  ]
+  ],
+  "buildSystems": [
+    "CMake",
+    "Meson",
+    "Autotools",
+    "make"
+  ],
+  "testing": "CTest, Meson test, make check",
+  "linting": null
 }

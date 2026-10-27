@@ -1,4 +1,7 @@
 {
+  "name": "Crystal",
+  "homepage": "https://crystal-lang.org",
+  "summary": "Ruby-like syntax, statically typed and compiled to native code.",
   "abbreviation": "cr",
   "dependency": "crystal",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   "dirNames": [
     "crystal",
     "cr"
-  ]
+  ],
+  "buildSystems": [
+    "Shards"
+  ],
+  "testing": "crystal spec",
+  "linting": "crystal tool format"
 }

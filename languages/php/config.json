@@ -1,8 +1,16 @@
 {
+  "name": "PHP",
+  "homepage": "https://www.php.net",
+  "summary": "The web's server-side workhorse.",
   "abbreviation": null,
   "dependency": "php",
   "lintDependency": null,
   "detect": [
     "composer.json"
-  ]
+  ],
+  "buildSystems": [
+    "Composer"
+  ],
+  "testing": "PHPUnit",
+  "linting": "PHPStan, PHP_CodeSniffer, PHP CS Fixer"
 }

@@ -1,4 +1,7 @@
 {
+  "name": "C++",
+  "homepage": "https://isocpp.org",
+  "summary": "Zero-overhead systems language with templates and RAII.",
   "abbreviation": "c++",
   "dependency": "cmake",
   "lintDependency": null,
@@ -20,5 +23,13 @@
     "c++",
     "cxx",
     "cc"
-  ]
+  ],
+  "buildSystems": [
+    "CMake",
+    "Meson",
+    "Autotools",
+    "make"
+  ],
+  "testing": "CTest, Meson test, make check",
+  "linting": null
 }

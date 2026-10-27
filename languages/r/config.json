@@ -1,4 +1,7 @@
 {
+  "name": "R",
+  "homepage": "https://www.r-project.org",
+  "summary": "The statistics and data analysis language.",
   "abbreviation": null,
   "dependency": "Rscript",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   "dirNames": [
     "r",
     "R"
-  ]
+  ],
+  "buildSystems": [
+    "R packages (DESCRIPTION)"
+  ],
+  "testing": "testthat",
+  "linting": "lintr"
 }

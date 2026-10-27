@@ -1,9 +1,19 @@
 {
+  "name": "Groovy",
+  "homepage": "https://groovy-lang.org",
+  "summary": "Dynamic, Java-compatible language for the JVM.",
   "abbreviation": "gy",
   "dependency": "groovy",
   "lintDependency": null,
   "detect": [],
   "detectSources": [
     "*.groovy"
-  ]
+  ],
+  "buildSystems": [
+    "Gradle",
+    "Maven",
+    "groovyc"
+  ],
+  "testing": "JUnit, Spock",
+  "linting": "Gradle check"
 }

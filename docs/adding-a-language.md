@@ -66,7 +66,10 @@ tracked files.
 
 ## Checklist
 
-- [ ] `config.json` with `dependency` and `detect`
+- [ ] `config.json` with `dependency` and `detect`, and for
+      [languages.md](languages.md) `name`, `homepage`, `summary`,
+      `buildSystems`, `testing` and `linting`; then run
+      `python3 libexec/codegen/languages_doc.py`
 - [ ] `install.sh` and `uninstall.sh` for macOS and Linux, idempotent
 - [ ] `doctor.sh` if the toolchain can be present but broken
 - [ ] `dockerfile` snippet

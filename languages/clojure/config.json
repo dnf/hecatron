@@ -1,4 +1,7 @@
 {
+  "name": "Clojure",
+  "homepage": "https://clojure.org",
+  "summary": "A Lisp on the JVM built around immutable data.",
   "abbreviation": "clj",
   "dependency": "clojure",
   "lintDependency": null,
@@ -9,5 +12,11 @@
   "dirNames": [
     "clojure",
     "clj"
-  ]
+  ],
+  "buildSystems": [
+    "Clojure CLI (deps.edn)",
+    "Leiningen"
+  ],
+  "testing": "clojure.test",
+  "linting": "clj-kondo"
 }

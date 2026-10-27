@@ -1,4 +1,7 @@
 {
+  "name": "Pascal",
+  "homepage": "https://www.freepascal.org",
+  "summary": "Structured, strongly typed language, with Free Pascal.",
   "abbreviation": "pas",
   "dependency": "fpc",
   "lintDependency": null,
@@ -15,5 +18,11 @@
     "pascal",
     "delphi",
     "fpc"
-  ]
+  ],
+  "buildSystems": [
+    "Free Pascal",
+    "make"
+  ],
+  "testing": "test programs, make check",
+  "linting": null
 }

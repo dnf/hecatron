@@ -1,4 +1,7 @@
 {
+  "name": "Elixir",
+  "homepage": "https://elixir-lang.org",
+  "summary": "Functional, concurrent language on the Erlang VM.",
   "abbreviation": "ex",
   "dependency": "mix",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   "dirNames": [
     "elixir",
     "ex"
-  ]
+  ],
+  "buildSystems": [
+    "Mix"
+  ],
+  "testing": "ExUnit",
+  "linting": "mix format, Credo"
 }

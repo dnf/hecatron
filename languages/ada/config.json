@@ -1,4 +1,7 @@
 {
+  "name": "Ada",
+  "homepage": "https://ada-lang.io",
+  "summary": "Safety-critical systems language with strong typing and contracts (SPARK).",
   "abbreviation": "ad",
   "dependency": "gnat",
   "lintDependency": null,
@@ -9,5 +12,11 @@
   "path": [
     "~/.local/bin",
     "~/.local/share/alire/toolchains/*/bin"
-  ]
+  ],
+  "buildSystems": [
+    "Alire",
+    "GPRbuild"
+  ],
+  "testing": "Alire, GPRbuild test projects",
+  "linting": null
 }

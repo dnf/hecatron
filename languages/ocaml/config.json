@@ -1,4 +1,7 @@
 {
+  "name": "OCaml",
+  "homepage": "https://ocaml.org",
+  "summary": "Fast functional language with type inference and modules.",
   "abbreviation": "ml",
   "dependency": "opam",
   "lintDependency": null,
@@ -8,5 +11,10 @@
   "dirNames": [
     "ocaml",
     "ml"
-  ]
+  ],
+  "buildSystems": [
+    "dune"
+  ],
+  "testing": "dune runtest",
+  "linting": "ocamlformat, dune @check"
 }

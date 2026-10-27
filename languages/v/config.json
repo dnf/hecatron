@@ -1,8 +1,16 @@
 {
+  "name": "V",
+  "homepage": "https://vlang.io",
+  "summary": "Simple, fast-compiling language in the spirit of Go.",
   "abbreviation": null,
   "dependency": "v",
   "lintDependency": null,
   "detect": [
     "v.mod"
-  ]
+  ],
+  "buildSystems": [
+    "v"
+  ],
+  "testing": "v test",
+  "linting": "v fmt, v vet"
 }

@@ -1,8 +1,16 @@
 {
+  "name": "Prolog",
+  "homepage": "https://www.swi-prolog.org",
+  "summary": "Logic programming, with SWI-Prolog.",
   "abbreviation": "swi",
   "dependency": "swipl",
   "lintDependency": null,
   "detect": [
     "pack.pl"
-  ]
+  ],
+  "buildSystems": [
+    "SWI-Prolog packs"
+  ],
+  "testing": "plunit",
+  "linting": null
 }

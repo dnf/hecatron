@@ -1,8 +1,16 @@
 {
+  "name": "Zig",
+  "homepage": "https://ziglang.org",
+  "summary": "Simple systems language and C toolchain, with comptime.",
   "abbreviation": "zg",
   "dependency": "zig",
   "lintDependency": null,
   "detect": [
     "build.zig"
-  ]
+  ],
+  "buildSystems": [
+    "zig build"
+  ],
+  "testing": "zig build test",
+  "linting": "zig fmt"
 }

@@ -1,4 +1,7 @@
 {
+  "name": "Lua",
+  "homepage": "https://www.lua.org",
+  "summary": "Lightweight embeddable scripting language.",
   "abbreviation": "lu",
   "dependency": "lua",
   "lintDependency": "luacheck",
@@ -10,5 +13,10 @@
   ],
   "path": [
     "~/.luarocks/bin"
-  ]
+  ],
+  "buildSystems": [
+    "LuaRocks"
+  ],
+  "testing": "busted",
+  "linting": "luacheck"
 }
