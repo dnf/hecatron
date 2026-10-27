@@ -431,7 +431,10 @@ Go, luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula).
 `doctor --fix` runs the installer of each unhealthy language and checks
 again. Installers that install project dependencies (`bundle install`, `uv
 sync`) do so in every component by running `hecatron deps` (`impl_deps` in
-`_common.sh`; §9).
+`_common.sh`; §9). `hecatron install` with no languages named runs those
+once every toolchain is in, since one language's dependencies can need
+another's toolchain (cucumber/messages' `npm ci` runs a generator needing
+Ruby); a failure there fails the install and names the language.
 
 ## 13. Distribution
 
