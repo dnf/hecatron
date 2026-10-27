@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
-# Uninstall Scala
+# Uninstall Scala's compiler. The JDK is shared by the JVM languages and
+# other projects, so it stays (see Java's uninstall.sh).
 source "$(dirname "$0")/../_common.sh"
 
-uninstall_macos() {
-    echo "JDK 17 is shared by Java, Kotlin, Scala, and Groovy — not removing."
-    echo "To force: brew uninstall openjdk@17"
-}
-
+uninstall_macos() { brew uninstall scala 2>/dev/null || true; }
 uninstall_linux() {
-    echo "JDK 17 is shared by Java, Kotlin, Scala, and Groovy — not removing."
-    echo "To force: sudo apt-get remove -y openjdk-17-jdk-headless"
+    local _tool
+    for _tool in scala scalac; do
+        case "$(readlink "/usr/local/bin/${_tool}" 2>/dev/null)" in
+            /opt/scala/*) $SUDO rm -f "/usr/local/bin/${_tool}" ;;
+        esac
+    done
+    $SUDO rm -rf "/opt/scala"
 }
 
 log "Uninstalling Scala..."

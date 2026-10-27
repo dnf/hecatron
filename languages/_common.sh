@@ -299,6 +299,36 @@ _maven_current() {
     _version="$(mvn --version 2>/dev/null | sed -n '1s/^Apache Maven \([0-9]*\)\.\([0-9]*\).*/\1 \2/p')"
     [ -n "${_version}" ] && { set -- ${_version}; [ "$1" -gt 3 ] || { [ "$1" -eq 3 ] && [ "$2" -ge 9 ]; }; }
 }
+# A JVM language's own compiler and runner (Groovy, Scala, Kotlin), from its
+# official distribution archive (.zip or .tar.gz with one top directory) into
+# /opt/<name>/<version>, with the named commands linked into /usr/local/bin.
+#   jvm_language_install groovy 5.1.3 https://.../groovy-binary-5.1.3.zip groovy groovyc
+jvm_language_install() {
+    local _name="$1" _version="$2" _url="$3" _root _archive _tool
+    shift 3
+    _root="/opt/${_name}/${_version}"
+    if [ ! -d "${_root}/bin" ]; then
+        log "Downloading ${_name} ${_version}..."
+        _archive="$(mktemp)"
+        curl -fsSL -o "${_archive}" "${_url}"
+        $SUDO mkdir -p "${_root}"
+        case "${_url}" in
+            *.zip)
+                has unzip || apt_install unzip
+                local _unpacked
+                _unpacked="$(mktemp -d)"
+                unzip -q "${_archive}" -d "${_unpacked}"
+                $SUDO cp -R "${_unpacked}"/*/. "${_root}/"
+                rm -rf "${_unpacked:?}" ;;
+            *) $SUDO tar -C "${_root}" --strip-components=1 -xzf "${_archive}" ;;
+        esac
+        rm -f "${_archive}"
+    fi
+    for _tool in "$@"; do
+        $SUDO ln -sfn "${_root}/bin/${_tool}" "/usr/local/bin/${_tool}"
+    done
+}
+
 # Maven's own distribution: Ubuntu 24.04's Maven is 3.8, which projects that
 # require 3.9 (maven-enforcer's requireMavenVersion) refuse.
 _install_maven() {

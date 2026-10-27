@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-# Default lint hook: dune's formatting check, which covers the dune files, and
-# the OCaml sources too when the project configures ocamlformat (.ocamlformat).
+# Default lint hook: with ocamlformat configured (.ocamlformat), dune's
+# formatting check over the dune files and OCaml sources; without it, dune
+# would still try to format the sources and fail for want of ocamlformat, so
+# type-check everything instead (@check, warnings included).
 # shellcheck source=_dune.sh source-path=SCRIPTDIR
 source "$(dirname "$0")/_dune.sh"
-run dune build @fmt
+if [ -f .ocamlformat ]; then
+    run dune build @fmt
+else
+    run dune build @check
+fi

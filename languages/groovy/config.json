@@ -1,6 +1,6 @@
 {
   "abbreviation": "gy",
-  "dependency": "java",
+  "dependency": "groovy",
   "lintDependency": null,
   "detect": [],
   "detectSources": [

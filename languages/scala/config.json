@@ -1,6 +1,6 @@
 {
   "abbreviation": "sc",
-  "dependency": "java",
+  "dependency": "scalac",
   "lintDependency": null,
   "detect": [
     "build.sbt"

@@ -11,6 +11,10 @@ minor version can change behaviour. Numbers are
   sourced from a clone, it also sets up the current shell. Rerun to update.
   It first installs what hecatron needs if it's missing: the Command Line
   Tools on macOS, and git, Python 3 and perl on Linux (apt, dnf or zypper).
+- **A smoke test for every language:** each builds and runs a small program
+  with the freshly installed toolchain, and checks its output.
+- **Groovy, Scala and Kotlin install their own compilers** (Groovy 5.1.3,
+  Scala 3.3.8 LTS, Kotlin 2.4.21), not only the JDK.
 - **Default hooks for every language.** A conventional project needs no hook
   files: each language's test, lint, build and clean commands are chosen from
   the build files present (#36).

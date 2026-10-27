@@ -1,7 +1,9 @@
-# Smoke test for scala: the installer provides the JDK (scalac and sbt come
-# only with a component's build.sbt), so build and run a hello world on it.
+# Smoke test for scala: compile a small Scala 3 program with scalac and run
+# it with scala, in a scratch directory.
 # shellcheck shell=bash
 set -euo pipefail
-printf 'class Hello { public static void main(String[] a) { System.out.println(6 * 7); } }\n' > Hello.java
-javac Hello.java
-[ "$(java Hello)" = "42" ]
+printf '@main def hello(): Unit =\n  println((1 to 9).sum)\n' > Hello.scala
+mkdir out && scalac -d out Hello.scala
+_out="$(scala -classpath out hello)"
+[ "${_out}" = "45" ] || { echo "expected 45, got: ${_out}" >&2; exit 1; }
+echo "${_out}"

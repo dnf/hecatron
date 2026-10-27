@@ -1,6 +1,6 @@
 {
   "abbreviation": "kt",
-  "dependency": "java",
+  "dependency": "kotlinc",
   "lintDependency": null,
   "detect": [],
   "detectSources": [
