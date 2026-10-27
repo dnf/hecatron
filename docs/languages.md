@@ -35,7 +35,7 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [Haxe](https://haxe.org) | One language that compiles to many targets: JS, C++, JVM, Python... | haxelib (.hxml) | utest | – | – |
 | [Janet](https://janet-lang.org) | Small, embeddable Lisp-like scripting language. | jpm | jpm test | – | – |
 | [Java](https://dev.java) | The JVM's flagship language. | Maven, Gradle | JUnit | Gradle check | 25.0.5 (LTS) |
-| [JavaScript](https://developer.mozilla.org/docs/Web/JavaScript) | The web's language, on Node.js. | npm | npm test (node:test, Jest...) | npm run lint (ESLint...) | – |
+| [JavaScript](https://developer.mozilla.org/docs/Web/JavaScript) | The web's language, on Node.js. | npm, pnpm, Yarn or Bun | npm test (node:test, Jest...) | npm run lint (ESLint...) | – |
 | [Julia](https://julialang.org) | Fast dynamic language for numerical and scientific computing. | Pkg | Test (Pkg.test) | – | – |
 | [Kotlin](https://kotlinlang.org) | Concise, null-safe language for the JVM, Android and beyond. | Gradle, Maven, kotlinc | JUnit, kotlin.test | Gradle check (detekt, ktlint) | – |
 | [Lua](https://www.lua.org) | Lightweight embeddable scripting language. | LuaRocks | busted | luacheck | – |
@@ -60,7 +60,7 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [Scala](https://www.scala-lang.org) | Functional and object-oriented language for the JVM. | sbt, Gradle, Maven, scalac | MUnit, ScalaTest | – | – |
 | [Swift](https://www.swift.org) | Apple's safe, fast language, also on Linux. | Swift Package Manager | XCTest, Swift Testing | – | – |
 | [Tcl](https://www.tcl-lang.org) | Embeddable command language, with Tk. | TEA (make) | tcltest | – | – |
-| [TypeScript](https://www.typescriptlang.org) | JavaScript with static types. | npm (tsc) | npm test | npm run lint, tsc --noEmit | 24.22.1 (LTS) |
+| [TypeScript](https://www.typescriptlang.org) | JavaScript with static types. | npm, pnpm, Yarn or Bun (tsc) | npm test | npm run lint, tsc --noEmit | 24.22.1 (LTS) |
 | [V](https://vlang.io) | Simple, fast-compiling language in the spirit of Go. | v | v test | v fmt, v vet | – |
 | [VB.NET](https://learn.microsoft.com/dotnet/visual-basic/) | Visual Basic for .NET. | .NET SDK (dotnet) | dotnet test | dotnet format | – |
 | [Wren](https://wren.io) | Small, fast, class-based scripting language for embedding. | wren_cli | test scripts | – | – |

@@ -48,7 +48,7 @@
     }
   ],
   "buildSystems": [
-    "npm (tsc)"
+    "npm, pnpm, Yarn or Bun (tsc)"
   ],
   "testing": "npm test",
   "linting": "npm run lint, tsc --noEmit"

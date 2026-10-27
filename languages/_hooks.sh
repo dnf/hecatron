@@ -392,10 +392,11 @@ import json, sys
 sys.exit(0 if sys.argv[1] in (json.load(open("package.json")).get("scripts") or {}) else 1)
 ' "$1"
 }
-# Dependencies first, when they aren't installed yet.
+# Dependencies first, when they aren't installed yet (in node_modules, or
+# Yarn Plug'n'Play's .pnp.cjs), with the package's own package manager.
 npm_deps() {
-    [ -d node_modules ] && return
-    if [ -f package-lock.json ]; then run npm ci; else run npm install; fi
+    { [ -d node_modules ] || [ -f .pnp.cjs ]; } && return
+    run "${node_pm[@]}" "$(node_install_command)"
 }
 
 # Mix: a locked project's dependencies first, when they aren't fetched yet.
@@ -459,26 +460,30 @@ dart_deps() {
     if [ ! -f .dart_tool/package_config.json ]; then run "$(dart_tool)" pub get; fi
 }
 
-# Node.js packages (TypeScript, JavaScript): the package's own npm scripts.
+# Node.js packages (TypeScript, JavaScript): the package's own scripts, run
+# by the package manager it declares (typescript/package-manager.sh).
 node_hook() {
     [ -f package.json ] || unknown "no package.json"
+    # shellcheck source=languages/typescript/package-manager.sh
+    source "$(dirname "${BASH_SOURCE[0]}")/typescript/package-manager.sh"
+    node_pm_command
     case "$1" in
         test)
             npm_deps
             npm_script test || unknown "package.json has no test script"
-            run npm test ;;
+            run "${node_pm[@]}" run test ;;
         lint)
             npm_deps
-            if npm_script lint; then run npm run lint
+            if npm_script lint; then run "${node_pm[@]}" run lint
             elif [ -f tsconfig.json ] && [ -x node_modules/.bin/tsc ]; then run node_modules/.bin/tsc --noEmit
             else skip "package.json has no lint script"; fi ;;
         build)
             npm_deps
-            if npm_script build; then run npm run build
+            if npm_script build; then run "${node_pm[@]}" run build
             elif [ -f tsconfig.json ] && [ -x node_modules/.bin/tsc ]; then run node_modules/.bin/tsc
             else skip "package.json has no build script"; fi ;;
         clean)
-            if npm_script clean; then run npm run clean
+            if npm_script clean; then run "${node_pm[@]}" run clean
             else skip "package.json has no clean script"; fi ;;
     esac
 }

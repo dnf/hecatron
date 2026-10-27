@@ -13,6 +13,11 @@ minor version can change behaviour. Numbers are
   `csharp/src/`), or a root Makefile's target named for the directory
   (`check_cxx`).
 
+- **Node.js uses the project's package manager:** the hooks and installers
+  run pnpm, Yarn or Bun when `packageManager` or the lockfile says so (pnpm
+  and Yarn through Corepack), so a pnpm or Yarn workspace installs instead of
+  failing on `workspace:*`.
+
 - **Rust repairs an interrupted install:** a rustup left with no default
   toolchain (an install killed mid-download) is reported by the doctor and
   fixed by the installer.

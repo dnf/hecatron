@@ -306,7 +306,10 @@ directory, scoped to it as far as the tool allows; elsewhere the hook acts
 where the build file is (`swift --package-path`, the CMake project's
 `build/`). A CMake or Meson file counts only when it declares a `project()`,
 and a root Makefile only through a target named for the directory or language
-(`check_cxx` for `cxx/`).
+(`check_cxx` for `cxx/`). Node.js hooks and installers use the package manager
+the package declares (`packageManager`, else its lockfile, here or in the
+workspace above; pnpm and Yarn through Corepack), installing Corepack or Bun
+only when a component needs them.
 
 Environment for hooks: `HECATRON_ROOT` (project root), `HECATRON_COMPONENT`,
 `HECATRON_LANG`, `HECATRON_HOME`, and `_common.sh` helpers available by

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Install Node.js (TypeScript runtime)
 source "$(dirname "$0")/../_common.sh"
+# shellcheck source=languages/typescript/package-manager.sh
+source "$(dirname "$0")/../typescript/package-manager.sh"
 
 # Official builds, one directory per version, side by side.
 if [ "${OS}" = "macos" ]; then
@@ -59,11 +61,16 @@ _install_versions() {
     done <<<"${specs}"
 }
 
-# Only libraries with a package.json have dependencies to install.
-_npm_install() { [ ! -f package.json ] || npm install; }
+# Only libraries with a package.json have dependencies to install, with the
+# package manager each declares.
+_node_install() {
+    [ -f package.json ] || return 0
+    node_package_manager_ensure
+    "${node_pm[@]}" install
+}
 deps() {
     _install_versions
-    each_impl typescript _npm_install
+    each_impl typescript _node_install
 }
 
 log "Installing TypeScript (Node.js)..."

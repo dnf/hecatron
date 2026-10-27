@@ -1,0 +1,16 @@
+{
+  "name": "calculator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "yarn@4.5.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "add": "workspace:*"
+  }
+}
