@@ -46,7 +46,7 @@ func TestChanged(t *testing.T) {
 	git("add", "-A")
 	git("commit", "-qm", "main")
 	git("checkout", "-qb", "work")
-	os.WriteFile(filepath.Join(root, "b/one/x"), []byte("changed\n"), 0o644)
+	writeFile(t, filepath.Join(root, "b/one/x"), "changed\n")
 
 	env := append([]string{"HECATRON_HOME=" + home, "HECATRON_BUILTIN_LANGUAGES=", "HECATRON_OUTPUT=agent", "CI=", "TF_BUILD=",
 		"GITHUB_BASE_REF=", "CI_MERGE_REQUEST_DIFF_BASE_SHA=", "BITBUCKET_PR_DESTINATION_BRANCH=", "SYSTEM_PULLREQUEST_TARGETBRANCH="}, gitEnv...)
@@ -57,7 +57,9 @@ func TestChanged(t *testing.T) {
 			if len(data) > 0 {
 				got[lang] = strings.TrimSpace(string(data))
 			}
-			os.Remove(filepath.Join(root, "ran-"+lang))
+			if err := os.Remove(filepath.Join(root, "ran-"+lang)); err != nil && !os.IsNotExist(err) {
+				t.Fatal(err)
+			}
 		}
 		return got
 	}
@@ -80,7 +82,7 @@ func TestChanged(t *testing.T) {
 	}
 
 	git("commit", "-qam", "one")
-	os.WriteFile(filepath.Join(root, "README.md"), []byte("x\n"), 0o644)
+	writeFile(t, filepath.Join(root, "README.md"), "x\n")
 	nothing := runIn(t, root, env, binary, "lint", "--changed", "HEAD")
 	if nothing.status != 0 || len(ran()) != 0 || times.ReplaceAllString(nothing.stdout, "X") !=
 		"Changed since HEAD (--changed, X): 1 file; nothing to run: none is in a language's directory or a build file (README.md)\n" {
@@ -92,7 +94,7 @@ func TestChanged(t *testing.T) {
 	}
 	ran()
 
-	os.WriteFile(filepath.Join(root, ".hecatron/languages/two/test.sh"), []byte(hook+"# changed\n"), 0o644)
+	writeFile(t, filepath.Join(root, ".hecatron/languages/two/test.sh"), hook+"# changed\n")
 	if got := runIn(t, root, env, binary, "test", "--changed"); got.status != 0 || !equalMaps(ran(), map[string]string{"one": "b", "two": "a"}) {
 		t.Errorf("a hook: %+v", got)
 	}

@@ -68,11 +68,11 @@ func ReleaseLineParts(home, lang string) int {
 // ReportFailure is what the scripts print when a tool's report can't be
 // read: why, and the tool's output (its first 4000 characters).
 func ReportFailure(stderr io.Writer, err error, lang, format, text string) {
-	fmt.Fprintf(stderr, "error: %s: couldn't read the %s report (%v); its output was:\n", lang, format, err)
+	_, _ = fmt.Fprintf(stderr, "error: %s: couldn't read the %s report (%v); its output was:\n", lang, format, err)
 	if runes := []rune(text); len(runes) > 4000 {
 		text = string(runes[:4000])
 	}
-	fmt.Fprintln(stderr, text)
+	_, _ = fmt.Fprintln(stderr, text)
 }
 
 // RunAuditReport is audit.py's `report` command once the report is read:
@@ -84,10 +84,10 @@ func RunAuditReport(stdout, stderr io.Writer, format, text, lang, component stri
 		// What was printed before the error comes after it, as Python's
 		// buffered stdout does when it isn't a terminal.
 		ReportFailure(stderr, err, lang, format, text)
-		stdout.Write(out.Bytes())
+		_, _ = stdout.Write(out.Bytes())
 		return 1
 	}
-	stdout.Write(out.Bytes())
+	_, _ = stdout.Write(out.Bytes())
 	return status
 }
 
@@ -100,6 +100,6 @@ func RunOutdatedReport(stdout, stderr io.Writer, format, text, lang, component, 
 		ReportFailure(stderr, err, lang, format, text)
 		return 1
 	}
-	stdout.Write(out.Bytes())
+	_, _ = stdout.Write(out.Bytes())
 	return status
 }

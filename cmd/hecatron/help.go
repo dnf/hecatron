@@ -80,7 +80,7 @@ func (c *cli) agentsHelp() int {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 1
 	}
-	os.Stdout.Write(text)
+	_, _ = os.Stdout.Write(text)
 	return 0
 }
 
@@ -89,7 +89,7 @@ func (c *cli) version() int {
 	if err != nil {
 		return 1
 	}
-	os.Stdout.Write(version)
+	_, _ = os.Stdout.Write(version)
 	return 0
 }
 

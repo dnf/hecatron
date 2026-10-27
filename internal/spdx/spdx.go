@@ -176,11 +176,11 @@ func tokenize(text string) []string {
 		}
 	}
 	for _, r := range text {
-		switch {
-		case r == '(' || r == ')':
+		switch r {
+		case '(', ')':
 			flush()
 			tokens = append(tokens, string(r))
-		case r == ' ' || r == '\t' || r == '\n':
+		case ' ', '\t', '\n':
 			flush()
 		default:
 			current.WriteRune(r)

@@ -95,9 +95,10 @@ func getenv(env []string, name string) string {
 }
 
 func signalAll(pgid int, token string, sig syscall.Signal) {
-	syscall.Kill(-pgid, sig)
+	// Best effort: a process may have exited already; anyLeft checks.
+	_ = syscall.Kill(-pgid, sig)
 	for _, pid := range marked(token) {
-		syscall.Kill(pid, sig)
+		_ = syscall.Kill(pid, sig)
 	}
 }
 

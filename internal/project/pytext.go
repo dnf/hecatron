@@ -141,9 +141,9 @@ func pyNormpath(path string) string {
 func cleanSlashPath(path string) string {
 	var parts []string
 	for _, part := range strings.Split(path, "/") {
-		switch {
-		case part == "" || part == ".":
-		case part == "..":
+		switch part {
+		case "", ".":
+		case "..":
 			if len(parts) > 0 && parts[len(parts)-1] != ".." {
 				parts = parts[:len(parts)-1]
 			} else if !strings.HasPrefix(path, "/") {
@@ -289,16 +289,16 @@ func shellQuote(s string) string {
 	if s == "" {
 		return "''"
 	}
-	safe := true
 	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.IndexByte("_@%+=:,./-", c) >= 0) {
-			safe = false
-			break
+		if !unquoted(s[i]) {
+			return "'" + strings.ReplaceAll(s, "'", `'"'"'`) + "'"
 		}
 	}
-	if safe {
-		return s
-	}
-	return "'" + strings.ReplaceAll(s, "'", `'"'"'`) + "'"
+	return s
+}
+
+// unquoted is whether shlex.quote leaves a byte as it is: an ASCII word
+// character or one of @%+=:,./-.
+func unquoted(c byte) bool {
+	return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.IndexByte("_@%+=:,./-", c) >= 0
 }

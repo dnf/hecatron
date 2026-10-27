@@ -11,6 +11,9 @@ import (
 // Human output off a terminal is run-parallel.sh's: a time axis, a bar per
 // job scaled to the longest, the tally and the log directory, then the log
 // of each failed job.
+//
+// Output here and in render.go goes to the terminal: a write that fails
+// there has nowhere to be reported, so its error is dropped.
 
 func labelWidth(results []Result) int {
 	width := 6
@@ -32,13 +35,13 @@ func WriteNothingRan(w io.Writer, r *Report) {
 	for _, result := range r.Results {
 		switch result.Status {
 		case StatusSeparator:
-			fmt.Fprintln(w)
+			_, _ = fmt.Fprintln(w)
 		case StatusDisabled:
 			disabled++
-			fmt.Fprintf(w, "  ⊘ %-*s      ⊘ disabled\n", width, result.Label)
+			_, _ = fmt.Fprintf(w, "  ⊘ %-*s      ⊘ disabled\n", width, result.Label)
 		default:
 			notInstalled++
-			fmt.Fprintf(w, "  - %-*s    - not installed\n", width, result.Label)
+			_, _ = fmt.Fprintf(w, "  - %-*s    - not installed\n", width, result.Label)
 		}
 	}
 	summary := "0/0 passed"
@@ -48,7 +51,7 @@ func WriteNothingRan(w io.Writer, r *Report) {
 	if disabled > 0 {
 		summary += fmt.Sprintf(", %d disabled", disabled)
 	}
-	fmt.Fprintf(w, "\n%s\nLogs: %s/\n", summary, r.LogDir)
+	_, _ = fmt.Fprintf(w, "\n%s\nLogs: %s/\n", summary, r.LogDir)
 }
 
 // WriteChart writes the bar chart of a finished run, width columns wide.
@@ -69,11 +72,11 @@ func WriteChart(w io.Writer, r *Report, slotMode bool, width int) {
 	for _, result := range r.Results {
 		switch result.Status {
 		case StatusSeparator:
-			fmt.Fprintln(w)
+			_, _ = fmt.Fprintln(w)
 		case StatusDisabled:
-			fmt.Fprintf(w, "  ⊘ %-*s      ⊘ disabled\n", labelW, result.Label)
+			_, _ = fmt.Fprintf(w, "  ⊘ %-*s      ⊘ disabled\n", labelW, result.Label)
 		case StatusNotInstall:
-			fmt.Fprintf(w, "  - %-*s      - not installed\n", labelW, result.Label)
+			_, _ = fmt.Fprintf(w, "  - %-*s      - not installed\n", labelW, result.Label)
 		default:
 			ds := Deciseconds(result.Duration)
 			bar := min(max(int(ds*int64(maxBar)/longest), 1), maxBar)
@@ -84,7 +87,7 @@ func WriteChart(w io.Writer, r *Report, slotMode bool, width int) {
 			case TimedOut:
 				mark, note = "✗", " timed out ("+FormatLimit(result.Limit.Duration)+" limit: "+result.Limit.Describe()+")"
 			}
-			fmt.Fprintf(w, "  %s %-*s %6s %s%s\n", mark, labelW, result.Label, formatDeciseconds(ds), strings.Repeat("█", bar), note)
+			_, _ = fmt.Fprintf(w, "  %s %-*s %6s %s%s\n", mark, labelW, result.Label, formatDeciseconds(ds), strings.Repeat("█", bar), note)
 		}
 	}
 }
@@ -111,7 +114,7 @@ func writeAxis(w io.Writer, longest int64, prefixW, maxBar int) {
 			end = col + len(label)
 		}
 	}
-	fmt.Fprintln(w, line.String())
+	_, _ = fmt.Fprintln(w, line.String())
 }
 
 // WriteTally writes the passed count, the log directory and each failed
@@ -137,20 +140,20 @@ func WriteTally(w io.Writer, r *Report) {
 	if disabled > 0 {
 		extra += fmt.Sprintf(", %d disabled", disabled)
 	}
-	fmt.Fprintf(w, "\n%d/%d passed%s (%s wall time)\nLogs: %s/\n", passed, passed+failed+timedOut, extra,
+	_, _ = fmt.Fprintf(w, "\n%d/%d passed%s (%s wall time)\nLogs: %s/\n", passed, passed+failed+timedOut, extra,
 		formatDeciseconds(Deciseconds(r.Wall)), r.LogDir)
 	if failed+timedOut == 0 {
 		return
 	}
-	fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w)
 	for _, result := range r.Results {
 		if !result.Unsuccessful() {
 			continue
 		}
-		fmt.Fprintf(w, "=== %s ===\n", result.Label)
+		_, _ = fmt.Fprintf(w, "=== %s ===\n", result.Label)
 		if data, err := os.ReadFile(result.Log); err == nil {
-			w.Write(data)
+			_, _ = w.Write(data)
 		}
-		fmt.Fprintln(w)
+		_, _ = fmt.Fprintln(w)
 	}
 }

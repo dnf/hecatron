@@ -77,7 +77,7 @@ func (l *Live) Finished(index int, result Result) {
 // Start begins redrawing.
 func (l *Live) Start() {
 	l.begin = time.Now()
-	fmt.Fprint(l.out, "\x1b[?25l")
+	_, _ = fmt.Fprint(l.out, "\x1b[?25l")
 	go func() {
 		ticker := time.NewTicker(100 * time.Millisecond)
 		defer ticker.Stop()
@@ -86,7 +86,7 @@ func (l *Live) Start() {
 			select {
 			case <-l.stop:
 				l.draw()
-				fmt.Fprint(l.out, "\x1b[?25h")
+				_, _ = fmt.Fprint(l.out, "\x1b[?25h")
 				close(l.stopped)
 				return
 			case <-ticker.C:
@@ -184,7 +184,7 @@ func (l *Live) draw() {
 	if extra := l.drawn - len(lines); extra > 0 {
 		fmt.Fprintf(&out, "\x1b[%dA", extra)
 	}
-	io.WriteString(l.out, out.String())
+	_, _ = io.WriteString(l.out, out.String())
 	l.drawn = len(lines)
 	l.frame++
 }

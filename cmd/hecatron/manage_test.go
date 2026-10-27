@@ -249,7 +249,7 @@ func fixtureRepos(t *testing.T, home string) []namedFiles {
 		dirs, _ := filepath.Glob(filepath.Join(home, base))
 		for _, dir := range dirs {
 			files := map[string]string{}
-			filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+			err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
 				if err != nil || d.IsDir() {
 					if d != nil && d.IsDir() && d.Name() == ".hecatron" {
 						return filepath.SkipDir
@@ -263,6 +263,9 @@ func fixtureRepos(t *testing.T, home string) []namedFiles {
 				}
 				return nil
 			})
+			if err != nil {
+				t.Fatal(err)
+			}
 			rel, _ := filepath.Rel(home, dir)
 			repos = append(repos, namedFiles{rel, files})
 		}
@@ -288,7 +291,7 @@ func compareTrees(t *testing.T, a, b string) string {
 	t.Helper()
 	read := func(root string) map[string]string {
 		files := map[string]string{}
-		filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
@@ -308,6 +311,9 @@ func compareTrees(t *testing.T, a, b string) string {
 			files[rel] = strings.ReplaceAll(string(data), root, "ROOT")
 			return nil
 		})
+		if err != nil {
+			t.Fatal(err)
+		}
 		if cache, ok := files[".git/hecatron/detected.json"]; ok {
 			if i := strings.Index(cache, `"config"`); i >= 0 {
 				files[".git/hecatron/detected.json"] = cache[i:]
@@ -344,7 +350,9 @@ func compareTrees(t *testing.T, a, b string) string {
 
 func readTree(root string) map[string]string {
 	files := map[string]string{}
-	filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+	// Its callback never fails: a tree that is missing (.git/hecatron, before
+	// anything wrote it) or unreadable reads as empty.
+	_ = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return nil
 		}

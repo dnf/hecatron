@@ -146,7 +146,7 @@ func FormatDuration(d time.Duration) string {
 // that reruns them. A run where nothing failed is one line.
 func WriteAgent(w io.Writer, r *Report) {
 	if r.Changed != nil {
-		fmt.Fprintln(w, r.Changed.Line)
+		_, _ = fmt.Fprintln(w, r.Changed.Line)
 	}
 	passed, failed, timedOut, skipped := r.counts()
 	summary := fmt.Sprintf("hct %s: %d passed", r.Action, passed)
@@ -159,7 +159,7 @@ func WriteAgent(w io.Writer, r *Report) {
 	if skipped > 0 {
 		summary += fmt.Sprintf(", %d skipped", skipped)
 	}
-	fmt.Fprintf(w, "%s (%s)\n", summary, FormatDuration(r.Wall))
+	_, _ = fmt.Fprintf(w, "%s (%s)\n", summary, FormatDuration(r.Wall))
 	if failed+timedOut == 0 {
 		return
 	}
@@ -180,17 +180,17 @@ func WriteAgent(w io.Writer, r *Report) {
 			reason = "toolchain not found"
 		}
 		if result.Status == TimedOut {
-			fmt.Fprintf(w, "TIMEOUT %s%s stopped at its %s limit (%s), %s, log %s\n", result.Label, where,
+			_, _ = fmt.Fprintf(w, "TIMEOUT %s%s stopped at its %s limit (%s), %s, log %s\n", result.Label, where,
 				FormatLimit(result.Limit.Duration), result.Limit.Describe(), FormatDuration(result.Duration), r.shownPath(result.Log))
 		} else {
-			fmt.Fprintf(w, "FAIL %s%s %s, %s, log %s\n", result.Label, where, reason,
+			_, _ = fmt.Fprintf(w, "FAIL %s%s %s, %s, log %s\n", result.Label, where, reason,
 				FormatDuration(result.Duration), r.shownPath(result.Log))
 		}
 		for _, line := range result.Excerpt.Lines {
-			fmt.Fprintf(w, "  %s\n", line.Text)
+			_, _ = fmt.Fprintf(w, "  %s\n", line.Text)
 		}
 	}
-	fmt.Fprintf(w, "Rerun: %s\n", r.Rerun())
+	_, _ = fmt.Fprintf(w, "Rerun: %s\n", r.Rerun())
 }
 
 type jsonRun struct {
@@ -314,7 +314,7 @@ func WriteAnnotations(w io.Writer, r *Report, workspace string) {
 			if message == "" {
 				message = line.Text
 			}
-			fmt.Fprintf(w, "::error %s,title=%s::%s\n", properties, escapeProperty(title), escapeData(message))
+			_, _ = fmt.Fprintf(w, "::error %s,title=%s::%s\n", properties, escapeProperty(title), escapeData(message))
 			annotated++
 		}
 		if annotated == 0 {
@@ -326,7 +326,7 @@ func WriteAnnotations(w io.Writer, r *Report, workspace string) {
 			if len(text) > 0 {
 				message += "\n" + strings.Join(text, "\n")
 			}
-			fmt.Fprintf(w, "::error title=%s::%s\n", escapeProperty(title), escapeData(message))
+			_, _ = fmt.Fprintf(w, "::error title=%s::%s\n", escapeProperty(title), escapeData(message))
 		}
 	}
 }
@@ -341,7 +341,7 @@ func writeTimedOutAnnotation(w io.Writer, r *Report, result Result) {
 	for _, line := range result.Excerpt.Lines {
 		message += "\n" + line.Text
 	}
-	fmt.Fprintf(w, "::error title=%s::%s\n", escapeProperty(title), escapeData(message))
+	_, _ = fmt.Fprintf(w, "::error title=%s::%s\n", escapeProperty(title), escapeData(message))
 }
 
 func escapeData(s string) string {

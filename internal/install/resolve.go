@@ -180,7 +180,7 @@ func adoptium(version string, platform Platform) (string, string, error) {
 			return "", "", err
 		}
 		body, err := io.ReadAll(response.Body)
-		response.Body.Close()
+		_ = response.Body.Close() // read in full
 		if err != nil {
 			return "", "", err
 		}

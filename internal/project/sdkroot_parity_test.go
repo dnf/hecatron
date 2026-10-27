@@ -61,7 +61,9 @@ func TestSdkrootFromXcrunMatchesProjectPy(t *testing.T) {
 			t.Setenv("PATH", filepath.Join(stubs, c.xcrun)+string(os.PathListSeparator)+os.Getenv("PATH"))
 			t.Setenv("SDKROOT", c.sdkroot)
 			if c.sdkroot == "" {
-				os.Unsetenv("SDKROOT")
+				if err := os.Unsetenv("SDKROOT"); err != nil {
+					t.Fatal(err)
+				}
 			}
 			savedOS, savedSDK := hostOS, xcrunSDK
 			hostOS, xcrunSDK = c.hostOS, new(xcrunCache)

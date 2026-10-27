@@ -182,7 +182,7 @@ func Execute(ctx context.Context, job Job, out io.Writer) (Outcome, Status) {
 	outcome := job.Exec(jobCtx, out)
 	switch {
 	case ctx.Err() == nil && errors.Is(jobCtx.Err(), context.DeadlineExceeded):
-		fmt.Fprintf(out, "hecatron: %s timed out: stopped at its %s limit (%s)\n", job.Label, FormatLimit(job.Limit.Duration), job.Limit.Describe())
+		_, _ = fmt.Fprintf(out, "hecatron: %s timed out: stopped at its %s limit (%s)\n", job.Label, FormatLimit(job.Limit.Duration), job.Limit.Describe())
 		return outcome, TimedOut
 	case outcome.ExitCode != 0:
 		return outcome, Failed

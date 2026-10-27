@@ -622,13 +622,13 @@ func OutdatedReport(w io.Writer, format, text, lang, component, direct, jsonDir 
 		return 1, err
 	}
 	for _, line := range Table(rows) {
-		fmt.Fprintln(w, line)
+		_, _ = fmt.Fprintln(w, line)
 	}
 	noun := "dependencies"
 	if len(rows) == 1 {
 		noun = "dependency"
 	}
-	fmt.Fprintf(w, "%s: %s %d outdated %s\n", component, lang, len(rows), noun)
+	_, _ = fmt.Fprintf(w, "%s: %s %d outdated %s\n", component, lang, len(rows), noun)
 	if jsonDir != "" {
 		if err := os.MkdirAll(jsonDir, 0o777); err != nil {
 			return 1, err

@@ -35,10 +35,12 @@ func TestTimeLimit(t *testing.T) {
 		}
 		pid, _ := strconv.Atoi(strings.TrimSpace(string(data)))
 		if syscall.Kill(pid, 0) == nil {
-			syscall.Kill(pid, syscall.SIGKILL)
+			_ = syscall.Kill(pid, syscall.SIGKILL)
 			t.Errorf("the hook's child (pid %d) outlived the job", pid)
 		}
-		os.Remove(filepath.Join(root, "child.pid"))
+		if err := os.Remove(filepath.Join(root, "child.pid")); err != nil {
+			t.Fatal(err)
+		}
 	}
 	env := []string{"HECATRON_HOME=" + home, "HECATRON_BUILTIN_LANGUAGES=", "HECATRON_OUTPUT=agent", "HECATRON_TIMEOUT="}
 	times := regexp.MustCompile(`\d+(?:\.\d)?s\b`)
