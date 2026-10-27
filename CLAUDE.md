@@ -53,6 +53,12 @@ bin/hecatron self-test    # shellcheck (zero warnings), then the unit tests
 - **Zero warnings.** shellcheck clean at warning level
   (`bash tools/lint/shellcheck.sh`); any `# shellcheck disable=` carries a
   comment saying why.
+- **Language count.** Any line in a `.md` file or `llms.txt` that states how
+  many languages hecatron supports ends with `<!-- language-count -->`
+  (inside the cell, in a table row), so `grep -rn language-count` finds
+  every place to update. `tests/test_language_count.py` fails on a marked
+  line with another count and on an unmarked line stating it. CHANGELOG.md
+  is history and is exempt.
 - **Name over comment.** Extract a named function or variable instead of a
   comment explaining what a line does; comments explain why.
 
