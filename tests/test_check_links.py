@@ -24,6 +24,11 @@ class LinksTest(unittest.TestCase):
 
 
 class VerdictTest(unittest.TestCase):
+    def test_checks_the_advisor_rules_links(self):
+        documents = check_links.documents()
+        self.assertIn("languages/_advice.json", documents)
+        self.assertIn("languages/go/advice.json", documents)
+
     def test_answers(self):
         self.assertEqual(check_links.verdict(200), "ok")
         self.assertEqual(check_links.verdict(301), "ok")

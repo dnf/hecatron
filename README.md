@@ -142,6 +142,14 @@ options.
   the Prettier, RuboCop or Spotless a project already uses); `--check`
   changes nothing and lists what it would, and `hct lint` runs that check
   ([docs/format.md](docs/format.md)).
+- **Each ecosystem's good practice.** `hct advisor` reads the project and
+  recommends what each language's ecosystem asks for: lock files committed
+  (and still matching their manifests), toolchains pinned and not past end
+  of life, a formatter and linter configured, CI running every language,
+  Gradle's caches, GitHub Actions not pinned to a branch. Each finding says
+  why and links to the ecosystem's own documentation; it reads files only,
+  and `--fix` makes the safe changes, such as a pin file at the version in
+  use ([docs/advisor.md](docs/advisor.md)).
 - **Generated CI and Dockerfile.** `hct workflows` writes one CI workflow per
   language and `hct dockerfile` an image with every toolchain (and, for the
   languages with versions, each version the components use); `hct check`

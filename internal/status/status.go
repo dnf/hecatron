@@ -215,6 +215,11 @@ func isExecutable(path string) bool {
 	return err == nil && !info.IsDir() && info.Mode()&0o111 != 0
 }
 
+// LastRun is an action's last run for a language, as status reports it.
+func LastRun(p *project.Project, action, lang string, now time.Time) (Run, bool) {
+	return lastRun(p, action, lang, now)
+}
+
 // lastRun is an action's last run for a language: when its log was last
 // written, passed or failed from the summary line the log ends with (both
 // runners write it, for named runs too), and the duration when history.log's

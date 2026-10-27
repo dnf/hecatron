@@ -1,0 +1,185 @@
+{
+  "rules": [
+    {
+      "id": "lock-committed",
+      "category": "reproducibility",
+      "level": "recommended",
+      "when": {
+        "any": [
+          {
+            "file": "uv.lock"
+          },
+          {
+            "file": "poetry.lock"
+          },
+          {
+            "file": "pdm.lock"
+          },
+          {
+            "file": "pylock.toml"
+          },
+          {
+            "file": "pylock.*.toml"
+          },
+          {
+            "file": "Pipfile.lock"
+          }
+        ]
+      },
+      "expect": {
+        "any": [
+          {
+            "tracked": "uv.lock"
+          },
+          {
+            "tracked": "poetry.lock"
+          },
+          {
+            "tracked": "pdm.lock"
+          },
+          {
+            "tracked": "pylock.toml"
+          },
+          {
+            "tracked": "pylock.*.toml"
+          },
+          {
+            "tracked": "Pipfile.lock"
+          }
+        ]
+      },
+      "message": "Commit the lock file (uv.lock, poetry.lock, pdm.lock or pylock.toml): it is here but not in git",
+      "why": "uv's documentation says to check uv.lock into version control: it records the exact versions resolved, so every install gets the same dependencies.",
+      "link": "https://docs.astral.sh/uv/concepts/projects/layout/#the-lockfile"
+    },
+    {
+      "id": "pyproject",
+      "category": "currency",
+      "level": "recommended",
+      "when": {
+        "file": "setup.py"
+      },
+      "expect": {
+        "file": "pyproject.toml"
+      },
+      "message": "Add a pyproject.toml declaring the build system ([build-system]), and move the metadata from setup.py into it",
+      "why": "pyproject.toml is the standard place for a project's build system and metadata; without it pip falls back to setuptools' deprecated legacy path.",
+      "link": "https://packaging.python.org/en/latest/guides/modernize-setup-py-project/"
+    },
+    {
+      "id": "lint-config",
+      "category": "tooling",
+      "level": "suggestion",
+      "when": {
+        "any": [
+          {
+            "file": "pyproject.toml"
+          },
+          {
+            "file": "setup.py"
+          },
+          {
+            "file": "setup.cfg"
+          },
+          {
+            "file": "requirements.txt"
+          }
+        ]
+      },
+      "expect": {
+        "any": [
+          {
+            "file": "ruff.toml",
+            "up": true
+          },
+          {
+            "file": ".ruff.toml",
+            "up": true
+          },
+          {
+            "contains": [
+              "pyproject.toml",
+              "(?m)^\\[tool\\.(ruff|black|pylint|flake8)"
+            ],
+            "up": true
+          },
+          {
+            "file": ".flake8",
+            "up": true
+          },
+          {
+            "file": ".pylintrc",
+            "up": true
+          },
+          {
+            "file": "pylintrc",
+            "up": true
+          },
+          {
+            "contains": [
+              "setup.cfg",
+              "(?m)^\\[flake8\\]"
+            ],
+            "up": true
+          },
+          {
+            "contains": [
+              "tox.ini",
+              "(?m)^\\[flake8\\]"
+            ],
+            "up": true
+          }
+        ]
+      },
+      "message": "Configure a linter and formatter, such as Ruff ([tool.ruff] in pyproject.toml, or ruff.toml)",
+      "why": "hct lint and hct format run Ruff; its configuration says which rules and which line length the project holds to, so every contributor's run agrees.",
+      "link": "https://docs.astral.sh/ruff/configuration/"
+    }
+  ],
+  "pin": {
+    "when": {
+      "any": [
+        {
+          "file": "pyproject.toml"
+        },
+        {
+          "file": "setup.py"
+        },
+        {
+          "file": "setup.cfg"
+        },
+        {
+          "file": "requirements.txt"
+        }
+      ]
+    },
+    "level": "suggestion",
+    "create": ".python-version",
+    "content": "{line}\n",
+    "lineParts": 2,
+    "why": "uv, pyenv and hecatron read .python-version, so everyone runs the Python the project is tested on.",
+    "link": "https://docs.astral.sh/uv/concepts/python-versions/#python-version-files"
+  },
+  "endOfLife": {
+    "lineParts": 2,
+    "months": 61,
+    "why": "Each Python release line gets fixes for five years, then none, security fixes included.",
+    "link": "https://devguide.python.org/versions/"
+  },
+  "ci": {
+    "markers": [
+      "setup-python",
+      "\\bpython3?\\b",
+      "\\bpytest\\b",
+      "\\btox\\b",
+      "\\bnox\\b",
+      "\\bpip\\b",
+      "\\buvx?\\b",
+      "\\bpoetry\\b",
+      "\\bhatch\\b",
+      "\\bpdm\\b"
+    ],
+    "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+    "link": "https://docs.github.com/en/actions/tutorials/build-and-test-code/python"
+  }
+}

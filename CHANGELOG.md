@@ -46,6 +46,21 @@ minor version can change behaviour. Numbers are
   uncommitted changes; then the commands worth running next, marking those
   that install something. `--output human|agent|json`, chosen as for
   `hct test`. Needs the binary that releases ship (#121).
+- **`hct advisor`**: where `hct doctor` keeps the machine working, the
+  advisor reads the project and recommends what each language's ecosystem
+  considers good practice, each finding with what to change, why, and a
+  link to the ecosystem's own documentation: lock files committed (with each
+  ecosystem's nuance: Cargo binaries, Composer projects, Dart and Ruby
+  applications) and `package-lock.json` still matching `package.json`,
+  toolchains pinned in the ecosystem's own file and not past end of life
+  (from the release tables hecatron ships), a formatter and linter
+  configured, Gradle's build and configuration caches, `npm ci` in CI, CI
+  covering every language, GitHub Actions not pinned to a branch, and audit
+  acceptances past their date. Rules are data in each language definition
+  (`advice.json`); rules for 23 definitions so far. Reads files only;
+  `--fix` adds missing pin files at the version in use; `--fail-on
+  recommended|suggestion` for CI; `"advisor": {"ignore": [...]}` in config,
+  validated by `hct check`. Needs the binary (#105).
 - **GitLab CI and caching in generated CI:** `hct workflows` writes a
   `.gitlab-ci.yml` with a job per language (install, test and lint through
   `hct`) when `generated.ci` is `"gitlab"` (or `["github", "gitlab"]`, or

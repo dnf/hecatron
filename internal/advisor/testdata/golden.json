@@ -1,0 +1,190 @@
+{
+  "root": "/repo",
+  "config": "saved",
+  "languages": [
+    "go",
+    "python",
+    "rust",
+    "typescript"
+  ],
+  "noAdvice": [],
+  "findings": [
+    {
+      "id": "audit/acceptance-expired",
+      "level": "recommended",
+      "category": "security",
+      "languages": [],
+      "components": [],
+      "dir": ".",
+      "message": "Review the accepted vulnerabilities past their date in .hecatron/config.json audit.ignore: GHSA-1 (until 2026-01-01)",
+      "why": "An acceptance's date is when it was to be looked at again; past it, the risk is accepted by no one.",
+      "link": "https://github.com/dnf/hecatron/blob/main/docs/agents.md#project-configuration"
+    },
+    {
+      "id": "audit/failed",
+      "level": "recommended",
+      "category": "security",
+      "languages": [
+        "go"
+      ],
+      "components": [],
+      "dir": ".",
+      "message": "Fix or accept the known vulnerabilities hct audit go reported on 2026-10-27 (log .logs/audit/go.log)",
+      "why": "A dependency with a known vulnerability is the easiest way in; accepting one with a reason and a date keeps the decision reviewed.",
+      "link": "https://github.com/dnf/hecatron/blob/main/docs/agents.md#project-configuration"
+    },
+    {
+      "id": "repo/branch-pinned-action",
+      "level": "recommended",
+      "category": "security",
+      "languages": [],
+      "components": [],
+      "dir": ".",
+      "message": "Pin each GitHub Action to a release tag or a commit, not a branch (a uses: line names @main, @master or another branch)",
+      "why": "A branch moves: whatever its owner pushes next runs in your CI, with your workflow's permissions and secrets.",
+      "link": "https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions"
+    },
+    {
+      "id": "node/npm-ci",
+      "level": "suggestion",
+      "category": "performance",
+      "languages": [
+        "typescript"
+      ],
+      "components": [
+        "."
+      ],
+      "dir": ".",
+      "message": "Install with npm ci in CI, not npm install",
+      "why": "npm ci installs exactly what package-lock.json records, fails when it no longer matches package.json, and is faster on a clean machine.",
+      "link": "https://docs.npmjs.com/cli/commands/npm-ci"
+    },
+    {
+      "id": "python/ci-covers",
+      "level": "suggestion",
+      "category": "ci",
+      "languages": [
+        "python"
+      ],
+      "components": [],
+      "dir": ".",
+      "message": "Run Python's tests in CI: no CI configuration mentions it",
+      "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+      "link": "https://docs.github.com/en/actions/tutorials/build-and-test-code/python"
+    },
+    {
+      "id": "go/toolchain-end-of-life",
+      "level": "recommended",
+      "category": "currency",
+      "languages": [
+        "go"
+      ],
+      "components": [
+        "."
+      ],
+      "dir": "go",
+      "message": "Move off Go 1.20 (pinned in go/go.mod): that line is past its end of life; the newest is 1.27",
+      "why": "Each Go release is supported until there are two newer major releases; after that it gets no security fixes.",
+      "link": "https://go.dev/doc/devel/release#policy"
+    },
+    {
+      "id": "python/pyproject",
+      "level": "recommended",
+      "category": "currency",
+      "languages": [
+        "python"
+      ],
+      "components": [
+        "."
+      ],
+      "dir": "python",
+      "message": "Add a pyproject.toml declaring the build system ([build-system]), and move the metadata from setup.py into it",
+      "why": "pyproject.toml is the standard place for a project's build system and metadata; without it pip falls back to setuptools' deprecated legacy path.",
+      "link": "https://packaging.python.org/en/latest/guides/modernize-setup-py-project/"
+    },
+    {
+      "id": "python/toolchain-end-of-life",
+      "level": "recommended",
+      "category": "currency",
+      "languages": [
+        "python"
+      ],
+      "components": [
+        "."
+      ],
+      "dir": "python",
+      "message": "Move off Python 3.8 (pinned in python/.python-version): that line is past its end of life; the newest is 3.15",
+      "why": "Each Python release line gets fixes for five years, then none, security fixes included.",
+      "link": "https://devguide.python.org/versions/"
+    },
+    {
+      "id": "rust/toolchain-behind",
+      "level": "suggestion",
+      "category": "currency",
+      "languages": [
+        "rust"
+      ],
+      "components": [
+        "."
+      ],
+      "dir": "rust",
+      "message": "Update Rust 1.80 (pinned in rust/rust-toolchain.toml): it is 19 releases behind 1.99",
+      "why": "Rust supports only its latest stable release, which every six weeks brings fixes, including security fixes; a toolchain a year behind has none of them.",
+      "link": "https://www.rust-lang.org/policies/security"
+    },
+    {
+      "id": "node/lock-matches-manifest",
+      "level": "recommended",
+      "category": "reproducibility",
+      "languages": [
+        "typescript"
+      ],
+      "components": [
+        "."
+      ],
+      "dir": "typescript",
+      "message": "Update typescript/package-lock.json: it doesn't record the dependencies package.json declares",
+      "why": "npm ci refuses to install when package-lock.json and package.json disagree; npm install updates the lock.",
+      "link": "https://docs.npmjs.com/cli/commands/npm-ci"
+    },
+    {
+      "id": "node/toolchain-pinned",
+      "level": "suggestion",
+      "category": "reproducibility",
+      "languages": [
+        "typescript"
+      ],
+      "components": [
+        "."
+      ],
+      "dir": "typescript",
+      "message": "Pin Node.js's version in .nvmrc (it runs 24.22.1 now, hecatron's default)",
+      "why": "Node.js has no version setting of its own; nvm, fnm, volta and hecatron read .nvmrc, so everyone runs the release line the project is tested on.",
+      "link": "https://github.com/nvm-sh/nvm#nvmrc",
+      "fix": {
+        "create": "typescript/.nvmrc",
+        "content": "24\n",
+        "applied": false
+      }
+    }
+  ],
+  "ignored": [
+    {
+      "id": "rust/edition",
+      "level": "recommended",
+      "category": "currency",
+      "languages": [
+        "rust"
+      ],
+      "components": [
+        "."
+      ],
+      "dir": "rust",
+      "message": "Set edition in Cargo.toml's [package] (edition = \"2024\", or edition.workspace = true)",
+      "why": "Without an edition Cargo builds the package as Rust 2015, with that edition's older rules.",
+      "link": "https://doc.rust-lang.org/cargo/reference/manifest.html#the-edition-field",
+      "reason": "set by the workspace generator"
+    }
+  ],
+  "fixed": []
+}

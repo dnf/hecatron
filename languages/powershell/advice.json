@@ -1,0 +1,28 @@
+{
+  "rules": [
+    {
+      "id": "module-manifest",
+      "category": "tooling",
+      "level": "suggestion",
+      "when": {
+        "file": "*.psm1"
+      },
+      "expect": {
+        "file": "*.psd1"
+      },
+      "message": "Add a module manifest (.psd1, made with New-ModuleManifest) beside the .psm1",
+      "why": "A manifest declares the module's version, the PowerShell versions it supports, its dependencies and what it exports.",
+      "link": "https://learn.microsoft.com/powershell/scripting/developer/module/how-to-write-a-powershell-module-manifest"
+    }
+  ],
+  "ci": {
+    "markers": [
+      "\\bpwsh\\b",
+      "\\bpowershell\\b",
+      "Invoke-Pester",
+      "PSScriptAnalyzer"
+    ],
+    "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+    "link": "https://docs.github.com/en/actions/tutorials/build-and-test-code/powershell"
+  }
+}

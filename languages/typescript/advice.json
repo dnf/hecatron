@@ -1,0 +1,34 @@
+{
+  "include": [
+    "node"
+  ],
+  "rules": [
+    {
+      "id": "strict",
+      "category": "tooling",
+      "level": "suggestion",
+      "when": {
+        "file": "tsconfig.json"
+      },
+      "expect": {
+        "any": [
+          {
+            "contains": [
+              "tsconfig.json",
+              "\"strict\"\\s*:\\s*true"
+            ]
+          },
+          {
+            "contains": [
+              "tsconfig.json",
+              "\"extends\"\\s*:"
+            ]
+          }
+        ]
+      },
+      "message": "Turn on \"strict\": true in tsconfig.json's compilerOptions",
+      "why": "strict turns on the type checks (strictNullChecks, noImplicitAny and the rest) that give TypeScript's strongest guarantees of correctness.",
+      "link": "https://www.typescriptlang.org/tsconfig/#strict"
+    }
+  ]
+}

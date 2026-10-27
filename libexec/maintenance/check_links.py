@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Check that every external link in hecatron's documentation still works:
-the tracked Markdown files (README, docs/, CHANGELOG...), llms.txt and the
-tool links docs/languages.md is built from.
+the tracked Markdown files (README, docs/, CHANGELOG...), llms.txt, the
+tool links docs/languages.md is built from, and the documentation each
+advisor rule cites (languages/*/advice.json, languages/_advice.json).
 
     python3 libexec/maintenance/check_links.py              # report; exit 1 if any is broken
     python3 libexec/maintenance/check_links.py --markdown   # the report as Markdown, for an issue
@@ -27,6 +28,7 @@ import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TOOL_LINKS = os.path.join("libexec", "codegen", "tool-links.json")
+ADVICE = ["languages/*/advice.json", "languages/_advice.json"]
 URL = re.compile(r"https?://[^\s<>()\[\]`'\"|]+")
 # Placeholders and examples in the docs, not links to check.
 SKIP = re.compile(r"[{}$]|//(localhost|127\.0\.0\.1|example\.(com|org)|[^/]*\.example)(/|:|$)")
@@ -35,7 +37,7 @@ USER_AGENT = "Mozilla/5.0 (compatible; hecatron-link-check; +https://github.com/
 
 
 def documents() -> list[str]:
-    tracked = subprocess.run(["git", "ls-files", "*.md", "llms.txt", TOOL_LINKS], cwd=ROOT,
+    tracked = subprocess.run(["git", "ls-files", "*.md", "llms.txt", TOOL_LINKS, *ADVICE], cwd=ROOT,
                              capture_output=True, text=True, check=True).stdout.split()
     return [path for path in tracked if not path.startswith(("examples/", "tests/"))]
 
