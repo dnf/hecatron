@@ -511,6 +511,15 @@ matching release upstream, and running (a hook's environment, the doctor)
 resolves it to the newest matching version installed on the machine, so
 running never needs the network.
 
+A default is exact for installing (an installer, the Dockerfile) but not for
+running: a component on the default takes the newest installed version on
+the default's release line, so a machine that already has Node.js 24.19
+doesn't need a second 24 for a default of 24.22.1. A definition's
+`releaseLine` names how many leading parts make a line (1 for Node.js and
+Java, whose 24 and 25 are lines); without it, a line is every part but the
+last (Go 1.27.3 is line 1.27). A version the project chooses, by pin file or
+`version`, still matches as written. (Owner's decision.)
+
 ### Defaults and how they are updated
 
 Each definition's `config.json` records its default `version` (exact) and its
