@@ -8,9 +8,10 @@
 //
 // Ported: --version, help, the run commands (test, lint, build, clean,
 // rebuild, retest, audit, format, deps, outdated: run.go), doctor's and
-// version's help, list, and env (with a language, its environment for a
-// component). The prototype's `hecatron plan <lang> <action> [dir]` is
-// kept, unlisted.
+// version's help, list, env (with a language, its environment for a
+// component), status, and the project commands (init, add, remove, enable,
+// disable, check, dockerfile, workflows: manage.go, init.go). The
+// prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
 
 import (
@@ -71,7 +72,7 @@ func run(argv []string) int {
 			return status
 		}
 	}
-	if handler, ok := nativeCommands[c.command]; ok && c.project != nil {
+	if handler, ok := nativeCommands[c.command]; ok && (c.project != nil || c.command == "init") {
 		if status, handled := handler(c); handled {
 			return status
 		}
@@ -83,20 +84,28 @@ func run(argv []string) int {
 // doesn't cover yet (an argument form, a project the model declines), and
 // the command is delegated instead, before anything is printed.
 var nativeCommands = map[string]func(*cli) (status int, handled bool){
-	"list":     (*cli).list,
-	"env":      (*cli).env,
-	"test":     (*cli).runCommand,
-	"lint":     (*cli).runCommand,
-	"build":    (*cli).runCommand,
-	"clean":    (*cli).runCommand,
-	"rebuild":  (*cli).runCommand,
-	"retest":   (*cli).runCommand,
-	"audit":    (*cli).runCommand,
-	"format":   (*cli).runCommand,
-	"deps":     (*cli).runCommand,
-	"outdated": (*cli).runCommand,
-	"doctor":   (*cli).doctorHelp,
-	"version":  (*cli).versionHelp,
+	"list":       (*cli).list,
+	"env":        (*cli).env,
+	"test":       (*cli).runCommand,
+	"lint":       (*cli).runCommand,
+	"build":      (*cli).runCommand,
+	"clean":      (*cli).runCommand,
+	"rebuild":    (*cli).runCommand,
+	"retest":     (*cli).runCommand,
+	"audit":      (*cli).runCommand,
+	"format":     (*cli).runCommand,
+	"deps":       (*cli).runCommand,
+	"outdated":   (*cli).runCommand,
+	"doctor":     (*cli).doctorHelp,
+	"init":       (*cli).init,
+	"add":        (*cli).add,
+	"remove":     (*cli).remove,
+	"enable":     (*cli).enable,
+	"disable":    (*cli).disable,
+	"check":      (*cli).check,
+	"dockerfile": (*cli).dockerfile,
+	"workflows":  (*cli).workflows,
+	"version":    (*cli).versionHelp,
 }
 
 // findProject finds the project (like git). A git repository with no
@@ -107,6 +116,9 @@ func (c *cli) findProject() int {
 	if c.locateProject(false) {
 		return 0
 	}
+	if c.detectProject() {
+		return 0
+	}
 	if !c.rootFromPython(true) {
 		return 1
 	}
@@ -114,6 +126,33 @@ func (c *cli) findProject() int {
 		c.project = p
 	}
 	return 0
+}
+
+// detectProject reads a git repository without a config anywhere above the
+// working directory as detected, in Go: its root is the repository's top,
+// as project.py's find_root has it, and the first time it's detected the
+// model says so on stderr, as project.py does.
+func (c *cli) detectProject() bool {
+	cwd, err := workingDir()
+	if err != nil {
+		return false
+	}
+	if _, err := project.FindRoot(cwd); err == nil {
+		return false // a config that didn't load: project.py says why
+	}
+	top, ok := gitTopLevel()
+	if !ok {
+		return false
+	}
+	p, err := project.LoadDetected(top, c.home)
+	if err != nil {
+		return false
+	}
+	if p.Announcement != "" {
+		fmt.Fprintln(os.Stderr, p.Announcement)
+	}
+	c.root, c.project = top, p
+	return true
 }
 
 // locateProject sets the project root and, when the Go model reads it, the
