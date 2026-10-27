@@ -1,0 +1,5 @@
+    Updating crates.io index
+     Locking 0 packages to highest compatible versions
+   Unchanged itoa v1.0.1 (available: v1.0.18)
+note: to see how you depend on a package, run `cargo tree --invert <dep>@<ver>`
+warning: not updating lockfile due to dry run

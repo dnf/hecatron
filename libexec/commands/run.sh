@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hecatron test|lint|build|clean|rebuild|retest|audit|format|deps [-j N] [-s MODE] [-c COMPONENT]... [target ...]
+# hecatron test|lint|build|clean|rebuild|retest|audit|format|deps|outdated [-j N] [-s MODE] [-c COMPONENT]... [target ...]
 #
 # With targets, runs each one in turn, streaming its output and saving it to
 # <logs>/<action>/<target>.log. A target is a language (every component), a
@@ -14,7 +14,7 @@ source "${HECATRON_HOME}/libexec/lib/helpers.sh"
 _action="${1:?usage: run.sh <action> [flags] [target ...]}"
 shift
 
-_jflag="" _sflag="" _prev=""
+_jflag="" _sflag="" _prev="" _json=0
 _targets=()
 _components=()
 for _a in "$@"; do
@@ -27,6 +27,8 @@ for _a in "$@"; do
         --fail-on) [ "${_action}" = audit ] && _prev="${_a}" || _targets+=("${_a}") ;;
         --fail-on=*) export HECATRON_AUDIT_FAIL_ON="${_a#--fail-on=}" ;;
         --check) [ "${_action}" = format ] && export HECATRON_FORMAT_CHECK=1 || _targets+=("${_a}") ;;
+        --json) [ "${_action}" = outdated ] && _json=1 || _targets+=("${_a}") ;;
+        --fail) [ "${_action}" = outdated ] && export HECATRON_OUTDATED_FAIL=1 || _targets+=("${_a}") ;;
         --component=*) _components+=("${_a#--component=}") ;;
         *) _targets+=("${_a}") ;;
     esac
@@ -52,6 +54,7 @@ _describe() {
         audit) echo "Check each language's dependencies for known vulnerabilities in every component" ;;
         format) echo "Format each language's code with its formatter in every component" ;;
         deps) echo "Fetch each language's dependencies for every component, held to its lock file" ;;
+        outdated) echo "Report newer versions of each language's dependencies in every component" ;;
     esac
 }
 
@@ -65,6 +68,7 @@ _action_langs() {
         audit) echo "${_AUDIT_LANGS}" ;;
         format) echo "${_FORMAT_LANGS}" ;;
         deps) echo "${_DEPS_LANGS}" ;;
+        outdated) echo "${_OUTDATED_LANGS}" ;;
     esac
 }
 
@@ -95,6 +99,12 @@ _usage() {
             "             Fail on a finding at or above critical, high (default), moderate or low;" \
             "             a project sets its own with \"audit\": {\"failOn\": ...} (docs/audit.md)"
     fi
+    if [ "${_action}" = "outdated" ]; then
+        printf '%s\n' \
+            "  --json     Print one JSON array of every outdated dependency (component, language," \
+            "             package, current, wanted, latest); the languages run one at a time" \
+            "  --fail     Fail when anything is outdated (by default this only reports)"
+    fi
     if [ "${_action}" = "format" ]; then
         printf '%s\n' \
             "  --check    Change nothing; fail, listing the files the formatter would change" \
@@ -124,6 +134,28 @@ case "${_action}" in
         exec "${HECATRON_JOB_COMMAND}" "${_then}" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} ${_targets[@]+"${_targets[@]}"}
         ;;
 esac
+
+# --- outdated --json: one JSON array on stdout ------------------------------
+# Every language, or the ones named, one at a time with their output on
+# stderr; each component saves its rows (libexec/lib/outdated.py).
+if [ "${_json}" -eq 1 ]; then
+    if [ "${#_targets[@]}" -eq 0 ]; then
+        for _lang in ${_OUTDATED_LANGS}; do
+            if ! _is_disabled "${_lang}" && _dep_available "${_lang}"; then _targets+=("${_lang}"); fi
+        done
+    fi
+    HECATRON_OUTDATED_JSON_DIR="$(mktemp -d)"
+    export HECATRON_OUTDATED_JSON_DIR
+    trap 'rm -rf "${HECATRON_OUTDATED_JSON_DIR}"' EXIT
+    _component_flags=()
+    for _component in ${_components[@]+"${_components[@]}"}; do _component_flags+=(-c "${_component}"); done
+    _status=0
+    for _target in ${_targets[@]+"${_targets[@]}"}; do
+        "${HECATRON_JOB_COMMAND}" outdated ${_component_flags[@]+"${_component_flags[@]}"} "${_target}" >&2 || _status=1
+    done
+    python3 "${HECATRON_HOME}/libexec/lib/outdated.py" collect "${HECATRON_OUTDATED_JSON_DIR}"
+    exit "${_status}"
+fi
 
 # --- Everything, in parallel ------------------------------------------------
 if [ "${#_targets[@]}" -eq 0 ]; then
@@ -185,6 +217,7 @@ _run_target() {
         audit) echo "Nothing to audit for: ${name} (hecatron has no auditor for its dependencies)" ;;
         format) echo "No formatter for ${name} (skipping)" ;;
         deps) echo "No dependency manager for ${name} (skipping)" ;;
+        outdated) echo "No outdated report for ${name} (skipping)" ;;
         *) echo "error: ${name} has no ${_action} hook (.hecatron/languages/${name}/${_action}.sh)" >&2; return 1 ;;
     esac
 }

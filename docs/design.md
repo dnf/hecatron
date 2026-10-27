@@ -102,7 +102,7 @@ has one, implicitly. Each language's code for a component lives at a path
 built from a template, e.g. `{component}/impl/{lang}`.
 
 **Action.** Something done to one component in one language: `test`, `lint`,
-`build`, `clean`, `audit`, `format`, `deps`. A project hook script implements it; hecatron runs it once
+`build`, `clean`, `audit`, `format`, `deps`, `outdated`. A project hook script implements it; hecatron runs it once
 per component (the "every library" rule sayable adopted: a command for one
 language acts on all of that language's components).
 
@@ -239,6 +239,7 @@ recipes do today. Output of single-language runs streams and is also saved to
 | `hecatron test [lang...]` | Run `test` for every component of each language; no languages means every language in parallel, plus project checks | `just test` |
 | `hecatron lint [lang...\|shell]` | Same for `lint`; languages without a lint hook rely on warnings-as-errors builds; `shell` runs shellcheck on every tracked shell script | `just lint` |
 | `hecatron build [lang...]`, `hecatron clean [lang...]` | Same for `build`/`clean` | `just build`, `just clean` |
+| `hecatron outdated [--json] [--fail] [lang...]` | Same for `outdated`: each component's direct dependencies with a newer version, from the ecosystem's own report; report-only unless `--fail` ([outdated.md](outdated.md)) | new |
 | `hecatron deps [lang...]` | Same for `deps`: fetch each component's dependencies with its ecosystem's tool, held to its lock file | new |
 | `hecatron format [--check] [lang...]` | Same for `format`: rewrite the code with the language's formatter; `--check` changes nothing and fails listing what would change ([format.md](format.md)) | new |
 | `hecatron rebuild`, `hecatron retest` | clean then build/test | same |

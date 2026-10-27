@@ -307,7 +307,7 @@ class InitTest(Fixture):
 
     def test_a_per_language_command_runs_in_a_project(self):
         self.configure()
-        for command in ("deps", "format", "audit"):
+        for command in ("deps", "format", "audit", "outdated"):
             with self.subTest(command=command):
                 self.assertNotIn("unknown command", self.hecatron(command).stderr)
 

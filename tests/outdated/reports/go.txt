@@ -1,0 +1,20 @@
+{
+	"Path": "example.com/fixture",
+	"Main": true,
+	"Dir": "/tmp/tmp.7rv5mSnqNA/go",
+	"GoMod": "/tmp/tmp.7rv5mSnqNA/go/go.mod",
+	"GoVersion": "1.22"
+}
+{
+	"Path": "github.com/google/uuid",
+	"Version": "v1.3.0",
+	"Time": "2021-07-12T22:33:52Z",
+	"Update": {
+		"Path": "github.com/google/uuid",
+		"Version": "v1.6.0",
+		"Time": "2024-01-23T18:54:04Z"
+	},
+	"GoMod": "/home/dev/go/pkg/mod/cache/download/github.com/google/uuid/@v/v1.3.0.mod",
+	"Sum": "h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=",
+	"GoModSum": "h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo="
+}

@@ -1,0 +1,24 @@
+{
+  "packages": [
+    {
+      "package": "path",
+      "kind": "direct",
+      "isDiscontinued": false,
+      "replacedBy": null,
+      "isCurrentRetracted": false,
+      "isCurrentAffectedByAdvisory": false,
+      "current": {
+        "version": "1.8.0"
+      },
+      "upgradable": {
+        "version": "1.8.0"
+      },
+      "resolvable": {
+        "version": "1.9.1"
+      },
+      "latest": {
+        "version": "1.9.1"
+      }
+    }
+  ]
+}

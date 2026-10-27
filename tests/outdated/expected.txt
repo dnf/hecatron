@@ -1,0 +1,10 @@
+csharp/project Newtonsoft.Json
+dart/pub path
+elixir/mix jason
+go/module github.com/google/uuid
+java/maven org.apache.commons:commons-lang3
+php/composer psr/log
+python/uv six
+ruby/bundler rack
+rust/cargo itoa
+typescript/npm left-pad

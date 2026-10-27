@@ -15,6 +15,13 @@ minor version can change behaviour. Numbers are
   check off in `.hecatron/config.json` with `"lint": {"format": false}` (or
   `{"format": {"haskell": false}}` for one language). See
   [docs/format.md](docs/format.md).
+- **`hecatron outdated`:** lists each component's direct dependencies that
+  have a newer version, from each ecosystem's own report (npm, pnpm, Yarn,
+  uv, `go list -u -m`, Cargo's dry-run update, Bundler, Composer, the .NET
+  SDK, Hex, pub, Maven's versions plugin, Gradle's Versions plugin where a
+  build applies it, cabal), with current, wanted and latest versions.
+  Report-only unless `--fail`; `--json` prints one array. See
+  [docs/outdated.md](docs/outdated.md).
 - **`hecatron deps`:** fetches every component's dependencies with its
   ecosystem's tool, held to the lock file where there is one: npm, pnpm,
   Yarn or Bun's frozen install, `uv sync --locked`, Bundler frozen,
