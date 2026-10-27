@@ -21,7 +21,7 @@ var envDefinitions = map[string]string{
 		"oldestInstallable": "3.8", "asOfPrecision": "line",
 		"path": ["{home}/bin", "~/.local/bin"], "env": {"UV_PYTHON": "{home}/bin/python3", "Q": "it's {version}"}}`,
 	"py/releases.json": `{"releases": [["3.8.10", "2021-05-03"], ["3.9.5", "2021-05-03"], ["3.12.4", "2024-06-06"], ["3.15.1", "2026-09-01"]]}`,
-	"py/installed.sh":   `printf '3.12.4\t%s/tc/py312\n3.15.0\t%s/tc/py 315\n3.9.5\t%s/tc/py39\n' "$PWD" "$PWD" "$PWD"`,
+	"py/installed.sh":  `printf '3.12.4\t%s/tc/py312\n3.15.0\t%s/tc/py 315\n3.9.5\t%s/tc/py39\n' "$PWD" "$PWD" "$PWD"`,
 	"net/config.json": `{"version": "=10.0.403", "releaseLine": 3, "pinFiles": [{"file": "global.json", "format": "global-json"}],
 		"supportFiles": [{"file": ".github/workflows/*.yml", "format": "github-setup", "key": "dotnet-version", "selects": false}],
 		"path": ["{home}"], "env": {"DOTNET_ROOT": "{home}"}}`,
