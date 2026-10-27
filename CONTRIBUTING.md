@@ -33,12 +33,29 @@ tests/docker/run.sh ubuntu:24.04 bash /hecatron/tests/installer/check.sh
 
 ### The Go core
 
-The Go core (docs/design.md §19) is growing in place of `bin/hecatron`;
-`bin/hecatron` doesn't call it yet. To try it, build it at the top of the
-checkout and run it from a project:
+Hecatron is tested with itself: `.hecatron/config.json` describes it (Go
+at the root, the Python suite as a test task, shellcheck through `hct lint`'s
+shell check), so `hct test` and `hct lint` run its checks as they would a
+user's. They go through the Go binary, the way users get it, once it's
+built from your checkout:
 
 ```bash
-go build -o hct ./cmd/hecatron    # needs Go 1.24 or later; the standard library only
+hct self-build    # needs Go 1.24 or later; rerun after changing Go code
+hct test          # the Go tests and the Python suite, in parallel
+hct lint          # golangci-lint, the format check, shellcheck
+```
+
+`bin/hecatron` runs a binary from `hct self-build` on any branch (a release's
+binary only at its own commit). Until you rebuild, it keeps running the one
+you built, so rebuild after pulling or changing Go code; `HECATRON_NO_GO=1`
+keeps to the scripts. The Python suite always tests the scripts
+(`hct self-test` and the test task set `HECATRON_NO_GO=1`); the binary has
+its own tests, which compare it with the scripts.
+
+To run a binary by hand from elsewhere:
+
+```bash
+go build -o hct ./cmd/hecatron
 cd ~/your-project && ~/hecatron/hct list
 ```
 

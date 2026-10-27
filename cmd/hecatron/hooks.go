@@ -21,7 +21,9 @@ import (
 // stdin from /dev/null; every component even after one fails. Lint then
 // runs the format hook's check, unless the project turned that off or the
 // lint hook checked formatting itself (HECATRON_FORMAT_CHECKED). Without a
-// hook for the action, it says so as run.sh does.
+// hook for the action, it says so as run.sh does. Its messages go to the
+// job's output with the hooks': a write that fails there can't be reported
+// anywhere better, so its error is dropped.
 func (r *invocation) languageExec(action, lang string, wanted []string) func(context.Context, io.Writer) runner.Outcome {
 	return func(ctx context.Context, out io.Writer) runner.Outcome {
 		hook := r.project.Resolve(lang, action+".sh")
@@ -34,10 +36,16 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 		}
 		dirs, err := r.project.ImplDirs(lang)
 		if err != nil {
-			fmt.Fprintln(out, "hecatron:", err)
+			_, _ = fmt.Fprintln(out, "hecatron:", err)
 			return runner.Outcome{ExitCode: 1}
 		}
 		dependency, _ := r.project.Dependency(lang)
+		// Lint needs the linter too (golangci-lint, Clippy...): without it,
+		// the toolchain is as missing as without the compiler.
+		lintDependency := ""
+		if action == "lint" {
+			lintDependency, _ = r.project.LintDependency(lang)
+		}
 		base := r.environment()
 		var outcome runner.Outcome
 		var failed []string
@@ -49,25 +57,29 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 				break // stopped: its time limit, or Ctrl-C
 			}
 			component := runner.Component{Name: dir.Component, Dir: dir.Dir}
-			fmt.Fprintf(out, "=== %s %s (%s) ===\n", action, dir.Component, lang)
+			_, _ = fmt.Fprintf(out, "=== %s %s (%s) ===\n", action, dir.Component, lang)
 			env, ok := r.languageEnv(ctx, out, base, lang, dir.Component)
 			if ok {
-				if dependency != "" {
-					_, found := lookPath(dependency, getenv(env, "PATH"))
-					component.ToolchainMissing = !found
+				for _, command := range []string{dependency, lintDependency} {
+					if command == "" {
+						continue
+					}
+					if _, found := lookPath(command, getenv(env, "PATH")); !found {
+						component.ToolchainMissing = true
+					}
 				}
 				checked, err := os.CreateTemp("", "hecatron-format-checked")
 				if err != nil {
-					fmt.Fprintln(out, "hecatron:", err)
+					_, _ = fmt.Fprintln(out, "hecatron:", err)
 					ok = false
 				} else {
-					checked.Close()
+					_ = checked.Close() // empty: the hook writes it by name
 					hookEnv := append(env, "HECATRON_COMPONENT="+dir.Component, "HECATRON_LANG="+lang)
 					ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECKED="+checked.Name()), hook, dir.Component)
 					if info, err := os.Stat(checked.Name()); formatHook != "" && err == nil && info.Size() == 0 {
 						ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECK=1"), formatHook, dir.Component) && ok
 					}
-					os.Remove(checked.Name())
+					_ = os.Remove(checked.Name())
 				}
 			}
 			if !ok {
@@ -78,13 +90,13 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 		}
 		switch {
 		case len(outcome.Components) == 0:
-			fmt.Fprintf(out, "error: no %s implementation found (implPath, or implPaths.%s, in .hecatron/config.json)\n", lang, lang)
+			_, _ = fmt.Fprintf(out, "error: no %s implementation found (implPath, or implPaths.%s, in .hecatron/config.json)\n", lang, lang)
 			outcome.ExitCode = 1
 		case len(failed) > 0:
-			fmt.Fprintf(out, "%s: %s failed: %s\n", lang, action, strings.Join(failed, " "))
+			_, _ = fmt.Fprintf(out, "%s: %s failed: %s\n", lang, action, strings.Join(failed, " "))
 			outcome.ExitCode = 1
 		default:
-			fmt.Fprintf(out, "%s: %s passed for %d component(s)\n", lang, action, len(outcome.Components))
+			_, _ = fmt.Fprintf(out, "%s: %s passed for %d component(s)\n", lang, action, len(outcome.Components))
 		}
 		return outcome
 	}
@@ -102,10 +114,10 @@ func noHook(out io.Writer, action, lang string) runner.Outcome {
 		"outdated": "No outdated report for %s (skipping)",
 	}
 	if message, ok := messages[action]; ok {
-		fmt.Fprintf(out, message+"\n", lang)
+		_, _ = fmt.Fprintf(out, message+"\n", lang)
 		return runner.Outcome{}
 	}
-	fmt.Fprintf(out, "error: %s has no %s hook (.hecatron/languages/%[1]s/%[2]s.sh)\n", lang, action)
+	_, _ = fmt.Fprintf(out, "error: %s has no %s hook (.hecatron/languages/%[1]s/%[2]s.sh)\n", lang, action)
 	return runner.Outcome{ExitCode: 1}
 }
 
@@ -119,7 +131,7 @@ func (r *invocation) languageEnv(ctx context.Context, out io.Writer, base []stri
 	case err == nil:
 		return env.Apply(base), true
 	case !project.IsUnsupported(err):
-		fmt.Fprintln(out, "hecatron:", err)
+		_, _ = fmt.Fprintln(out, "hecatron:", err)
 		return nil, false
 	}
 	return r.languageEnvFromPython(ctx, out, base, lang, component)
@@ -229,7 +241,7 @@ func runCommand(cmd *exec.Cmd, out io.Writer) int {
 	case errors.As(err, &exit) && exit.ExitCode() > 0:
 		return exit.ExitCode()
 	case !errors.As(err, &exit):
-		fmt.Fprintln(out, "hecatron:", err)
+		_, _ = fmt.Fprintln(out, "hecatron:", err)
 	}
 	return 1
 }

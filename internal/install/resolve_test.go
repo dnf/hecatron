@@ -97,6 +97,6 @@ func head(url string) int {
 	if err != nil {
 		return 0
 	}
-	response.Body.Close()
+	_ = response.Body.Close() // unread: only the status matters
 	return response.StatusCode
 }

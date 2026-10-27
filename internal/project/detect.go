@@ -694,7 +694,7 @@ func DetectedConfig(root string, home Home, components, implPath, languages stri
 	config.set("schema", json.Number("1"))
 	config.set("hecatron", ">="+home.Version())
 	config.set("project", pyBasename(root))
-	if !(len(chosenComponents) == 1 && chosenComponents[0] == ".") {
+	if len(chosenComponents) != 1 || chosenComponents[0] != "." {
 		config.set("components", stringsToAny(chosenComponents))
 	}
 	config.set("implPath", layout.ImplPath)

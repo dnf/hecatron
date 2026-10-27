@@ -1179,23 +1179,23 @@ func AuditReport(w io.Writer, format, text, lang, component string, config any, 
 		if err != nil {
 			return 1, err
 		}
-		fmt.Fprintln(w, line)
+		_, _ = fmt.Fprintln(w, line)
 	}
 	for _, a := range ignored {
 		line, err := Line(a.Finding)
 		if err != nil {
 			return 1, err
 		}
-		fmt.Fprintf(w, "%s  [accepted until %s: %s]\n", line, str(a.Entry.Values["until"]), str(getOr(a.Entry, "reason", "")))
+		_, _ = fmt.Fprintf(w, "%s  [accepted until %s: %s]\n", line, str(a.Entry.Values["until"]), str(getOr(a.Entry, "reason", "")))
 	}
 	for _, a := range expired {
-		fmt.Fprintf(w, "  note: the accepted risk %s expired on %s\n", str(a.Entry.Values["id"]), str(a.Entry.Values["until"]))
+		_, _ = fmt.Fprintf(w, "  note: the accepted risk %s expired on %s\n", str(a.Entry.Values["id"]), str(a.Entry.Values["until"]))
 	}
 	line := fmt.Sprintf("%s: %s %s", component, lang, Summary(kept))
 	if len(ignored) > 0 {
 		line += fmt.Sprintf(", %d accepted", len(ignored))
 	}
-	fmt.Fprintln(w, line)
+	_, _ = fmt.Fprintln(w, line)
 	limit := 0
 	for i, severity := range Severities {
 		if severity == threshold {
@@ -1209,7 +1209,7 @@ func AuditReport(w io.Writer, format, text, lang, component string, config any, 
 		}
 	}
 	if failing > 0 {
-		fmt.Fprintf(w, "%s: %s: %d at or above %s\n", component, lang, failing, threshold)
+		_, _ = fmt.Fprintf(w, "%s: %s: %d at or above %s\n", component, lang, failing, threshold)
 		return 1, nil
 	}
 	return 0, nil

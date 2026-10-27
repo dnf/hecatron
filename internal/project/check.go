@@ -10,16 +10,62 @@ import (
 // Severities are the audit severities, most severe first.
 var Severities = []string{"critical", "high", "moderate", "low"}
 
-// ConfigProblems is what's wrong with config.json's "audit" and "lint"
-// sections, for hecatron check: audit.py's config_problems and project.py's
-// lint_config_problems, message for message. The "ci" section's are
-// CISettings'.
+// ConfigProblems is what's wrong with config.json's "audit", "lint" and
+// "format" sections, for hecatron check: audit.py's config_problems and
+// project.py's lint_config_problems and format_config_problems, message for
+// message. The "ci" section's are CISettings'.
 func (p *Project) ConfigProblems() ([]string, error) {
 	problems, err := p.auditProblems()
 	if err != nil {
 		return nil, err
 	}
-	return append(problems, p.lintProblems()...), nil
+	problems = append(problems, p.lintProblems()...)
+	return append(problems, p.formatProblems()...), nil
+}
+
+// FormatExclude is project.py's format_exclude: the paths the format check
+// and `hecatron format` leave alone (config.json's "format": {"exclude":
+// [...]}), relative to the project root, a trailing "/" meaning everything
+// below.
+func (p *Project) FormatExclude() []string {
+	section, _ := p.config.Values["format"].(*Object)
+	if section == nil {
+		return nil
+	}
+	paths, _ := section.Values["exclude"].([]any)
+	var found []string
+	for _, path := range paths {
+		if text, ok := path.(string); ok {
+			found = append(found, text)
+		}
+	}
+	return found
+}
+
+func (p *Project) formatProblems() []string {
+	section, present := p.config.Get("format")
+	if !present || section == nil {
+		return nil
+	}
+	object, ok := section.(*Object)
+	if !ok {
+		return []string{`"format" must be an object`}
+	}
+	paths, present := object.Get("exclude")
+	if !present {
+		return nil
+	}
+	list, ok := paths.([]any)
+	valid := ok
+	for _, path := range list {
+		if text, isText := path.(string); !isText || text == "" {
+			valid = false
+		}
+	}
+	if !valid {
+		return []string{`format.exclude must be a list of paths relative to the project root (["tests/fixtures/"])`}
+	}
+	return nil
 }
 
 // DefaultTimeoutMinutes is project.py's DEFAULT_TIMEOUT_MINUTES: the time

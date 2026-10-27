@@ -389,7 +389,7 @@ class InitTest(Fixture):
         with open(BIN, encoding="utf-8") as f:
             arms = re.findall(r"^    ([a-z|-]+)\)$", f.read(), re.M)
         dispatched = {name for arm in arms for name in arm.split("|")}
-        self.assertEqual(commands - dispatched - {"self-test"}, set())  # self-test runs outside any project
+        self.assertEqual(commands - dispatched - {"self-test", "self-build"}, set())  # they run outside any project
 
     def test_a_per_language_command_runs_in_a_project(self):
         self.configure()

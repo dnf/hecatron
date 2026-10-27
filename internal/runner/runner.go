@@ -270,8 +270,11 @@ func runJob(ctx context.Context, job Job, logPath string) (Outcome, Status) {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return Outcome{ExitCode: 1}, Failed
 	}
-	defer log.Close()
-	return Execute(ctx, job, log)
+	outcome, status := Execute(ctx, job, log)
+	if err := log.Close(); err != nil {
+		fmt.Fprintln(os.Stderr, "hecatron:", err)
+	}
+	return outcome, status
 }
 
 // Deciseconds is a duration as run-parallel.sh records it.
@@ -287,10 +290,7 @@ func ReadHistory(path string) History {
 	if err != nil {
 		return History{}
 	}
-	var lines []string
-	for _, line := range strings.Split(string(data), "\n") {
-		lines = append(lines, line)
-	}
+	lines := strings.Split(string(data), "\n")
 	if len(lines) > 0 && lines[len(lines)-1] == "" {
 		lines = lines[:len(lines)-1]
 	}
@@ -403,13 +403,13 @@ func Lock(logDir string) (unlock func(), err error) {
 	lock := filepath.Join(logDir, ".lock")
 	if os.Mkdir(lock, 0o755) != nil {
 		if info, statErr := os.Stat(lock); statErr == nil && time.Since(info.ModTime()) > 2*time.Minute {
-			os.Remove(lock)
+			_ = os.Remove(lock)
 		}
 		if err := os.Mkdir(lock, 0o755); err != nil {
 			return nil, fmt.Errorf("%s", lock)
 		}
 	}
-	return func() { os.Remove(lock) }, nil
+	return func() { _ = os.Remove(lock) }, nil
 }
 
 // ExitStatus is a run's exit status: 0 when nothing failed, 3 when every

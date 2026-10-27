@@ -123,6 +123,12 @@ var DefaultPatterns = &Patterns{List: []Pattern{
 	{Regex: regexp.MustCompile(`^\s*(?:FAIL|FAILED|FAILURE)\b[: ]\s*(?P<message>.+)$`)},
 }}
 
+// MissingCommandPatterns are a shell's "command not found" (bash, sh, zsh),
+// reported before any language's own patterns.
+var MissingCommandPatterns = &Patterns{List: []Pattern{
+	{Regex: regexp.MustCompile(`^.*?(?:line \d+: )?(?P<message>[^\s:]+: (?:command )?not found)$`)},
+}}
+
 var (
 	ansi            = regexp.MustCompile(`\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]`)
 	componentHeader = regexp.MustCompile(`^=== \S+ (.+) \([^()]+\) ===$`)
@@ -187,10 +193,17 @@ func Extract(log []byte, patterns *Patterns) Excerpt {
 		lines = append(lines, line)
 		components = append(components, component)
 	}
+	// A command the shell couldn't find (a linter not installed) comes first
+	// whatever else matched: it's why the rest failed, and what to fix.
+	missing := match(lines, components, MissingCommandPatterns)
 	if patterns != nil {
 		if found := match(lines, components, patterns); len(found) > 0 {
-			return Excerpt{Lines: found, Source: "patterns"}
+			return Excerpt{Lines: limitLines(append(missing, found...)), Source: "patterns"}
 		}
+	}
+	if len(missing) > 0 {
+		found := match(lines, components, DefaultPatterns)
+		return Excerpt{Lines: limitLines(append(missing, found...)), Source: "default"}
 	}
 	if found := match(lines, components, DefaultPatterns); len(found) > 0 {
 		return Excerpt{Lines: found, Source: "default"}
@@ -401,4 +414,17 @@ func prefixEqual(have, want []int) bool {
 		}
 	}
 	return true
+}
+
+// limitLines is lines without repeats, at most ExcerptLines of them.
+func limitLines(lines []ErrorLine) []ErrorLine {
+	var kept []ErrorLine
+	seen := map[string]bool{}
+	for _, line := range lines {
+		if !seen[line.Text] && len(kept) < ExcerptLines {
+			seen[line.Text] = true
+			kept = append(kept, line)
+		}
+	}
+	return kept
 }

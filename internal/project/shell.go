@@ -82,6 +82,7 @@ func (p *Project) Shell() (*Shell, error) {
 		{"HECATRON_IMPL_PATH", p.ImplPath},
 		{"HECATRON_LOGS", p.Logs},
 		{"HECATRON_METADATA", p.Metadata},
+		{"HECATRON_FORMAT_EXCLUDE", strings.Join(p.FormatExclude(), "\n")},
 	}
 	sort.Strings(s.Disabled)
 	return s, nil

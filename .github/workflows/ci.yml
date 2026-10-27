@@ -23,6 +23,27 @@ jobs:
       - name: The command runs
         run: bin/hecatron --version && bin/hct help
 
+  # Hecatron tested with itself (.hecatron/config.json): its toolchain from
+  # hct install, the binary from hct self-build, then hct lint and hct test,
+  # as a user's project would run them, with annotations on the change.
+  self-hosted:
+    runs-on: ubuntu-latest
+    env:
+      HECATRON_OUTPUT: ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: hct install (Go's linter)
+        run: bin/hct install
+      - name: hct self-build
+        run: bin/hct self-build
+      - name: hct lint
+        run: bin/hct lint
+      - name: hct test
+        run: bin/hct test
+
   # The Go core (docs/design.md §19): formatted, vetted and tested.
   go:
     runs-on: ubuntu-latest

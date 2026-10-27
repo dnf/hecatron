@@ -71,7 +71,9 @@ func TestReportReadersMatchPython(t *testing.T) {
 			for i, entry := range [][]string{{"bash", filepath.Join(home, "bin", "hecatron")}, {binary}} {
 				root := fixture(t, files)
 				for _, name := range []string{"audit.sh", "outdated.sh"} {
-					os.Chmod(filepath.Join(root, ".hecatron", "languages", "alpha", name), 0o755)
+					if err := os.Chmod(filepath.Join(root, ".hecatron", "languages", "alpha", name), 0o755); err != nil {
+						t.Fatal(err)
+					}
 				}
 				results[i] = runIn(t, root, env, append(entry, args...)...)
 				results[i].stdout = normalized(strings.ReplaceAll(results[i].stdout, root, "ROOT"))

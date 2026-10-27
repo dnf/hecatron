@@ -203,6 +203,7 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `dependabot` | Settings for every Dependabot `updates` entry (`schedule`, `groups`, `open-pull-requests-limit`...), and per package ecosystem under `ecosystems` (`{"npm": {...}}`) | `{"schedule": {"interval": "weekly"}}` |
 | `renovate` | Settings at the top of `renovate.json` (`extends`, `schedule`, `packageRules`...) | `{}` |
 | `lint.format` | Whether `hecatron lint` runs each language's format check: `false`, or per language (`{"haskell": false}`) | `true` |
+| `format.exclude` | Paths `hecatron format` and its check leave alone, relative to the root (`"tests/fixtures/"`, `"*.pb.go"`), where hecatron gives the formatter its files | `[]` |
 | `tasks` | Extra named jobs per action (`test`, `lint`, ...): shell commands run from the root, in parallel with the languages and by name (`hecatron test codegen`) | `{}` |
 | `metadata` | JSON file `hecatron metadata` reads (name, description, author, license, repository) | none |
 | `logs` | Log directory for runs | `.logs` |

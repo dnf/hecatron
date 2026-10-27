@@ -59,6 +59,7 @@ Project:
 
 Hecatron itself:
   self-test                  Check hecatron's own code: shellcheck and the unit tests
+  self-build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
 
 Run 'hecatron <command> help' for a command's options, and 'hecatron help agents'
@@ -79,7 +80,7 @@ func (c *cli) agentsHelp() int {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 1
 	}
-	os.Stdout.Write(text)
+	_, _ = os.Stdout.Write(text)
 	return 0
 }
 
@@ -88,7 +89,7 @@ func (c *cli) version() int {
 	if err != nil {
 		return 1
 	}
-	os.Stdout.Write(version)
+	_, _ = os.Stdout.Write(version)
 	return 0
 }
 

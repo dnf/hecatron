@@ -217,7 +217,7 @@ func (f *files) read(path string) string {
 					break
 				}
 			}
-			file.Close()
+			_ = file.Close() // read only
 			text = string(buffer[:n])
 		}
 	}

@@ -730,6 +730,7 @@ def shell_env(project: Project) -> str:
         f"export HECATRON_IMPL_PATH={shlex.quote(project.impl_path)}",
         f"export HECATRON_LOGS={shlex.quote(project.logs)}",
         f"export HECATRON_METADATA={shlex.quote(os.path.join(project.root, project.config['metadata']) if project.config.get('metadata') else '')}",
+        f"export HECATRON_FORMAT_EXCLUDE={shlex.quote(chr(10).join(format_exclude(project.config)))}",
         _emit_list("_ALL_LANGS", known),
         _emit_list("_ADDED_LANGS", added),
         _emit_list("_COMPILED_LANGS", [lang for lang in added if has_hook(lang, "build.sh")]),
@@ -790,6 +791,28 @@ def lint_config_problems(config: dict) -> list[str]:
     if isinstance(setting, dict) and all(isinstance(v, bool) for v in setting.values()):
         return []
     return ['lint.format must be true, false, or an object of languages to true or false ({"haskell": false})']
+
+
+def format_exclude(config: dict) -> list[str]:
+    """Paths the format check and `hecatron format` leave alone: config.json's
+    "format": {"exclude": [...]}, relative to the project root, a trailing
+    "/" meaning everything below (a fixture misformatted on purpose)."""
+    section = config.get("format")
+    paths = section.get("exclude") if isinstance(section, dict) else None
+    return [path for path in paths if isinstance(path, str)] if isinstance(paths, list) else []
+
+
+def format_config_problems(config: dict) -> list[str]:
+    """What's wrong with config.json's "format" section, for hecatron check."""
+    section = config.get("format")
+    if section is None:
+        return []
+    if not isinstance(section, dict):
+        return ['"format" must be an object']
+    paths = section.get("exclude", [])
+    if not isinstance(paths, list) or not all(isinstance(path, str) and path for path in paths):
+        return ['format.exclude must be a list of paths relative to the project root (["tests/fixtures/"])']
+    return []
 
 
 # The time limit `hecatron workflows` gives each generated CI job that sets

@@ -94,7 +94,7 @@ func normalized(output string) string {
 func logs(t *testing.T, root string) map[string]string {
 	t.Helper()
 	files := map[string]string{}
-	filepath.Walk(filepath.Join(root, ".logs"), func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(filepath.Join(root, ".logs"), func(path string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return nil
 		}
@@ -107,6 +107,9 @@ func logs(t *testing.T, root string) map[string]string {
 		files[rel] = text
 		return nil
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 	return files
 }
 
@@ -130,7 +133,9 @@ func TestRunCommandsMatchBinHecatron(t *testing.T) {
 				root := fixture(t, runProject)
 				for name := range runProject {
 					if strings.HasSuffix(name, ".sh") {
-						os.Chmod(filepath.Join(root, name), 0o755)
+						if err := os.Chmod(filepath.Join(root, name), 0o755); err != nil {
+							t.Fatal(err)
+						}
 					}
 				}
 				results[i] = runIn(t, filepath.Join(root, "b"), env, append(entry, args...)...)
@@ -184,7 +189,9 @@ func TestAgentOutput(t *testing.T) {
 	root := fixture(t, runProject)
 	for name := range runProject {
 		if strings.HasSuffix(name, ".sh") {
-			os.Chmod(filepath.Join(root, name), 0o755)
+			if err := os.Chmod(filepath.Join(root, name), 0o755); err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 	env := []string{"HECATRON_HOME=" + home, "HECATRON_BUILTIN_LANGUAGES=", "CLAUDECODE=1", "HECATRON_OUTPUT=", "GITHUB_ACTIONS="}

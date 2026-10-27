@@ -34,9 +34,6 @@ func alive(pid int) bool {
 // left the group with setsid. It is marked timed out, says so in its log,
 // and is recorded in history.log as timed out.
 func TestTimeLimitStopsTheJobAndItsChildren(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("process groups")
-	}
 	defer func(grace time.Duration) { StopGrace = grace }(StopGrace)
 	StopGrace = 300 * time.Millisecond
 	dir := t.TempDir()
@@ -65,7 +62,7 @@ func TestTimeLimitStopsTheJobAndItsChildren(t *testing.T) {
 	t.Cleanup(func() { // never leave one running, whatever failed
 		for _, pid := range pids {
 			if alive(pid) {
-				syscall.Kill(pid, syscall.SIGKILL)
+				_ = syscall.Kill(pid, syscall.SIGKILL)
 			}
 		}
 	})

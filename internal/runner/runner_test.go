@@ -96,7 +96,7 @@ func TestSlotsAndTheFastSlot(t *testing.T) {
 			running++
 			most = max(most, running)
 			mu.Unlock()
-			fmt.Fprintln(out, "ran", label)
+			_, _ = fmt.Fprintln(out, "ran", label)
 			<-release
 			mu.Lock()
 			running--
@@ -167,7 +167,9 @@ func TestLock(t *testing.T) {
 		t.Errorf("after unlocking: %v", err)
 	}
 	old := time.Now().Add(-3 * time.Minute)
-	os.Chtimes(filepath.Join(dir, ".lock"), old, old)
+	if err := os.Chtimes(filepath.Join(dir, ".lock"), old, old); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := Lock(dir); err != nil {
 		t.Errorf("a stale lock: %v", err)
 	}

@@ -46,7 +46,41 @@ format_files() {
     find . \( -type d ! -path . \( -name '.*' -o -name node_modules -o -name vendor -o -name third_party \
         -o -name third-party -o -name external -o -name build -o -name target -o -name out -o -name dist \
         -o -name obj -o -name _build -o -name dist-newstyle -o -name .stack-work \) -prune \) \
-        -o -type f \( "${_names[@]:1}" \) -print 2>/dev/null | sort
+        -o -type f \( "${_names[@]:1}" \) -print 2>/dev/null | sort | format_not_excluded
+}
+
+# The paths read from stdin (./relative to this directory, one per line)
+# that the project's "format": {"exclude": [...]} (HECATRON_FORMAT_EXCLUDE,
+# relative to the project root; a trailing "/" is everything below) doesn't
+# name, such as a fixture misformatted on purpose.
+format_not_excluded() {
+    local _root _here _path _relative _pattern _excluded
+    if [ -z "${HECATRON_FORMAT_EXCLUDE:-}" ] || [ -z "${HECATRON_ROOT:-}" ]; then
+        cat
+        return
+    fi
+    _root="$(cd "${HECATRON_ROOT}" && pwd -P)"
+    _here="$(pwd -P)"
+    while IFS= read -r _path; do
+        _relative="${_here}/${_path#./}"
+        _relative="${_relative#"${_root}"/}"
+        _excluded=0
+        while IFS= read -r _pattern; do
+            [ -n "${_pattern}" ] && format_path_matches "${_relative}" "${_pattern}" && _excluded=1
+        done <<<"${HECATRON_FORMAT_EXCLUDE}"
+        [ "${_excluded}" -eq 1 ] || printf '%s\n' "${_path}"
+    done
+}
+
+# Whether a root-relative path is the pattern's: under it when it ends in
+# "/", else matching it as a glob (*.pb.go, gen/*.go).
+# shellcheck disable=SC2053 # the pattern is a glob on purpose
+format_path_matches() {
+    if [[ "$2" == */ ]]; then
+        [ "${1#"$2"}" != "$1" ]
+    else
+        [[ "$1" == $2 ]]
+    fi
 }
 format_files_into() {
     local _file
@@ -91,7 +125,7 @@ format_go() {
     local _files=() _file
     while IFS= read -r _file; do _files+=("${_file}"); done < <(
         find . \( -type d ! -path . \( -name vendor -o -name testdata -o -name '.*' -o -name '_*' \) -prune \) \
-            -o -type f -name '*.go' -print | sort)
+            -o -type f -name '*.go' -print | sort | format_not_excluded)
     [ "${#_files[@]}" -gt 0 ] || skip "no .go files"
     if format_checking; then format_listing gofmt -l "${_files[@]}"; else format_listing gofmt -l -w "${_files[@]}"; fi
 }

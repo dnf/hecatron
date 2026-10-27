@@ -50,7 +50,7 @@ func dirText(f Finding) string {
 // finding is about: "go: age, date"; "" for the repository's.
 func owners(f Finding) string {
 	text := strings.Join(f.Languages, ", ")
-	if len(f.Components) > 0 && !(len(f.Components) == 1 && f.Components[0] == ".") {
+	if len(f.Components) > 0 && (len(f.Components) != 1 || f.Components[0] != ".") {
 		text += ": " + strings.Join(f.Components, ", ")
 	}
 	return text

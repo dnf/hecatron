@@ -10,15 +10,17 @@ import (
 
 // Write prints the report as human (also for CI), agent or json output.
 func Write(w io.Writer, r *Report, format string) error {
+	var out strings.Builder
 	switch format {
 	case "json":
 		return writeJSON(w, r)
 	case "agent":
-		writeAgent(w, r)
+		writeAgent(&out, r)
 	default:
-		writeHuman(w, r)
+		writeHuman(&out, r)
 	}
-	return nil
+	_, err := io.WriteString(w, out.String())
+	return err
 }
 
 func writeJSON(w io.Writer, r *Report) error {
@@ -100,7 +102,7 @@ func declaredText(p Package) string {
 	return "declared: " + strings.Join(p.Declared, ", ")
 }
 
-func writeAgent(w io.Writer, r *Report) {
+func writeAgent(w *strings.Builder, r *Report) {
 	fmt.Fprintln(w, r.Summary())
 	if r.Policy != nil {
 		for _, v := range r.Policy.Violations {
@@ -147,7 +149,7 @@ func notCoveredWhere(n NotCovered) string {
 }
 
 // table writes rows with each column but the last padded to its widest.
-func table(w io.Writer, indent string, rows [][]string) {
+func table(w *strings.Builder, indent string, rows [][]string) {
 	if len(rows) == 0 {
 		return
 	}
@@ -173,7 +175,7 @@ func table(w io.Writer, indent string, rows [][]string) {
 	}
 }
 
-func writeHuman(w io.Writer, r *Report) {
+func writeHuman(w *strings.Builder, r *Report) {
 	fmt.Fprintln(w, r.Summary())
 	if len(r.Licenses) > 0 {
 		fmt.Fprintln(w)

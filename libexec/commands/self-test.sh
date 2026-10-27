@@ -38,7 +38,8 @@ echo "=== unit tests ==="
 if [ ! -d tests ]; then
     echo "no tests/ in ${HECATRON_HOME}: self-test needs a hecatron checkout (git clone https://github.com/dnf/hecatron)" >&2
     _failed=1
-elif ! python3 -m unittest discover -s tests; then
+# They test the scripts: a binary from hecatron self-build has its own tests.
+elif ! HECATRON_NO_GO=1 python3 -m unittest discover -s tests; then
     _failed=1
 fi
 

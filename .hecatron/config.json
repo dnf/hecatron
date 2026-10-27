@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "project": "hecatron",
+  "implPath": ".",
+  "languages": ["go"],
+  "tools": {
+    "shell": {"dependency": "shellcheck"}
+  },
+  "tasks": {
+    "test": {"python": "cd tests && HECATRON_NO_GO=1 python3 -m unittest discover -s ."}
+  },
+  "format": {
+    "exclude": ["tests/format/fixtures/"]
+  },
+  "logs": ".logs"
+}

@@ -136,13 +136,11 @@ func (p project) create(t *testing.T, home string) (root, dir string) {
 }
 
 func copyTree(t *testing.T, from, to string) {
+	if err := os.MkdirAll(to, 0o755); err != nil {
+		t.Fatal(err)
+	}
 	if out, err := exec.Command("cp", "-R", from+"/.", to+"/").CombinedOutput(); err != nil {
-		if err := os.MkdirAll(to, 0o755); err != nil {
-			t.Fatal(err)
-		}
-		if out, err = exec.Command("cp", "-R", from+"/.", to+"/").CombinedOutput(); err != nil {
-			t.Fatalf("cp: %v: %s", err, out)
-		}
+		t.Fatalf("cp: %v: %s", err, out)
 	}
 }
 

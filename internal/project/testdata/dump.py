@@ -49,7 +49,8 @@ def shell(p):
         "exports": [["HECATRON_ROOT", p.root], ["HECATRON_PROJECT", p.name],
                     ["HECATRON_COMPONENTS", " ".join(p.components)], ["HECATRON_IMPL_PATH", p.impl_path],
                     ["HECATRON_LOGS", p.logs],
-                    ["HECATRON_METADATA", os.path.join(p.root, p.config["metadata"]) if p.config.get("metadata") else ""]],
+                    ["HECATRON_METADATA", os.path.join(p.root, p.config["metadata"]) if p.config.get("metadata") else ""],
+                    ["HECATRON_FORMAT_EXCLUDE", "\n".join(project.format_exclude(p.config))]],
         "known": sorted(defs),
         "added": added,
         "hooks": {hook: [lang for lang in added if p.resolve(lang, hook)] for hook in project.HOOKS},
@@ -125,7 +126,8 @@ def main():
         "tools": field(lambda p: {t: d.get("dependency", "") or "" for t, d in p.tools.items()}),
         "definitions": field(lambda p: p.definitions),
         "shell": field(shell),
-        "configProblems": field(lambda p: audit.config_problems(p.config) + project.lint_config_problems(p.config)),
+        "configProblems": field(lambda p: audit.config_problems(p.config) + project.lint_config_problems(p.config)
+                               + project.format_config_problems(p.config)),
         "asOf": field(lambda p: p.as_of() or ""),
         "conflicts": field(lambda p: [[lang, c, source, spec or "", wanted]
                                       for lang, c, source, spec, wanted in p.version_conflicts()]),

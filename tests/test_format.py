@@ -22,6 +22,33 @@ HOOKS = os.path.join(HOME, "languages", "_hooks.sh")
 FORMAT = os.path.join(HOME, "languages", "_format.sh")
 
 
+class FormatExcludeTest(unittest.TestCase):
+    def test_the_setting(self):
+        self.assertEqual(project.format_exclude({}), [])
+        self.assertEqual(project.format_exclude({"format": {"exclude": ["tests/fixtures/", "*.pb.go"]}}),
+                         ["tests/fixtures/", "*.pb.go"])
+        self.assertEqual(project.format_config_problems({"format": {"exclude": ["a/"]}}), [])
+        self.assertTrue(project.format_config_problems({"format": []}))
+        self.assertTrue(project.format_config_problems({"format": {"exclude": "a/"}}))
+        self.assertTrue(project.format_config_problems({"format": {"exclude": [""]}}))
+
+    def test_the_hooks_leave_excluded_files_alone(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as root:
+            root = os.path.realpath(root)
+            for path in ("go/fixtures/x/bad.go", "go/src/b.go", "go/src/c.pb.go"):
+                os.makedirs(os.path.dirname(os.path.join(root, path)), exist_ok=True)
+                write(os.path.join(root, path), "package x\n")
+            def listed(exclude):
+                env = dict(os.environ, HECATRON_ROOT=root, HECATRON_FORMAT_EXCLUDE="\n".join(exclude))
+                result = subprocess.run(["bash", "-c", f'set -euo pipefail; source "{FORMAT}"; format_files go'],
+                                        cwd=os.path.join(root, "go"), env=env, capture_output=True, text=True, check=True)
+                return result.stdout.split()
+            self.assertEqual(listed([]), ["./fixtures/x/bad.go", "./src/b.go", "./src/c.pb.go"])
+            self.assertEqual(listed(["go/fixtures/"]), ["./src/b.go", "./src/c.pb.go"])
+            self.assertEqual(listed(["go/fixtures/", "go/src/*.pb.go"]), ["./src/b.go"])
+
+
 class LintConfigTest(unittest.TestCase):
     def test_lint_checks_format_by_default(self):
         self.assertTrue(project.lint_checks_format({}, "go"))

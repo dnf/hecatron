@@ -6,6 +6,13 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Leave files out of formatting:** `"format": {"exclude": [...]}` lists
+  paths `hct format` and `hct lint`'s format check skip (a fixture
+  misformatted on purpose, generated code), where hecatron gives the
+  formatter its files.
+- **A missing linter says so:** `hct lint` with a language's linter not
+  installed (golangci-lint, say) reports the toolchain missing (exit 3), and
+  "command not found" leads the failure's excerpt.
 - **`init` detects better:** a build file at the root keeps its language
   there unless the directory the layout names for it holds the language's
   code (in a repository with `go.mod` at the root and a `languages/go/` of

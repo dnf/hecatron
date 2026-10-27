@@ -416,7 +416,9 @@ func (r *invocation) runNamed() int {
 		}
 		began := time.Now()
 		outcome, status := runner.Execute(r.ctx, job, out)
-		log.Close()
+		if err := log.Close(); err != nil {
+			fmt.Fprintln(os.Stderr, "hecatron:", err)
+		}
 		result.Duration, result.ExitCode, result.Components = time.Since(began), outcome.ExitCode, outcome.Components
 		result.Status = status
 		results = append(results, result)
@@ -429,7 +431,7 @@ func (r *invocation) runNamed() int {
 	case runner.Agent:
 		runner.WriteAgent(os.Stdout, report)
 	case runner.JSON:
-		runner.WriteJSON(os.Stdout, report)
+		_ = runner.WriteJSON(os.Stdout, report)
 	case runner.CI:
 		runner.WriteAnnotations(os.Stdout, report, os.Getenv("GITHUB_WORKSPACE"))
 	}
@@ -536,7 +538,7 @@ func (r *invocation) runAll() int {
 	if len(jobs) == 0 {
 		switch {
 		case r.format == runner.JSON:
-			runner.WriteJSON(os.Stdout, r.report(nil, 0))
+			_ = runner.WriteJSON(os.Stdout, r.report(nil, 0))
 		case r.selection != nil && !r.selection.Empty() && len(r.args.components) > 0:
 			fmt.Printf("%s; none in -c %s\n", r.selection.Line(), strings.Join(r.args.components, " "))
 		case r.selection != nil && !r.selection.Empty():
@@ -613,7 +615,7 @@ func (r *invocation) writeReport(report *runner.Report) {
 	case runner.Agent:
 		runner.WriteAgent(os.Stdout, report)
 	case runner.JSON:
-		runner.WriteJSON(os.Stdout, report)
+		_ = runner.WriteJSON(os.Stdout, report)
 	case runner.CI:
 		runner.WriteAnnotations(os.Stdout, report, os.Getenv("GITHUB_WORKSPACE"))
 	}
