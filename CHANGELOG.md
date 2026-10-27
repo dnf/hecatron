@@ -31,6 +31,10 @@ minor version can change behaviour. Numbers are
 - **Dart installs Flutter** (3.47.8) where a component is a Flutter package,
   and fetches its packages with `flutter pub get`; the doctor reports it
   missing. The test hook says so when a package has no `test/` directory.
+- **JVM builds get the JDKs they ask for:** the JVM installers install the
+  JDKs a Gradle or Maven toolchain names, and a build whose Gradle wrapper
+  (before 9.1) or Kotlin compiler (before 2.3) can't run on the default
+  JDK runs on the newest LTS JDK it supports, which they install too.
 - **Rust repairs an interrupted install:** a rustup left with no default
   toolchain (an install killed mid-download) is reported by the doctor and
   fixed by the installer.

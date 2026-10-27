@@ -353,6 +353,7 @@ node_hook() {
 # without tests runs whatever checkers the build configures (Checkstyle,
 # Spotless, detekt...).
 jvm_hook() {
+    jvm_select_jdk
     if [ -f pom.xml ]; then
         case "$1" in
             test) maven test ;;
@@ -378,6 +379,31 @@ jvm_hook() {
         unknown "no pom.xml, build.gradle(.kts) or build.sbt"
     fi
 }
+
+# A build whose Gradle wrapper or Kotlin compiler predates the JDK it would
+# run on fails to start on it, so it runs on the newest installed JDK it
+# supports instead (libexec/lib/jvm.py; the JVM installers install one).
+jvm_select_jdk() {
+    [ -n "${HECATRON_HOME:-}" ] || return 0
+    local _ceiling="" _why _current _version _home
+    IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling .) || true
+    [ -n "${_ceiling}" ] || return 0
+    _current="$(java_feature "$( (java -version 2>&1 || true) | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -1)")"
+    { [ -n "${_current}" ] && [ "${_current}" -le "${_ceiling}" ]; } && return 0
+    while IFS=$'\t' read -r _version _home; do
+        [ "$(java_feature "${_version}")" -le "${_ceiling}" ] && break
+        _home=""
+    done < <(bash "${HECATRON_HOME}/languages/java/installed.sh" 2>/dev/null | sort -t. -k1,1nr -k2,2nr -k3,3nr)
+    if [ -z "${_home:-}" ]; then
+        echo "warning: ${_why}, which runs on JDK ${_ceiling} at the newest, and no such JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
+        return 0
+    fi
+    echo "Using JDK ${_version} (${_home}): ${_why}, which runs on JDK ${_ceiling} at the newest."
+    export JAVA_HOME="${_home}"
+    export PATH="${_home}/bin:${PATH}"
+}
+# A Java version's feature release: 1.8.0_412 is 8, 21.0.2 is 21.
+java_feature() { echo "$1" | sed 's/^1\.\([0-9]*\).*/\1/; s/[^0-9].*//'; }
 
 # Clojure: the Clojure CLI (deps.edn) or Leiningen (project.clj). The CLI
 # runs the :test alias as a function (-X, :exec-fn) or a main (-M,

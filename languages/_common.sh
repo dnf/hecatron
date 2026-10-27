@@ -419,6 +419,7 @@ jvm_build_tools_missing() {
 }
 jvm_build_tools() {
     local _missing
+    jvm_jdks "$1"
     _missing="$(jvm_build_tools_missing "$1")"
     if [[ "${_missing}" == *maven* ]]; then
         if [ "${OS}" = "macos" ]; then brew_install maven; else _install_maven; fi
@@ -429,6 +430,32 @@ jvm_build_tools() {
     if [[ "${_missing}" == *sbt* ]]; then
         if [ "${OS}" = "macos" ]; then brew_install sbt; else _install_sbt; fi
     fi
+}
+# The JDKs (feature versions) a language's components' builds need besides
+# the one they run on, and that aren't installed, one per line: the ones
+# their Gradle or Maven toolchains name, which Gradle and Maven find among the
+# installed JDKs, and, for a build whose Gradle wrapper or Kotlin compiler
+# predates the default JDK, the newest LTS JDK it runs on, which the hooks
+# run it on (jvm_select_jdk in _hooks.sh). See libexec/lib/jvm.py.
+jvm_jdks_missing() {
+    [ -n "${HECATRON_HOME:-}" ] || return 0
+    local _dir _installed _feature _ceiling _why
+    _installed="$(bash "${HECATRON_HOME}/languages/java/installed.sh" 2>/dev/null | cut -f1 |
+        sed 's/^1\.\([0-9]*\).*/\1/; s/[^0-9].*//' | sort -un)"
+    while IFS= read -r _dir; do
+        while IFS= read -r _feature; do
+            grep -qx "${_feature}" <<<"${_installed}" || echo "${_feature}"
+        done < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" toolchains "${_dir}" "${ROOT}")
+        IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling "${_dir}") || continue
+        [ -n "$(awk -v ceiling="${_ceiling}" '$1 <= ceiling' <<<"${_installed}")" ] || echo "${_ceiling}"
+    done < <(impl_dirs "$1") | sort -un
+}
+jvm_jdks() {
+    local _jdks
+    _jdks="$(jvm_jdks_missing "$1")"
+    [ -n "${_jdks}" ] || return 0
+    # shellcheck disable=SC2086 # one feature version per word
+    bash "${HECATRON_HOME}/languages/java/install.sh" ${_jdks}
 }
 # A Maven of 3.9 or later on PATH.
 _maven_current() {
