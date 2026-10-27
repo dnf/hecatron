@@ -15,6 +15,27 @@ minor version can change behaviour. Numbers are
   agent output is a summary line and only the failures with their key
   error lines; exit status 3 means a toolchain is missing. The rest still
   runs through the scripts. `HECATRON_NO_GO=1` keeps to the scripts.
+- **Fixes on macOS's bash 3.2:** every run command's help and `hct
+  doctor` no longer fail with "unbound variable" in a repository with no
+  languages (which the binary avoids altogether).
+- **.NET runs the SDK it should:** a version the project's config names
+  runs exactly that SDK, each version in its own view of `/opt/dotnet`; a
+  version a GitHub workflow names is installed but, as `setup-dotnet`
+  does, the newest SDK runs unless a `global.json` picks one, and
+  `hecatron doctor` now says which. Downloading `dotnet-install.sh`
+  retries a dropped connection.
+- **Installing everything fetches dependencies last:** with no languages
+  named, `hecatron install` installs every toolchain first, then fetches
+  dependencies once, so one language's fetch that needs another's
+  toolchain (a `prepare` script running Ruby) no longer fails.
+- **Perl runs a project's own Makefile test target,** which may set what
+  its tests need (`AUTHOR_TESTING`): cucumber/tag-expressions runs 169
+  tests through it, where hecatron's `prove` ran 68.
+- **`hecatron init` skips a package with no test script** for a JavaScript
+  or TypeScript implementation (a JSON-schema package beside the real
+  one), saying why.
+- **A generated image fails when its PowerShell modules didn't install,**
+  instead of shipping without Pester.
 - **Instructions for AI agents:** `hct init` writes a short section to
   `AGENTS.md` (and has an existing `CLAUDE.md` load it); `--no-agents` skips
   it. `hct help agents` prints a compact reference written for agents.
@@ -47,7 +68,7 @@ minor version can change behaviour. Numbers are
   installers, now do it the same way, so **pnpm, Yarn, Bun, Bundler, Dart
   and Shards installs no longer change a lock file**: one that's out of
   date fails, as `npm ci` already did.
- rewrites every component's code with its
+- **`hecatron format`:** rewrites every component's code with its
   language's formatter, using the project's own configuration: gofmt,
   rustfmt, Ruff (or Black), `dotnet format`, `mix format`, `dart format`,
   `zig fmt`, swift-format, elm-format..., and where the project configures
