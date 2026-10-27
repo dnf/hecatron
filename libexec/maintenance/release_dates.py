@@ -76,8 +76,9 @@ def java():
     for feature in info["available_releases"]:
         page = 0
         while True:
+            # The API returns at most 20 a page, whatever page_size asks for.
             url = (f"https://api.adoptium.net/v3/assets/feature_releases/{feature}/ga"
-                   f"?os=linux&architecture=x64&image_type=jdk&jvm_impl=hotspot&page_size=50&page={page}")
+                   f"?os=linux&architecture=x64&image_type=jdk&jvm_impl=hotspot&page_size=20&page={page}")
             try:
                 releases = json.loads(fetch(url))
             except OSError:
@@ -89,7 +90,7 @@ def java():
                 version = name.removeprefix("jdk-").split("+")[0]
                 if FINAL.match(version):
                     yield version, release["timestamp"][:10], feature in lts
-            if len(releases) < 50:
+            if len(releases) < 20:
                 break
             page += 1
 

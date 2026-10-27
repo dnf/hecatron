@@ -38,11 +38,19 @@ install_linux() {
 
 # Adoptium's general-availability releases of a feature version (the spec's
 # first component), as "version<TAB>link<TAB>sha256", version without the
-# build ("25.0.5" for jdk-25.0.5+8).
+# build ("25.0.5" for jdk-25.0.5+8). The API pages 20 at a time, newest
+# first, and answers 404 past the last page; an old checkout's JDK is on a
+# later page.
 _releases() {
-    local feature="${1#=}"
-    curl -fsSL "https://api.adoptium.net/v3/assets/feature_releases/${feature%%.*}/ga?os=${_api_os}&architecture=${_api_arch}&image_type=jdk&jvm_impl=hotspot&page_size=100" |
-        python3 -c '
+    local feature="${1#=}" page=0 body
+    while body="$(curl -fsSL "https://api.adoptium.net/v3/assets/feature_releases/${feature%%.*}/ga?os=${_api_os}&architecture=${_api_arch}&image_type=jdk&jvm_impl=hotspot&page_size=20&page=${page}" 2>/dev/null)"; do
+        _release_lines <<<"${body}"
+        [ "$(python3 -c 'import json, sys; print(len(json.load(sys.stdin)))' <<<"${body}")" -lt 20 ] && break
+        page=$((page + 1))
+    done
+}
+_release_lines() {
+    python3 -c '
 import json, sys
 for release in json.load(sys.stdin):
     package = release["binaries"][0]["package"]

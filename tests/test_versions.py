@@ -358,8 +358,8 @@ class AsOfTest(VersionFixture):
                          {"spec": "=1.10.0", "source": "as-of:2021-06-01 (default)", "exact": True})
         self.define(version="=2.0.0", oldestInstallable="2.0")
         resolved = self.resolve()
-        self.assertEqual(resolved["spec"], "2.0")
-        self.assertIn("raised to 2.0", resolved["source"])
+        self.assertEqual(resolved, {"spec": "2.0", "exact": False,
+                                    "source": "as-of:2020-07-01 (default; raised to 2.0, the oldest hecatron installs)"})
         # A pin stands, even below what hecatron installs.
         write(self.path("a", "tool", ".tool-version"), "1.8\n")
         self.define(version="=2.0.0", oldestInstallable="1.9",

@@ -409,7 +409,7 @@ class Project:
             picked = versions.newest([v for v, released, _ in releases if released <= when and oldest.matches(v)])
             note = f"; raised to {self._oldest_installable(lang)}, the oldest hecatron installs"
             if picked is None:
-                return self._oldest_installable(lang), f"{source}{note}"
+                return self._oldest_installable(lang), f"as-of:{when} ({source}{note})"
         # Where the installer takes a line, not a release (uv's Pythons, a
         # PHP package), the release's line: the newest patch of it.
         dated = self._release_line(lang, picked) if builtin.get("asOfPrecision") == "line" else "=" + picked
