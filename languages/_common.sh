@@ -62,6 +62,22 @@ each_impl() {
         (cd "${_dir}" && "$@")
     done < <(impl_dirs "${_lang}")
 }
+# each_impl with each component's own toolchain version (its "path" and "env",
+# docs/design.md §18), for dependencies built for one version: a bundle's
+# native extensions, a Composer lock resolved for the running PHP.
+each_impl_versioned() {
+    local _lang="$1" _component _dir
+    shift
+    if [ -z "${HECATRON_HOME:-}" ]; then
+        each_impl "${_lang}" "$@"
+        return
+    fi
+    while IFS=$'\t' read -r _component _dir; do
+        log "${_dir#"${ROOT}/"}: $*"
+        (eval "$(cd "${ROOT}" && python3 "${HECATRON_HOME}/libexec/lib/project.py" env "${_lang}" "${_component}" </dev/null)" &&
+            cd "${_dir}" && "$@")
+    done < <(cd "${ROOT}" && python3 "${HECATRON_HOME}/libexec/lib/project.py" impl-dirs "${_lang}" </dev/null 2>/dev/null)
+}
 
 # Whether any of a language's components has a file a find expression
 # matches, e.g. `impl_has bash -name '*.bats'`: for installing a tool only

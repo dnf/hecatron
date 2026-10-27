@@ -55,7 +55,7 @@ on, and [adding-a-language.md](adding-a-language.md) covers adding one.
 | [R](https://www.r-project.org) | The statistics and data analysis language. | R packages (DESCRIPTION) | testthat | lintr | – |
 | [Racket](https://racket-lang.org) | A Lisp for making languages. | raco | rackunit (raco test) | – | – |
 | [Raku](https://raku.org) | Perl's expressive sister language, formerly Perl 6. | zef | Test (prove6, zef test) | – | – |
-| [Ruby](https://www.ruby-lang.org) | Expressive, object-oriented language behind Rails. | Bundler, Rake, RubyGems | RSpec, Minitest | RuboCop, Standard | – |
+| [Ruby](https://www.ruby-lang.org) | Expressive, object-oriented language behind Rails. | Bundler, Rake, RubyGems | RSpec, Minitest | RuboCop, Standard | 4.0.9 |
 | [Rust](https://www.rust-lang.org) | Memory safety without garbage collection, and fearless concurrency. | Cargo | cargo test | Clippy, rustfmt | 1.99.1 |
 | [Scala](https://www.scala-lang.org) | Functional and object-oriented language for the JVM. | sbt, Gradle, Maven, scalac | MUnit, ScalaTest | – | – |
 | [Swift](https://www.swift.org) | Apple's safe, fast language, also on Linux. | Swift Package Manager | XCTest, Swift Testing | – | – |

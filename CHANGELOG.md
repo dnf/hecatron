@@ -6,6 +6,11 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Toolchain versions for Ruby:** a pinned default (Ruby 4.0.9), or the
+  version a component's `.ruby-version`, `.tool-versions` or mise asks for,
+  built side by side by ruby-build into `/opt/ruby/<version>` (per-user on
+  macOS), each with its own Bundler. Ruby no longer comes from apt, whose
+  3.2 is too old for many gems.
 - **global.json's `rollForward` counts:** a .NET SDK pin of 8.0.100 with
   `latestFeature` asks for the newest 8.0 SDK, and with `latestMajor` the
   newest 8; `.php-version` and composer.json's `config.platform.php` pin

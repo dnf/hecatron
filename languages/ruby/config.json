@@ -13,6 +13,32 @@
     "ruby",
     "rb"
   ],
+  "path": [
+    "{home}/bin"
+  ],
+  "version": "=4.0.9",
+  "track": "stable",
+  "pinFiles": [
+    {
+      "file": ".ruby-version",
+      "format": "ruby-version"
+    },
+    {
+      "file": ".tool-versions",
+      "format": "tool-versions",
+      "key": "ruby"
+    },
+    {
+      "file": "mise.toml",
+      "format": "mise",
+      "key": "ruby"
+    },
+    {
+      "file": ".mise.toml",
+      "format": "mise",
+      "key": "ruby"
+    }
+  ],
   "buildSystems": [
     "Bundler",
     "Rake",
