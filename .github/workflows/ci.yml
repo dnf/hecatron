@@ -33,7 +33,8 @@ jobs:
           go-version-file: go.mod
       - name: gofmt, go vet and the tests
         run: |
-          unformatted="$(gofmt -l .)"
+          # tests/format/fixtures/ is misformatted on purpose (hct format's tests).
+          unformatted="$(gofmt -l . | grep -v '^tests/format/fixtures/' || true)"
           if [ -n "${unformatted}" ]; then echo "Not gofmt-formatted: ${unformatted}"; exit 1; fi
           go vet ./...
           go test ./...
