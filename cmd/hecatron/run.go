@@ -239,6 +239,11 @@ func (r *invocation) sub(action string) *invocation {
 // helpers.sh's exports, run.sh's, and the flags'.
 func (r *invocation) environment() []string {
 	extra := []string{"HECATRON_JOB_COMMAND=" + r.homePath("bin/hecatron")}
+	if exe, err := os.Executable(); err == nil {
+		// The audit and outdated hooks read their tools' reports with it
+		// (languages/_audit.sh, _outdated.sh; internal/deps).
+		extra = append(extra, "HECATRON_BINARY="+exe)
+	}
 	for _, export := range r.shell.Exports {
 		extra = append(extra, export[0]+"="+export[1])
 	}

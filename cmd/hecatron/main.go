@@ -58,6 +58,10 @@ func run(argv []string) int {
 		return c.status()
 	case "skill":
 		return c.skill()
+	case "_audit":
+		return c.auditTool()
+	case "_outdated":
+		return c.outdatedTool()
 	case "self-test":
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
 	}
