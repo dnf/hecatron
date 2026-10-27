@@ -11,6 +11,9 @@ minor version can change behaviour. Numbers are
   sourced from a clone, it also sets up the current shell. Rerun to update.
   It first installs what hecatron needs if it's missing: the Command Line
   Tools on macOS, and git, Python 3 and perl on Linux (apt, dnf or zypper).
+- **Downloads retry** transient failures (timeouts, dropped connections,
+  429 and 5xx answers, stalled transfers) in installers, hooks, apt and the
+  installer's git operations; a 404 isn't retried.
 - **A smoke test for every language:** each builds and runs a small program
   with the freshly installed toolchain, and checks its output.
 - **Groovy, Scala and Kotlin install their own compilers** (Groovy 5.1.3,

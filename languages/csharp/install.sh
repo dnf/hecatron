@@ -19,7 +19,7 @@ _add_microsoft_source() {
     curl -fsSL -o "${deb}" "https://packages.microsoft.com/config/${release}/packages-microsoft-prod.deb"
     $SUDO dpkg -i "${deb}"
     rm -f "${deb}"
-    $SUDO apt-get update -qq
+    $SUDO apt-get -o Acquire::Retries=3 update -qq
 }
 
 # The .NET runtimes the components' projects target, so their tests can run

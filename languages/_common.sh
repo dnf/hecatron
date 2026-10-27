@@ -22,6 +22,17 @@ ROOT="${HECATRON_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
 log() { echo "==> $*"; }
 
+# Every download retries. Installing dozens of toolchains from dozens of hosts
+# makes a transient failure (a timeout, a refused or dropped connection, a 5xx
+# or 429) a matter of time, so curl tries up to five times, gives up on a
+# connection after 30 s rather than curl's default of minutes, and treats a
+# transfer stalled below 1 KB/s for a minute as a timeout, which it retries.
+# A 404 isn't retried: it's an answer.
+curl() {
+    command curl --retry 4 --retry-delay 3 --retry-connrefused --connect-timeout 30 \
+        --speed-limit 1024 --speed-time 60 "$@"
+}
+
 # Each component's directory for a language, one per line, as hecatron
 # resolves it (a language's own implPath and directory names); outside a
 # hecatron run, the HECATRON_IMPL_PATH template (e.g. {component}/impl/{lang})
@@ -100,12 +111,12 @@ apt_refresh() {
     if [ ! -d "/var/lib/apt/lists" ] || \
        [ -z "$(find /var/lib/apt/lists -maxdepth 1 -name '*.Release' 2>/dev/null | head -1)" ] || \
        [ -n "$(find "$stamp" -maxdepth 0 -mmin +60 2>/dev/null)" ]; then
-        $SUDO apt-get update -qq
+        $SUDO apt-get -o Acquire::Retries=3 update -qq
     fi
 }
 apt_install() {
     apt_refresh
-    $SUDO apt-get install -y "$@"
+    $SUDO apt-get -o Acquire::Retries=3 install -y "$@"
 }
 # Whether the configured apt sources offer a package: distributions drop and
 # add toolchains between releases (Debian 13 has no OpenJDK 17).
