@@ -120,6 +120,10 @@ type Project struct {
 	// HOME, HECATRON_AS_OF); nil means this process's.
 	Environ []string
 
+	// Environ is the environment project.py would run in (installed.sh's,
+	// HOME, HECATRON_AS_OF); nil means this process's.
+	Environ []string
+
 	config      *Object
 	local       *Object // local.json as read; nil without one
 	localPath   string
