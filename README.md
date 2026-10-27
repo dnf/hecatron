@@ -11,7 +11,7 @@
 
 | CI | Release | Languages | License |
 | :-: | :-: | :-: | :-: |
-| [![CI](https://github.com/dnf/hecatron/actions/workflows/ci.yml/badge.svg)](https://github.com/dnf/hecatron/actions/workflows/ci.yml) | [![Latest release](https://img.shields.io/github/v/release/dnf/hecatron?sort=semver)](https://github.com/dnf/hecatron/releases) | [![Languages](https://img.shields.io/badge/languages-54-3B5BFF)](docs/coverage.md) | [![License: MIT](https://img.shields.io/github/license/dnf/hecatron)](LICENSE.md) |
+| [![CI](https://github.com/dnf/hecatron/actions/workflows/ci.yml/badge.svg)](https://github.com/dnf/hecatron/actions/workflows/ci.yml) | [![Latest release](https://img.shields.io/github/v/release/dnf/hecatron?sort=semver)](https://github.com/dnf/hecatron/releases) | [![Languages](https://img.shields.io/badge/languages-54-3B5BFF)](docs/coverage.md) <!-- language-count --> | [![License: MIT](https://img.shields.io/github/license/dnf/hecatron)](LICENSE.md) |
 
 </div>
 
@@ -107,7 +107,7 @@ options.
   `.nvmrc`, `.java-version`, `.tool-versions`, `mise.toml`...). Versions are
   installed side by side, and each component runs with its own.
 - **No hook files for conventional projects.** Default test, lint, build and
-  clean commands for all 54 languages, chosen from the build files present
+  clean commands for all 54 languages, chosen from the build files present <!-- language-count -->
   (`pom.xml` → Maven, `Cargo.toml` → Cargo, `CMakeLists.txt` → CMake and
   CTest...). A project overrides any of them with its own script.
 - **Everything at once.** `hct test`, `lint`, `build` and `clean` run every
@@ -243,7 +243,7 @@ the full configuration.
 
 ## Languages
 
-Hecatron ships definitions for 54 languages:
+Hecatron ships definitions for 54 languages: <!-- language-count -->
 
 Ada, Bash, C, C++, C#, Clojure, COBOL, Common Lisp, Crystal, D, Dart, Elixir,
 Elm, Erlang, F#, Fortran, Gleam, Go, Goose, Groovy, Haskell, Haxe, Janet,
