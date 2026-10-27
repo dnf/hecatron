@@ -89,6 +89,8 @@ text = re.sub(r"(Hecatron is young: version )\d+\.\d+\.", rf"\g<1>{major_minor}.
 with open("README.md", "w") as f:
     f.write(text)
 EOF
+    # The Agent Skill and its plugin carry the version too.
+    python3 libexec/codegen/skill.py
 }
 
 check
@@ -99,7 +101,7 @@ if [ "${_dry_run}" -eq 1 ]; then
     git --no-pager diff -- VERSION README.md
     say "Release notes:"
     release_notes
-    git checkout --quiet -- VERSION CHANGELOG.md README.md
+    git checkout --quiet -- VERSION CHANGELOG.md README.md plugins/
     exit 0
 fi
 

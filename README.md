@@ -178,6 +178,15 @@ For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
 - **No setup step.** In any git repository, hecatron detects the languages
   and layout and remembers them inside `.git/`; nothing is written to the
   working tree until you run `hct init`.
+- **A skill to load.** The hecatron Agent Skill teaches an agent the whole
+  interface without reading the docs: in Claude Code,
+  `/plugin install hecatron --marketplace dnf/hecatron`; other agents that
+  read Agent Skills can use [its folder](plugins/hecatron/skills/hecatron/)
+  as it is.
+- **Output sized for agents.** With `HECATRON_OUTPUT=agent`, a run prints
+  one summary line, then only the failures with their log paths and key
+  error lines, under a third of the human summary; exit status 3 means a
+  toolchain is missing.
 - **One reference to learn.** `hct help agents` prints [a compact
   reference](docs/agents.md) written for agents, matching the installed
   version; [llms.txt](llms.txt) points web-reading tools to it.
@@ -188,11 +197,9 @@ For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
   `doctor --fix`) are separate from those that only run the project's
   tools, and the agent reference says to ask before the former.
 
-Coming next: a compact output format for agents (one summary line, then
-only the failures with their key error lines,
-[#74](https://github.com/dnf/hecatron/issues/74)), running only what a
-change touched ([#91](https://github.com/dnf/hecatron/issues/91)), and
-catching up after a pull ([#92](https://github.com/dnf/hecatron/issues/92)).
+Coming next: running only what a change touched
+([#91](https://github.com/dnf/hecatron/issues/91)), and catching up after a
+pull ([#92](https://github.com/dnf/hecatron/issues/92)).
 
 ## From one language to fifty
 
