@@ -1,0 +1,14 @@
+name = "add_tests"
+description = "Tests for add"
+version = "0.1.0"
+
+authors = ["Hecatron"]
+maintainers = ["Hecatron <hecatron@example.com>"]
+licenses = "MIT"
+executables = ["add_test"]
+
+[[depends-on]]
+add = "*"
+
+[[pins]]
+add = { path = ".." }

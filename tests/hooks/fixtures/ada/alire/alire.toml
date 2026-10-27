@@ -1,0 +1,12 @@
+name = "add"
+description = "Adds two numbers"
+version = "0.1.0"
+
+authors = ["Hecatron"]
+maintainers = ["Hecatron <hecatron@example.com>"]
+licenses = "MIT"
+
+[[actions]]
+type = "test"
+command = ["alr", "run"]
+directory = "tests"
