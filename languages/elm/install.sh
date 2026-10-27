@@ -35,8 +35,11 @@ _npm_global() {
     else
         $SUDO npm install -g "$@"
     fi
-    for tool in elm elm-test; do
-        has "${tool}" || $SUDO ln -sfn "${prefix}/bin/${tool}" "/usr/local/bin/${tool}"
+    # Every command the install added (elm, elm-test, elm-review...) that
+    # isn't on PATH yet.
+    for tool in "${prefix}"/bin/*; do
+        [ -e "${tool}" ] || continue
+        has "$(basename "${tool}")" || $SUDO ln -sfn "${tool}" "/usr/local/bin/$(basename "${tool}")"
     done
 }
 

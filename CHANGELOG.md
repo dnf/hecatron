@@ -6,6 +6,9 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **elm-review is on PATH:** global npm commands Elm installs are all linked
+  onto PATH, now that Node.js comes from its official builds.
+
 - **CMake builds run fewer compile jobs at once:** one per CPU (or CPU
   quota) but at most one per 2 GB of memory, so a large C++ project no
   longer has its compilers killed for memory. `CMAKE_BUILD_PARALLEL_LEVEL`
