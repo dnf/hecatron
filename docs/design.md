@@ -892,6 +892,19 @@ entry points' output byte for byte. Decided with the first port
   `bin/hecatron` on fixture repositories (including `tests/hooks/fixtures`
   and `tests/output/fixtures`), and detection on clones of real projects.
 
+- **`doctor`'s driver** ported next (#73, #76): the language list (every
+  added, enabled one, or those named), each language's command and lint tool
+  on PATH with its version's environment, components whose version isn't
+  installed, its `doctor.sh` (still a script, run from the root as before),
+  the version notes, the summary and exit status. `--fix` still runs each
+  unhealthy language's `install.sh`, from the working directory, then
+  forgets what `installed.sh` said and checks again. A name `_check` would
+  question (unknown, not added, possibly prompting "Did you mean") and a
+  project whose versions the model declines are left to `doctor.sh`. Output
+  is `doctor.sh`'s byte for byte, but for bash's warning when a doctor
+  script prints a NUL byte (dropped, as bash drops it, without the
+  warning).
+
 ### Language definitions: data, families, scripts
 
 A definition says what to do in the most declarative of three tiers that can
