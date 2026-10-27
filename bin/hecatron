@@ -102,20 +102,13 @@ if [ "${_command}" = "self-test" ]; then
     exec bash "${HECATRON_HOME}/libexec/commands/self-test.sh" "$@"
 fi
 
-case "${_command}" in
-    test|lint|build|clean|rebuild|retest|audit|format|doctor|get-started|bootstrap|metadata|env|parallel|version) ;;
-    init|install|uninstall|list|add|remove|enable|disable|dockerfile|workflows|check|banner) ;;
-    *)
-        echo "hecatron: unknown command '${_command}' (try 'hecatron help')" >&2
-        exit 2 ;;
-esac
-
-# Every command but init runs inside a project; find it (like git). A git
-# repository that hecatron hasn't set up yet is set up on first use, at its
-# top level, as `hecatron init` would; init's report goes to stderr, so the
-# command's own output stays as it is.
+# Every command but init and banner runs inside a project; each finds it
+# (like git) before running. A git repository that hecatron hasn't set up yet
+# is set up on first use, at its top level, as `hecatron init` would; init's
+# report goes to stderr, so the command's own output stays as it is. Unknown
+# commands never get this far.
 _find_root() { python3 "${HECATRON_HOME}/libexec/lib/project.py" root; }
-if [ "${_command}" != "init" ] && [ "${_command}" != "banner" ]; then
+_project() {
     if ! HECATRON_ROOT="$(_find_root 2>/dev/null)"; then
         if _top="$(git rev-parse --show-toplevel 2>/dev/null)"; then
             python3 "${HECATRON_HOME}/libexec/commands/manage.py" init --auto "${_top}" >&2 || exit 1
@@ -123,16 +116,20 @@ if [ "${_command}" != "init" ] && [ "${_command}" != "banner" ]; then
         HECATRON_ROOT="$(_find_root)" || exit 1
     fi
     export HECATRON_ROOT
-fi
+}
 
 case "${_command}" in
     test|lint|build|clean|rebuild|retest|audit|format|deps|outdated)
+        _project
         exec bash "${HECATRON_HOME}/libexec/commands/run.sh" "${_command}" "$@" ;;
     doctor)
+        _project
         exec bash "${HECATRON_HOME}/libexec/commands/doctor.sh" "$@" ;;
     get-started)
+        _project
         exec bash "${HECATRON_HOME}/libexec/onboarding/get-started.sh" "$@" ;;
     bootstrap)
+        _project
         _env="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env)"
         eval "${_env}"
         case "$(uname -s)" in
@@ -140,8 +137,10 @@ case "${_command}" in
             *) exec bash "${HECATRON_HOME}/libexec/bootstrap/linux.sh" ;;
         esac ;;
     metadata)
+        _project
         exec bash "${HECATRON_HOME}/libexec/metadata/set.sh" "$@" ;;
     env)
+        _project
         # With a language: that language's environment for one component
         # (docs/design.md §18), e.g. eval "$(hecatron env java -c age)".
         if [ "$#" -gt 0 ]; then
@@ -155,6 +154,7 @@ case "${_command}" in
         printf 'source %q\n' "${HECATRON_HOME}/libexec/lib/helpers.sh"
         exit 0 ;;
     parallel)
+        _project
         # A project's own job list through the runner, e.g. one job per CLI.
         # Jobs are just recipes unless HECATRON_JOB_COMMAND says otherwise.
         _env="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env)"
@@ -163,7 +163,14 @@ case "${_command}" in
         export HECATRON_JOB_COMMAND="${HECATRON_JOB_COMMAND:-just}"
         exec bash "${HECATRON_HOME}/libexec/runner/run-parallel.sh" "$@" ;;
     version)
+        _project
         exec bash "${HECATRON_HOME}/libexec/commands/version.sh" "$@" ;;
-    init|install|uninstall|list|add|remove|enable|disable|dockerfile|workflows|check|banner)
+    init|banner)
         exec python3 "${HECATRON_HOME}/libexec/commands/manage.py" "${_command}" "$@" ;;
+    install|uninstall|list|add|remove|enable|disable|dockerfile|workflows|check)
+        _project
+        exec python3 "${HECATRON_HOME}/libexec/commands/manage.py" "${_command}" "$@" ;;
+    *)
+        echo "hecatron: unknown command '${_command}' (try 'hecatron help')" >&2
+        exit 2 ;;
 esac
