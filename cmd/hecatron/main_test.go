@@ -110,6 +110,9 @@ var cliProjects = map[string]map[string]string{
 	},
 }
 
+// `deps help` isn't compared until bin/hecatron stops refusing deps as an
+// unknown command (#87); TestNativeCommandsNeedNoBashOrPython covers it.
+
 // cliArgs are the invocations compared: every native form, and delegated
 // ones that only read.
 var cliArgs = [][]string{
@@ -199,6 +202,7 @@ func TestNativeCommandsNeedNoBashOrPython(t *testing.T) {
 		{[]string{"list"}, 0, []string{"  go", "  rust  (disabled)", "  typescript", "5 languages"}},
 		{[]string{"list", "--all"}, 0, []string{"  go           project", "  mine         project  (not added)", "  zig          built-in  (not added)"}},
 		{[]string{"test", "help"}, 0, []string{"Usage: hecatron test [flags] [target ...]", "Project tasks: zeta alpha ", "components: age date"}},
+		{[]string{"deps", "help"}, 0, []string{"Fetch each language's dependencies for every component, held to its lock file."}},
 		{[]string{"build", "help"}, 0, []string{"Languages (5):", "csharp (cs)     go "}},
 		{[]string{"version"}, 2, []string{"Usage: hecatron version <version>"}},
 	}

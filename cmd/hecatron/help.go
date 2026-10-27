@@ -29,6 +29,7 @@ Run (every component of each language; no languages means all, in parallel):
   clean [lang...]            Remove build artifacts
   rebuild, retest [lang...]  Clean, then build or test
   audit [lang...]            Check dependencies for known vulnerabilities (--fail-on SEVERITY)
+  deps [lang...]             Fetch dependencies, held to each component's lock file
   format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
 
 Languages:
@@ -110,6 +111,7 @@ var runActions = map[string]struct{ description, hook string }{
 	"rebuild": {"Clean, then build", "build.sh"},
 	"retest":  {"Clean, then test", "test.sh"},
 	"audit":   {"Check each language's dependencies for known vulnerabilities in every component", "audit.sh"},
+	"deps":    {"Fetch each language's dependencies for every component, held to its lock file", "deps.sh"},
 	"format":  {"Format each language's code with its formatter in every component", "format.sh"},
 }
 

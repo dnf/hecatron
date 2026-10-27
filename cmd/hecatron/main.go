@@ -86,6 +86,7 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"retest":  (*cli).runHelp,
 	"audit":   (*cli).runHelp,
 	"format":  (*cli).runHelp,
+	"deps":    (*cli).runHelp,
 	"doctor":  (*cli).doctorHelp,
 	"version": (*cli).versionHelp,
 }
