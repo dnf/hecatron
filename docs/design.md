@@ -1018,3 +1018,51 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
 
 Project hooks written in bash keep working on macOS and Linux throughout.
 The bash 3.2 rule (§14) then applies only to hooks and install scripts.
+
+## 20. Source control backends
+
+Status: **planned** (#99–#103), except where marked as working today.
+Hecatron runs the same everywhere; what differs between GitHub, GitLab,
+Bitbucket and Azure DevOps is where CI is configured and where results are
+shown. Hecatron meets each forge with thin adapters (an environment variable
+read, a file written in a format the forge knows) and prefers formats every
+forge reads over one integration per forge. It never needs a forge's token:
+it doesn't post comments or call forge APIs, so it works the same in a fork,
+on a laptop and in CI.
+
+### What works today
+
+- **GitHub Actions workflows.** `hecatron workflows` writes one workflow per
+  language from the project's templates (§11), and `hecatron check` fails
+  when one is behind.
+- **GitHub annotations.** With the Go binary, `--output ci` (chosen
+  automatically when `GITHUB_ACTIONS` is set) adds `::error` annotations at
+  each error line's file and line, shown on the pull request (§19).
+- **Audit in CI.** `hecatron audit` fails at a severity threshold and can
+  save each tool's raw report (`HECATRON_AUDIT_REPORT_DIR`);
+  [audit.md](audit.md) has a workflow step.
+
+### Planned
+
+| Feature | GitHub | GitLab | Others | Issue |
+| --- | --- | --- | --- | --- |
+| Test only what a pull or merge request changed (`--changed` with the base from the CI environment) | `GITHUB_BASE_REF` | `CI_MERGE_REQUEST_DIFF_BASE_SHA` | Bitbucket, Azure variables | #99 (needs #91) |
+| Per-test results (JUnit XML, `--output junit`) | through a reporting action | merge request test widget | Jenkins, Azure, Buildkite, CircleCI | #100 |
+| Findings on the change (SARIF from `audit` and `lint`; GitLab Code Quality JSON) | code scanning | security and code quality widgets | any SARIF reader | #100 |
+| A results page per run | job summary (`GITHUB_STEP_SUMMARY`) | the JUnit report | | #101 |
+| Generated CI | Actions (today) | `.gitlab-ci.yml` | Bitbucket, Azure on demand | #102 |
+| Caching toolchains (keyed on pin files) and dependencies (on lock files) in generated CI | `actions/cache` | `cache:key:files` | | #102 |
+| Dependency update configuration, kept current by `hecatron check` | `.github/dependabot.yml` | `renovate.json` | Renovate anywhere | #103 |
+
+Reports are written with the normal output, not instead of it: a run in CI
+prints its log and leaves the forge's files in `HECATRON_REPORT_DIR`.
+
+### Left out
+
+- **Comments on pull requests:** they need a token with write access, and
+  annotations, job summaries and the merge request widgets already show
+  results where reviewers look.
+- **CODEOWNERS:** ownership is a team's structure, which hecatron doesn't
+  know.
+- **Publishing with a forge's trusted-publishing credentials (OIDC):** part
+  of a `hecatron publish` design, not yet decided.

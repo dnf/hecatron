@@ -267,8 +267,9 @@ expect changes before 1.0. Changes are listed in
   Ubuntu, x86_64 and arm64).
 - **Next:** a single fast binary written in Go, with native Windows support
   ([design](docs/design.md#19-a-go-core-and-native-windows),
-  [#80](https://github.com/dnf/hecatron/issues/80)), and a GitHub Action for
-  CI.
+  [#80](https://github.com/dnf/hecatron/issues/80)); and for CI, a GitHub
+  Action, GitLab CI generation, and results every forge shows (JUnit, SARIF,
+  job summaries; [source control backends](docs/design.md#20-source-control-backends)).
 
 ## Documentation
 
