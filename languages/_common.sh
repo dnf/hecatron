@@ -210,60 +210,160 @@ dotnet_runtimes_missing() {
 }
 
 # For the native languages' installers (C, C++, Objective-C): the libraries a
-# component's CMake build looks for with find_package(), as distribution
-# packages, for the common ones. A name not in the table is left to the
-# project (its README, or a vcpkg or Conan manifest).
+# component's CMake build looks for, as distribution packages, for the common
+# ones. A name is a find_package() name, or a pkg-config module (from
+# pkg_check_modules() or pkg_search_module()) as "pkg-config:<module>". A name
+# not in the table is left to the project (its README, or a vcpkg or Conan
+# manifest), except that on Debian and Ubuntu a pkg-config module <name> is
+# looked for as lib<name>-dev, the usual package for it.
 _cmake_package() {
-    local _name="$1"
+    local _name="${1#pkg-config:}"
     if [ "${OS}" = "macos" ]; then
         case "${_name}" in
-            GTest | GMock) echo googletest ;;
+            GTest | GMock | gtest | gmock | gtest_main) echo googletest ;;
             yaml-cpp) echo yaml-cpp ;;
             nlohmann_json) echo nlohmann-json ;;
             Boost) echo boost ;;
             fmt) echo fmt ;;
             spdlog) echo spdlog ;;
             Catch2) echo catch2 ;;
+            doctest) echo doctest ;;
             benchmark) echo google-benchmark ;;
             Protobuf | protobuf) echo protobuf ;;
-            OpenSSL) echo openssl ;;
-            CURL) echo curl ;;
+            absl) echo abseil ;;
+            re2) echo re2 ;;
+            ICU | icu-uc | icu-i18n) echo icu4c ;;
+            OpenSSL | openssl | libssl) echo openssl ;;
+            CURL | libcurl) echo curl ;;
             PkgConfig) echo pkgconf ;;
+            GLIB | glib-2.0 | gobject-2.0 | gio-2.0 | gio-unix-2.0) echo glib ;;
+            jansson) echo jansson ;;
+            Snappy | snappy) echo snappy ;;
+            zstd | ZSTD | libzstd) echo zstd ;;
+            lz4 | LZ4 | liblz4) echo lz4 ;;
+            LibLZMA | liblzma) echo xz ;;
+            Libevent | libevent) echo libevent ;;
+            JsonCpp | jsoncpp) echo jsoncpp ;;
+            libuv) echo libuv ;;
+            FLEX) echo flex ;;
+            BISON) echo bison ;;
         esac
     else
         case "${_name}" in
-            GTest | GMock) echo "libgtest-dev libgmock-dev" ;;
+            GTest | GMock | gtest | gmock | gtest_main) echo "libgtest-dev libgmock-dev" ;;
             yaml-cpp) echo libyaml-cpp-dev ;;
             nlohmann_json) echo nlohmann-json3-dev ;;
             Boost) echo libboost-all-dev ;;
             fmt) echo libfmt-dev ;;
             spdlog) echo libspdlog-dev ;;
             Catch2) echo catch2 ;;
+            doctest) echo doctest-dev ;;
             benchmark) echo libbenchmark-dev ;;
             Protobuf | protobuf) echo "libprotobuf-dev protobuf-compiler" ;;
-            OpenSSL) echo libssl-dev ;;
-            CURL) echo libcurl4-openssl-dev ;;
-            ZLIB) echo zlib1g-dev ;;
+            absl) echo libabsl-dev ;;
+            re2) echo libre2-dev ;;
+            ICU | icu-uc | icu-i18n) echo libicu-dev ;;
+            OpenSSL | openssl | libssl) echo libssl-dev ;;
+            CURL | libcurl) echo libcurl4-openssl-dev ;;
+            ZLIB | zlib) echo zlib1g-dev ;;
             PkgConfig) echo pkg-config ;;
+            GLIB | glib-2.0 | gobject-2.0 | gio-2.0 | gio-unix-2.0) echo libglib2.0-dev ;;
+            Snappy | snappy) echo libsnappy-dev ;;
+            zstd | ZSTD) echo libzstd-dev ;;
+            lz4 | LZ4) echo liblz4-dev ;;
+            BZip2) echo libbz2-dev ;;
+            Libevent) echo libevent-dev ;;
+            JsonCpp | jsoncpp) echo libjsoncpp-dev ;;
+            libuv) echo libuv1-dev ;;
+            CyrusSASL) echo libsasl2-dev ;;
+            FLEX) echo flex ;;
+            BISON) echo bison ;;
             Threads) ;;
+            liblzma | LibLZMA) echo liblzma-dev ;;
+            lib*) if [ "$1" != "${_name}" ]; then echo "${_name}-dev"; fi ;;
+            *) if [ "$1" != "${_name}" ]; then echo "lib${_name}-dev"; fi ;;
         esac
     fi
 }
-# The find_package() names in a language's components' CMake files.
+# The directory a component's CMake build configures from: its own, or, when
+# its CMakeLists.txt calls no project() (a subdirectory that a parent's
+# add_subdirectory() pulls in, which can't be configured alone), the nearest
+# one above it in the project whose CMakeLists.txt does. The native hooks
+# configure from the same directory (cmake_source_dir in _hooks.sh).
+cmake_project_dir() {
+    local _dir="$1"
+    while [ -f "$1/CMakeLists.txt" ] && ! _cmake_has_project "${_dir}"; do
+        if [ "${_dir}" = "${ROOT}" ] || [ "${_dir}" = / ]; then
+            echo "$1"
+            return 0
+        fi
+        _dir="$(dirname "${_dir}")"
+    done
+    echo "${_dir}"
+}
+_cmake_has_project() { grep -qiE '^[[:space:]]*project[[:space:]]*\(' "$1/CMakeLists.txt" 2>/dev/null; }
+# What a language's components' CMake builds look for, one name per line (see
+# _cmake_package): find_package() names, pkg-config modules, and the packages
+# behind a few headers that builds look for by hand (find_path(... gtest/gtest.h)).
+# Fetched or vendored dependencies and configured build trees aren't searched.
 cmake_find_packages() {
     local _dir
     while IFS= read -r _dir; do
-        find "${_dir}" -maxdepth 3 \( -name build -o -name 'build-*' -o -name third_party -o -name external \) -prune -o \
+        echo "${_dir}"
+        cmake_project_dir "${_dir}"
+    done < <(impl_dirs "$1") | sort -u | while IFS= read -r _dir; do
+        find "${_dir}" -maxdepth 3 \( -name _deps -o -name CMakeFiles -o -name third_party -o -name external \
+            -o -type d -exec test -f '{}/CMakeCache.txt' \; \) -prune -o \
             \( -name CMakeLists.txt -o -name '*.cmake' \) -type f -print 2>/dev/null
-    done < <(impl_dirs "$1") |
-        xargs -r sed -n 's/.*find_package[[:space:]]*([[:space:]]*\([A-Za-z0-9_+-]*\).*/\1/p' 2>/dev/null | sort -u
+    done | sort -u | python3 -c '
+import os, re, sys
+HEADERS = {r"gtest/gtest\.h": "GTest", r"gmock/gmock\.h": "GMock", r"re2/re2\.h": "re2",
+           r"unicode/\w+\.h": "ICU", r"google/protobuf/\w+\.h": "Protobuf"}
+names = set()
+paths = sys.stdin.read().splitlines()
+seen = set()
+while paths:
+    path = os.path.normpath(paths.pop())
+    if path in seen:
+        continue
+    seen.add(path)
+    try:
+        text = re.sub(r"#[^\n]*", "", open(path, errors="replace").read())
+    except OSError:
+        continue
+    # A file include()d by path, as from a shared tools directory outside the component.
+    for included in re.findall(r"include\s*\(\s*\"?([^\s)\"]+\.cmake)", text, re.I):
+        included = re.sub(r"\$\{CMAKE_CURRENT_(?:SOURCE|LIST)_DIR\}", os.path.dirname(path), included)
+        if "$" not in included:
+            paths.append(os.path.join(os.path.dirname(path), included))
+    names.update(re.findall(r"find_package\s*\(\s*([A-Za-z0-9_+-]+)", text, re.I))
+    # A find module (FindFoo.cmake) looks for what find_package(Foo) names.
+    if re.fullmatch(r"Find.+\.cmake", os.path.basename(path)):
+        continue
+    for call in re.findall(r"pkg_(?:check|search)_modules?\s*\(\s*\S+\s+([^)]*)\)", text, re.I):
+        for word in call.split():
+            module = re.split(r"[<>=]", word)[0]
+            if re.fullmatch(r"[A-Za-z0-9_.+-]+", module) and not module.isupper():
+                names.add("pkg-config:" + module)
+    names.update(name for header, name in HEADERS.items() if re.search(header, text))
+print("\n".join(sorted(names)))
+'
 }
 cmake_dependencies() {
-    local _name _packages=""
+    local _name _package _packages=""
     while IFS= read -r _name; do
         [ -n "${_name}" ] && _packages="${_packages} $(_cmake_package "${_name}")"
     done < <(cmake_find_packages "$1")
     _packages="$(echo "${_packages}" | xargs -n1 2>/dev/null | sort -u | xargs 2>/dev/null)"
+    # Distributions name and split packages differently, and a lib<name>-dev
+    # guess may name none: install the ones there are.
+    if [ "${OS}" = "linux" ] && [ -n "${_packages}" ]; then
+        local _available=""
+        for _package in ${_packages}; do
+            if apt_has "${_package}"; then _available="${_available} ${_package}"; fi
+        done
+        _packages="${_available# }"
+    fi
     [ -n "${_packages}" ] || return 0
     log "Installing the libraries the CMake builds look for: ${_packages}"
     # shellcheck disable=SC2086 # one word per package

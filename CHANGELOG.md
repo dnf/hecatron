@@ -6,6 +6,24 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **CMake builds run fewer compile jobs at once:** one per CPU (or CPU
+  quota) but at most one per 2 GB of memory, so a large C++ project no
+  longer has its compilers killed for memory. `CMAKE_BUILD_PARALLEL_LEVEL`
+  still decides when set.
+- **A CMake subdirectory is built as part of its project:** a component
+  whose `CMakeLists.txt` calls no `project()` (one a parent's
+  `add_subdirectory()` pulls in) is configured from the nearest directory
+  above it that does, and its own tests run.
+- **CMake test options are the project's own:** the test hook no longer
+  turns on a fetched dependency's test options, nor valgrind or
+  large-memory ones, and an option whose setup is missing is left off
+  instead of failing the configure. A project that registers no CTest
+  tests and runs them from a `check` or `tests` target gets that target.
+- **C and C++ installers find more of what a CMake build needs:**
+  `pkg_check_modules()` and `pkg_search_module()` lookups, headers looked
+  for by hand (`gtest/gtest.h`), files `include()`d from outside the
+  component, the enclosing project's own lookups, and more libraries (GLib,
+  Abseil, RE2, ICU, Jansson, Snappy, zstd, LZ4, libevent, flex, bison...).
 - **Rust repairs an interrupted install:** a rustup left with no default
   toolchain (an install killed mid-download) is reported by the doctor and
   fixed by the installer.
