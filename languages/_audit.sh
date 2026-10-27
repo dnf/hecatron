@@ -203,8 +203,8 @@ audit_php() {
         cd "${_scratch}"
         # Composer 2.9 refuses to resolve to versions with advisories; the
         # audit is what should report them.
-        composer config audit.block-insecure false
-        run composer update --no-install --no-scripts --no-plugins --no-interaction ||
+        composer config audit.block-insecure false 2>/dev/null || true
+        run composer update --no-install --no-scripts --no-plugins --no-interaction --ignore-platform-reqs ||
             { echo "error: php: Composer couldn't resolve composer.json" >&2; exit 1; }
     fi
     audit_run composer audit --locked --format=json --no-interaction
@@ -232,9 +232,10 @@ audit_dotnet() {
 # stack.yaml.lock, conan.lock...).
 audit_osv() {
     has osv-scanner || audit_missing osv-scanner
-    audit_run osv-scanner scan source --recursive --format json --allow-no-lockfiles .
-    if ! grep -q '"packages"' "${_audit_report_file}"; then
-        audit_nothing "no lock file or manifest OSV-Scanner reads"
-    fi
+    local _status=0
+    echo "+ osv-scanner scan source --recursive --format json ."
+    osv-scanner scan source --recursive --format json . >"${_audit_report_file}" || _status=$?
+    # 1 is findings; 128, no package sources found.
+    [ "${_status}" -ne 128 ] || audit_nothing "no lock file or manifest OSV-Scanner reads"
     audit_finish osv
 }
