@@ -6,6 +6,18 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Default hooks find a build that isn't in the language's directory:**
+  above it in the project (pulumi's `sdk/go` in the module `sdk/go.mod`, a
+  root `Package.swift`, CMake project or Gradle build), or in directories
+  below it, run in each (several crates under `rust/`, a solution in
+  `csharp/src/`), or a root Makefile's target named for the directory
+  (`check_cxx`).
+
+- **Node.js uses the project's package manager:** the hooks and installers
+  run pnpm, Yarn or Bun when `packageManager` or the lockfile says so (pnpm
+  and Yarn through Corepack), so a pnpm or Yarn workspace installs instead of
+  failing on `workspace:*`.
+
 - **Toolchain versions for .NET (C#, F#, VB.NET):** a pinned default SDK
   (10.0.403 LTS, the 10.0.4xx feature band), or the one a component's
   global.json asks for, installed side by side with Microsoft's

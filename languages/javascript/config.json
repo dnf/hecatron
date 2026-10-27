@@ -17,7 +17,7 @@
     "nodejs"
   ],
   "buildSystems": [
-    "npm"
+    "npm, pnpm, Yarn or Bun"
   ],
   "testing": "npm test (node:test, Jest...)",
   "linting": "npm run lint (ESLint...)"
