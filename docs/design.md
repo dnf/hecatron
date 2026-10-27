@@ -560,9 +560,10 @@ release), so resolution stays offline and two machines agree.
 `libexec/maintenance/release_dates.py` writes them from each language's
 release source: nodejs.org, python.org, go.dev's release history, Rust's
 `RELEASES.md`, Adoptium, ruby-lang.org, php.net and Microsoft's .NET release
-metadata. A language sharing another's toolchain names it in `releasesOf`
-(JavaScript's Node.js is TypeScript's, F#'s and VB.NET's SDK C#'s), and
-shares its version settings.
+metadata. A weekly workflow (`.github/workflows/release-dates.yml`) reruns
+it and opens a pull request when there are new releases. A language sharing
+another's toolchain names it in `releasesOf` (JavaScript's Node.js is
+TypeScript's, F#'s and VB.NET's SDK C#'s), and shares its version settings.
 
 A dated version is exact where the installer can install any release (a
 Node.js build, a Go toolchain, a rustup toolchain, a Temurin JDK, a
