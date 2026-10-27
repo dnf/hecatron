@@ -367,7 +367,9 @@ saves it, as init would. Init itself:
    C's and C++'s `CMakeLists.txt`) counts for the one with the most sources
    beside it or under its `src/` and `include/`. A hit is dropped where one
    of the definition's `detectUnless` files sits beside it (`package.json` is
-   JavaScript unless a `tsconfig.json` makes it TypeScript). Examples, tests,
+   JavaScript unless a `tsconfig.json` makes it TypeScript), and a
+   `package.json` without the definition's `detectScript` npm script doesn't
+   count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling). Examples, tests,
    docs, tools and vendored code (`examples/`, `tests/`, `tools/`,
    `fixtures/`, `android/`, `third_party/`, `vendor/`, `node_modules/` and
    the like) are skipped. A language left out is listed with the reason.

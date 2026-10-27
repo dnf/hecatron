@@ -11,6 +11,7 @@
   "detectUnless": [
     "tsconfig.json"
   ],
+  "detectScript": "test",
   "dirNames": [
     "javascript",
     "js",

@@ -211,6 +211,20 @@ class InitTest(Fixture):
                                 "typescript": {"detect": ["tsconfig.json"]}})
         self.assertEqual(found, {"javascript": {"js"}, "typescript": {"ts"}})
 
+    def test_a_package_without_a_test_script_isnt_a_language(self):
+        # Cucumber messages: jsonschema/package.json is tooling with no tests.
+        defs = {"javascript": {"detect": ["package.json"], "detectScript": "test"}}
+        found, not_added = self.detect({"js/package.json": '{"scripts": {"test": "mocha"}}',
+                                        "jsonschema/package.json": '{"scripts": {"build": "x"}}'}, defs)
+        self.assertEqual(found, {"javascript": {"js"}})
+        self.assertEqual(not_added, {})
+
+    def test_a_language_whose_packages_have_no_test_script_isnt_added(self):
+        defs = {"javascript": {"detect": ["package.json"], "detectScript": "test"}}
+        found, not_added = self.detect({"jsonschema/package.json": "{}"}, defs)
+        self.assertEqual(found, {})
+        self.assertEqual(not_added, {"javascript": "no test script"})
+
     def test_a_shared_build_file_marks_c_and_cpp_at_the_root(self):
         # flatbuffers: CMakeLists.txt at the root and C++ in src/, not the
         # copy nested in another tree.
