@@ -315,7 +315,7 @@ class Project:
                 spec, source = default, "default" if default is not None else None
                 if default is not None:
                     supported, where = self._pin(lang, component, self._support_files(lang), "supports")
-                    if supported not in (None, versions.NOT_PINNED) and self._older_line(supported, default):
+                    if supported not in (None, versions.NOT_PINNED) and self._older_line(lang, supported, default):
                         spec, source = self._installable(lang, supported), where
         if spec is not None:
             versions.Spec(spec)
@@ -323,11 +323,12 @@ class Project:
                 spec, source = self._as_of_version(lang, spec, source)
         return {"spec": spec, "source": source, "exact": spec is not None and spec.startswith("=")}
 
-    @staticmethod
-    def _older_line(supported: str, default: str) -> bool:
+    def _older_line(self, lang: str, supported: str, default: str) -> bool:
         """Whether the line a component supports up to (3.14) is older than
-        the default's (=3.15.1)."""
-        line = versions.Spec(supported).numbers
+        the default's (=3.15.1). Compared by release line: a CI workflow
+        naming Ruby 4.0.6 says nothing against the default 4.0.9."""
+        parts = len(self._release_line(lang, default).split("."))
+        line = versions.Spec(supported).numbers[:parts]
         return line < versions.Spec(default).numbers[:len(line)]
 
     def _oldest_installable(self, lang: str) -> str | None:

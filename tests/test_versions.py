@@ -290,6 +290,14 @@ class ResolutionTest(VersionFixture):
         self.assertEqual(self.load().resolve_version("tool", "a"),
                          {"spec": "1.8", "source": "supports:.github/workflows/new.yaml", "exact": False})
 
+    def test_an_older_release_on_the_defaults_line_keeps_the_default(self):
+        self.define(version="=2.0.9",
+                    supportFiles=[{"file": ".github/workflows/*.y*ml", "format": "github-setup", "key": "tool-version"}])
+        write(self.path(".github", "workflows", "release.yml"), "tool-version: '2.0.6'\n")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "=2.0.9")
+        write(self.path(".github", "workflows", "release.yml"), "tool-version: '1.9.6'\n")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "1.9.6")
+
     def test_a_supported_line_below_what_hecatron_installs_is_raised(self):
         self.supports("a/tool/pyproject.toml", "1.2")
         self.define(version="=2.0.0", oldestInstallable="1.5",

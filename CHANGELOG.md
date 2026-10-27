@@ -6,6 +6,16 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Old checkouts get the toolchains of their day:** when a repository's last
+  commit is over a year old, each language's version becomes the release
+  that was current then, unless the project pins an exact one. A 2021
+  checkout gets the Node.js and JDK it was tested with instead of today's,
+  which can no longer build or run it. `HECATRON_AS_OF` sets the date or
+  turns this off; `hecatron doctor` says when it applies.
+- **CI workflows and Maven builds say how new a toolchain may be:** with no
+  pin file, the versions a project's GitHub Actions setup steps use, and a
+  Maven build's Java source level, hold the default back.
+- **JavaScript components choose their Node.js version** like TypeScript's.
 - **Python follows the versions a project supports:** with no pin file, a
   component whose classifiers stop at an older Python than the default
   (Avro's at 3.14) gets that line's newest release, since compiled
