@@ -6,6 +6,8 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+## 0.4.0 (2026-10-27)
+
 - **A fast binary:** installing a release also installs the Go core for
   your machine (macOS and Linux, x86_64 and arm64), checksum-verified, and
   `hct` runs it: `--version` and `list` answer in about a millisecond
