@@ -2,14 +2,26 @@
 # Install Rust via rustup
 source "$(dirname "$0")/../_common.sh"
 
-# rustup with the default version as its default toolchain.
+# rustup with the default version as its default toolchain. A rustup whose
+# install was cut short (killed mid-download) leaves rustc as a proxy with no
+# toolchain behind it, so check that rustc runs, and repair by installing the
+# default toolchain through the rustup that's there.
+_rustc_works() { rustc --version >/dev/null 2>&1; }
 _install() {
-    if ! has rustc; then
+    # shellcheck source=/dev/null
+    [ -f "${HOME}/.cargo/env" ] && source "${HOME}/.cargo/env"
+    _rustc_works && return
+    if has rustup; then
+        log "Repairing rustup: installing Rust $(default_version) as its default..."
+        rustup toolchain install "$(default_version)" --profile default </dev/null
+        rustup default "$(default_version)" </dev/null
+    else
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
             sh -s -- -y --default-toolchain "$(default_version)"
         # shellcheck source=/dev/null
-        source "$HOME/.cargo/env"
+        source "${HOME}/.cargo/env"
     fi
+    _rustc_works
 }
 
 install_macos() { _install; }
