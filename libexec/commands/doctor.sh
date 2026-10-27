@@ -41,6 +41,10 @@ if [ "${#_langs[@]}" -eq 0 ]; then
         _is_disabled "${_lang}" || _langs+=("${_lang}")
     done
 fi
+if [ "${#_langs[@]}" -eq 0 ]; then
+    echo "No languages to check (hecatron add <lang> adds one)."
+    exit 0
+fi
 
 # Problems with one language, one per line; nothing when it is healthy.
 _problems() (

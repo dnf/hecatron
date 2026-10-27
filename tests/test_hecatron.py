@@ -349,6 +349,15 @@ class InitTest(Fixture):
             with self.subTest(command=command):
                 self.assertNotIn("unknown command", self.hecatron(command).stderr)
 
+    # The bash-3-2 CI job runs these under bash 3.2, where an empty array is
+    # unbound under set -u.
+    def test_help_and_doctor_work_with_no_languages(self):
+        for args in (("test", "help"), ("lint", "help"), ("doctor",)):
+            with self.subTest(command=" ".join(args)):
+                result = self.hecatron(*args)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertNotIn("unbound variable", result.stderr)
+
     def test_an_unknown_command_sets_nothing_up(self):
         subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
         result = self.hecatron("frobnicate")

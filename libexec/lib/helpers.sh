@@ -84,7 +84,7 @@ _lang_grid() {
     local count=${#items[@]}
     echo "$label ($count):"
     local cols=5 col_w=16 i=0
-    for item in "${items[@]}"; do
+    for item in ${items[@]+"${items[@]}"}; do
         if (( i % cols == 0 )); then printf "  "; fi
         printf "%-${col_w}s" "$item"
         i=$((i + 1))
