@@ -38,6 +38,7 @@ _usage() {
 Usage: hecatron <command> [arguments]     (or: hct <command>)
 
 Set up:
+  status                     Languages, toolchain versions, last runs and changes at a glance
   init [dir]                 Set up a repository for hecatron
   doctor [--fix] [lang...]   Check toolchains; --fix runs installers to repair them
   install [lang...]          Install toolchains (all of the project's when none named)
@@ -176,6 +177,10 @@ case "${_command}" in
     version)
         _project
         exec bash "${HECATRON_HOME}/libexec/commands/version.sh" "$@" ;;
+    status)
+        # Native in the Go core only (docs/design.md §19).
+        echo "hecatron: status needs hecatron's binary, which install.sh downloads with a release; without it, hct list and hct doctor say most of it" >&2
+        exit 1 ;;
     init|banner)
         exec python3 "${HECATRON_HOME}/libexec/commands/manage.py" "${_command}" "$@" ;;
     install|uninstall|list|add|remove|enable|disable|dockerfile|workflows|check)

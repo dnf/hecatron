@@ -1,0 +1,12 @@
+hecatron VERSION (binary)
+Project  /repo (config detected, not saved: hct init saves it)
+
+go
+  directories  go/
+  version      1.22.3 (go/go.mod)
+  toolchain    installed
+  last runs    test: never run
+  changes      1 file: go/main.go
+
+Next:
+  hct test go              has changes

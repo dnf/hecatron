@@ -53,6 +53,8 @@ func run(argv []string) int {
 		return c.version()
 	case "plan":
 		return plan(c.home, c.args)
+	case "status":
+		return c.status()
 	case "self-test":
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
 	}

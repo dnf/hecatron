@@ -1,0 +1,6 @@
+hecatron VERSION (binary) · /repo · config saved
+alpha             a/alpha/, b/alpha/  1.2.3 (default), 1.1 (b/alpha/.alpha-version)  installed                       test: failed 2h ago, 12s; lint: passed 30m ago         2 files changed
+beta              a/beta/             2.0 (default)                                  missing (no-such-tool-for-hct)  test: passed 2h ago, 4s; build: failed 2d ago, 1m 35s
+gamma (disabled)  a/gamma/            -                                              -                               test: never run
+Other changes: 1 file outside the languages' directories
+Next: hct install beta (no-such-tool-for-hct not found; installs a toolchain; ask the user first) · hct test alpha (failed last run; has changes) · hct build beta (failed last run)
