@@ -259,7 +259,7 @@ Adding another is a directory of small scripts; see
 
 ## Status
 
-Hecatron is young: version 0.3. It works and runs sayable's checks, but
+Hecatron is young: version 0.4. It works and runs sayable's checks, but
 expect changes before 1.0. Changes are listed in
 [CHANGELOG.md](CHANGELOG.md).
 
