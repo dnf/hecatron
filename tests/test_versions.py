@@ -15,8 +15,10 @@ import unittest
 
 HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(HOME, "libexec", "lib"))
+sys.path.insert(0, os.path.join(HOME, "libexec", "codegen"))
 sys.path.insert(0, os.path.join(HOME, "tests"))
 
+import dockerfile  # noqa: E402
 import project  # noqa: E402
 import versions  # noqa: E402
 from test_hecatron import BIN, Fixture, write  # noqa: E402
@@ -286,6 +288,66 @@ class EnvironmentTest(VersionFixture):
         """The CLI with this fixture's built-in definitions."""
         env = dict(os.environ, HECATRON_BUILTIN_LANGUAGES=self.builtin)
         return subprocess.run(["bash", BIN, *args], cwd=self.root, capture_output=True, text=True, env=env)
+
+
+class DockerfileTest(VersionFixture):
+    """A snippet's each-version block, written once per version (§18,
+    "Generated files")."""
+
+    def snippet(self, text: str, lang: str = "tool") -> None:
+        write(os.path.join(self.builtin, lang, "dockerfile"), text)
+
+    def generate(self) -> str:
+        return dockerfile.generate(self.load())
+
+    def test_a_block_repeats_for_the_default_then_each_component_version(self):
+        self.override(version="=1.7.2")
+        write(self.path("a", "tool", ".tool-version"), "1.8\n")
+        self.snippet("RUN echo once\n# each-version\nRUN install {version} exact={exact} {major}/{minor}\n"
+                     "# end-each-version\nENV PATH=/opt/tool/2.0.0/bin:${PATH}\n")
+        content = self.generate()
+        self.assertIn("RUN echo once\n"
+                      "RUN install 2.0.0 exact=1 2/0\n"
+                      "RUN install 1.8 exact= 1/8\n"
+                      "RUN install 1.7.2 exact=1 1/7\n"
+                      "ENV PATH=/opt/tool/2.0.0/bin:${PATH}\n", content)
+
+    def test_a_version_two_components_share_is_written_once(self):
+        self.snippet("# each-version\nRUN install {version}\n# end-each-version\n")
+        self.assertEqual(self.generate().count("RUN install 2.0.0"), 1)
+
+    def test_a_missing_part_fills_in_empty(self):
+        self.override(version="3")
+        self.snippet("# each-version\nRUN install {major}.{minor}.\n# end-each-version\n")
+        self.assertIn("RUN install 3..", self.generate())
+
+    def test_a_block_can_repeat_over_another_languages_versions(self):
+        # Kotlin's snippet installs the JDKs Java's components resolve to.
+        self.define(version="=21.0.1")
+        write(os.path.join(self.builtin, "kotlin", "config.json"), "{}")
+        self.snippet("# each-version tool\nRUN jdk {version}\n# end-each-version\n", lang="kotlin")
+        self.configure(languages=["kotlin"], components=["a", "b"], implPath="{component}/{lang}")
+        self.assertIn("RUN jdk 21.0.1", self.generate())
+
+    def test_without_a_block_a_snippet_is_copied_as_it_is(self):
+        self.snippet("RUN echo {version} ${HOME}\n")
+        self.assertIn("RUN echo {version} ${HOME}\n", self.generate())
+
+    def test_an_unclosed_block_is_an_error(self):
+        self.snippet("# each-version\nRUN install {version}\n")
+        with self.assertRaisesRegex(ValueError, "without # end-each-version"):
+            self.generate()
+
+    def test_a_pin_change_makes_the_dockerfile_stale(self):
+        self.configure(languages=["tool"], components=["a", "b"], implPath="{component}/{lang}",
+                       generated={"dockerfile": "Dockerfile"})
+        self.snippet("# each-version\nRUN install {version}\n# end-each-version\n")
+        env = {**os.environ, "HECATRON_BUILTIN_LANGUAGES": self.builtin}
+        run = lambda *args: subprocess.run([BIN, "dockerfile", *args], cwd=self.root, env=env,  # noqa: E731
+                                           capture_output=True, text=True)
+        self.assertEqual(run().returncode, 0)
+        write(self.path("a", "tool", ".tool-version"), "1.8\n")
+        self.assertNotEqual(run("--check").returncode, 0)
 
 
 class ShippedDefinitionsTest(unittest.TestCase):
