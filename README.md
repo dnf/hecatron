@@ -121,13 +121,13 @@ configuration.
 
 ## Languages
 
-Hecatron ships definitions for 51 languages:
+Hecatron ships definitions for 52 languages:
 
 Ada, Bash, C, C++, C#, Clojure, COBOL, Common Lisp, Crystal, D, Dart, Elixir,
-Elm, Erlang, F#, Fortran, Gleam, Go, Goose, Groovy, Haskell, Janet, Java,
-Julia, Kotlin, Lua, Mojo, Nim, OCaml, Octave, Odin, Pascal, Perl, Pharo, PHP,
-PowerShell, Prolog, Python, R, Racket, Raku, Ruby, Rust, Scala, Swift, Tcl,
-TypeScript, V, VB.NET, Wren and Zig.
+Elm, Erlang, F#, Fortran, Gleam, Go, Goose, Groovy, Haskell, Haxe, Janet,
+Java, Julia, Kotlin, Lua, Mojo, Nim, OCaml, Octave, Odin, Pascal, Perl, Pharo,
+PHP, PowerShell, Prolog, Python, R, Racket, Raku, Ruby, Rust, Scala, Swift,
+Tcl, TypeScript, V, VB.NET, Wren and Zig.
 
 Adding another is a directory of small scripts; see
 [docs/adding-a-language.md](docs/adding-a-language.md).

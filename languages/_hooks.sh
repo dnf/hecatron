@@ -157,6 +157,73 @@ pharo_image() {
     run cp "${_fresh}"/Pharo.image "${_fresh}"/Pharo.changes "${_fresh}"/*.sources build/
 }
 
+# Haxe: the project's .hxml build files. The test hook compiles and runs
+# test.hxml (or tests.hxml), which runs its tests itself (--interp, or a
+# --cmd after the build); the build hook build.hxml, else every other .hxml;
+# both install the haxelib libraries the file names first. Clean removes
+# the outputs the .hxml files name, inside this directory.
+haxe_hook() {
+    local _hxml _builds=()
+    case "$1" in
+        test)
+            for _hxml in test.hxml tests.hxml; do
+                [ -f "${_hxml}" ] || continue
+                haxe_build "${_hxml}"
+                return
+            done
+            unknown "no test.hxml or tests.hxml" ;;
+        build)
+            if [ -f build.hxml ]; then
+                _builds=(build.hxml)
+            else
+                for _hxml in *.hxml; do
+                    case "${_hxml}" in test.hxml | tests.hxml | "*.hxml") ;; *) _builds+=("${_hxml}") ;; esac
+                done
+            fi
+            [ "${#_builds[@]}" -gt 0 ] || skip "no build.hxml or other .hxml besides the tests'"
+            for _hxml in "${_builds[@]}"; do haxe_build "${_hxml}"; done ;;
+        lint) skip "Haxe has no standard linter" ;;
+        clean) haxe_clean ;;
+    esac
+}
+haxe_build() {
+    if grep -qE '^[[:space:]]*(-lib|-L|--library)[[:space:]]' "$1"; then
+        run haxelib install --always "$1"
+    fi
+    run haxe "$1"
+}
+# Each target's output path in the .hxml files here (--js out.js, --cpp
+# dir...), when it is relative and stays inside this directory.
+haxe_outputs() {
+    local _hxml _line _words _flag _index
+    for _hxml in *.hxml; do
+        [ -f "${_hxml}" ] || continue
+        while IFS= read -r _line || [ -n "${_line}" ]; do
+            read -r -a _words <<<"${_line}"
+            for ((_index = 0; _index + 1 < ${#_words[@]}; _index++)); do
+                _flag="${_words[${_index}]}"
+                case "${_flag}" in
+                    -js | --js | -lua | --lua | -python | --python | -neko | --neko | -hl | --hl | -swf | --swf | \
+                        -php | --php | -cpp | --cpp | -cppia | --cppia | -cs | --cs | -java | --java | -jvm | --jvm) ;;
+                    *) continue ;;
+                esac
+                case "${_words[$((_index + 1))]}" in
+                    /* | ..* | */..* | . | ./) ;;
+                    *) echo "${_words[$((_index + 1))]}" ;;
+                esac
+            done
+        done <"${_hxml}"
+    done
+}
+haxe_clean() {
+    local _outputs=() _output
+    while IFS= read -r _output; do
+        if [ -e "${_output}" ]; then _outputs+=("${_output}"); fi
+    done < <(haxe_outputs | sort -u)
+    [ "${#_outputs[@]}" -gt 0 ] || skip "no build outputs from the .hxml files here"
+    run rm -rf "${_outputs[@]}"
+}
+
 # Whether package.json defines an npm script, e.g. `npm_script test`.
 npm_script() {
     [ -f package.json ] && python3 -c '
