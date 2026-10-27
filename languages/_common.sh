@@ -163,19 +163,31 @@ bundle_needs_user_path() {
 
 # For Perl's installer and doctor: the tools its components need and lack,
 # one per line (make for Makefile.PL, Module::Build for Build.PL, and
-# Perl::Critic where .perlcriticrc configures it).
+# Perl::Critic where .perlcriticrc configures it), and the modules a
+# Makefile.PL written with Module::Install needs before it can run: Module::Install
+# itself and the configure_requires it names (its extensions, such as
+# Module::Install::ReadmeFromPod), which a release bundles in inc/ but a
+# checkout doesn't.
 perl_tools_missing() {
-    local _dir _make=0 _build=0 _critic=0
+    local _dir _make=0 _build=0 _critic=0 _modules="" _module
     while IFS= read -r _dir; do
         [ -f "${_dir}/Makefile.PL" ] && _make=1
         [ -f "${_dir}/Build.PL" ] && _build=1
         [ -f "${_dir}/.perlcriticrc" ] && _critic=1
+        grep -qs 'inc::Module::Install' "${_dir}/Makefile.PL" || continue
+        _modules="${_modules} Module::Install $(sed -n \
+            "s/^[[:space:]]*configure_requires[[:space:]]*(*[[:space:]]*['\"]\([A-Za-z0-9_:]*\)['\"].*/\1/p" "${_dir}/Makefile.PL")"
     done < <(impl_dirs perl)
+    for _module in $(echo "${_modules}" | xargs -n1 2>/dev/null | sort -u); do
+        perl_has_module "${_module}" || echo "${_module}"
+    done
     if [ "${_make}" -eq 1 ] && ! has make; then echo make; fi
-    if [ "${_build}" -eq 1 ] && ! perl -MModule::Build -e 1 2>/dev/null; then echo Module::Build; fi
+    if [ "${_build}" -eq 1 ] && ! perl_has_module Module::Build; then echo Module::Build; fi
     if [ "${_critic}" -eq 1 ] && ! has perlcritic; then echo Perl::Critic; fi
     return 0
 }
+# (require, not -M: Module::Install's import dies outside a Makefile.PL.)
+perl_has_module() { perl -e "require $1" 2>/dev/null; }
 
 # For Elm's installer and doctor: whether a component configures elm-review
 # (review/elm.json) and it isn't installed.
