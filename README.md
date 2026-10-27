@@ -76,13 +76,14 @@ git clone https://github.com/dnf/hecatron ~/.hecatron && . ~/.hecatron/install.s
 
 ```bash
 cd your-repo
-hct init          # detects each language and where its code lives, writes .hecatron/config.json
 hct doctor --fix  # installs and repairs every language's toolchain
 hct test          # every language's tests, in parallel
 hct test go       # one language
 ```
 
-`hct` is short for `hecatron`. `hct help` lists every command, and
+The first command in a git repository sets it up: it detects each language
+and where its code lives, and writes `.hecatron/config.json` (what `hct init`
+does; run that yourself to choose the layout). `hct` is short for `hecatron`. `hct help` lists every command, and
 `hct <command> help` its options.
 
 ## What it does
@@ -171,7 +172,6 @@ language's toolchain. Whether the repository is Elixir, Haskell, Zig or
 Kotlin, the same commands set it up and run it:
 
 ```bash
-hct init       # find the language and its build files
 hct install    # the toolchain, at the version the project asks for
 hct test       # mix test, stack test, zig build test, gradle test...
 hct lint
@@ -195,7 +195,7 @@ runs the language's dependency auditor with `hct audit`.
 
 ## Configuring a project
 
-`hct init` writes `.hecatron/config.json`, committed with the code:
+`hct init`, or the first command, writes `.hecatron/config.json`, committed with the code:
 
 ```json
 {
