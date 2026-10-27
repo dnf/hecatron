@@ -22,3 +22,5 @@ deps() { jvm_build_tools scala; }
 log "Installing Scala..."
 "install_${OS}"
 deps
+# The dependency auditor hecatron audit uses for this language.
+osv_scanner_install

@@ -104,7 +104,21 @@ deps() {
     default_bin="${_ruby_root}/$(default_version)/bin"
     export PATH="${default_bin}:${PATH}"
     _bundle_user_path
+    _bundler_audit
     each_impl_versioned ruby _bundle_install
+}
+
+# bundler-audit, the dependency auditor hecatron audit uses for Ruby, in the
+# default Ruby and linked onto PATH, so a component on another Ruby finds it.
+_BUNDLER_AUDIT_VERSION="0.9.3"
+_bundler_audit() {
+    local default_bin
+    default_bin="${_ruby_root}/$(default_version)/bin"
+    if [ ! -x "${default_bin}/bundle-audit" ]; then
+        log "Installing bundler-audit ${_BUNDLER_AUDIT_VERSION} (for hecatron audit)..."
+        ${_sudo} "${default_bin}/gem" install --no-document bundler-audit -v "${_BUNDLER_AUDIT_VERSION}"
+    fi
+    has bundle-audit || $SUDO ln -sfn "${default_bin}/bundle-audit" /usr/local/bin/bundle-audit
 }
 
 log "Installing Ruby..."

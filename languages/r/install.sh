@@ -26,3 +26,5 @@ _r_has() { Rscript -e "quit(status = !requireNamespace(\"$1\", quietly = TRUE))"
 log "Installing R..."
 "install_${OS}"
 deps
+# The dependency auditor hecatron audit uses for this language.
+osv_scanner_install

@@ -6,6 +6,12 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **`hecatron audit`:** checks every component's dependencies for known
+  vulnerabilities with each ecosystem's auditor (npm, pnpm, Yarn, Bun,
+  pip-audit, govulncheck, bundler-audit, Composer, the .NET SDK, and
+  OSV-Scanner for the rest), fails at `--fail-on` (default high), and takes
+  accepted risks with a reason and an expiry date. See
+  [docs/audit.md](docs/audit.md).
 - **Old checkouts get the toolchains of their day:** when a repository's last
   commit is over a year old, each language's version becomes the release
   that was current then, unless the project pins an exact one. A 2021

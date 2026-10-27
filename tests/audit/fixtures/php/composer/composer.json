@@ -1,0 +1,6 @@
+{
+    "name": "hecatron/audit-fixture",
+    "require": {
+        "guzzlehttp/psr7": "1.8.0"
+    }
+}

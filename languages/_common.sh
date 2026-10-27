@@ -569,6 +569,35 @@ _install_sbt() {
     $SUDO ln -sfn "${_root}/bin/sbt" /usr/local/bin/sbt
 }
 
+# OSV-Scanner (Google's), the dependency auditor `hecatron audit` uses for
+# ecosystems without one of their own (docs/audit.md): its release binary,
+# pinned and checked against its checksum, into /usr/local/bin.
+_OSV_SCANNER_VERSION="2.7.0"
+osv_scanner_install() {
+    local _platform _sha256 _binary
+    if has osv-scanner && [ "$(osv-scanner --version 2>/dev/null | sed -n 's/^osv-scanner version: //p')" = "${_OSV_SCANNER_VERSION}" ]; then
+        return 0
+    fi
+    case "${OS}-$(uname -m)" in
+        linux-x86_64) _platform=linux_amd64 _sha256=160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b ;;
+        linux-aarch64 | linux-arm64) _platform=linux_arm64 _sha256=4061ef4c021ed3c47f203b818f337e351336cc5cd67c0274fc36bd1dfc728dd7 ;;
+        macos-x86_64) _platform=darwin_amd64 _sha256=e82c5df7ab0a42dff29a1cd0660711447b56b4c0483ff66ad8634df10fd81a45 ;;
+        macos-arm64) _platform=darwin_arm64 _sha256=d4926ef8da134332543be276dff157e4c170f99ad91fc48e89448a8816bdf70b ;;
+        *) echo "WARNING: no OSV-Scanner release for $(uname -sm); hecatron audit can't check this language" >&2; return 0 ;;
+    esac
+    log "Installing OSV-Scanner ${_OSV_SCANNER_VERSION} (for hecatron audit)..."
+    _binary="$(mktemp)"
+    curl -fsSL -o "${_binary}" \
+        "https://github.com/google/osv-scanner/releases/download/v${_OSV_SCANNER_VERSION}/osv-scanner_${_platform}"
+    if [ "$(if has sha256sum; then sha256sum "${_binary}"; else shasum -a 256 "${_binary}"; fi | cut -d' ' -f1)" != "${_sha256}" ]; then
+        rm -f "${_binary}"
+        echo "error: the OSV-Scanner download doesn't match its checksum" >&2
+        return 1
+    fi
+    $SUDO install -m 0755 "${_binary}" /usr/local/bin/osv-scanner
+    rm -f "${_binary}"
+}
+
 # For a definition's releases.sh: the latest release of each of a product's
 # release lines from endoflife.date, newest first, as "version<TAB>flags",
 # where flags lists "lts" (a long-term support line as of today) and "eol"

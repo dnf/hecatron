@@ -100,6 +100,11 @@ hct test go       # one language
   CTest...). A project overrides any of them with its own script.
 - **Everything at once.** `hct test`, `lint`, `build` and `clean` run every
   language in parallel with a live display and a log per language.
+- **Known vulnerabilities, per ecosystem.** `hct audit` runs each language's
+  own dependency auditor (`npm audit`, pip-audit, govulncheck, `composer
+  audit`, `dotnet list package --vulnerable`, bundler-audit, OSV-Scanner for
+  the rest) and fails at a severity you choose, with accepted risks that
+  expire ([docs/audit.md](docs/audit.md)).
 - **Generated CI and Dockerfile.** `hct workflows` writes one CI workflow per
   language and `hct dockerfile` an image with every toolchain (and, for the
   languages with versions, each version the components use); `hct check`
@@ -201,6 +206,7 @@ expect changes before 1.0. Changes are listed in
 | [docs/design.md](docs/design.md) | How hecatron works and why: concepts, configuration, commands, and the decisions behind them |
 | [docs/languages.md](docs/languages.md) | Every language: its home, what it's for, and how hecatron builds, tests and lints it |
 | [docs/coverage.md](docs/coverage.md) | Which languages install and work on which platforms |
+| [docs/audit.md](docs/audit.md) | `hct audit`: each language's dependency auditor, severities, accepted risks, CI |
 | [docs/hecatron-vs-ad-hoc.md](docs/hecatron-vs-ad-hoc.md) | A ten-language library maintained with hecatron and without it |
 | [docs/installers.md](docs/installers.md) | How each language's toolchain is installed on macOS and Linux, and toolchains languages share |
 | [docs/adding-a-language.md](docs/adding-a-language.md) | Writing a language definition |
