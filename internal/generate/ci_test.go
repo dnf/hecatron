@@ -127,8 +127,8 @@ func TestGitHubWorkflowCache(t *testing.T) {
 	if err != nil || !ok {
 		t.Fatal(ok, err)
 	}
-	if !strings.HasSuffix(plain, ciTemplate) {
-		t.Error("a workflow without cache isn't its template under the banner")
+	if !strings.HasSuffix(plain, WithTimeouts(ciTemplate, project.DefaultTimeoutMinutes)) {
+		t.Error("a workflow without cache isn't its template, with time limits, under the banner")
 	}
 	cached, _, err := CachedWorkflow(p, "rust", testVersion)
 	if err != nil {
@@ -162,13 +162,19 @@ func TestCISettingsProblems(t *testing.T) {
 	for config, want := range map[string]string{
 		`"generated": {"ci": "jenkins"}`:            "generated.ci must be github or gitlab, or a list of them",
 		`"generated": {"ci": ["gitlab", "gitlab"]}`: "generated.ci must be github or gitlab, or a list of them",
-		`"ci": []`:               `"ci" must be an object`,
-		`"ci": {"cache": "yes"}`: "ci.cache must be true or false",
-		`"ci": {"image": ""}`:    "ci.image must be an image name (ubuntu:24.04)",
-		`"ci": {"timeout": 5}`:   "ci.timeout is not a setting (cache, image)",
+		`"ci": []`:                                              `"ci" must be an object`,
+		`"ci": {"cache": "yes"}`:                                "ci.cache must be true or false",
+		`"ci": {"image": ""}`:                                   "ci.image must be an image name (ubuntu:24.04)",
+		`"ci": {"timeout": 5}`:                                  "ci.timeout is not a setting (cache, image, timeoutMinutes, languages)",
+		`"ci": {"timeoutMinutes": 0}`:                           "ci.timeoutMinutes must be a whole number of minutes, 1 or more",
+		`"ci": {"timeoutMinutes": 1.5}`:                         "ci.timeoutMinutes must be a whole number of minutes, 1 or more",
+		`"ci": {"languages": [1]}`:                              `ci.languages must be an object of languages to minutes ({"pascal": 120})`,
+		`"ci": {"languages": {"go": "long"}}`:                   "ci.languages.go must be a whole number of minutes, 1 or more",
+		`"ci": {"timeoutMinutes": 30, "languages": {"go": 90}}`: "",
 	} {
 		p := ciFixture(t, `{"schema": 1, "languages": [], `+config+`}`)
-		if _, problems := p.CISettings(); len(problems) != 1 || problems[0] != want {
+		_, problems := p.CISettings()
+		if want == "" && len(problems) > 0 || want != "" && (len(problems) != 1 || problems[0] != want) {
 			t.Errorf("%s: got %q, want %q", config, problems, want)
 		}
 	}

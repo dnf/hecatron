@@ -280,7 +280,67 @@ def workflow_content(project, lang: str) -> str | None:
         "To update: edit the source, then run hecatron workflows",
         "(hecatron add and remove regenerate it too)",
     ])
-    return banner + body
+    return banner + with_timeouts(body, projectlib.ci_timeout_minutes(project.config, lang))
+
+
+def _yaml_content(line: str) -> bool:
+    text = line.strip(" \t\r")
+    return bool(text) and not text.startswith("#")
+
+
+def _yaml_indent(line: str) -> int:
+    return len(line) - len(line.lstrip(" "))
+
+
+def with_timeouts(body: str, minutes: int) -> str:
+    """The workflow with `timeout-minutes: <minutes>` after the runs-on of
+    each job in its top-level jobs: that sets no timeout-minutes. A job
+    without runs-on (one calling a reusable workflow) can't have one. The
+    text is otherwise left as written."""
+    lines = body.split("\n")
+    start = next((i for i, line in enumerate(lines) if line.rstrip(" \t\r") == "jobs:"), None)
+    if start is None:
+        return body
+    inserts: list[tuple[int, int]] = []
+    job_indent = None
+    job: dict = {}
+
+    def finish(job: dict) -> None:
+        if job.get("runs_on") is not None and not job.get("timeout"):
+            inserts.append((job["runs_on"], job["indent"]))
+
+    for i in range(start + 1, len(lines)):
+        line = lines[i]
+        if not _yaml_content(line):
+            continue
+        indent = _yaml_indent(line)
+        if indent == 0:
+            break
+        if job_indent is None:
+            job_indent = indent
+        if indent <= job_indent:
+            finish(job)
+            job = {}
+            continue
+        job.setdefault("indent", indent)
+        if indent != job["indent"]:
+            continue
+        key = line.strip(" \t\r").split(":", 1)[0]
+        if key == "timeout-minutes":
+            job["timeout"] = True
+        elif key == "runs-on":
+            end = i
+            for j in range(i + 1, len(lines)):
+                if not _yaml_content(lines[j]):
+                    continue
+                if _yaml_indent(lines[j]) <= indent:
+                    break
+                end = j
+            job["runs_on"] = end
+    finish(job)
+    for index, indent in reversed(inserts):
+        lines.insert(index + 1, " " * indent + f"timeout-minutes: {minutes}")
+    return "\n".join(lines)
 
 
 # Settings for generated files only the Go core writes (docs/design.md §11).
@@ -288,10 +348,17 @@ GO_ONLY_GENERATED = ("ci", "dependabot", "renovate")
 GO_ONLY_SECTIONS = ("ci", "dependabot", "renovate")
 
 
+# The "ci" settings only the Go core reads; these scripts write the time
+# limits (timeoutMinutes, languages) themselves.
+GO_ONLY_CI_KEYS = ("cache", "image")
+
+
 def go_only_settings(project) -> list[str]:
     generated = project.config.get("generated") or {}
+    ci = project.config.get("ci")
     return ([f"generated.{key}" for key in GO_ONLY_GENERATED if key in generated]
-            + [key for key in GO_ONLY_SECTIONS if key in project.config])
+            + [key for key in GO_ONLY_SECTIONS if key in project.config
+               and (key != "ci" or (isinstance(ci, dict) and any(k in ci for k in GO_ONLY_CI_KEYS)))])
 
 
 def needs_binary(what: str) -> None:
@@ -318,7 +385,10 @@ def write_workflows(project, *, check: bool) -> bool:
 def cmd_workflows(args) -> int:
     if getattr(args, "ci", None) is not None:
         needs_binary("hecatron workflows --ci")
-    ok = write_workflows(load_project(), check=args.check)
+    project = load_project()
+    if not go_only_settings(project) and (problems := projectlib.ci_config_problems(project.config)):
+        die(".hecatron/config.json: " + "; ".join(problems))
+    ok = write_workflows(project, check=args.check)
     if args.check and ok:
         print("Workflows are up to date.")
     return 0 if ok else 1
@@ -361,7 +431,8 @@ def cmd_check(args) -> int:
         print("Generated files are up to date and every workflow covers every component.")
     else:
         print("Run 'hecatron dockerfile' / 'hecatron workflows' to regenerate.", file=sys.stderr)
-    config_problems = auditlib.config_problems(project.config) + projectlib.lint_config_problems(project.config)
+    config_problems = (auditlib.config_problems(project.config) + projectlib.lint_config_problems(project.config)
+                       + projectlib.ci_config_problems(project.config))
     for problem in config_problems:
         print(f".hecatron/config.json: {problem}")
     return 0 if ok and not config_problems else 1

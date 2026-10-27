@@ -545,6 +545,55 @@ class GeneratedFilesTest(Fixture):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("doesn't test b", result.stdout)
 
+    JOBS = ("jobs:\n  test:\n    runs-on: ubuntu-latest\n    steps: [a/go, b/go]\n"
+            "  lint:\n    runs-on: ubuntu-latest\n    timeout-minutes: 15\n    steps: [a/go, b/go]\n"
+            "  reuse:\n    uses: ./.github/workflows/r.yml\n")
+
+    def generated_workflow(self) -> str:
+        result = self.hecatron("workflows")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        with open(self.path("ci", "go.yml"), encoding="utf-8") as f:
+            return f.read()
+
+    def test_each_job_gets_a_time_limit_unless_it_sets_one(self):
+        write(self.path(".hecatron", "languages", "go", "workflow.yml"), self.JOBS)
+        content = self.generated_workflow()
+        self.assertIn("  test:\n    runs-on: ubuntu-latest\n    timeout-minutes: 60\n    steps:", content)
+        self.assertIn("  lint:\n    runs-on: ubuntu-latest\n    timeout-minutes: 15\n    steps:", content)
+        self.assertIn("  reuse:\n    uses: ./.github/workflows/r.yml\n", content)
+        self.assertEqual(content.count("timeout-minutes"), 2)
+
+    def test_the_project_and_each_language_can_set_the_limit(self):
+        write(self.path(".hecatron", "languages", "go", "workflow.yml"), self.JOBS)
+        self.configure(languages=["go"], components=["a", "b"], implPath="{component}/{lang}",
+                       generated={"workflows": "ci/{lang}.yml", "dockerfile": "Dockerfile"},
+                       ci={"timeoutMinutes": 30})
+        self.assertIn("    timeout-minutes: 30\n", self.generated_workflow())
+        self.configure(languages=["go"], components=["a", "b"], implPath="{component}/{lang}",
+                       generated={"workflows": "ci/{lang}.yml", "dockerfile": "Dockerfile"},
+                       ci={"timeoutMinutes": 30, "languages": {"go": 90}})
+        content = self.generated_workflow()
+        self.assertIn("    timeout-minutes: 90\n", content)
+        self.assertIn("    timeout-minutes: 15\n", content)
+
+    def test_check_reports_a_bad_ci_section_and_a_stale_workflow(self):
+        write(self.path(".hecatron", "languages", "go", "workflow.yml"), self.JOBS)
+        self.generated_workflow()
+        self.hecatron("dockerfile")
+        self.assertEqual(self.hecatron("check").returncode, 0)
+        self.configure(languages=["go"], components=["a", "b"], implPath="{component}/{lang}",
+                       generated={"workflows": "ci/{lang}.yml", "dockerfile": "Dockerfile"},
+                       ci={"timeoutMinutes": 0, "languages": {"go": "long"}, "timeout": 5})
+        result = self.hecatron("check")
+        self.assertNotEqual(result.returncode, 0)
+        for problem in ('ci.timeout is not a setting (cache, image, timeoutMinutes, languages)', "ci.timeoutMinutes must be a whole number",
+                        "ci.languages.go must be a whole number"):
+            self.assertIn(problem, result.stdout)
+        self.configure(languages=["go"], components=["a", "b"], implPath="{component}/{lang}",
+                       generated={"workflows": "ci/{lang}.yml", "dockerfile": "Dockerfile"},
+                       ci={"timeoutMinutes": 45})
+        self.assertNotEqual(self.hecatron("workflows", "--check").returncode, 0)
+
     def test_dockerfile_collects_snippets(self):
         self.assertEqual(self.hecatron("dockerfile").returncode, 0)
         with open(self.path("Dockerfile"), encoding="utf-8") as f:

@@ -15,6 +15,15 @@ minor version can change behaviour. Numbers are
   with a reason and an expiry, `includeDev`) fails the command on a package
   it refuses; `hct check` validates it. `--output human|agent|json`. Needs
   the binary (#132).
+- **CI jobs get a time limit:** `hecatron workflows` adds
+  `timeout-minutes: 60` to each generated GitHub job that sets none, and
+  `timeout: 60m` to each GitLab job, so a hung job stops after an hour
+  instead of GitHub's 6. Set it for the project or
+  per language in `.hecatron/config.json`
+  (`"ci": {"timeoutMinutes": 30, "languages": {"pascal": 120}}`); a
+  template's own `timeout-minutes` stands. Every generated workflow
+  changes once: run `hecatron workflows` after upgrading, or
+  `hecatron check` reports them out of date.
 - **An Agent Skill for hecatron:** AI agents that read Agent Skills learn
   hecatron without the docs: first steps, the test-lint-format loop, exit
   statuses, asking before installs, and what to do when something fails.

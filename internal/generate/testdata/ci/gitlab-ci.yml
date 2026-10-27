@@ -19,30 +19,35 @@ default:
     - '. "${HOME}/.hecatron/env"'
 
 bash:
+  timeout: 60m
   script:
     - hct install bash
     - hct test bash
     - hct lint bash
 
 elixir:
+  timeout: 60m
   script:
     - hct install elixir
     - hct test elixir
     - hct lint elixir
 
 go:
+  timeout: 60m
   script:
     - hct install go
     - hct test go
     - hct lint go
 
 python:
+  timeout: 60m
   script:
     - hct install python
     - hct test python
     - hct lint python
 
 rust:
+  timeout: 60m
   script:
     - hct install rust
     - hct test rust
