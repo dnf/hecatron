@@ -1,0 +1,132 @@
+{
+  "$comment": "For each data rule: files that trigger it and files that don't. Files listed in \"untracked\" are written after the commit. advisor_test.go fails for a rule with no entry here.",
+  "repo/branch-pinned-action": {
+    "trigger": {".github/workflows/ci.yml": "jobs:\n  t:\n    steps:\n      - uses: actions/checkout@v4\n      - uses: someone/action@main\n"},
+    "pass": {".github/workflows/ci.yml": "jobs:\n  t:\n    steps:\n      - uses: actions/checkout@v4\n      - uses: someone/action@0123456789abcdef0123456789abcdef01234567 # main\n"}
+  },
+  "node/lock-committed": {
+    "trigger": {"package.json": "{\"dependencies\": {\"left-pad\": \"^1.0.0\"}}"},
+    "trigger-untracked": {"files": {"package.json": "{\"dependencies\": {\"left-pad\": \"^1.0.0\"}}"}, "untracked": {"package-lock.json": "{}"}},
+    "pass": {"package.json": "{\"dependencies\": {\"left-pad\": \"^1.0.0\"}}", "pnpm-lock.yaml": ""},
+    "pass-no-dependencies": {"package.json": "{\"name\": \"x\", \"dependencies\": {}}"}
+  },
+  "node/npm-ci": {
+    "trigger": {"package-lock.json": "{}", ".github/workflows/ci.yml": "steps:\n  - run: npm install\n  - run: npm test\n"},
+    "trigger-lock-below": {"web/package-lock.json": "{}", ".github/workflows/ci.yml": "steps:\n  - run: cd web && npm install\n"},
+    "pass": {"package-lock.json": "{}", ".github/workflows/ci.yml": "steps:\n  - run: npm ci\n  - run: npm install -g typescript\n"},
+    "pass-no-lock": {".github/workflows/ci.yml": "steps:\n  - run: npm install\n"}
+  },
+  "node/linter": {
+    "trigger": {"package.json": "{}"},
+    "pass": {"package.json": "{\"devDependencies\": {\"eslint\": \"^9\"}}"},
+    "pass-config-above": {"sub/package.json": "{}", "eslint.config.js": "", "$dir": "sub"}
+  },
+  "node/formatter": {
+    "trigger": {"package.json": "{}"},
+    "pass": {"package.json": "{}", ".prettierrc.json": "{}"}
+  },
+  "dotnet/editorconfig": {
+    "trigger": {"App.csproj": "<Project/>"},
+    "pass": {"App.csproj": "<Project/>", ".editorconfig": "root = true\n"}
+  },
+  "gradle/wrapper": {
+    "trigger": {"build.gradle.kts": ""},
+    "pass": {"build.gradle.kts": "", "gradlew": "", "gradle/wrapper/gradle-wrapper.properties": ""}
+  },
+  "gradle/build-cache": {
+    "trigger": {"build.gradle": ""},
+    "pass": {"build.gradle": "", "gradle.properties": "org.gradle.caching=true\n"}
+  },
+  "gradle/configuration-cache": {
+    "trigger": {"build.gradle": "", "gradle.properties": "org.gradle.configuration-cache=false\n"},
+    "pass": {"build.gradle": "", "gradle.properties": "org.gradle.configuration-cache=true\n"}
+  },
+  "maven/wrapper": {
+    "trigger": {"pom.xml": "<project/>"},
+    "pass": {"pom.xml": "<project/>", "mvnw": "", ".mvn/wrapper/maven-wrapper.properties": ""}
+  },
+  "native/cmake-minimum-version": {
+    "trigger": {"CMakeLists.txt": "cmake_minimum_required(VERSION 2.8.12)\nproject(x)\n"},
+    "pass": {"CMakeLists.txt": "cmake_minimum_required(VERSION 3.5)\nproject(x)\n"},
+    "pass-range": {"CMakeLists.txt": "cmake_minimum_required(VERSION 2.8...3.20)\n"}
+  },
+  "native/clang-format": {
+    "trigger": {"CMakeLists.txt": ""},
+    "pass": {"CMakeLists.txt": "", ".clang-format": "BasedOnStyle: LLVM\n"}
+  },
+  "dart/lock-committed": {
+    "trigger": {"pubspec.yaml": "name: app\npublish_to: none\n"},
+    "pass": {"pubspec.yaml": "name: app\npublish_to: none\n", "pubspec.lock": ""},
+    "pass-library": {"pubspec.yaml": "name: lib\n"}
+  },
+  "dart/analysis-options": {
+    "trigger": {"pubspec.yaml": "name: lib\n"},
+    "pass": {"pubspec.yaml": "name: lib\n", "analysis_options.yaml": "include: package:lints/recommended.yaml\n"}
+  },
+  "go/sum-committed": {
+    "trigger": {"go.mod": "module x\n\nrequire example.com/y v1.0.0\n"},
+    "pass": {"go.mod": "module x\n\nrequire example.com/y v1.0.0\n", "go.sum": ""},
+    "pass-no-requirements": {"go.mod": "module x\n\ngo 1.22\n"}
+  },
+  "lua/luacheck-config": {
+    "trigger": {"x-1.0-1.rockspec": ""},
+    "pass": {"x-1.0-1.rockspec": "", ".luacheckrc": "std = 'lua54'\n"}
+  },
+  "php/lock-committed": {
+    "trigger": {"composer.json": "{\"type\": \"project\", \"require\": {\"monolog/monolog\": \"^3\"}}"},
+    "pass": {"composer.json": "{\"type\": \"project\", \"require\": {\"monolog/monolog\": \"^3\"}}", "composer.lock": "{}"},
+    "pass-library": {"composer.json": "{\"require\": {\"monolog/monolog\": \"^3\"}}"}
+  },
+  "php/static-analysis": {
+    "trigger": {"composer.json": "{}"},
+    "pass": {"composer.json": "{}", "phpstan.neon.dist": ""}
+  },
+  "powershell/module-manifest": {
+    "trigger": {"X.psm1": ""},
+    "pass": {"X.psm1": "", "X.psd1": "@{}"}
+  },
+  "python/lock-committed": {
+    "trigger": {"files": {"pyproject.toml": "[project]\nname = \"x\"\n"}, "untracked": {"uv.lock": ""}},
+    "pass": {"pyproject.toml": "[project]\nname = \"x\"\n", "uv.lock": ""},
+    "pass-no-lock": {"pyproject.toml": "[project]\nname = \"x\"\n"}
+  },
+  "python/pyproject": {
+    "trigger": {"setup.py": "from setuptools import setup\nsetup()\n"},
+    "pass": {"setup.py": "from setuptools import setup\nsetup()\n", "pyproject.toml": "[build-system]\n"}
+  },
+  "python/lint-config": {
+    "trigger": {"pyproject.toml": "[project]\nname = \"x\"\n"},
+    "pass": {"pyproject.toml": "[project]\nname = \"x\"\n\n[tool.ruff]\nline-length = 100\n"}
+  },
+  "ruby/lock-committed": {
+    "trigger": {"Gemfile": "source 'https://rubygems.org'\n"},
+    "pass": {"Gemfile": "source 'https://rubygems.org'\n", "Gemfile.lock": ""},
+    "pass-gem": {"Gemfile": "gemspec\n", "x.gemspec": ""},
+    "pass-gems-below": {"Gemfile": "", "red-x/red-x.gemspec": ""}
+  },
+  "ruby/lint-config": {
+    "trigger": {"Gemfile": ""},
+    "pass": {"Gemfile": "gem \"rubocop\"\n"}
+  },
+  "rust/lock-committed": {
+    "trigger": {"Cargo.toml": "[package]\nname = \"x\"\n\n[dependencies]\nserde = \"1\"\n", "src/main.rs": "fn main() {}\n"},
+    "trigger-table": {"Cargo.toml": "[package]\nname = \"x\"\n\n[dependencies.serde]\nversion = \"1\"\n", "src/main.rs": "fn main() {}\n"},
+    "pass": {"Cargo.toml": "[package]\nname = \"x\"\n\n[dependencies]\nserde = \"1\"\n", "src/main.rs": "fn main() {}\n", "Cargo.lock": ""},
+    "pass-no-dependencies": {"Cargo.toml": "[package]\nname = \"x\"\n\n[dependencies]\n", "src/main.rs": "fn main() {}\n"},
+    "pass-library": {"Cargo.toml": "[package]\nname = \"x\"\n", "src/lib.rs": ""}
+  },
+  "rust/edition": {
+    "trigger": {"Cargo.toml": "[package]\nname = \"x\"\n"},
+    "pass": {"Cargo.toml": "[package]\nname = \"x\"\nedition = \"2024\"\n"},
+    "pass-workspace": {"Cargo.toml": "[package]\nname = \"x\"\nedition.workspace = true\n"}
+  },
+  "rust/old-edition": {
+    "trigger": {"Cargo.toml": "[package]\nname = \"x\"\nedition = \"2018\"\n"},
+    "pass": {"Cargo.toml": "[package]\nname = \"x\"\nedition = \"2021\"\n"}
+  },
+  "typescript/strict": {
+    "trigger": {"tsconfig.json": "{\"compilerOptions\": {\"target\": \"es2022\"}}"},
+    "pass": {"tsconfig.json": "{\"compilerOptions\": {\"strict\": true}}"},
+    "pass-extends": {"tsconfig.json": "{\"extends\": \"@tsconfig/strictest\"}"}
+  }
+}

@@ -1,0 +1,559 @@
+{
+  "$comment": "Advice sets language definitions share (their advice.json's \"include\"), and \"repo\", rules for the whole repository. Schema: docs/advisor.md.",
+  "sets": {
+    "repo": {
+      "rules": [
+        {
+          "id": "branch-pinned-action",
+          "category": "security",
+          "level": "recommended",
+          "scope": "root",
+          "expect": {
+            "not": {
+              "contains": [
+                ".github/workflows/*.y*ml",
+                "(?m)^\\s*-?\\s*uses:\\s*['\"]?[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+@(main|master|trunk|develop|HEAD|latest)['\"]?\\s*(#.*)?$"
+              ]
+            }
+          },
+          "message": "Pin each GitHub Action to a release tag or a commit, not a branch (a uses: line names @main, @master or another branch)",
+          "why": "A branch moves: whatever its owner pushes next runs in your CI, with your workflow's permissions and secrets.",
+          "link": "https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions"
+        }
+      ]
+    },
+    "node": {
+      "toolchain": "Node.js",
+      "rules": [
+        {
+          "id": "lock-committed",
+          "category": "reproducibility",
+          "level": "recommended",
+          "when": {
+            "contains": [
+              "package.json",
+              "\"(dependencies|devDependencies|optionalDependencies)\"\\s*:\\s*\\{\\s*\""
+            ]
+          },
+          "expect": {
+            "any": [
+              {
+                "tracked": "package-lock.json",
+                "up": true
+              },
+              {
+                "tracked": "npm-shrinkwrap.json",
+                "up": true
+              },
+              {
+                "tracked": "pnpm-lock.yaml",
+                "up": true
+              },
+              {
+                "tracked": "yarn.lock",
+                "up": true
+              },
+              {
+                "tracked": "bun.lock",
+                "up": true
+              },
+              {
+                "tracked": "bun.lockb",
+                "up": true
+              },
+              {
+                "tracked": "deno.lock",
+                "up": true
+              }
+            ]
+          },
+          "message": "Commit the package manager's lock file (package-lock.json, pnpm-lock.yaml, yarn.lock or bun.lock)",
+          "why": "npm's documentation says to commit package-lock.json: it records the exact dependency tree, so every install and CI run gets the same one.",
+          "link": "https://docs.npmjs.com/cli/configuring-npm/package-lock-json"
+        },
+        {
+          "id": "npm-ci",
+          "category": "performance",
+          "level": "suggestion",
+          "scope": "root",
+          "when": {
+            "any": [
+              {
+                "tracked": "package-lock.json"
+              },
+              {
+                "tracked": "*/package-lock.json"
+              },
+              {
+                "tracked": "*/*/package-lock.json"
+              }
+            ]
+          },
+          "expect": {
+            "not": {
+              "contains": [
+                ".github/workflows/*.y*ml",
+                "(?m)\\bnpm (install|i)[ \\t]*($|&&|\\|\\||;|\\))"
+              ]
+            }
+          },
+          "message": "Install with npm ci in CI, not npm install",
+          "why": "npm ci installs exactly what package-lock.json records, fails when it no longer matches package.json, and is faster on a clean machine.",
+          "link": "https://docs.npmjs.com/cli/commands/npm-ci"
+        },
+        {
+          "id": "linter",
+          "category": "tooling",
+          "level": "suggestion",
+          "when": {
+            "file": "package.json"
+          },
+          "expect": {
+            "any": [
+              {
+                "file": "eslint.config.*",
+                "up": true
+              },
+              {
+                "file": ".eslintrc*",
+                "up": true
+              },
+              {
+                "file": "biome.json",
+                "up": true
+              },
+              {
+                "file": "biome.jsonc",
+                "up": true
+              },
+              {
+                "file": ".oxlintrc.json",
+                "up": true
+              },
+              {
+                "file": "deno.json",
+                "up": true
+              },
+              {
+                "contains": [
+                  "package.json",
+                  "\"(eslint|eslintConfig|@biomejs/biome|oxlint|xo|standard)\"\\s*:"
+                ],
+                "up": true
+              }
+            ]
+          },
+          "message": "Configure a linter (ESLint's eslint.config.js, or Biome's biome.json)",
+          "why": "A linter catches likely bugs that the language accepts; hct lint runs the project's lint script.",
+          "link": "https://eslint.org/docs/latest/use/getting-started"
+        },
+        {
+          "id": "formatter",
+          "category": "tooling",
+          "level": "suggestion",
+          "when": {
+            "file": "package.json"
+          },
+          "expect": {
+            "any": [
+              {
+                "file": ".prettierrc*",
+                "up": true
+              },
+              {
+                "file": "prettier.config.*",
+                "up": true
+              },
+              {
+                "file": "biome.json",
+                "up": true
+              },
+              {
+                "file": "biome.jsonc",
+                "up": true
+              },
+              {
+                "file": "dprint.json",
+                "up": true
+              },
+              {
+                "file": "deno.json",
+                "up": true
+              },
+              {
+                "contains": [
+                  "package.json",
+                  "\"(prettier|@biomejs/biome|dprint|standard)\"\\s*:"
+                ],
+                "up": true
+              }
+            ]
+          },
+          "message": "Configure a formatter (Prettier's .prettierrc, or Biome's biome.json)",
+          "why": "hct format and lint's format check run the formatter the project configures; without one there is nothing to keep the style consistent.",
+          "link": "https://prettier.io/docs/install"
+        }
+      ],
+      "pin": {
+        "when": {
+          "file": "package.json"
+        },
+        "level": "suggestion",
+        "create": ".nvmrc",
+        "content": "{line}\n",
+        "lineParts": 1,
+        "why": "Node.js has no version setting of its own; nvm, fnm, volta and hecatron read .nvmrc, so everyone runs the release line the project is tested on.",
+        "link": "https://github.com/nvm-sh/nvm#nvmrc"
+      },
+      "endOfLife": {
+        "lineParts": 1,
+        "months": 8,
+        "ltsMonths": 37,
+        "why": "Node.js fixes security issues only in its current and LTS release lines; production applications should use an Active or Maintenance LTS line.",
+        "link": "https://nodejs.org/en/about/previous-releases"
+      },
+      "lockFresh": [
+        {
+          "manifest": "package.json",
+          "lock": "package-lock.json",
+          "format": "npm",
+          "why": "npm ci refuses to install when package-lock.json and package.json disagree; npm install updates the lock.",
+          "link": "https://docs.npmjs.com/cli/commands/npm-ci"
+        }
+      ],
+      "ci": {
+        "markers": [
+          "setup-node",
+          "\\bnpm\\b",
+          "\\bnpx\\b",
+          "\\bpnpm\\b",
+          "\\byarn\\b",
+          "\\bbun\\b",
+          "\\bnode\\b"
+        ],
+        "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+        "link": "https://docs.github.com/en/actions/tutorials/build-and-test-code/nodejs"
+      }
+    },
+    "dotnet": {
+      "toolchain": ".NET SDK",
+      "rules": [
+        {
+          "id": "editorconfig",
+          "category": "tooling",
+          "level": "suggestion",
+          "when": {
+            "any": [
+              {
+                "file": "*.sln"
+              },
+              {
+                "file": "*.slnx"
+              },
+              {
+                "file": "*.csproj"
+              },
+              {
+                "file": "*.fsproj"
+              },
+              {
+                "file": "*.vbproj"
+              }
+            ]
+          },
+          "expect": {
+            "file": ".editorconfig",
+            "up": true
+          },
+          "message": "Add an .editorconfig with the code style and analyzer settings",
+          "why": "dotnet format and the .NET code analyzers read their rules and severities from .editorconfig, so every editor and CI build applies the same ones.",
+          "link": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/configuration-files"
+        }
+      ],
+      "pin": {
+        "when": {
+          "any": [
+            {
+              "file": "*.sln"
+            },
+            {
+              "file": "*.slnx"
+            },
+            {
+              "file": "*.csproj"
+            },
+            {
+              "file": "*.fsproj"
+            },
+            {
+              "file": "*.vbproj"
+            },
+            {
+              "file": "Directory.Build.props"
+            }
+          ]
+        },
+        "level": "suggestion",
+        "create": "global.json",
+        "content": "{\n  \"sdk\": {\n    \"version\": \"{version}\",\n    \"rollForward\": \"latestFeature\"\n  }\n}\n",
+        "lineParts": 2,
+        "minParts": 3,
+        "why": "Without global.json, dotnet uses the newest SDK installed, so two machines can build with different compilers and analyzers.",
+        "link": "https://learn.microsoft.com/dotnet/core/tools/global-json"
+      },
+      "endOfLife": {
+        "lineParts": 2,
+        "months": 24,
+        "ltsMonths": 36,
+        "why": "Microsoft supports an LTS release of .NET for three years and an STS release for two; after that it gets no security fixes.",
+        "link": "https://dotnet.microsoft.com/platform/support/policy/dotnet-core"
+      },
+      "ci": {
+        "markers": [
+          "setup-dotnet",
+          "\\bdotnet\\b",
+          "\\bmsbuild\\b",
+          "\\bnuget\\b"
+        ],
+        "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+        "link": "https://docs.github.com/en/actions/tutorials/build-and-test-code/net"
+      }
+    },
+    "gradle": {
+      "rules": [
+        {
+          "id": "wrapper",
+          "category": "reproducibility",
+          "level": "recommended",
+          "when": {
+            "any": [
+              {
+                "file": "build.gradle"
+              },
+              {
+                "file": "build.gradle.kts"
+              },
+              {
+                "file": "settings.gradle"
+              },
+              {
+                "file": "settings.gradle.kts"
+              }
+            ]
+          },
+          "expect": {
+            "all": [
+              {
+                "tracked": "gradle/wrapper/gradle-wrapper.properties",
+                "up": true
+              },
+              {
+                "tracked": "gradlew",
+                "up": true
+              }
+            ]
+          },
+          "message": "Commit the Gradle wrapper (gradlew and gradle/wrapper/), made with gradle wrapper",
+          "why": "Gradle recommends the wrapper: it pins the Gradle version the build was written for and downloads it, so every machine and CI builds with the same Gradle.",
+          "link": "https://docs.gradle.org/current/userguide/gradle_wrapper.html"
+        },
+        {
+          "id": "build-cache",
+          "category": "performance",
+          "level": "suggestion",
+          "when": {
+            "any": [
+              {
+                "file": "build.gradle"
+              },
+              {
+                "file": "build.gradle.kts"
+              },
+              {
+                "file": "settings.gradle"
+              },
+              {
+                "file": "settings.gradle.kts"
+              }
+            ]
+          },
+          "expect": {
+            "any": [
+              {
+                "contains": [
+                  "gradle.properties",
+                  "(?m)^\\s*org\\.gradle\\.caching\\s*=\\s*true"
+                ],
+                "up": true
+              },
+              {
+                "contains": [
+                  "settings.gradle*",
+                  "buildCache"
+                ],
+                "up": true
+              }
+            ]
+          },
+          "message": "Turn on Gradle's build cache (org.gradle.caching=true in gradle.properties)",
+          "why": "The build cache reuses task outputs from earlier builds, across branches and clean checkouts, instead of running the tasks again.",
+          "link": "https://docs.gradle.org/current/userguide/build_cache.html"
+        },
+        {
+          "id": "configuration-cache",
+          "category": "performance",
+          "level": "suggestion",
+          "when": {
+            "any": [
+              {
+                "file": "build.gradle"
+              },
+              {
+                "file": "build.gradle.kts"
+              },
+              {
+                "file": "settings.gradle"
+              },
+              {
+                "file": "settings.gradle.kts"
+              }
+            ]
+          },
+          "expect": {
+            "contains": [
+              "gradle.properties",
+              "(?m)^\\s*org\\.gradle\\.(unsafe\\.)?configuration-cache\\s*=\\s*true"
+            ],
+            "up": true
+          },
+          "message": "Turn on Gradle's configuration cache (org.gradle.configuration-cache=true in gradle.properties)",
+          "why": "Gradle recommends the configuration cache: it skips the configuration phase when nothing that affects it changed, and runs tasks in parallel.",
+          "link": "https://docs.gradle.org/current/userguide/configuration_cache.html"
+        }
+      ]
+    },
+    "maven": {
+      "rules": [
+        {
+          "id": "wrapper",
+          "category": "reproducibility",
+          "level": "suggestion",
+          "when": {
+            "file": "pom.xml"
+          },
+          "expect": {
+            "all": [
+              {
+                "tracked": ".mvn/wrapper/maven-wrapper.properties",
+                "up": true
+              },
+              {
+                "tracked": "mvnw",
+                "up": true
+              }
+            ]
+          },
+          "message": "Commit the Maven wrapper (mvnw and .mvn/wrapper/), made with mvn wrapper:wrapper",
+          "why": "The wrapper pins the Maven version the build was written for and downloads it, so every machine builds with the same Maven.",
+          "link": "https://maven.apache.org/tools/wrapper/"
+        }
+      ]
+    },
+    "jvm": {
+      "toolchain": "Java",
+      "endOfLife": {
+        "lineParts": 1,
+        "lines": 1,
+        "why": "A non-LTS Java release gets updates only until the next release, six months later; Eclipse Temurin supports LTS releases for years.",
+        "link": "https://adoptium.net/support/"
+      },
+      "ci": {
+        "markers": [
+          "setup-java",
+          "\\bgradlew?\\b",
+          "\\bmvnw?\\b",
+          "\\bmaven\\b",
+          "\\bsbt\\b",
+          "\\bjava\\b",
+          "\\bkotlinc?\\b"
+        ],
+        "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+        "link": "https://docs.github.com/en/actions/tutorials/build-and-test-code/java-with-gradle"
+      }
+    },
+    "native": {
+      "rules": [
+        {
+          "id": "cmake-minimum-version",
+          "category": "currency",
+          "level": "recommended",
+          "expect": {
+            "not": {
+              "contains": [
+                "CMakeLists.txt",
+                "(?i)cmake_minimum_required\\s*\\(\\s*VERSION\\s+(?:[0-2]\\.\\d+|3\\.[0-4])(?:\\.\\d+)*\\s*(?:\\)|FATAL_ERROR)"
+              ]
+            }
+          },
+          "message": "Raise cmake_minimum_required in CMakeLists.txt to 3.5 or later (or give a range, such as 3.5...3.31)",
+          "why": "CMake 4.0 removed compatibility with versions before 3.5: a project that asks for less fails to configure.",
+          "link": "https://cmake.org/cmake/help/latest/command/cmake_minimum_required.html"
+        },
+        {
+          "id": "clang-format",
+          "category": "tooling",
+          "level": "suggestion",
+          "when": {
+            "any": [
+              {
+                "file": "CMakeLists.txt"
+              },
+              {
+                "file": "meson.build"
+              },
+              {
+                "file": "configure.ac"
+              },
+              {
+                "file": "Makefile"
+              }
+            ]
+          },
+          "expect": {
+            "any": [
+              {
+                "file": ".clang-format",
+                "up": true
+              },
+              {
+                "file": "_clang-format",
+                "up": true
+              }
+            ]
+          },
+          "message": "Add a .clang-format file with the project's style",
+          "why": "clang-format, which hct format runs, formats to the style its .clang-format names; without one each editor formats differently.",
+          "link": "https://clang.llvm.org/docs/ClangFormatStyleOptions.html"
+        }
+      ],
+      "ci": {
+        "markers": [
+          "\\bcmake\\b",
+          "\\bctest\\b",
+          "\\bmeson\\b",
+          "\\bninja\\b",
+          "\\bmake\\b",
+          "\\bconfigure\\b",
+          "\\bbazel(isk)?\\b",
+          "\\bgcc\\b",
+          "\\bclang\\b",
+          "\\bvcpkg\\b",
+          "\\bconan\\b",
+          "\\bmsbuild\\b"
+        ],
+        "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+        "link": "https://docs.github.com/en/actions/get-started/understand-github-actions"
+      }
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "rules": [
+    {
+      "id": "lock-committed",
+      "category": "reproducibility",
+      "level": "recommended",
+      "when": {
+        "all": [
+          {
+            "any": [
+              {
+                "file": "Gemfile"
+              },
+              {
+                "file": "gems.rb"
+              }
+            ]
+          },
+          {
+            "missing": "*.gemspec"
+          },
+          {
+            "missing": "*/*.gemspec"
+          }
+        ]
+      },
+      "expect": {
+        "any": [
+          {
+            "tracked": "Gemfile.lock",
+            "up": true
+          },
+          {
+            "tracked": "gems.locked",
+            "up": true
+          }
+        ]
+      },
+      "message": "Commit Gemfile.lock (this is an application: it has no .gemspec)",
+      "why": "RubyGems' guides say applications should always commit their lockfile, so every machine runs the same gem versions.",
+      "link": "https://guides.rubygems.org/faqs/"
+    },
+    {
+      "id": "lint-config",
+      "category": "tooling",
+      "level": "suggestion",
+      "when": {
+        "any": [
+          {
+            "file": "Gemfile"
+          },
+          {
+            "file": "*.gemspec"
+          }
+        ]
+      },
+      "expect": {
+        "any": [
+          {
+            "file": ".rubocop.yml",
+            "up": true
+          },
+          {
+            "file": ".standard.yml",
+            "up": true
+          },
+          {
+            "contains": [
+              "Gemfile",
+              "[\"'](rubocop|standard)[\"']"
+            ],
+            "up": true
+          },
+          {
+            "contains": [
+              "*.gemspec",
+              "[\"'](rubocop|standard)[\"']"
+            ]
+          }
+        ]
+      },
+      "message": "Configure RuboCop (.rubocop.yml) or Standard (.standard.yml)",
+      "why": "hct lint runs RuboCop or Standard; their configuration says which cops the project holds to, so every contributor's run agrees.",
+      "link": "https://docs.rubocop.org/rubocop/configuration.html"
+    }
+  ],
+  "pin": {
+    "when": {
+      "any": [
+        {
+          "file": "Gemfile"
+        },
+        {
+          "file": "gems.rb"
+        }
+      ]
+    },
+    "level": "suggestion",
+    "create": ".ruby-version",
+    "content": "{version}\n",
+    "lineParts": 2,
+    "minParts": 3,
+    "why": "Version managers and hecatron read .ruby-version, and Bundler can require it from the Gemfile (ruby file: \".ruby-version\").",
+    "link": "https://guides.rubygems.org/gemfile_ruby/"
+  },
+  "endOfLife": {
+    "lineParts": 2,
+    "months": 40,
+    "why": "Ruby maintains each release line for about three years and three months; after that it gets no security fixes.",
+    "link": "https://www.ruby-lang.org/en/downloads/branches/"
+  },
+  "ci": {
+    "markers": [
+      "setup-ruby",
+      "\\bbundle\\b",
+      "\\brake\\b",
+      "\\brspec\\b",
+      "\\bruby\\b"
+    ],
+    "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+    "link": "https://docs.github.com/en/actions/tutorials/build-and-test-code/ruby"
+  }
+}

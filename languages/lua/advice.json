@@ -1,0 +1,37 @@
+{
+  "rules": [
+    {
+      "id": "luacheck-config",
+      "category": "tooling",
+      "level": "suggestion",
+      "when": {
+        "any": [
+          {
+            "file": "*.rockspec"
+          },
+          {
+            "file": "rockspecs"
+          }
+        ]
+      },
+      "expect": {
+        "file": ".luacheckrc",
+        "up": true
+      },
+      "message": "Add a .luacheckrc saying which Lua version and globals the code uses",
+      "why": "luacheck, which hct lint runs, reads the standard library and allowed globals from .luacheckrc; without one it reports every global the project defines.",
+      "link": "https://luacheck.readthedocs.io/en/stable/config.html"
+    }
+  ],
+  "ci": {
+    "markers": [
+      "\\bluarocks\\b",
+      "\\bbusted\\b",
+      "\\bluacheck\\b",
+      "gh-actions-lua",
+      "\\blua(jit)?\\b"
+    ],
+    "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+    "link": "https://docs.github.com/en/actions/get-started/understand-github-actions"
+  }
+}

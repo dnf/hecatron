@@ -1,0 +1,128 @@
+{
+  "rules": [
+    {
+      "id": "lock-committed",
+      "category": "reproducibility",
+      "level": "recommended",
+      "when": {
+        "all": [
+          {
+            "contains": [
+              "Cargo.toml",
+              "(?m)^\\[package\\]"
+            ]
+          },
+          {
+            "contains": [
+              "Cargo.toml",
+              "(?m)^\\[((dev-|build-)?dependencies\\]\\s*\\n\\s*[A-Za-z0-9_-]+\\s*=|(dev-|build-)?dependencies\\.)"
+            ]
+          },
+          {
+            "any": [
+              {
+                "file": "src/main.rs"
+              },
+              {
+                "file": "src/bin"
+              },
+              {
+                "contains": [
+                  "Cargo.toml",
+                  "(?m)^\\[\\[bin\\]\\]"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "tracked": "Cargo.lock",
+        "up": true
+      },
+      "message": "Commit Cargo.lock (this package builds a binary and has dependencies)",
+      "why": "cargo new tracks Cargo.lock by default: it makes builds deterministic, so a binary builds with the same dependencies everywhere and CI fails only for new commits.",
+      "link": "https://doc.rust-lang.org/cargo/faq.html#why-have-cargolock-in-version-control"
+    },
+    {
+      "id": "edition",
+      "category": "currency",
+      "level": "recommended",
+      "when": {
+        "contains": [
+          "Cargo.toml",
+          "(?m)^\\[package\\]"
+        ]
+      },
+      "expect": {
+        "contains": [
+          "Cargo.toml",
+          "(?m)^\\s*edition(\\.workspace)?\\s*="
+        ]
+      },
+      "message": "Set edition in Cargo.toml's [package] (edition = \"2024\", or edition.workspace = true)",
+      "why": "Without an edition Cargo builds the package as Rust 2015, with that edition's older rules.",
+      "link": "https://doc.rust-lang.org/cargo/reference/manifest.html#the-edition-field"
+    },
+    {
+      "id": "old-edition",
+      "category": "currency",
+      "level": "suggestion",
+      "expect": {
+        "not": {
+          "contains": [
+            "Cargo.toml",
+            "(?m)^\\s*edition\\s*=\\s*[\"']20(15|18)[\"']"
+          ]
+        }
+      },
+      "message": "Move to a newer Rust edition (cargo fix --edition migrates the code)",
+      "why": "Newer editions keep the language's improvements behind them, and cargo fix --edition makes the mechanical changes.",
+      "link": "https://doc.rust-lang.org/edition-guide/editions/transitioning-an-existing-project-to-a-new-edition.html"
+    }
+  ],
+  "pin": {
+    "when": {
+      "all": [
+        {
+          "contains": [
+            "Cargo.toml",
+            "(?m)^\\[package\\]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "file": "src/main.rs"
+            },
+            {
+              "file": "src/bin"
+            }
+          ]
+        }
+      ]
+    },
+    "level": "suggestion",
+    "create": "rust-toolchain.toml",
+    "content": "[toolchain]\nchannel = \"{version}\"\n",
+    "lineParts": 2,
+    "why": "rustup reads rust-toolchain.toml and installs that toolchain, so everyone builds the binary with the same compiler.",
+    "link": "https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file"
+  },
+  "behind": {
+    "lineParts": 2,
+    "lines": 8,
+    "why": "Rust supports only its latest stable release, which every six weeks brings fixes, including security fixes; a toolchain a year behind has none of them.",
+    "link": "https://www.rust-lang.org/policies/security"
+  },
+  "ci": {
+    "markers": [
+      "\\bcargo\\b",
+      "rust-toolchain",
+      "\\brustup\\b",
+      "\\brustc\\b"
+    ],
+    "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+    "link": "https://docs.github.com/en/actions/tutorials/build-and-test-code/rust"
+  }
+}

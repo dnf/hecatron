@@ -1,0 +1,37 @@
+{
+  "rules": [
+    {
+      "id": "sum-committed",
+      "category": "reproducibility",
+      "level": "recommended",
+      "when": {
+        "contains": [
+          "go.mod",
+          "(?m)^require\\b"
+        ]
+      },
+      "expect": {
+        "tracked": "go.sum"
+      },
+      "message": "Commit go.sum beside go.mod",
+      "why": "go.sum holds the checksums the go command verifies every module download against; Go's documentation says to commit it with go.mod.",
+      "link": "https://go.dev/ref/mod#go-sum-files"
+    }
+  ],
+  "endOfLife": {
+    "lineParts": 2,
+    "lines": 2,
+    "why": "Each Go release is supported until there are two newer major releases; after that it gets no security fixes.",
+    "link": "https://go.dev/doc/devel/release#policy"
+  },
+  "ci": {
+    "markers": [
+      "setup-go",
+      "\\bgo (test|build|vet|run|install|generate|mod)\\b",
+      "golangci",
+      "goreleaser"
+    ],
+    "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+    "link": "https://docs.github.com/en/actions/tutorials/build-and-test-code/go"
+  }
+}

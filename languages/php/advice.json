@@ -1,0 +1,92 @@
+{
+  "rules": [
+    {
+      "id": "lock-committed",
+      "category": "reproducibility",
+      "level": "recommended",
+      "when": {
+        "all": [
+          {
+            "contains": [
+              "composer.json",
+              "\"type\"\\s*:\\s*\"project\""
+            ]
+          },
+          {
+            "contains": [
+              "composer.json",
+              "\"require(-dev)?\"\\s*:\\s*\\{\\s*\""
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "tracked": "composer.lock",
+        "up": true
+      },
+      "message": "Commit composer.lock (this is a project, \"type\": \"project\", not a library)",
+      "why": "Composer's documentation says to commit composer.lock, so everyone installs exactly the same dependency versions.",
+      "link": "https://getcomposer.org/doc/01-basic-usage.md#commit-your-composer-lock-file-to-version-control"
+    },
+    {
+      "id": "static-analysis",
+      "category": "tooling",
+      "level": "suggestion",
+      "when": {
+        "file": "composer.json"
+      },
+      "expect": {
+        "any": [
+          {
+            "file": "phpstan.neon*",
+            "up": true
+          },
+          {
+            "file": "phpstan.dist.neon",
+            "up": true
+          },
+          {
+            "file": "psalm.xml*",
+            "up": true
+          },
+          {
+            "file": "phpcs.xml*",
+            "up": true
+          },
+          {
+            "file": ".phpcs.xml*",
+            "up": true
+          },
+          {
+            "file": ".php-cs-fixer*.php",
+            "up": true
+          },
+          {
+            "file": "pint.json",
+            "up": true
+          }
+        ]
+      },
+      "message": "Configure a static analyser or style checker (phpstan.neon, psalm.xml, phpcs.xml or .php-cs-fixer.dist.php)",
+      "why": "hct lint runs the PHP checkers the project configures; with none configured it only checks syntax.",
+      "link": "https://phpstan.org/user-guide/getting-started"
+    }
+  ],
+  "endOfLife": {
+    "lineParts": 2,
+    "months": 50,
+    "why": "Each PHP release line is supported for four years (two active, two security-only), then gets no fixes.",
+    "link": "https://www.php.net/supported-versions.php"
+  },
+  "ci": {
+    "markers": [
+      "setup-php",
+      "\\bcomposer\\b",
+      "\\bphpunit\\b",
+      "\\bphp\\b",
+      "\\bpest\\b"
+    ],
+    "why": "Tests that run only on someone's machine stop being run; CI runs them on every change.",
+    "link": "https://docs.github.com/en/actions/get-started/understand-github-actions"
+  }
+}

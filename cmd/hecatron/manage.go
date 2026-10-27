@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/dnf/hecatron/internal/advisor"
 	"github.com/dnf/hecatron/internal/generate"
 	"github.com/dnf/hecatron/internal/project"
 )
@@ -468,6 +469,11 @@ func (c *cli) check() (int, bool) {
 	if err != nil {
 		return 0, false
 	}
+	advice, err := advisor.ConfigProblems(p) // Go only: the advisor has no script
+	if err != nil {
+		return 0, false
+	}
+	problems = append(problems, advice...)
 	var out strings.Builder
 	ok, err := writeGenerated(dockerfiles, true, &out)
 	if err != nil {
