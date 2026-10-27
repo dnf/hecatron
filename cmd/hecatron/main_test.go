@@ -113,7 +113,7 @@ var cliProjects = map[string]map[string]string{
 // cliArgs are the invocations compared: every native form, and delegated
 // ones that only read.
 var cliArgs = [][]string{
-	{}, {"help"}, {"-h"}, {"--help"}, {"help", "list"},
+	{}, {"help"}, {"-h"}, {"--help"}, {"help", "list"}, {"help", "agents"},
 	{"--version"}, {"-V"}, {"version-of-hecatron"},
 	{"list"}, {"list", "languages"}, {"list", "--all"}, {"list", "--all", "languages"}, {"list", "languages", "--all"},
 	{"list", "--al"}, {"list", "help"}, {"list", "-h"}, {"list", "nope"}, {"list", "languages", "languages"},

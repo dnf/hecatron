@@ -389,7 +389,15 @@ saves it, as init would. Init itself:
 6. With `--justfile`, writes `.hecatron/hecatron.just` with recipes that
    delegate to `hecatron` (`test *args: hecatron test {{args}}`) for a project
    justfile to `import`.
-7. Prints what it found and the next step: `hecatron doctor`.
+7. Writes a short section for AI coding agents into `AGENTS.md` (the file
+   most agents read), between `<!-- hecatron:begin -->` and
+   `<!-- hecatron:end -->` so a later init replaces only it, and adds
+   `@AGENTS.md` to an existing `CLAUDE.md` (Claude Code reads that instead).
+   The section is generic (no languages, which would go stale) and points
+   to `hecatron help agents`, which prints `docs/agents.md`, the compact
+   reference for the installed version. `--no-agents` skips this. Only an
+   explicit init writes it: a detected project writes nothing.
+8. Prints what it found and the next step: `hecatron doctor`.
 
 It never installs anything or touches CI by itself; `hecatron workflows` and
 `hecatron dockerfile` are separate, explicit steps.

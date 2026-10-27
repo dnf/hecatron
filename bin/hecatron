@@ -66,7 +66,8 @@ Project:
 Hecatron itself:
   self-test                  Check hecatron's own code: shellcheck and the unit tests
 
-Run 'hecatron <command> help' for a command's options.
+Run 'hecatron <command> help' for a command's options, and 'hecatron help agents'
+for a compact reference for AI coding agents.
 hecatron $(_version)
 EOF
 }
@@ -75,7 +76,9 @@ _command="${1:-help}"
 [ "$#" -gt 0 ] && shift
 
 case "${_command}" in
-    help|-h|--help) _usage; exit 0 ;;
+    help|-h|--help)
+        if [ "${1:-}" = "agents" ]; then exec cat "${HECATRON_HOME}/docs/agents.md"; fi
+        _usage; exit 0 ;;
     --version|-V|version-of-hecatron) _version; exit 0 ;;
 esac
 
