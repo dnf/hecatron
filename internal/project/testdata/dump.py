@@ -41,6 +41,8 @@ def shell(p):
         "known": sorted(defs),
         "added": added,
         "hooks": {hook: [lang for lang in added if p.resolve(lang, hook)] for hook in project.HOOKS},
+        "lintFormat": [lang for lang in added
+                       if p.resolve(lang, "format.sh") and project.lint_checks_format(p.config, lang)],
         "abbreviations": {lang: d["abbreviation"] for lang, d in defs.items() if d.get("abbreviation")},
     }
 
@@ -80,7 +82,7 @@ def main():
         "tools": field(lambda p: {t: d.get("dependency", "") or "" for t, d in p.tools.items()}),
         "definitions": field(lambda p: p.definitions),
         "shell": field(shell),
-        "configProblems": field(lambda p: audit.config_problems(p.config)),
+        "configProblems": field(lambda p: audit.config_problems(p.config) + project.lint_config_problems(p.config)),
         "lang": {lang: language(lang) for lang in langs},
     }
     print(json.dumps(out))

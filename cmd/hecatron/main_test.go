@@ -118,7 +118,7 @@ var cliArgs = [][]string{
 	{"list"}, {"list", "languages"}, {"list", "--all"}, {"list", "--all", "languages"}, {"list", "languages", "--all"},
 	{"list", "--al"}, {"list", "help"}, {"list", "-h"}, {"list", "nope"}, {"list", "languages", "languages"},
 	{"test", "help"}, {"test", "--help"}, {"lint", "help"}, {"build", "help"}, {"clean", "help"},
-	{"rebuild", "help"}, {"retest", "help"}, {"audit", "help"}, {"test", "-c", "nope", "help"},
+	{"rebuild", "help"}, {"retest", "help"}, {"audit", "help"}, {"format", "help"}, {"format", "--help"}, {"test", "-c", "nope", "help"},
 	{"doctor", "help"}, {"doctor", "--help", "go"},
 	{"version"}, {"version", "help"}, {"version", "--help"}, {"version", ""},
 	{"env"}, {"env", "go"}, {"env", "go", "-c", "age"},
@@ -270,5 +270,54 @@ func TestRootThroughALinkMatchesBinHecatron(t *testing.T) {
 	got := runIn(t, link, env, binary, "env")
 	if got != want || !strings.Contains(got.stdout, "HECATRON_ROOT="+root+"\n") {
 		t.Errorf("bin/hecatron: %+v\nGo:          %+v", want, got)
+	}
+}
+
+// In a git repository hecatron hasn't set up, the first project command
+// sets it up (manage.py init --auto, reporting on stderr), then runs.
+func TestFirstUseSetsUpAGitRepositoryAsBinHecatron(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("bin/hecatron needs bash and Python")
+	}
+	for _, tool := range []string{"bash", "python3", "git"} {
+		if _, err := exec.LookPath(tool); err != nil {
+			t.Skip("no " + tool)
+		}
+	}
+	home := repoHome(t)
+	env := []string{"HECATRON_HOME=" + home, "HECATRON_BUILTIN_LANGUAGES=", "COLUMNS=80", "NO_COLOR=1"}
+	repositories := map[string]map[string]string{
+		"new":       {"go/go.mod": "module x\n", "go/main.go": "package main\n", "rust/Cargo.toml": ""},
+		"empty":     {"README": ""},
+		"schema 99": {".hecatron/config.json": `{"schema": 99}`, "go/go.mod": ""},
+	}
+	for name, files := range repositories {
+		for _, args := range [][]string{{"list"}, {"test", "help"}, {"nope"}, {"init", "help"}} {
+			t.Run(name+"/"+strings.Join(args, " "), func(t *testing.T) {
+				var results [2]result
+				var roots [2]string
+				for i, entry := range [][]string{{"bash", filepath.Join(home, "bin", "hecatron")}, {binary}} {
+					roots[i] = fixture(t, files)
+					sub := filepath.Join(roots[i], "go")
+					if err := os.MkdirAll(sub, 0o755); err != nil {
+						t.Fatal(err)
+					}
+					runIn(t, roots[i], nil, "git", "init", "-q")
+					runIn(t, roots[i], nil, "git", "add", "-A")
+					results[i] = runIn(t, sub, env, append(entry, args...)...)
+					results[i].stdout = strings.ReplaceAll(results[i].stdout, roots[i], "ROOT")
+					results[i].stderr = strings.ReplaceAll(results[i].stderr, roots[i], "ROOT")
+				}
+				if results[0] != results[1] {
+					t.Errorf("bin/hecatron: %+v\nGo:          %+v", results[0], results[1])
+				}
+				config0, _ := os.ReadFile(filepath.Join(roots[0], ".hecatron", "config.json"))
+				config1, _ := os.ReadFile(filepath.Join(roots[1], ".hecatron", "config.json"))
+				if !bytes.Equal(bytes.ReplaceAll(config0, []byte(filepath.Base(roots[0])), nil),
+					bytes.ReplaceAll(config1, []byte(filepath.Base(roots[1])), nil)) {
+					t.Errorf("config.json differs:\n%s\n%s", config0, config1)
+				}
+			})
+		}
 	}
 }

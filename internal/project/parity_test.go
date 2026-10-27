@@ -161,7 +161,7 @@ func goDump(t *testing.T, home, builtin, cwd string, langs []string) any {
 			hooks[hook] = strs(s.HookLanguages(hook))
 		}
 		return map[string]any{"exports": exports, "known": strs(s.Known), "added": strs(s.Added),
-			"hooks": hooks, "abbreviations": strMap(s.Abbreviations)}, nil
+			"hooks": hooks, "abbreviations": strMap(s.Abbreviations), "lintFormat": strs(s.LintFormat)}, nil
 	})
 	out["configProblems"] = answer(func() (any, error) {
 		problems, err := p.ConfigProblems()
@@ -492,6 +492,14 @@ func parityCases() []parityCase {
 			{"reason": "no id"},
 			"not an object",
 			{"id": "", "reason": "empty id"}]}`)},
+		{name: "lint format per language", files: with(config(`, "languages": ["go", "python", "rust"],
+			"lint": {"format": {"go": false, "rust": true}}`), map[string]string{
+			".hecatron/languages/python/format.sh": "", ".hecatron/languages/go/format.sh": ""})},
+		{name: "lint format off", files: config(`, "languages": ["go"], "lint": {"format": false}`)},
+		{name: "lint format not a bool", files: config(`, "languages": ["go"], "lint": {"format": {"go": 0}}`)},
+		{name: "lint format a string", files: config(`, "lint": {"format": "yes"}`)},
+		{name: "lint not an object", files: config(`, "lint": []`)},
+		{name: "lint format null", files: config(`, "languages": ["go"], "lint": {"format": null}`)},
 		{name: "audit not an object", files: config(`, "audit": ["x"]`)},
 		{name: "audit failOn fine", files: config(`, "audit": {"failOn": "moderate", "ignore": null}`)},
 		{name: "fixture definitions", builtin: map[string]string{

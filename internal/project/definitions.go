@@ -9,7 +9,7 @@ import (
 
 // Hooks are the files that resolve to a built-in definition's hooks/
 // directory rather than its top level (docs/design.md §9).
-var Hooks = []string{"test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh"}
+var Hooks = []string{"test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh", "format.sh"}
 
 // Definitions are every known language's config.json: the built-in keys
 // with the project's on top (docs/design.md §7).

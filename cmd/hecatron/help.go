@@ -29,6 +29,7 @@ Run (every component of each language; no languages means all, in parallel):
   clean [lang...]            Remove build artifacts
   rebuild, retest [lang...]  Clean, then build or test
   audit [lang...]            Check dependencies for known vulnerabilities (--fail-on SEVERITY)
+  format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
 
 Languages:
   list [languages] [--all]   Show the project's (or every known) language
@@ -109,6 +110,7 @@ var runActions = map[string]struct{ description, hook string }{
 	"rebuild": {"Clean, then build", "build.sh"},
 	"retest":  {"Clean, then test", "test.sh"},
 	"audit":   {"Check each language's dependencies for known vulnerabilities in every component", "audit.sh"},
+	"format":  {"Format each language's code with its formatter in every component", "format.sh"},
 }
 
 // runHelp is `hecatron test help` and the other run commands' help, as
@@ -152,6 +154,10 @@ func (c *cli) runHelp() (int, bool) {
 		out.WriteString("  --fail-on SEVERITY\n" +
 			"             Fail on a finding at or above critical, high (default), moderate or low;\n" +
 			"             a project sets its own with \"audit\": {\"failOn\": ...} (docs/audit.md)\n")
+	}
+	if c.command == "format" {
+		out.WriteString("  --check    Change nothing; fail, listing the files the formatter would change\n" +
+			"             (hecatron lint runs this check too; docs/format.md)\n")
 	}
 	fmt.Fprintf(&out, "\nExamples:\n"+
 		"  hecatron %[1]s               Everything, in parallel\n"+

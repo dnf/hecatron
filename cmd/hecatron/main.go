@@ -14,6 +14,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/dnf/hecatron/internal/project"
 )
@@ -49,8 +51,14 @@ func run(argv []string) int {
 	case "self-test":
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
 	}
-	// Every command but init and banner runs inside a project; find it
-	// (like git).
+	implementation, known := delegated[c.command]
+	if !known {
+		if status := c.requirePython(); status != 0 {
+			return status
+		}
+		fmt.Fprintf(os.Stderr, "hecatron: unknown command '%s' (try 'hecatron help')\n", c.command)
+		return 2
+	}
 	if c.command != "init" && c.command != "banner" {
 		if status := c.findProject(); status != 0 {
 			return status
@@ -60,14 +68,6 @@ func run(argv []string) int {
 		if status, handled := handler(c); handled {
 			return status
 		}
-	}
-	implementation, known := delegated[c.command]
-	if !known {
-		if status := c.requirePython(); status != 0 {
-			return status
-		}
-		fmt.Fprintf(os.Stderr, "hecatron: unknown command '%s' (try 'hecatron help')\n", c.command)
-		return 2
 	}
 	return c.delegate(implementation)
 }
@@ -85,28 +85,69 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"rebuild": (*cli).runHelp,
 	"retest":  (*cli).runHelp,
 	"audit":   (*cli).runHelp,
+	"format":  (*cli).runHelp,
 	"doctor":  (*cli).doctorHelp,
 	"version": (*cli).versionHelp,
 }
 
-// findProject sets the project root and, when the Go model reads it, the
-// project. A project only project.py reads is found by project.py, which
-// also reports why one can't be read, as bin/hecatron does.
+// findProject finds the project (like git), setting it up first in a git
+// repository that hecatron hasn't set up yet, as `hecatron init` would at
+// the repository's top level; init's report goes to stderr, so the
+// command's own output stays as it is.
 func (c *cli) findProject() int {
-	cwd, err := workingDir()
-	if err == nil {
-		c.root, err = project.FindRoot(cwd)
-	}
-	if err == nil {
-		c.project, err = project.Load(c.root, c.home)
-	}
-	if err == nil {
+	if c.locateProject(false) {
 		return 0
 	}
-	if e, ok := err.(*project.Error); ok {
-		fmt.Fprintln(os.Stderr, "hecatron:", e.Message)
-		return 1
+	if top, ok := gitTopLevel(); ok {
+		if status := c.requirePython(); status != 0 {
+			return status
+		}
+		cmd := exec.Command("python3", c.homePath("libexec/commands/manage.py"), "init", "--auto", top)
+		cmd.Env = c.environment(nil)
+		cmd.Stdout, cmd.Stderr = os.Stderr, os.Stderr
+		if cmd.Run() != nil {
+			return 1
+		}
 	}
-	c.project = nil
-	return c.rootFromPython()
+	if c.locateProject(true) {
+		return 0
+	}
+	return 1
+}
+
+// locateProject sets the project root and, when the Go model reads it, the
+// project. A project only project.py reads is found by project.py. With
+// report, why there is none is said, in project.py's words.
+func (c *cli) locateProject(report bool) bool {
+	c.root, c.project = "", nil
+	cwd, err := workingDir()
+	var root string
+	if err == nil {
+		root, err = project.FindRoot(cwd)
+	}
+	var p *project.Project
+	if err == nil {
+		p, err = project.Load(root, c.home)
+	}
+	if err == nil {
+		c.root, c.project = root, p
+		return true
+	}
+	if e, ok := err.(*project.Error); ok {
+		if report {
+			fmt.Fprintln(os.Stderr, "hecatron:", e.Message)
+		}
+		return false
+	}
+	return c.rootFromPython(report)
+}
+
+// gitTopLevel is the top of the git repository around the working
+// directory, if there is one.
+func gitTopLevel() (string, bool) {
+	out, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
+	if err != nil {
+		return "", false
+	}
+	return strings.TrimRight(string(out), "\n"), true
 }

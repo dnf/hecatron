@@ -15,6 +15,7 @@ type Shell struct {
 	Added         []string    // the project's languages that have one
 	Disabled      []string
 	Abbreviations map[string]string
+	LintFormat    []string // added languages with format.sh whose format `hecatron lint` checks
 	byHook        map[string][]string
 }
 
@@ -67,6 +68,11 @@ func (p *Project) Shell() (*Shell, error) {
 			if p.Resolve(lang, hook) != "" {
 				s.byHook[hook] = append(s.byHook[hook], lang)
 			}
+		}
+	}
+	for _, lang := range s.byHook["format.sh"] {
+		if p.LintChecksFormat(lang) {
+			s.LintFormat = append(s.LintFormat, lang)
 		}
 	}
 	s.Exports = [][2]string{

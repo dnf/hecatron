@@ -9,9 +9,64 @@ import (
 // Severities are the audit severities, most severe first.
 var Severities = []string{"critical", "high", "moderate", "low"}
 
-// ConfigProblems is what's wrong with config.json's "audit" section, for
-// hecatron check: audit.py's config_problems, message for message.
+// ConfigProblems is what's wrong with config.json's "audit" and "lint"
+// sections, for hecatron check: audit.py's config_problems and project.py's
+// lint_config_problems, message for message.
 func (p *Project) ConfigProblems() ([]string, error) {
+	problems, err := p.auditProblems()
+	if err != nil {
+		return nil, err
+	}
+	return append(problems, p.lintProblems()...), nil
+}
+
+func (p *Project) lintProblems() []string {
+	lint, _ := p.config.Get("lint")
+	if lint == nil {
+		return nil
+	}
+	object, ok := lint.(*Object)
+	if !ok {
+		return []string{`"lint" must be an object`}
+	}
+	setting, present := object.Get("format")
+	if _, isBool := setting.(bool); isBool || !present {
+		return nil
+	}
+	if languages, isObject := setting.(*Object); isObject {
+		allBool := true
+		for _, key := range languages.Keys {
+			if _, isBool := languages.Values[key].(bool); !isBool {
+				allBool = false
+			}
+		}
+		if allBool {
+			return nil
+		}
+	}
+	return []string{`lint.format must be true, false, or an object of languages to true or false ({"haskell": false})`}
+}
+
+// LintChecksFormat reports whether `hecatron lint` runs a language's format
+// check: config.json's "lint": {"format": ...} is true (the default), false,
+// or per language ({"haskell": false}, the rest true).
+func (p *Project) LintChecksFormat(lang string) bool {
+	setting := any(true)
+	if lint, ok := p.config.Values["lint"].(*Object); ok {
+		if value, present := lint.Get("format"); present {
+			setting = value
+		}
+	}
+	if languages, ok := setting.(*Object); ok {
+		setting = true
+		if value, present := languages.Get(lang); present {
+			setting = value
+		}
+	}
+	return setting != false
+}
+
+func (p *Project) auditProblems() ([]string, error) {
 	audit, _ := p.config.Get("audit")
 	if audit == nil {
 		return nil, nil

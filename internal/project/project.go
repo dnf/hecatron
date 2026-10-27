@@ -89,8 +89,8 @@ func FindRoot(start string) (string, error) {
 		}
 		parent := filepath.Dir(directory)
 		if parent == directory {
-			return "", &Error{"not a hecatron project (no .hecatron/config.json here or above); " +
-				"run 'hecatron init' to set one up"}
+			return "", &Error{"not a hecatron project (no .hecatron/config.json here or above) and not inside " +
+				"a git repository; hecatron init sets up a git repository"}
 		}
 		directory = parent
 	}

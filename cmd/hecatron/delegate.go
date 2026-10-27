@@ -40,6 +40,7 @@ var delegated = map[string]func(*cli) target{
 	"rebuild":     runScript,
 	"retest":      runScript,
 	"audit":       runScript,
+	"format":      runScript,
 	"doctor":      bashScript("libexec/commands/doctor.sh"),
 	"get-started": bashScript("libexec/onboarding/get-started.sh"),
 	"metadata":    bashScript("libexec/metadata/set.sh"),
@@ -191,18 +192,21 @@ func (c *cli) requirePython() int {
 }
 
 // rootFromPython finds the project with project.py, for a project the Go
-// model declines: project.py prints the root, or why there is none.
-func (c *cli) rootFromPython() int {
-	if status := c.requirePython(); status != 0 {
-		return status
+// model declines: project.py prints the root, or (with report) why there
+// is none.
+func (c *cli) rootFromPython(report bool) bool {
+	if c.requirePython() != 0 {
+		return false
 	}
 	cmd := exec.Command("python3", c.homePath("libexec/lib/project.py"), "root")
 	cmd.Env = c.environment(nil)
-	cmd.Stderr = os.Stderr
+	if report {
+		cmd.Stderr = os.Stderr
+	}
 	out, err := cmd.Output()
 	if err != nil {
-		return 1
+		return false
 	}
 	c.root = strings.TrimRight(string(out), "\n")
-	return 0
+	return true
 }
