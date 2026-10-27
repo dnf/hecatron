@@ -101,10 +101,25 @@ if [ "${_command}" = "self-test" ]; then
     exec bash "${HECATRON_HOME}/libexec/commands/self-test.sh" "$@"
 fi
 
-# Every command but init runs inside a project; find it (like git).
+case "${_command}" in
+    test|lint|build|clean|rebuild|retest|audit|format|doctor|get-started|bootstrap|metadata|env|parallel|version) ;;
+    init|install|uninstall|list|add|remove|enable|disable|dockerfile|workflows|check|banner) ;;
+    *)
+        echo "hecatron: unknown command '${_command}' (try 'hecatron help')" >&2
+        exit 2 ;;
+esac
+
+# Every command but init runs inside a project; find it (like git). A git
+# repository that hecatron hasn't set up yet is set up on first use, at its
+# top level, as `hecatron init` would; init's report goes to stderr, so the
+# command's own output stays as it is.
+_find_root() { python3 "${HECATRON_HOME}/libexec/lib/project.py" root; }
 if [ "${_command}" != "init" ] && [ "${_command}" != "banner" ]; then
-    if ! HECATRON_ROOT="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" root)"; then
-        exit 1
+    if ! HECATRON_ROOT="$(_find_root 2>/dev/null)"; then
+        if _top="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+            python3 "${HECATRON_HOME}/libexec/commands/manage.py" init --auto "${_top}" >&2 || exit 1
+        fi
+        HECATRON_ROOT="$(_find_root)" || exit 1
     fi
     export HECATRON_ROOT
 fi
@@ -150,7 +165,4 @@ case "${_command}" in
         exec bash "${HECATRON_HOME}/libexec/commands/version.sh" "$@" ;;
     init|install|uninstall|list|add|remove|enable|disable|dockerfile|workflows|check|banner)
         exec python3 "${HECATRON_HOME}/libexec/commands/manage.py" "${_command}" "$@" ;;
-    *)
-        echo "hecatron: unknown command '${_command}' (try 'hecatron help')" >&2
-        exit 2 ;;
 esac
