@@ -2,7 +2,8 @@ name: Coverage
 
 # Check every language's toolchain on every platform (tests/install/check.sh)
 # and build the coverage matrix (docs/coverage.md) from the results. Weekly,
-# and on demand for some languages.
+# and on demand for some languages. A full run opens, or updates, a pull
+# request with the new matrix.
 
 on:
   schedule:
@@ -100,6 +101,11 @@ jobs:
     needs: [linux, macos]
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      BRANCH: update/coverage
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -117,3 +123,27 @@ jobs:
           path: |
             docs/coverage.md
             tests/coverage/results.json
+      # A full run (every language, as the weekly one is) proposes its results;
+      # a run for some languages only would leave the page half-updated.
+      - name: Open or update the pull request with the results
+        if: inputs.languages == '' || github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- docs/coverage.md tests/coverage/results.json; then
+            echo "Coverage unchanged." >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "${BRANCH}"
+          git add docs/coverage.md tests/coverage/results.json
+          git commit -q -m "Update the coverage matrix" -m "From the coverage run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} at ${GITHUB_SHA}."
+          git push -q -f origin "${BRANCH}"
+          body="$(printf 'The coverage matrix from [this run](%s/%s/actions/runs/%s) at %s.\n\nOpened by the Coverage workflow, which updates this pull request each run; close and reopen it to run CI.\n' "${GITHUB_SERVER_URL}" "${GITHUB_REPOSITORY}" "${GITHUB_RUN_ID}" "${GITHUB_SHA}")"
+          if [ "$(gh pr view "${BRANCH}" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
+            gh pr edit "${BRANCH}" --body "${body}"
+          elif ! gh pr create --base main --head "${BRANCH}" --title "Update the coverage matrix" --body "${body}"; then
+            echo "::error::Couldn't open the pull request. Allow GitHub Actions to create pull requests (Settings > Actions > General), or open it by hand: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${BRANCH}"
+            exit 1
+          fi

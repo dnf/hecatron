@@ -6,6 +6,10 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **`hct skill install`:** puts hecatron's Agent Skill where an agent finds
+  it: `~/.claude/skills` (the default), the repository's `.claude/skills`
+  (`--project`, to commit) or another agent's skills folder (`--dir`).
+  Reinstalling replaces hecatron's own copy and nothing else.
 - **`hct status`**: what to know first in a repository, in one command:
   hecatron's version, whether the config is saved or detected, and for each
   language its directories, the toolchain version it resolves to and why,
