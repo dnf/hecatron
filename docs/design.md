@@ -929,6 +929,22 @@ entry points' output byte for byte. Decided with the first port
   `history.log` when the log is from the last run recorded there.
   `bin/hecatron status` without the binary says so.
 
+- **`hct licenses`** (#132; `internal/licenses`, `internal/spdx`) is
+  native only, like `status`: OSV-Scanner's `scan source --all-packages
+  --licenses` per component directory (four at a time), deps.dev's
+  licenses for npm, PyPI, Go, crates.io, Maven, NuGet and RubyGems and
+  `composer.lock`'s for Packagist; the registries deps.dev lacks are "not
+  covered", never guessed. Licenses are parsed as SPDX expressions against
+  the embedded SPDX list (deprecated GNU identifiers made `-only` or
+  `-or-later`); several declared licenses are read as a choice (`OR`).
+  Direct or transitive comes from the lock file or manifest where it says,
+  dev from OSV-Scanner's dependency groups. The `"licenses"` policy is
+  checked by the binary's `hct check` only. Tests read OSV-Scanner's
+  output on fixture projects (`tests/licenses/fixtures`), captured once in
+  Docker (`tests/licenses/capture.sh`) into
+  `tests/output/osv-scanner/2.7.0/`. `bin/hecatron licenses` without the
+  binary says so.
+
 - **The project commands** ported next (#73): `init`, `add`, `remove`,
   `enable`, `disable`, `check`, `dockerfile` and `workflows` (with
   `--check`), with detection (`detect_languages`, `infer_layout`,

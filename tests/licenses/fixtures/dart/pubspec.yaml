@@ -1,0 +1,7 @@
+name: licenses_fixture
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+dependencies:
+  path: 1.8.3
+dev_dependencies:
+  lints: 3.0.0

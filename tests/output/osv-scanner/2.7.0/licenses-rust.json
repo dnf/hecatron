@@ -1,0 +1,87 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "/tmp/licenses-fixtures/rust/Cargo.lock",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "itoa",
+            "version": "1.0.9",
+            "ecosystem": "crates.io",
+            "purl": "pkg:cargo/itoa@1.0.9"
+          },
+          "licenses": [
+            "Apache-2.0 OR MIT"
+          ]
+        },
+        {
+          "package": {
+            "name": "licenses-fixture",
+            "version": "0.1.0",
+            "ecosystem": "crates.io",
+            "purl": "pkg:cargo/licenses-fixture@0.1.0"
+          },
+          "licenses": [
+            "UNKNOWN"
+          ]
+        },
+        {
+          "package": {
+            "name": "ryu",
+            "version": "1.0.15",
+            "ecosystem": "crates.io",
+            "purl": "pkg:cargo/ryu@1.0.15"
+          },
+          "licenses": [
+            "Apache-2.0 OR BSL-1.0"
+          ]
+        },
+        {
+          "package": {
+            "name": "serde",
+            "version": "1.0.193",
+            "ecosystem": "crates.io",
+            "purl": "pkg:cargo/serde@1.0.193"
+          },
+          "licenses": [
+            "Apache-2.0 OR MIT"
+          ]
+        },
+        {
+          "package": {
+            "name": "serde_json",
+            "version": "1.0.108",
+            "ecosystem": "crates.io",
+            "purl": "pkg:cargo/serde_json@1.0.108"
+          },
+          "licenses": [
+            "Apache-2.0 OR MIT"
+          ]
+        }
+      ]
+    }
+  ],
+  "experimental_config": {
+    "licenses": {
+      "summary": true,
+      "allowlist": []
+    }
+  },
+  "license_summary": [
+    {
+      "name": "Apache-2.0 OR MIT",
+      "count": 3
+    },
+    {
+      "name": "Apache-2.0 OR BSL-1.0",
+      "count": 1
+    },
+    {
+      "name": "UNKNOWN",
+      "count": 1
+    }
+  ]
+}

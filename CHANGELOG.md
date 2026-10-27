@@ -6,6 +6,15 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **`hct licenses`:** every dependency's license, in every language and
+  component, from the lock files (OSV-Scanner with deps.dev for npm, PyPI,
+  Go, crates.io, Maven, NuGet and RubyGems; `composer.lock` for PHP):
+  rolled up per SPDX license, each package with its version, direct or
+  transitive and dev marked, unknown licenses apart, and what isn't covered
+  said so. A `"licenses"` policy in the config (`allow`, `deny`, `ignore`
+  with a reason and an expiry, `includeDev`) fails the command on a package
+  it refuses; `hct check` validates it. `--output human|agent|json`. Needs
+  the binary (#132).
 - **An Agent Skill for hecatron:** AI agents that read Agent Skills learn
   hecatron without the docs: first steps, the test-lint-format loop, exit
   statuses, asking before installs, and what to do when something fails.

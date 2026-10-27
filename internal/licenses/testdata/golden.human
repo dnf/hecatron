@@ -1,0 +1,92 @@
+hct licenses: 44 packages, 12 licenses, 7 unknown; policy: 9 violations, 1 accepted
+
+  license                packages  languages                              components
+  MIT                    16        csharp, php, python, ruby, typescript  csharp-app, php-app, python-app, ruby-app, typescript-app
+  Apache-2.0             5         csharp, go, java, python               csharp-app, go-app, java-app, python-app
+  BSD-3-Clause           4         go, java, php                          go-app, java-app, php-app
+  Apache-2.0 OR MIT      3         rust                                   rust-app
+  MPL-2.0                2         go, python                             go-app, python-app
+  Apache-2.0 OR BSL-1.0  1         rust                                   rust-app
+  BSD-2-Clause           1         python                                 python-app
+  CC-BY-4.0              1         typescript                             typescript-app
+  GPL-3.0-only           1         python                                 python-app
+  LGPL-3.0-only          1         python                                 python-app
+  Ruby OR BSD-2-Clause   1         ruby                                   ruby-app
+  WTFPL                  1         typescript                             typescript-app
+
+Unknown licenses (no metadata, or not an SPDX expression: worth a look):
+  maven:com.mysql:mysql-connector-j  8.2.0   declared: non-standard  java, java-app      direct
+  maven:junit:junit                  4.13.2  declared: non-standard  java, java-app      direct, dev
+  maven:org.hamcrest:hamcrest-core   1.3     declared: non-standard  java, java-app      transitive
+  nuget:System.Memory                4.5.5   declared: non-standard  csharp, csharp-app  transitive
+  pypi:chardet                       5.2.0   declared: non-standard  python, python-app  direct
+  pypi:idna                          3.9.0   declared: non-standard  python, python-app  transitive
+  pypi:pycrypto                      2.6.1   declared: non-standard  python, python-app  direct
+
+Not covered:
+  dart: deps.dev, where OSV-Scanner finds licenses, has none for pub.dev
+  elixir: deps.dev, where OSV-Scanner finds licenses, has none for Hex
+  zig: no package registry hecatron reads licenses from
+
+warning: java-app: java: java/pom.xml isn't a lock file, so its dependencies are the versions it resolves to today: approximate
+warning: python-app: python: python/requirements.txt isn't a lock file, so its dependencies are the versions it resolves to today: approximate
+
+Packages:
+  package                                  version       license                dependency   language, component
+  crates.io:itoa                           1.0.9         Apache-2.0 OR MIT      direct       rust, rust-app
+  crates.io:ryu                            1.0.15        Apache-2.0 OR BSL-1.0  transitive   rust, rust-app
+  crates.io:serde                          1.0.193       Apache-2.0 OR MIT      transitive   rust, rust-app
+  crates.io:serde_json                     1.0.108       Apache-2.0 OR MIT      direct       rust, rust-app
+  go:github.com/go-sql-driver/mysql        1.7.1         MPL-2.0                direct       go, go-app
+  go:github.com/google/uuid                1.6.0         BSD-3-Clause           direct       go, go-app
+  go:github.com/inconshreveable/mousetrap  1.1.0         Apache-2.0             transitive   go, go-app
+  go:github.com/spf13/cobra                1.8.0         Apache-2.0             direct       go, go-app
+  go:github.com/spf13/pflag                1.0.5         BSD-3-Clause           transitive   go, go-app
+  maven:com.google.protobuf:protobuf-java  3.21.9        BSD-3-Clause           transitive   java, java-app
+  maven:com.mysql:mysql-connector-j        8.2.0         unknown                direct       java, java-app
+  maven:junit:junit                        4.13.2        unknown                direct, dev  java, java-app
+  maven:org.apache.commons:commons-lang3   3.14.0        Apache-2.0             direct       java, java-app
+  maven:org.hamcrest:hamcrest-core         1.3           unknown                transitive   java, java-app
+  npm:ansi-styles                          4.3.0         MIT                    transitive   typescript, typescript-app
+  npm:caniuse-lite                         1.0.30001570  CC-BY-4.0              direct       typescript, typescript-app
+  npm:chalk                                4.1.2         MIT                    direct       typescript, typescript-app
+  npm:color-convert                        2.0.1         MIT                    transitive   typescript, typescript-app
+  npm:color-name                           1.1.4         MIT                    transitive   typescript, typescript-app
+  npm:has-flag                             4.0.0         MIT                    transitive   typescript, typescript-app
+  npm:is-number                            7.0.0         MIT                    direct, dev  typescript, typescript-app
+  npm:left-pad                             1.3.0         WTFPL                  direct       typescript, typescript-app
+  npm:lodash                               4.17.21       MIT                    direct       typescript, typescript-app
+  npm:supports-color                       7.2.0         MIT                    transitive   typescript, typescript-app
+  nuget:Newtonsoft.Json                    13.0.3        MIT                    direct       csharp, csharp-app
+  nuget:Serilog                            3.1.1         Apache-2.0             direct       csharp, csharp-app
+  nuget:System.Memory                      4.5.5         unknown                transitive   csharp, csharp-app
+  packagist:monolog/monolog                3.5.0         MIT                    direct       php, php-app
+  packagist:phpunit/php-timer              6.0.0         BSD-3-Clause           direct, dev  php, php-app
+  packagist:psr/log                        3.0.0         MIT                    transitive   php, php-app
+  pypi:certifi                             2023.7.22     MPL-2.0                direct       python, python-app
+  pypi:chardet                             5.2.0         unknown                direct       python, python-app
+  pypi:charset-normalizer                  3.5.2         MIT                    transitive   python, python-app
+  pypi:idna                                3.9.0         unknown                transitive   python, python-app
+  pypi:pycrypto                            2.6.1         unknown                direct       python, python-app
+  pypi:pyqt5                               5.15.10       GPL-3.0-only           direct       python, python-app
+  pypi:pyqt5-qt5                           5.15.2        LGPL-3.0-only          transitive   python, python-app
+  pypi:pyqt5-sip                           12.20.0       BSD-2-Clause           transitive   python, python-app
+  pypi:requests                            2.31.0        Apache-2.0             direct       python, python-app
+  pypi:urllib3                             2.8.0         MIT                    transitive   python, python-app
+  rubygems:mini_portile2                   2.8.5         MIT                    transitive   ruby, ruby-app
+  rubygems:nokogiri                        1.15.5        MIT                    direct       ruby, ruby-app
+  rubygems:racc                            1.7.3         Ruby OR BSD-2-Clause   transitive   ruby, ruby-app
+  rubygems:rack                            2.2.8         MIT                    direct       ruby, ruby-app
+
+Policy (dev and test dependencies not counted): 9 violations
+  maven:com.mysql:mysql-connector-j  8.2.0    unknown        unknown license; licenses.allow lists what's allowed  java, java-app
+  maven:org.hamcrest:hamcrest-core   1.3      unknown        unknown license; licenses.allow lists what's allowed  java, java-app
+  npm:left-pad                       1.3.0    WTFPL          WTFPL not allowed                                     typescript, typescript-app
+  nuget:System.Memory                4.5.5    unknown        unknown license; licenses.allow lists what's allowed  csharp, csharp-app
+  pypi:chardet                       5.2.0    unknown        unknown license; licenses.allow lists what's allowed  python, python-app
+  pypi:idna                          3.9.0    unknown        unknown license; licenses.allow lists what's allowed  python, python-app
+  pypi:pycrypto                      2.6.1    unknown        unknown license; licenses.allow lists what's allowed  python, python-app
+  pypi:pyqt5                         5.15.10  GPL-3.0-only   GPL-3.0-only denied                                   python, python-app
+  pypi:pyqt5-qt5                     5.15.2   LGPL-3.0-only  LGPL-3.0-only not allowed                             python, python-app
+  npm:caniuse-lite 1.0.30001570 CC-BY-4.0: accepted until 2999-01-01: CC-BY-4.0 data, reviewed
+  note: the accepted package PyPI:pycrypto@2.6.1 expired on 2001-01-01

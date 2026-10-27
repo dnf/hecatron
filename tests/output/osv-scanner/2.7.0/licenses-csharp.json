@@ -1,0 +1,65 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "/tmp/licenses-fixtures/csharp/packages.lock.json",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "Newtonsoft.Json",
+            "version": "13.0.3",
+            "ecosystem": "NuGet",
+            "purl": "pkg:nuget/Newtonsoft.Json@13.0.3"
+          },
+          "licenses": [
+            "MIT"
+          ]
+        },
+        {
+          "package": {
+            "name": "Serilog",
+            "version": "3.1.1",
+            "ecosystem": "NuGet",
+            "purl": "pkg:nuget/Serilog@3.1.1"
+          },
+          "licenses": [
+            "Apache-2.0"
+          ]
+        },
+        {
+          "package": {
+            "name": "System.Memory",
+            "version": "4.5.5",
+            "ecosystem": "NuGet",
+            "purl": "pkg:nuget/System.Memory@4.5.5"
+          },
+          "licenses": [
+            "non-standard"
+          ]
+        }
+      ]
+    }
+  ],
+  "experimental_config": {
+    "licenses": {
+      "summary": true,
+      "allowlist": []
+    }
+  },
+  "license_summary": [
+    {
+      "name": "Apache-2.0",
+      "count": 1
+    },
+    {
+      "name": "MIT",
+      "count": 1
+    },
+    {
+      "name": "non-standard",
+      "count": 1
+    }
+  ]
+}

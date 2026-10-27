@@ -1,0 +1,5 @@
+certifi==2023.7.22
+chardet==5.2.0
+pycrypto==2.6.1
+PyQt5==5.15.10
+requests==2.31.0
