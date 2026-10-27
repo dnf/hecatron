@@ -196,6 +196,10 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `generated.ci` | The CI systems `hecatron workflows` generates for: `"github"` (each language's workflow, at `generated.workflows`), `"gitlab"` (`.gitlab-ci.yml`), or both as a list (binary only) | `"github"` |
 | `ci.cache` | Cache toolchains and dependencies in the generated CI (§11; binary only) | `false` |
 | `ci.image` | The image GitLab jobs run in (binary only) | `ubuntu:24.04` |
+| `generated.dependabot` | `true` or a path: `hecatron workflows` writes Dependabot's configuration (§11; binary only) | none (`.github/dependabot.yml` with `true`) |
+| `generated.renovate` | `true` or a path: `hecatron workflows` writes Renovate's configuration (binary only) | none (`renovate.json` with `true`) |
+| `dependabot` | Settings for every Dependabot `updates` entry (`schedule`, `groups`, `open-pull-requests-limit`...), and per package ecosystem under `ecosystems` (`{"npm": {...}}`) | `{"schedule": {"interval": "weekly"}}` |
+| `renovate` | Settings at the top of `renovate.json` (`extends`, `schedule`, `packageRules`...) | `{}` |
 | `lint.format` | Whether `hecatron lint` runs each language's format check: `false`, or per language (`{"haskell": false}`) | `true` |
 | `tasks` | Extra named jobs per action (`test`, `lint`, ...): shell commands run from the root, in parallel with the languages and by name (`hecatron test codegen`) | `{}` |
 | `metadata` | JSON file `hecatron metadata` reads (name, description, author, license, repository) | none |
@@ -446,7 +450,27 @@ DO NOT EDIT banner naming the generator and its source:
   toolchain key names hecatron's version, upgrading hecatron makes `hecatron
   check` ask for the files to be regenerated.
 
-The GitLab pipeline and caching are written only by the Go binary
+- **Dependency update configuration** (`generated.dependabot`,
+  `generated.renovate`), written by `hecatron workflows` alongside the CI:
+  `.github/dependabot.yml` with one `updates` entry per package ecosystem
+  and component directory, each with the project's `dependabot` settings
+  (and its ecosystem's under `dependabot.ecosystems`), and
+  `renovate.json` with the project's `renovate` settings, `enabledManagers`
+  for its languages and `includePaths` for their directories (none when a
+  component sits at the root). Each definition names its Dependabot
+  ecosystems (`"dependabot"`, a name or rules choosing by the files in the
+  directory: uv where there's a `uv.lock`, else pip; Maven, Gradle or sbt
+  by build file) and its Renovate managers (`"renovate"`). GitHub Actions
+  is covered at the root when the project has GitHub workflows (bumps to a
+  generated workflow then belong in its template, which `hecatron check`
+  enforces). Toolchain pins (`rust-toolchain`, `dotnet-sdk`, `.nvmrc`)
+  aren't updated by the bots: hecatron resolves toolchain versions itself
+  (§18), and `hecatron check` would flag a pin that disagrees. Because the
+  file lists every directory, adding a language or component makes `hecatron
+  check` fail until it is regenerated.
+
+The GitLab pipeline, caching and dependency update configuration are
+written only by the Go binary
 (§19); the scripts say so when a project's config asks for them.
 
 Generators for the project's own code (sayable's locale codegen) stay in the
@@ -1138,7 +1162,7 @@ The bash 3.2 rule (§14) then applies only to hooks and install scripts.
 ## 20. Source control backends
 
 Status: **planned** (#99–#103), except where marked as working today
-(#102 is done).
+(#102 and #103 are done).
 Hecatron runs the same everywhere; what differs between GitHub, GitLab,
 Bitbucket and Azure DevOps is where CI is configured and where results are
 shown. Hecatron meets each forge with thin adapters (an environment variable
@@ -1160,6 +1184,9 @@ on a laptop and in CI.
   `"ci": {"cache": true}` caches toolchains and dependencies with
   `actions/cache` and `cache:key:files` (§11); `hecatron check` fails when
   the pipeline is behind. Bitbucket and Azure on demand.
+- **Dependency update configuration (#103).** `hecatron workflows` writes
+  `.github/dependabot.yml` and `renovate.json` (§11), and `hecatron check`
+  fails when a language or component was added without regenerating them.
 - **Audit in CI.** `hecatron audit` fails at a severity threshold and can
   save each tool's raw report (`HECATRON_AUDIT_REPORT_DIR`);
   [audit.md](audit.md) has a workflow step.
@@ -1172,7 +1199,6 @@ on a laptop and in CI.
 | Per-test results (JUnit XML, `--output junit`) | through a reporting action | merge request test widget | Jenkins, Azure, Buildkite, CircleCI | #100 |
 | Findings on the change (SARIF from `audit` and `lint`; GitLab Code Quality JSON) | code scanning | security and code quality widgets | any SARIF reader | #100 |
 | A results page per run | job summary (`GITHUB_STEP_SUMMARY`) | the JUnit report | | #101 |
-| Dependency update configuration, kept current by `hecatron check` | `.github/dependabot.yml` | `renovate.json` | Renovate anywhere | #103 |
 
 Reports are written with the normal output, not instead of it: a run in CI
 prints its log and leaves the forge's files in `HECATRON_REPORT_DIR`.

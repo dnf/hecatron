@@ -2,6 +2,10 @@
 pipelines match GitLab's own schema for .gitlab-ci.yml (vendored in
 tests/schemas/gitlab-ci.json, from gitlab-org/gitlab's
 app/assets/javascripts/editor/schema/ci.json, MIT licensed; no network).
+The Dependabot configuration matches SchemaStore's schema for it
+(tests/schemas/dependabot-2.0.json, from
+https://json.schemastore.org/dependabot-2.0.json, Apache-2.0), and every
+definition's Dependabot ecosystem is one it lists.
 The files checked are internal/generate's golden files, which its Go tests
 keep equal to what is generated. Skipped where PyYAML or jsonschema isn't
 installed."""
@@ -81,6 +85,49 @@ class GeneratedCITest(unittest.TestCase):
             validator = jsonschema.Draft7Validator(json.load(f))
         bad = {"go": {"cache": {"key": {"files": [f"f{i}" for i in range(11)]}, "paths": ["x"]}, "script": ["true"]}}
         self.assertTrue(list(validator.iter_errors(bad)))
+
+    def test_dependabot_parses(self):
+        config = self.load(os.path.join(GOLDEN, "dependabot.yml"))
+        self.assertEqual(config["version"], 2)
+        seen = set()
+        for update in config["updates"]:
+            key = (update["package-ecosystem"], update["directory"])
+            self.assertNotIn(key, seen, "one entry per ecosystem and directory")
+            seen.add(key)
+            self.assertTrue(update["directory"].startswith("/"))
+            self.assertIn("interval", update["schedule"])
+
+    @unittest.skipIf(jsonschema is None, "jsonschema is not installed")
+    def test_dependabot_matches_its_schema(self):
+        with open(os.path.join(SCHEMAS, "dependabot-2.0.json"), encoding="utf-8") as f:
+            validator = jsonschema.Draft7Validator(json.load(f))
+        errors = [f"{list(e.path)}: {e.message}" for e in validator.iter_errors(self.load(os.path.join(GOLDEN, "dependabot.yml")))]
+        self.assertEqual(errors, [])
+
+
+class DependencyUpdatesTest(unittest.TestCase):
+    def definitions(self):
+        for path in sorted(glob.glob(os.path.join(ROOT, "languages", "*", "config.json"))):
+            with open(path, encoding="utf-8") as f:
+                yield os.path.basename(os.path.dirname(path)), json.load(f)
+
+    def test_definitions_name_dependabots_ecosystems(self):
+        with open(os.path.join(SCHEMAS, "dependabot-2.0.json"), encoding="utf-8") as f:
+            ecosystems = set(json.load(f)["definitions"]["package-ecosystem-values"]["enum"])
+        for lang, definition in self.definitions():
+            rules = definition.get("dependabot") or []
+            for rule in [rules] if isinstance(rules, str) else rules:
+                name = rule if isinstance(rule, str) else rule["ecosystem"]
+                self.assertIn(name, ecosystems, lang)
+
+    def test_renovate_json(self):
+        with open(os.path.join(GOLDEN, "renovate.json"), encoding="utf-8") as f:
+            config = json.load(f)
+        self.assertEqual(config["$schema"], "https://docs.renovatebot.com/renovate-schema.json")
+        self.assertEqual(len(config["enabledManagers"]), len(set(config["enabledManagers"])))
+        self.assertTrue(all(path.endswith("/**") for path in config["includePaths"]))
+        managers = {m for _, d in self.definitions() for m in d.get("renovate", [])} | {"github-actions"}
+        self.assertLessEqual(set(config["enabledManagers"]), managers)
 
 
 if __name__ == "__main__":

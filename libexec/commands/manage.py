@@ -284,8 +284,8 @@ def workflow_content(project, lang: str) -> str | None:
 
 
 # Settings for generated files only the Go core writes (docs/design.md §11).
-GO_ONLY_GENERATED = ("ci",)
-GO_ONLY_SECTIONS = ("ci",)
+GO_ONLY_GENERATED = ("ci", "dependabot", "renovate")
+GO_ONLY_SECTIONS = ("ci", "dependabot", "renovate")
 
 
 def go_only_settings(project) -> list[str]:

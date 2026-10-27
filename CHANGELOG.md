@@ -46,6 +46,14 @@ minor version can change behaviour. Numbers are
   version) and dependencies (keyed on its lock files); each definition
   lists the directories in its new `cache` key. Off by default, so existing
   workflows don't change. Needs the binary (#102).
+- **Dependabot and Renovate configuration:** with `generated.dependabot`
+  (or `generated.renovate`), `hct workflows` writes `.github/dependabot.yml`
+  with an `updates` entry for each package ecosystem and component
+  directory (`renovate.json` with the managers and paths), merging the
+  project's `dependabot` (or `renovate`) settings, and `hct check` fails
+  when a language or component was added without regenerating it. Each
+  definition names its ecosystems in new `dependabot` and `renovate` keys.
+  Needs the binary (#103).
 
 ## 0.4.0 (2026-10-27)
 
