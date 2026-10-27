@@ -16,5 +16,8 @@
   ],
   "testing": "JUnit, Spock",
   "linting": "Gradle check",
-  "formatting": "Spotless (when the build has it)"
+  "formatting": "Spotless",
+  "notes": {
+    "formatting": "Only when the build applies it; hecatron runs it through the build."
+  }
 }

@@ -68,7 +68,7 @@
   ],
   "testing": "JUnit",
   "linting": "Gradle check",
-  "formatting": "Spotless, fmt-maven-plugin (when the build has one)",
+  "formatting": "Spotless, fmt-maven-plugin",
   "family": "jvm",
   "install": {
     "archive": {
@@ -142,5 +142,8 @@
       "tool": "gradle",
       "regex": "^(?P<message>Execution failed for task .+)$"
     }
-  ]
+  ],
+  "notes": {
+    "formatting": "Only when the build applies one; hecatron runs it through the build."
+  }
 }

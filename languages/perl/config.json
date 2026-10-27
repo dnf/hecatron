@@ -24,5 +24,8 @@
   ],
   "testing": "prove (Test::More)",
   "linting": "Perl::Critic",
-  "formatting": "perltidy (with a .perltidyrc)"
+  "formatting": "perltidy",
+  "notes": {
+    "formatting": "Only when the project has a `.perltidyrc`."
+  }
 }

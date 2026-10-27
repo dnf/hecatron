@@ -19,5 +19,8 @@
   ],
   "testing": "busted",
   "linting": "luacheck",
-  "formatting": "StyLua (with a stylua.toml)"
+  "formatting": "StyLua",
+  "notes": {
+    "formatting": "Only when the project has a `stylua.toml`."
+  }
 }

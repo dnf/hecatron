@@ -17,5 +17,8 @@
   ],
   "testing": "dune runtest",
   "linting": "ocamlformat, dune @check",
-  "formatting": "ocamlformat (with a .ocamlformat)"
+  "formatting": "ocamlformat",
+  "notes": {
+    "formatting": "Only when the project has a `.ocamlformat`."
+  }
 }

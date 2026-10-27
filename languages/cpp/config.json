@@ -32,7 +32,7 @@
   ],
   "testing": "CTest, Meson test, make check",
   "linting": null,
-  "formatting": "clang-format (with a .clang-format)",
+  "formatting": "clang-format",
   "errorPatterns": [
     {
       "tool": "gcc",
@@ -58,5 +58,8 @@
       "tool": "cmake",
       "regex": "^CMake Error at (?P<file>[^\\s:]+):(?P<line>\\d+) .*$"
     }
-  ]
+  ],
+  "notes": {
+    "formatting": "Only when the project has a `.clang-format` file: C-family code has no single standard style."
+  }
 }

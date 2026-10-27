@@ -17,5 +17,8 @@
   ],
   "testing": "testthat",
   "linting": "lintr",
-  "formatting": "Air (with an air.toml)"
+  "formatting": "Air",
+  "notes": {
+    "formatting": "Only when the project has an `air.toml`."
+  }
 }

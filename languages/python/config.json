@@ -71,7 +71,7 @@
   ],
   "testing": "pytest",
   "linting": "Ruff",
-  "formatting": "Ruff, or Black where configured",
+  "formatting": "Ruff, Black",
   "actions": {
     "test": {
       "steps": [
@@ -235,5 +235,8 @@
       "tool": "python",
       "regex": "^(?P<message>\\w+(?:Error|Exception): .+)$"
     }
-  ]
+  ],
+  "notes": {
+    "formatting": "Black only where the project configures it; otherwise Ruff."
+  }
 }

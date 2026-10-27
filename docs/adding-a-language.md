@@ -77,7 +77,11 @@ missing dependencies too, both call one `*_fetch` function in
 - [ ] `config.json` with `dependency` and `detect`, and for
       [languages.md](languages.md) `name`, `homepage`, `summary`,
       `buildSystems`, `testing`, `linting` and (with a format hook)
-      `formatting`; then run
+      `formatting`, each just the tools' names. A condition (only with a
+      config file, only when the build applies it) goes in `notes`, keyed by
+      the column (`"notes": {"formatting": "Only when the project has a
+      .ocamlformat."}`), and becomes a footnote. Each tool named gets its
+      site in `libexec/codegen/tool-links.json`. Then run
       `python3 libexec/codegen/languages_doc.py`
 - [ ] `install.sh` and `uninstall.sh` for macOS and Linux, idempotent
 - [ ] `doctor.sh` if the toolchain can be present but broken
