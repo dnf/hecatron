@@ -1,6 +1,8 @@
 # Hecatron design
 
-Status: **accepted** (decisions in §17); phase 2 of §15 (the standalone CLI) is implemented, and §18 (toolchain versions) is accepted but not yet implemented. This repository was split out of
+Status: **accepted** (decisions in §17); phase 2 of §15 (the standalone
+CLI) is implemented, and so is §18 (toolchain versions) for five languages.
+This repository was split out of
 [dnf/sayable](https://github.com/dnf/sayable), where hecatron grew up as its
 `.hecatron/` directory. This document is the design of the tool you install
 once and use in any repository (`hct` is a short alias for `hecatron`):
@@ -449,9 +451,11 @@ Settled on 2026-10-26:
 
 ## 18. Toolchain versions
 
-Status: **accepted**, not yet implemented. Until it is, installers install
-one version per language, some pinned (JDK 17, Node 22, .NET 10) and some
-the latest at install time (Go, Swift, Julia, PowerShell, Odin, Crystal).
+Status: **accepted**; implemented for Python, Go, Rust, Node.js
+(TypeScript) and Java. Other languages' installers still install one
+version, some pinned (.NET 10) and some the latest at install time (Swift,
+Julia, PowerShell, Odin, Crystal). Dockerfile snippets install only each
+language's default so far.
 
 A project can need an older or newer version of a language than the
 newest one, and two projects on the same machine can need different ones. So
