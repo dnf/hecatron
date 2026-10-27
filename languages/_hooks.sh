@@ -145,6 +145,58 @@ jvm_hook() {
     fi
 }
 
+# Clojure: the Clojure CLI (deps.edn) or Leiningen (project.clj). The CLI
+# runs the :test alias as a function (-X, :exec-fn) or a main (-M,
+# :main-opts), whichever it defines, and builds through tools.build's
+# build.clj. Lint is clj-kondo, which the CLI fetches at a pinned version when
+# it isn't installed.
+_CLJ_KONDO_VERSION="2026.08.04"
+clojure_hook() {
+    if [ -f deps.edn ]; then
+        case "$1" in
+            test)
+                case "$(clojure_alias_kind test)" in
+                    X) run clojure -X:test ;;
+                    M) run clojure -M:test ;;
+                    *) unknown "deps.edn has no :test alias with :exec-fn or :main-opts" ;;
+                esac ;;
+            build)
+                [ -f build.clj ] || skip "no build.clj (tools.build)"
+                run clojure -T:build jar ;;
+            clean) run rm -rf target .cpcache ;;
+            lint) clj_kondo ;;
+        esac
+    elif [ -f project.clj ]; then
+        case "$1" in
+            test) run lein test ;;
+            build) run lein jar ;;
+            clean) run lein clean ;;
+            lint) clj_kondo ;;
+        esac
+    else
+        unknown "no deps.edn or project.clj"
+    fi
+}
+# How deps.edn's alias runs: X (:exec-fn), M (:main-opts) or nothing.
+clojure_alias_kind() {
+    clojure -M -e "(require 'clojure.edn)
+(let [alias (-> \"deps.edn\" slurp clojure.edn/read-string :aliases (get :$1))]
+  (print (cond (:exec-fn alias) \"X\" (:main-opts alias) \"M\" :else \"\")))"
+}
+clj_kondo() {
+    local _dirs=() _dir
+    for _dir in src test; do
+        if [ -d "${_dir}" ]; then _dirs+=("${_dir}"); fi
+    done
+    [ "${#_dirs[@]}" -gt 0 ] || skip "no src or test directory"
+    if has clj-kondo; then
+        run clj-kondo --lint "${_dirs[@]}"
+    else
+        run clojure -Sdeps "{:deps {clj-kondo/clj-kondo {:mvn/version \"${_CLJ_KONDO_VERSION}\"}}}" \
+            -M -m clj-kondo.main --lint "${_dirs[@]}"
+    fi
+}
+
 # Native builds (C, C++, Objective-C): CMake, Meson, Autotools or a Makefile.
 # CMake and Meson build out of tree in build/, which clean removes.
 native_hook() {

@@ -1,4 +1,4 @@
-# apt: rlwrap
+# apt: openjdk-17-jdk-headless rlwrap
 
 # Clojure CLI
 RUN curl -fsSL https://download.clojure.org/install/linux-install.sh | bash
