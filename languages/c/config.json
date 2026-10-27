@@ -6,6 +6,12 @@
   "detectSources": [
     "*.c"
   ],
+  "sharedBuildFiles": [
+    "CMakeLists.txt",
+    "meson.build",
+    "configure.ac",
+    "Makefile"
+  ],
   "dirNames": [
     "c",
     "c_glib"

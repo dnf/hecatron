@@ -9,6 +9,12 @@
     "*.cxx",
     "*.hpp"
   ],
+  "sharedBuildFiles": [
+    "CMakeLists.txt",
+    "meson.build",
+    "configure.ac",
+    "Makefile"
+  ],
   "dirNames": [
     "cpp",
     "c++",
