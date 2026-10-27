@@ -18,6 +18,17 @@ minor version can change behaviour. Numbers are
   that install something. `--output human|agent|json`, chosen as for
   `hct test`. Needs the binary that releases ship (#121).
 
+- **Only what changed:** `hct test --changed [ref]` (and `lint`, `build`,
+  `format`, `deps`, `rebuild`, `retest`) runs only the languages and
+  components whose files changed since the merge base with `ref` (default:
+  the default branch; in CI, the pull or merge request's base from GitHub,
+  GitLab, Bitbucket or Azure), uncommitted and untracked files included. A
+  hook selects its language, a shared build or lock file the components
+  below it, `.hecatron/config.json` everything; project tasks run when a
+  file matches their new `taskPaths`, else on any change. The first line
+  says what runs and why; nothing to run exits 0. A shallow clone without
+  the base runs everything, with a note. Needs the binary (#91, #99).
+
 ## 0.4.0 (2026-10-27)
 
 - **A fast binary:** installing a release also installs the Go core for

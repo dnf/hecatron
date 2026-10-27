@@ -78,6 +78,52 @@ Each job's whole output is saved to `<logs>/<action>/<language>.log`
 - `hct parallel NAME "job" ...` runs your own list of jobs with the same
   scheduling and display.
 
+## Only what changed
+
+`hct test --changed [REF]` (also `lint`, `build`, `format`, `deps`,
+`rebuild` and `retest`) runs only the languages, components and project
+tasks that the files changed since `REF` touch.
+
+- **The base** is the merge base of `HEAD` with `REF`; with no `REF`, in CI
+  (`CI` or `TF_BUILD` set), the pull or merge request's base:
+  `GITHUB_BASE_REF`, `CI_MERGE_REQUEST_DIFF_BASE_SHA`,
+  `BITBUCKET_PR_DESTINATION_BRANCH` or `SYSTEM_PULLREQUEST_TARGETBRANCH`
+  (`origin/<branch>`, else the local branch); else the default branch
+  (`origin/HEAD`, else `origin/main`, `origin/master`, `main`, `master`).
+  A CI run outside a pull request, a base that isn't in a shallow clone, or
+  no merge base within its history runs everything, with a one-line note;
+  hecatron fetches nothing. A `REF` that names no commit is a usage error.
+- **The changes** are git's diff from the base to the working tree
+  (committed, staged and not; a rename as both paths) and the untracked
+  files `.gitignore` doesn't ignore.
+- **What a changed file selects:**
+
+  | File | Selects | Why |
+  | --- | --- | --- |
+  | In a language's directory (`hct list`; the deepest, as `hct status` maps changes) | That language, that component | Its code |
+  | Under `.hecatron/languages/<lang>/` | That language, every component | Its hooks or definition |
+  | Anything else under `.hecatron/` (`config.json`) | Everything | The layout, languages, tasks or settings may have changed |
+  | A build or version file a definition names (`detect`, `sharedBuildFiles`, `pinFiles`, `supportFiles`), above the language's directories | That language, in the components below it; every component for a path relative to the root (`.github/workflows/*.yml`) | A root `CMakeLists.txt` or `.tool-versions` changes how they build or which toolchain runs |
+  | A shared build, workspace or lock file (`settings.gradle.kts`, `gradle/`, `go.work`, `Cargo.lock`, `package-lock.json`, `pnpm-workspace.yaml`, `uv.lock`, `Directory.Build.props`, `*.sln`, `.editorconfig`...) | Every language and component below it | Any of them may build with it |
+  | A shell script (`*.sh`, `*.bash`) | `hct lint`'s shell check | |
+  | Anything else (docs, CI files no definition reads) | Nothing | |
+
+- **Project tasks** run when a changed file matches one of the paths
+  config.json's `"taskPaths"` lists for them (`{"codegen": ["codegen/",
+  "*.proto"]}`: a directory, a glob on the name, or a glob on the path
+  from the root), and, with none listed, whenever any file changed: a task
+  may read anything.
+- `-c` narrows the selection further; naming languages with `--changed` is
+  a usage error (it picks them). `audit` and `outdated` don't take it:
+  their results follow advisories and releases, not the files.
+- **Output:** a line saying what was compared and what runs and why comes
+  first (human, CI and agent output), e.g. `Changed since origin/main (the
+  default branch, merge base 1a2b3c4d5e): 3 files; running go [age]
+  (age/go/x.go +1), python (.python-version: a build or version file above
+  it)`; JSON output has it as `"changed"`. With nothing selected, that line
+  alone, and the exit status is 0.
+- The bash runner (`run.sh`, without the binary) has no `--changed`.
+
 ## With the Go binary
 
 The Go core (`docs/design.md` §19), built from a checkout, has the same
