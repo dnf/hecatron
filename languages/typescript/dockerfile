@@ -1,4 +1,4 @@
-# Node.js 22 via NodeSource
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && rm -rf /var/lib/apt/lists/*
+# Node.js: the default version (config.json), the official build
+RUN ARCH="$(dpkg --print-architecture | sed 's/amd64/x64/')" && \
+    curl -fsSL "https://nodejs.org/dist/v24.22.1/node-v24.22.1-linux-${ARCH}.tar.xz" | \
+    tar -C /usr/local --strip-components=1 -xJ
