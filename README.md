@@ -5,7 +5,7 @@
   </picture>
 </h1>
 
-<p align="center"><strong>Tools for polyglot repositories.</strong></p>
+<p align="center"><strong>A universal adaptor for programming languages in the age of AI.</strong></p>
 
 <div align="center">
 
@@ -15,13 +15,18 @@
 
 </div>
 
-Hecatron installs, checks and repairs the toolchains of every language in a
-repository, runs each language's tests, linters and builds in parallel, and
-keeps the CI workflows and Dockerfile that cover them in sync. It is for
-repositories where one project is implemented in many programming languages,
-and works as an adaptor in a
-[single-language repository](#one-language-too) too: the same commands work
-with any language's toolchain.
+Hecatron is an adaptor between you and the toolchains of 54 languages. <!-- language-count -->
+`hct test`, `hct lint`, `hct build`, `hct format`, `hct deps` and `hct audit`
+do the same thing in an Elixir library, a Go service or a Haskell compiler;
+hecatron installs and repairs the toolchain at the version the project asks
+for, then calls the language's own tools. It works with no setup step in any git
+repository, and is written to be driven by AI coding agents as much as by
+people.
+
+The same commands scale from one language to fifty: in a repository where
+one project is implemented in many languages, `hct test` runs every
+language's tests in parallel, and hecatron keeps the CI workflows and
+Dockerfile that cover them in sync.
 
 <p align="center">
   <img alt="hct test running sayable's 51 languages in parallel: a live row per language with its time, swim lanes for the jobs still running, ending in 53/53 passed" src="assets/demo/hct-test.gif" width="720">
@@ -30,27 +35,28 @@ with any language's toolchain.
 
 ## Why
 
-Historically, a library has existed in one language, or at most a handful.
-That was never a decision about where it belonged; it was a cost. Porting a
-library takes time, and keeping the ports in sync with the original takes
-time every release after, so most libraries never get ported, and the ports
-that exist lag behind. That's why learning a new language has also meant
-learning a new ecosystem of libraries: the date library, the parser, the
-client you rely on in one language usually isn't there in the next.
+**Every language's toolchain is different.** Installing it, choosing its
+version, and knowing whether its tests run with `cargo test`, `mix test`,
+`./gradlew test` or `uv run pytest` is knowledge each repository makes you
+learn again. That cost lands hardest on whoever moves between repositories:
+a contributor fixing something in a language they don't use daily, a CI
+setup shared across many projects, and above all an AI coding agent, which
+otherwise spends its first minutes, and its tokens, working out how to run
+the tests.
 
-It doesn't have to be that way any more. AI coding agents make writing and
+**One interface removes it.** With hecatron the commands are the same in
+every repository, the toolchain is installed and checked for you, and an
+agent learns the interface once (`hct help agents`).
+
+**And it makes many languages practical.** AI agents make writing and
 maintaining an implementation in another language cheap, so one person can
-ship the same library natively in a dozen or fifty languages. The best place
-for those implementations is one repository, where a fix lands everywhere in
-one pull request and every language runs the same shared tests
-([more](docs/why-one-repository.md)).
-
-What's left is the infrastructure, and it grows with every language: a
-toolchain to install and keep working, test, lint and build commands, CI jobs
-and Dockerfile lines, each different. With fifty languages, keeping that
-working becomes the job. Hecatron does that job. It grew up inside
-[sayable](https://github.com/dnf/sayable), a set of formatting libraries in 51
-languages, and was split out so any polyglot repository can use it.
+ship the same library natively in a dozen or fifty languages, best kept in
+one repository where a fix lands everywhere in one pull request
+([more](docs/why-one-repository.md)). What's left is the infrastructure, a
+toolchain, commands, CI jobs and Dockerfile lines per language, and with
+fifty languages keeping that working becomes the job. Hecatron does that
+job: it grew up inside [sayable](https://github.com/dnf/sayable), a set of
+formatting libraries in 51 languages.
 
 ## Install
 
@@ -167,30 +173,44 @@ For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
 | CI and Dockerfile kept in sync by hand | `hct workflows`, `hct dockerfile`<br>`hct check` catches drift |
 | Each project fixes toolchain rot itself | Fixed once, tested on every supported distribution |
 
-## One language, too
+## Built for AI agents
 
-In a single-language repository, hecatron is an adaptor between you and that
-language's toolchain. Whether the repository is Elixir, Haskell, Zig or
-Kotlin, the same commands set it up and run it:
+- **No setup step.** In any git repository, hecatron detects the languages
+  and layout and remembers them inside `.git/`; nothing is written to the
+  working tree until you run `hct init`.
+- **One reference to learn.** `hct help agents` prints [a compact
+  reference](docs/agents.md) written for agents, matching the installed
+  version; [llms.txt](llms.txt) points web-reading tools to it.
+- **Instructions where agents look.** `hct init` adds a short section to
+  `AGENTS.md` (and has an existing `CLAUDE.md` load it), so an agent knows
+  how to build and test the repository from its first message.
+- **Safe by default.** Commands that change the machine (`install`,
+  `doctor --fix`) are separate from those that only run the project's
+  tools, and the agent reference says to ask before the former.
+
+Coming next: a compact output format for agents (one summary line, then
+only the failures with their key error lines,
+[#74](https://github.com/dnf/hecatron/issues/74)), running only what a
+change touched ([#91](https://github.com/dnf/hecatron/issues/91)), and
+catching up after a pull ([#92](https://github.com/dnf/hecatron/issues/92)).
+
+## From one language to fifty
+
+In a single-language repository, hecatron is the adaptor: whether the
+repository is Elixir, Haskell, Zig or Kotlin, the same commands set it up
+and run it.
 
 ```bash
 hct install    # the toolchain, at the version the project asks for
 hct test       # mix test, stack test, zig build test, gradle test...
-hct lint
-hct build
+hct lint       # the language's linter and formatter check
 ```
 
-That helps whoever moves between repositories: a contributor making a fix in
-a language they don't use every day, a CI setup shared across many
-repositories, or an AI coding agent that should run the tests without first
-working out how. Hecatron also picks the toolchain version from the
-project's own files, gives an old checkout the toolchain of its day, and
-runs the language's dependency auditor with `hct audit`.
-
-**For AI agents:** `hct init` adds a short section to `AGENTS.md` telling
-coding agents how to build and test the repository, and `hct help agents`
-prints [a compact reference](docs/agents.md) written for them
-([llms.txt](llms.txt) points there too).
+In a repository with many languages, the same commands run every language
+at once, with a live display and a log per language, and hecatron also
+generates and checks the CI workflows and Dockerfile. In both, it picks each
+toolchain's version from the project's own files, gives an old checkout the
+toolchain of its day, and runs each ecosystem's own dependency auditor.
 
 ## Compared with other tools
 
@@ -244,14 +264,17 @@ expect changes before 1.0. Changes are listed in
 [CHANGELOG.md](CHANGELOG.md).
 
 - **Platforms:** macOS (Apple Silicon and Intel) and Linux (Debian and
-  Ubuntu, x86_64 and arm64). Windows isn't planned; installers and hooks are
-  bash.
-- **Next:** a GitHub Action for CI.
+  Ubuntu, x86_64 and arm64).
+- **Next:** a single fast binary written in Go, with native Windows support
+  ([design](docs/design.md#19-a-go-core-and-native-windows),
+  [#80](https://github.com/dnf/hecatron/issues/80)), and a GitHub Action for
+  CI.
 
 ## Documentation
 
 | Document | Contents |
 | --- | --- |
+| [docs/agents.md](docs/agents.md) | The compact reference for AI coding agents (`hct help agents`) |
 | [docs/why-one-repository.md](docs/why-one-repository.md) | Why one library in many languages belongs in one repository |
 | [docs/design.md](docs/design.md) | How hecatron works and why: concepts, configuration, commands, and the decisions behind them |
 | [docs/languages.md](docs/languages.md) | Every language: its home, what it's for, and how hecatron builds, tests and lints it |
