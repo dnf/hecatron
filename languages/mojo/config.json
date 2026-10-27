@@ -7,5 +7,8 @@
   ],
   "path": [
     "~/.local/bin"
+  ],
+  "unsupported": [
+    "macos-x86_64"
   ]
 }
