@@ -43,6 +43,16 @@ minor version can change behaviour. Numbers are
   exits 1. Each job's limit is 5× its usual time from its own history, at
   least 10 minutes; `--timeout 30m` or `HECATRON_TIMEOUT` sets one for every
   job, `--timeout 0` none. Needs the binary (#124).
+- **Only what changed:** `hct test --changed [ref]` (and `lint`, `build`,
+  `format`, `deps`, `rebuild`, `retest`) runs only the languages and
+  components whose files changed since the merge base with `ref` (default:
+  the default branch; in CI, the pull or merge request's base from GitHub,
+  GitLab, Bitbucket or Azure), uncommitted and untracked files included. A
+  hook selects its language, a shared build or lock file the components
+  below it, `.hecatron/config.json` everything; project tasks run when a
+  file matches their new `taskPaths`, else on any change. The first line
+  says what runs and why; nothing to run exits 0. A shallow clone without
+  the base runs everything, with a note. Needs the binary (#91, #99).
 
 ## 0.4.0 (2026-10-27)
 

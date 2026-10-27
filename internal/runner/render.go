@@ -55,8 +55,19 @@ type Report struct {
 	Results    []Result
 	Wall       time.Duration
 	LogDir     string
-	Root       string // the project root
-	Cwd        string // where paths are shown from
+	Root       string   // the project root
+	Cwd        string   // where paths are shown from
+	Changed    *Changed // what --changed selected, else nil
+}
+
+// Changed is what --changed selected and why.
+type Changed struct {
+	Line       string   `json:"summary"` // in one line
+	Base       string   `json:"base,omitempty"`
+	MergeBase  string   `json:"mergeBase,omitempty"`
+	Files      []string `json:"files"`
+	Everything bool     `json:"everything"`
+	Languages  []string `json:"languages,omitempty"` // selected, when not everything
 }
 
 func (r *Report) counts() (passed, failed, timedOut, skipped int) {
@@ -134,6 +145,9 @@ func FormatDuration(d time.Duration) string {
 // its components, exit status, time, log and error lines; then the command
 // that reruns them. A run where nothing failed is one line.
 func WriteAgent(w io.Writer, r *Report) {
+	if r.Changed != nil {
+		fmt.Fprintln(w, r.Changed.Line)
+	}
 	passed, failed, timedOut, skipped := r.counts()
 	summary := fmt.Sprintf("hct %s: %d passed", r.Action, passed)
 	if failed > 0 {
@@ -188,6 +202,7 @@ type jsonRun struct {
 	Logs     string     `json:"logs"`
 	Jobs     []jsonJob  `json:"jobs"`
 	Rerun    string     `json:"rerun,omitempty"`
+	Changed  *Changed   `json:"changed,omitempty"`
 }
 
 type jsonCounts struct {
@@ -221,7 +236,7 @@ type jsonJob struct {
 func WriteJSON(w io.Writer, r *Report) error {
 	passed, failed, timedOut, skipped := r.counts()
 	doc := jsonRun{Command: r.Action, Status: "passed", Exit: ExitStatus(r.Results), Duration: seconds(r.Wall),
-		Summary: jsonCounts{passed, failed, timedOut, skipped}, Logs: r.LogDir, Jobs: []jsonJob{}, Rerun: r.Rerun()}
+		Summary: jsonCounts{passed, failed, timedOut, skipped}, Logs: r.LogDir, Jobs: []jsonJob{}, Rerun: r.Rerun(), Changed: r.Changed}
 	if failed+timedOut > 0 {
 		doc.Status = "failed"
 	}
