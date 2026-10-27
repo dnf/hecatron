@@ -30,7 +30,7 @@ Dockerfile that cover them in sync.
 
 <p align="center">
   <img alt="hct test running sayable's 51 languages in parallel: a live row per language with its time, swim lanes for the jobs still running, ending in 53/53 passed" src="assets/demo/hct-test.gif" width="720">
-  <br><em><code>hct test</code> on <a href="https://github.com/dnf/sayable">sayable</a>: 51 languages and its own checks in parallel, 4½ minutes at 5× speed.</em>
+  <br><em><code>hct test</code> on <a href="https://github.com/dnf/sayable">sayable</a>: 51 languages and its own checks in parallel, 4½ minutes at 5× speed (<a href="docs/runner.md">how the runner works</a>).</em>
 </p>
 
 ## Why
@@ -275,6 +275,7 @@ expect changes before 1.0. Changes are listed in
 
 | Document | Contents |
 | --- | --- |
+| [docs/runner.md](docs/runner.md) | How `hct test` and friends run every language at once: concurrency, scheduling, the live display |
 | [docs/agents.md](docs/agents.md) | The compact reference for AI coding agents (`hct help agents`) |
 | [docs/why-one-repository.md](docs/why-one-repository.md) | Why one library in many languages belongs in one repository |
 | [docs/design.md](docs/design.md) | How hecatron works and why: concepts, configuration, commands, and the decisions behind them |
