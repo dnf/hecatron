@@ -1,0 +1,149 @@
+{
+  "advisories": {
+    "1106913": {
+      "findings": [
+        {
+          "version": "4.17.15",
+          "paths": [
+            ".>lodash"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1106913,
+      "title": "Command Injection in lodash",
+      "module_name": "lodash",
+      "vulnerable_versions": "<4.17.21",
+      "patched_versions": ">=4.17.21",
+      "severity": "high",
+      "cwe": "CWE-77, CWE-94",
+      "github_advisory_id": "GHSA-35jh-r3h4-6jhm",
+      "url": "https://github.com/advisories/GHSA-35jh-r3h4-6jhm"
+    },
+    "1106920": {
+      "findings": [
+        {
+          "version": "4.17.15",
+          "paths": [
+            ".>lodash"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1106920,
+      "title": "Prototype Pollution in lodash",
+      "module_name": "lodash",
+      "vulnerable_versions": ">=3.7.0 <4.17.19",
+      "patched_versions": ">=4.17.19",
+      "severity": "high",
+      "cwe": "CWE-770, CWE-1321",
+      "github_advisory_id": "GHSA-p6mc-m468-83gw",
+      "url": "https://github.com/advisories/GHSA-p6mc-m468-83gw"
+    },
+    "1108258": {
+      "findings": [
+        {
+          "version": "4.17.15",
+          "paths": [
+            ".>lodash"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1108258,
+      "title": "Regular Expression Denial of Service (ReDoS) in lodash",
+      "module_name": "lodash",
+      "vulnerable_versions": ">=4.0.0 <4.17.21",
+      "patched_versions": ">=4.17.21",
+      "severity": "moderate",
+      "cwe": "CWE-400, CWE-1333",
+      "github_advisory_id": "GHSA-29mw-wpgm-hmr9",
+      "url": "https://github.com/advisories/GHSA-29mw-wpgm-hmr9"
+    },
+    "1115806": {
+      "findings": [
+        {
+          "version": "4.17.15",
+          "paths": [
+            ".>lodash"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1115806,
+      "title": "lodash vulnerable to Code Injection via `_.template` imports key names",
+      "module_name": "lodash",
+      "vulnerable_versions": ">=4.0.0 <=4.17.23",
+      "patched_versions": ">=4.18.1",
+      "severity": "high",
+      "cwe": "CWE-94",
+      "github_advisory_id": "GHSA-r5fr-rjxr-66jc",
+      "url": "https://github.com/advisories/GHSA-r5fr-rjxr-66jc"
+    },
+    "1115810": {
+      "findings": [
+        {
+          "version": "4.17.15",
+          "paths": [
+            ".>lodash"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1115810,
+      "title": "lodash vulnerable to Prototype Pollution via array path bypass in `_.unset` and `_.omit`",
+      "module_name": "lodash",
+      "vulnerable_versions": "<=4.17.23",
+      "patched_versions": ">=4.18.1",
+      "severity": "moderate",
+      "cwe": "CWE-1321",
+      "github_advisory_id": "GHSA-f23m-r3pf-42rh",
+      "url": "https://github.com/advisories/GHSA-f23m-r3pf-42rh"
+    },
+    "1120370": {
+      "findings": [
+        {
+          "version": "4.17.15",
+          "paths": [
+            ".>lodash"
+          ],
+          "dev": false,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1120370,
+      "title": "Lodash has Prototype Pollution Vulnerability in `_.unset` and `_.omit` functions",
+      "module_name": "lodash",
+      "vulnerable_versions": ">=4.0.0 <=4.17.22",
+      "patched_versions": ">=4.17.23",
+      "severity": "moderate",
+      "cwe": "CWE-1321",
+      "github_advisory_id": "GHSA-xxjr-mmjv-4gpg",
+      "url": "https://github.com/advisories/GHSA-xxjr-mmjv-4gpg"
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 3,
+      "high": 3,
+      "critical": 0
+    },
+    "dependencies": 1,
+    "devDependencies": 0,
+    "optionalDependencies": 0,
+    "totalDependencies": 1
+  }
+}
