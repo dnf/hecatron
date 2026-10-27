@@ -240,15 +240,16 @@ class InitTest(Fixture):
     def test_init_writes_a_path_for_a_language_outside_the_layout(self):
         write(self.path("go", "go.mod"), "module x\n")
         write(self.path("java", "pom.xml"), "<project/>\n")
-        write(self.path("dotnet", "Lib.csproj"), "<Project/>\n")
+        # Not one of C#'s dirNames, so only an implPaths entry finds it.
+        write(self.path("clr-binding", "Lib.csproj"), "<Project/>\n")
         self.commit()
         result = self.hecatron("init")
         self.assertEqual(result.returncode, 0, result.stderr)
         with open(self.path(".hecatron", "config.json"), encoding="utf-8") as f:
             config = json.load(f)
         self.assertEqual(config["implPath"], "{lang}")
-        self.assertEqual(config["implPaths"], {"csharp": "dotnet"})
-        self.assertEqual(project.load(self.root).impl_dirs("csharp"), [(".", self.path("dotnet"))])
+        self.assertEqual(config["implPaths"], {"csharp": "clr-binding"})
+        self.assertEqual(project.load(self.root).impl_dirs("csharp"), [(".", self.path("clr-binding"))])
 
     def test_single_language_repository(self):
         write(self.path("go.mod"), "module x\n")
