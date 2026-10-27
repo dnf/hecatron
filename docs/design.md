@@ -838,13 +838,26 @@ entry points' output byte for byte. Decided with the first port
   switch to the binary is decided separately.
 - **The run commands** (`test` ... `outdated`) ported next (#74), with the
   runner below; `outdated --json`, and a target run.sh would refuse with
-  its own message (an unknown or unadded language), are delegated. A
-  language's environment for a component still comes from `project.py env`
-  (version resolution, §18, isn't ported), so the run commands check for
-  Python; the hooks stay bash. A git repository without a config is read
+  its own message (an unknown or unadded language), are delegated. The
+  hooks stay bash, and the shared hook helpers still call Python, so the run
+  commands check for it. A git repository without a config is read
   from `project.py`'s cache of what it detected (`.git/hecatron/detected.json`),
   which `project.py root` refreshes; with no current cache the command is
   delegated.
+- **Version resolution** (§18; #75) ported next, in `internal/project`:
+  pin and support files in every format, the project's `version`, the
+  default and its release line, `oldestInstallable`, the as-of rule with
+  its release tables (`releasesOf`, `asOfPrecision`), installed versions
+  from each definition's `installed.sh`, the version notes and the
+  per-component environment. `hct env LANG [-c COMPONENT]` runs natively,
+  and the run commands build each component's environment in Go instead of
+  starting `project.py env` per component; where the model declines (a
+  `"version"` that isn't a string, Python's other `fromisoformat` forms of
+  `HECATRON_AS_OF`, a `"path"` entry relative to the working directory, a
+  file with non-ASCII digits), they fall back to it. The model reads files
+  with Python's notions of whitespace, line ends and word characters, so a
+  pin file is read alike. It runs a language's `installed.sh` once per
+  command rather than once per component.
 
 ### Language definitions: data, families, scripts
 
