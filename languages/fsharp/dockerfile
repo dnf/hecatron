@@ -10,7 +10,8 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
 RUN V="{version}" && \
     if [ -z "{exact}" ]; then V="$(curl -fsSL https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json | python3 -c 'import json, sys, urllib.request; p = sys.argv[1].split("."); vs = [s["version"] for c in json.load(sys.stdin)["releases-index"] if c["channel-version"].split(".")[:len(p[:2])] == p[:2] for r in json.load(urllib.request.urlopen(c["releases.json"]))["releases"] for s in (r.get("sdks") or [r["sdk"]])]; vs = [v for v in vs if v.split("-")[0].split(".")[:len(p)] == p]; print(max(vs, key=lambda v: ([int(x) for x in v.split("-")[0].split(".")], "-" not in v)))' "${V}")"; fi && \
     if [ ! -d "/opt/dotnet/sdk/${V}" ]; then \
-      curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version "${V}" --install-dir /opt/dotnet --no-path; \
+      curl -fsSL --retry 4 --retry-delay 3 --retry-all-errors -o /tmp/dotnet-install.sh https://dot.net/v1/dotnet-install.sh && \
+      bash /tmp/dotnet-install.sh --version "${V}" --install-dir /opt/dotnet --no-path && rm -f /tmp/dotnet-install.sh; \
     fi && \
     { [ -e /usr/local/bin/dotnet ] || ln -s /opt/dotnet/dotnet /usr/local/bin/dotnet; }
 # end-each-version

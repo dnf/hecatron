@@ -34,6 +34,20 @@ _libicu() {
 }
 _install_default() { _install_sdk "=$(default_version)"; }
 
+# Microsoft's dotnet-install.sh, downloaded once to a file rather than piped
+# into bash, so a dropped connection (curl's error 56, which --retry alone
+# doesn't cover) is retried and a partial script never runs. The script
+# retries its own downloads.
+_dotnet_install_script=""
+_dotnet_install() {
+    if [ -z "${_dotnet_install_script}" ]; then
+        _dotnet_install_script="$(mktemp)"
+        trap 'rm -f "${_dotnet_install_script}"' EXIT
+        curl --retry-all-errors -fsSL -o "${_dotnet_install_script}" https://dot.net/v1/dotnet-install.sh
+    fi
+    ${_sudo} bash "${_dotnet_install_script}" "$@"
+}
+
 # Every SDK release of the .NET channels (8.0, 10.0...) a spec can match,
 # from Microsoft's release metadata.
 _sdk_releases() {
@@ -69,8 +83,7 @@ _install_sdk() {
     _has_sdk "${version}" && return
     log "Installing the .NET SDK ${version} into ${_dotnet_root}..."
     ${_sudo} mkdir -p "${_dotnet_root}"
-    curl -fsSL https://dot.net/v1/dotnet-install.sh |
-        ${_sudo} bash -s -- --version "${version}" --install-dir "${_dotnet_root}" --no-path
+    _dotnet_install --version "${version}" --install-dir "${_dotnet_root}" --no-path
 }
 
 _install_versions() {
@@ -86,8 +99,7 @@ _install_versions() {
 # (dotnet_runtimes_missing in _common.sh), into the same directory.
 _install_runtime() {
     log "Installing the .NET $1 runtime into ${_dotnet_root}..."
-    curl -fsSL https://dot.net/v1/dotnet-install.sh |
-        ${_sudo} bash -s -- --runtime dotnet --channel "$1.0" --install-dir "${_dotnet_root}" --no-path
+    _dotnet_install --runtime dotnet --channel "$1.0" --install-dir "${_dotnet_root}" --no-path
 }
 deps() {
     local _major
