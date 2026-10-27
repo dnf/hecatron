@@ -1,0 +1,60 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "/tmp/licenses-fixtures/php/composer.lock",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "monolog/monolog",
+            "version": "3.5.0",
+            "ecosystem": "Packagist",
+            "purl": "pkg:composer/monolog/monolog@3.5.0"
+          },
+          "licenses": [
+            "UNKNOWN"
+          ]
+        },
+        {
+          "package": {
+            "name": "phpunit/php-timer",
+            "version": "6.0.0",
+            "ecosystem": "Packagist",
+            "purl": "pkg:composer/phpunit/php-timer@6.0.0"
+          },
+          "dependency_groups": [
+            "dev"
+          ],
+          "licenses": [
+            "UNKNOWN"
+          ]
+        },
+        {
+          "package": {
+            "name": "psr/log",
+            "version": "3.0.0",
+            "ecosystem": "Packagist",
+            "purl": "pkg:composer/psr/log@3.0.0"
+          },
+          "licenses": [
+            "UNKNOWN"
+          ]
+        }
+      ]
+    }
+  ],
+  "experimental_config": {
+    "licenses": {
+      "summary": true,
+      "allowlist": []
+    }
+  },
+  "license_summary": [
+    {
+      "name": "UNKNOWN",
+      "count": 3
+    }
+  ]
+}

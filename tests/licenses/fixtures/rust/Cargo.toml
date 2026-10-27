@@ -1,0 +1,8 @@
+[package]
+name = "licenses-fixture"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+itoa = "=1.0.9"
+serde_json = "=1.0.108"

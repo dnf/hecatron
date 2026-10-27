@@ -1,0 +1,9 @@
+{
+    "name": "example/licenses-fixture",
+    "require": {
+        "monolog/monolog": "3.5.0"
+    },
+    "require-dev": {
+        "phpunit/php-timer": "6.0.0"
+    }
+}

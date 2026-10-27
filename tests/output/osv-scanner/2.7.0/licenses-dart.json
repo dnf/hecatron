@@ -1,0 +1,60 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "/tmp/licenses-fixtures/dart/pubspec.lock",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "collection",
+            "version": "1.18.0",
+            "ecosystem": "Pub",
+            "purl": "pkg:pub/collection@1.18.0"
+          },
+          "licenses": [
+            "UNKNOWN"
+          ]
+        },
+        {
+          "package": {
+            "name": "lints",
+            "version": "3.0.0",
+            "ecosystem": "Pub",
+            "purl": "pkg:pub/lints@3.0.0"
+          },
+          "dependency_groups": [
+            "dev"
+          ],
+          "licenses": [
+            "UNKNOWN"
+          ]
+        },
+        {
+          "package": {
+            "name": "path",
+            "version": "1.8.3",
+            "ecosystem": "Pub",
+            "purl": "pkg:pub/path@1.8.3"
+          },
+          "licenses": [
+            "UNKNOWN"
+          ]
+        }
+      ]
+    }
+  ],
+  "experimental_config": {
+    "licenses": {
+      "summary": true,
+      "allowlist": []
+    }
+  },
+  "license_summary": [
+    {
+      "name": "UNKNOWN",
+      "count": 3
+    }
+  ]
+}
