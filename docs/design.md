@@ -1075,6 +1075,12 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
 
 ### Migration
 
+**New features are Go only (decided 2026-10-27).** Each release ships the
+binary for every platform, so a new command or option (`status`, `skill`,
+`--changed`, `licenses`, `advisor`...) is written once, in Go; run through
+the scripts without the binary, it says it needs the binary. What the
+scripts already do, they keep doing, with parity tests against the Go port.
+
 **Shipping the binary (done).** The release workflow
 (`.github/workflows/release.yml`) builds the binary for macOS, Linux and
 Windows on x86_64 and arm64 when a release is published and attaches it with

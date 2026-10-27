@@ -80,6 +80,7 @@ Project:
 
 Hecatron itself:
   self-test                  Check hecatron's own code: shellcheck and the unit tests
+  skill install|path         Install hecatron's Agent Skill for AI coding agents
 
 Run 'hecatron <command> help' for a command's options, and 'hecatron help agents'
 for a compact reference for AI coding agents.
@@ -177,6 +178,10 @@ case "${_command}" in
     version)
         _project
         exec bash "${HECATRON_HOME}/libexec/commands/version.sh" "$@" ;;
+    skill)
+        # Native in the Go core only (docs/design.md §19).
+        echo "hecatron: skill needs hecatron's binary, which install.sh downloads with a release; the skill itself is in ${HECATRON_HOME}/plugins/hecatron/skills/hecatron" >&2
+        exit 1 ;;
     status)
         # Native in the Go core only (docs/design.md §19).
         echo "hecatron: status needs hecatron's binary, which install.sh downloads with a release; without it, hct list and hct doctor say most of it" >&2
