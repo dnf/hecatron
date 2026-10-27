@@ -6,8 +6,10 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
-- **No setup step:** the first `hct` command in a git repository that
-  hecatron hasn't set up runs `hct init` at its top level, then carries on.
+- **No setup step:** in a git repository without `.hecatron/config.json`,
+  every command works on what `hct init` would detect, remembered inside
+  `.git/` until the tracked files change; nothing is written to the working
+  tree. `hct init` saves it, to commit and adjust.
 - **`hct lint` now fails on unformatted code.** It runs each language's
   format check (below) after its linter, where the linter doesn't check
   formatting already, so a project whose code isn't formatted the way its

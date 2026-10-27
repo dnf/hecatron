@@ -345,10 +345,15 @@ sourcing `$HECATRON_HOME/languages/_common.sh`.
 ## 10. `hecatron init`
 
 `hecatron init [dir]` sets up an existing repository (default: the current
-directory). Any other command run in a git repository with no
-`.hecatron/config.json` above it does this first, at the repository's top
-level, saying so on stderr, so a repository works with hecatron without a
-setup step:
+directory). Without it, a git repository is still a project: with no
+`.hecatron/config.json` above, its root is the repository's top level and its
+configuration what init would write, detected and cached in
+`.git/hecatron/detected.json`, keyed on the commit, git's index and
+hecatron's version, so a command pays for detection only after the tracked
+files change (about 17 µs a file: 4 ms for 100 files, 0.8 s for 47,000), and
+nothing appears in the working tree or `git status`. Logs and `local.json`
+go in `.git/hecatron/` too. Changing the configuration (`add`, `remove`)
+saves it, as init would. Init itself:
 
 1. Refuses if `dir` isn't inside a git repository, and is a no-op on an
    already initialised project unless `--force`.

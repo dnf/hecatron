@@ -589,6 +589,29 @@ install *args:
 """
 
 
+def detected_config(root: str, components: str | None = None, impl_path: str | None = None,
+                    languages: str | None = None) -> tuple[dict, dict[str, str]]:
+    """The config.json init writes for a repository: its languages and layout
+    as detected, or as given (comma-separated), and the languages found but
+    not added, with why."""
+    defs = _detection_definitions()
+    found, not_added = detect_languages(root, defs)
+    found_components, found_impl_path, impl_paths = infer_layout(found, dir_names(defs), tracked_dirs(root))
+    chosen_components = [c for c in components.split(",") if c] if components else found_components
+    if impl_path:
+        found_impl_path, impl_paths = impl_path, {}
+    chosen = sorted(languages.split(",")) if languages else sorted(found)
+    config = {"schema": projectlib.SCHEMA, "hecatron": f">={projectlib.hecatron_version()}",
+              "project": os.path.basename(root), "components": chosen_components, "implPath": found_impl_path,
+              "languages": chosen, "tools": {}, "generated": {}, "logs": ".logs"}
+    if chosen_components == ["."]:
+        del config["components"]
+    impl_paths = {lang: path for lang, path in impl_paths.items() if lang in chosen}
+    if impl_paths:
+        config["implPaths"] = impl_paths
+    return config, not_added
+
+
 def cmd_init(args) -> int:
     root = os.path.abspath(args.dir)
     try:
@@ -599,36 +622,14 @@ def cmd_init(args) -> int:
     if os.path.isfile(config_path) and not args.force:
         print(f"{os.path.relpath(config_path)} already exists (use --force to overwrite).")
         return 0
-    defs = _detection_definitions()
-    found, not_added = detect_languages(root, defs)
-    components, impl_path, impl_paths = infer_layout(found, dir_names(defs), tracked_dirs(root))
-    if args.components:
-        components = [c for c in args.components.split(",") if c]
-    if args.impl_path:
-        impl_path, impl_paths = args.impl_path, {}
-    languages = sorted(args.languages.split(",")) if args.languages else sorted(found)
-    config = {"schema": projectlib.SCHEMA, "hecatron": f">={projectlib.hecatron_version()}",
-              "project": os.path.basename(root), "components": components, "implPath": impl_path,
-              "languages": languages, "tools": {}, "generated": {}, "logs": ".logs"}
-    if components == ["."]:
-        del config["components"]
-    impl_paths = {lang: path for lang, path in impl_paths.items() if lang in languages}
-    if impl_paths:
-        config["implPaths"] = impl_paths
+    config, not_added = detected_config(root, args.components, args.impl_path, args.languages)
+    languages, components, impl_path = config["languages"], config.get("components", ["."]), config["implPath"]
+    impl_paths = config.get("implPaths", {})
     projectlib._write_json(config_path, config)
-    ignore_path = os.path.join(root, ".gitignore")
-    existing = open(ignore_path, encoding="utf-8").read() if os.path.isfile(ignore_path) else ""
-    missing = [entry for entry in (".hecatron/local.json", ".logs/") if entry not in existing.split("\n")]
-    if missing:
-        with open(ignore_path, "a", encoding="utf-8") as f:
-            f.write(("" if not existing or existing.endswith("\n") else "\n") + "\n".join(missing) + "\n")
+    projectlib.ignore_project_files(root)
     if args.justfile:
         with open(os.path.join(root, ".hecatron", "hecatron.just"), "w", encoding="utf-8") as f:
             f.write(JUSTFILE)
-    if args.auto:
-        print(f"hecatron: set up {root} for hecatron (hecatron init): "
-              f"{', '.join(languages) or 'no languages detected; add them with hecatron add <lang>'}")
-        return 0
     print(f"Initialised {root}")
     print(f"  languages:  {', '.join(languages) or '(none detected; add with hecatron add <lang>)'}")
     print(f"  components: {', '.join(components)}   implPath: {impl_path}")
@@ -655,7 +656,6 @@ def main(argv: list[str]) -> int:
     p.add_argument("--languages")
     p.add_argument("--justfile", action="store_true")
     p.add_argument("--force", action="store_true")
-    p.add_argument("--auto", action="store_true", help=argparse.SUPPRESS)
     p.set_defaults(func=cmd_init)
 
     for name, func in (("install", cmd_install), ("uninstall", cmd_uninstall),

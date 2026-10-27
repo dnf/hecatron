@@ -92,26 +92,11 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"version":  (*cli).versionHelp,
 }
 
-// findProject finds the project (like git), setting it up first in a git
-// repository that hecatron hasn't set up yet, as `hecatron init` would at
-// the repository's top level; init's report goes to stderr, so the
-// command's own output stays as it is.
+// findProject finds the project (like git). A git repository with no
+// config of its own is read as detected, which only project.py does yet, so
+// the root then comes from it, and the command is delegated.
 func (c *cli) findProject() int {
-	if c.locateProject(false) {
-		return 0
-	}
-	if top, ok := gitTopLevel(); ok {
-		if status := c.requirePython(); status != 0 {
-			return status
-		}
-		cmd := exec.Command("python3", c.homePath("libexec/commands/manage.py"), "init", "--auto", top)
-		cmd.Env = c.environment(nil)
-		cmd.Stdout, cmd.Stderr = os.Stderr, os.Stderr
-		if cmd.Run() != nil {
-			return 1
-		}
-	}
-	if c.locateProject(true) {
+	if c.locateProject(false) || c.rootFromPython(true) {
 		return 0
 	}
 	return 1

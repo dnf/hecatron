@@ -64,9 +64,14 @@ class ProjectModelTest(Fixture):
         os.makedirs(self.path("a", "b"))
         self.assertEqual(project.find_root(self.path("a", "b")), self.root)
 
-    def test_no_project_is_an_error(self):
-        with self.assertRaises(project.ProjectError):
-            project.find_root(self.root)
+    def test_no_project_outside_git_is_an_error(self):
+        with tempfile.TemporaryDirectory() as outside:
+            with self.assertRaises(project.ProjectError):
+                project.find_root(outside)
+
+    def test_a_git_repository_without_config_is_a_project(self):
+        os.makedirs(self.path("a"))
+        self.assertEqual(project.find_root(self.path("a")), self.root)
 
     def test_unknown_schema_is_refused(self):
         write(self.path(".hecatron", "config.json"), json.dumps({"schema": 99}))
@@ -278,17 +283,36 @@ class InitTest(Fixture):
         with open(self.path(".hecatron", "config.json"), encoding="utf-8") as f:
             self.assertEqual(json.load(f)["languages"], ["go"])
 
-    def test_a_command_sets_up_a_git_repository_on_first_use(self):
-        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+    def test_a_git_repository_without_config_is_read_as_detected(self):
         write(self.path("go", "go.mod"), "module example.com/m\n")
         os.makedirs(self.path("go", "sub"))
         self.commit()
         result = self.hecatron("list", cwd=self.path("go", "sub"))
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("set up", result.stderr)
+        self.assertIn("detected go", result.stderr)
         self.assertIn("go", result.stdout)
+        self.assertFalse(os.path.exists(self.path(".hecatron")))
+        status = subprocess.run(["git", "status", "--porcelain"], cwd=self.root, capture_output=True, text=True)
+        self.assertEqual(status.stdout, "")
+
+    def test_detection_is_cached_until_the_tracked_files_change(self):
+        write(self.path("go", "go.mod"), "module example.com/m\n")
+        self.commit()
+        self.hecatron("list")
+        again = self.hecatron("list")
+        self.assertEqual(again.stderr, "")
+        write(self.path("rust", "Cargo.toml"), "[package]\nname = \"x\"\n")
+        self.commit()
+        self.assertIn("rust", self.hecatron("list").stdout)
+
+    def test_adding_a_language_saves_the_detected_config(self):
+        write(self.path("go", "go.mod"), "module example.com/m\n")
+        self.commit()
+        self.assertEqual(self.hecatron("add", "python").returncode, 0)
         with open(self.path(".hecatron", "config.json"), encoding="utf-8") as f:
-            self.assertEqual(json.load(f)["languages"], ["go"])
+            self.assertEqual(json.load(f)["languages"], ["go", "python"])
+        with open(self.path(".gitignore"), encoding="utf-8") as f:
+            self.assertIn(".logs/", f.read())
 
     def test_outside_git_a_command_needs_a_project(self):
         with tempfile.TemporaryDirectory() as outside:
