@@ -23,6 +23,14 @@ tests/docker/run.sh ubuntu:24.04 bash /hecatron/tests/hooks/check.sh go
                                                   # test, lint, build and clean on fixture projects
 ```
 
+Changes to hecatron's own installer, `install.sh`, have a test that edits a
+user's startup files, so it too runs only in a container (CI also runs the
+installer on macOS):
+
+```bash
+tests/docker/run.sh ubuntu:24.04 bash /hecatron/tests/installer/check.sh
+```
+
 The [coverage workflow](.github/workflows/coverage.yml) runs the install test
 for every language on every platform each week and writes
 [docs/coverage.md](docs/coverage.md).
