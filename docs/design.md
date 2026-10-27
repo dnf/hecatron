@@ -815,6 +815,13 @@ express it.
 | Tool | golangci-lint, ruff, ktlint | `go install`, `uv tool`, `npm -g`, `cargo install`, or an archive, at a pinned version |
 | Script | the rest | `install.sh` / `install.ps1` |
 
+An archive whose URL or checksum a template can't give (Temurin's names
+carry a build number) names a resolver, Go code that asks the publisher's
+API. A `platforms` entry replaces the install on a platform its usual
+source doesn't cover: Temurin has no JDK 25 for Windows on arm64, so Java
+there comes from Microsoft's build. `requires` names languages installed
+first (Elixir needs Erlang).
+
 Versions install side by side under hecatron's own directory
 (`~/.local/share/hecatron/toolchains/<lang>/<version>`, `%LOCALAPPDATA%` on
 Windows) where the shape allows, so installing no longer needs root or
