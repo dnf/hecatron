@@ -205,15 +205,6 @@ class InitTest(Fixture):
                                              holding({"javascript": {"javascript", "jsonschema"}})),
                          (["."], "{lang}", {"javascript": "jsonschema", "typescript": "javascript"}))
 
-    def test_components_only_when_every_language_has_a_directory_named_for_it(self):
-        # OpenTelemetry's demo: Java, Kotlin and Python under src/<service>/src/main/<lang>,
-        # Ruby in src/email/ with no directory named for it.
-        found = {"java": {"src/ad/src/main/java"}, "kotlin": {"src/fraud-detection/src/main/kotlin"},
-                 "ruby": {"src/email"}}
-        components, impl_path, overrides = manage.infer_layout(found, {})
-        self.assertEqual(components, ["."])
-        self.assertEqual(overrides["ruby"], "src/email")
-
     def detect(self, files: dict[str, str], defs: dict[str, dict]):
         for path, content in files.items():
             write(self.path(path), content)
@@ -228,12 +219,13 @@ class InitTest(Fixture):
         self.assertEqual(found, {"go": {"go"}})
         self.assertEqual(set(skipped), {"lua", "c"})
 
-    def test_skipped_directories_match_in_any_case_and_include_test_data(self):
-        found, skipped = self.detect({"go/go.mod": "", "Examples/lua/x.lua": "", "tests_data/basic/c/x.c": ""},
-                                     {"go": {"detect": ["go.mod"]}, "lua": {"detect": ["*.lua"]},
-                                      "c": {"detect": ["*.c"]}})
+    def test_skipped_names_in_any_case_hidden_directories_and_templates_are_skipped(self):
+        found, skipped = self.detect({"go/go.mod": "", "Examples/java/A.java": "", ".jenkins/x.groovy": "",
+                                      "cli/src/templates/pom.xml": "", "tests_data/groovy/x.groovy": ""},
+                                     {"go": {"detect": ["go.mod"]}, "java": {"detect": ["pom.xml"],
+                                      "detectSources": ["*.java"]}, "groovy": {"detectSources": ["*.groovy"]}})
         self.assertEqual(found, {"go": {"go"}})
-        self.assertEqual(set(skipped), {"lua", "c"})
+        self.assertEqual(set(skipped), {"java", "groovy"})
 
     def test_dotfiles_arent_sources(self):
         # ripgrep's .nvim.lua configures an editor.

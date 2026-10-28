@@ -6,11 +6,28 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
-- **Detection:** skipped directories match in any case (SWIG's
-  `Examples/`) and include test data (`test_data/`, `tests_data/`,
-  `test-data/`); dotfiles aren't sources (a `.nvim.lua` no longer adds
-  Lua). Lua isn't detected from premake build scripts, nor R from an
+- **Detection:** dotfiles aren't sources (a `.nvim.lua` no longer adds
+  Lua); Lua isn't detected from premake build scripts, nor R from an
   Octave package's `DESCRIPTION`.
+
+- **Node.js packages built before their tests:** `hct test typescript`
+  and `hct test javascript` first build a package whose tests need it
+  built: a native addon (napi-rs, node-gyp) not built yet, or an entry
+  point (`main`, `exports`) the build writes that isn't there. Through
+  the package's build script, else `napi build --platform` or `node-gyp
+  rebuild`, instead of failing with "Failed to load native binding" or
+  "Cannot find module dist/...". A configured test runner that fails now
+  fails as itself, and npm's placeholder test script counts as none.
+
+- **Node.js tests in more layouts:** `hct test typescript` and `hct test
+  javascript` now test a workspace root without a `test` script through its
+  packages' scripts, a package with a configured Vitest, Jest or Mocha but
+  no script through that runner, and a directory without a `package.json`
+  (or a root `package.json` holding only tooling) through the language's
+  packages below it, where they failed with "no test command". Scripts
+  that call pnpm or Yarn by name find Corepack's shim on PATH, and tests
+  run with `CI=true` (unless it's set), so runners that would otherwise
+  watch for changes (Create React App's, Vitest's) run once.
 
 - **Detection:** `hct init` no longer proposes components from directories
   like `src/<service>/src/main/<lang>` when another language's directory
@@ -119,6 +136,12 @@ minor version can change behaviour. Numbers are
   `"strip"`, a regular expression, is removed from the version the file
   gives, for ecosystems that write more than the version in it (asdf's and
   mise's Elixir `1.17.3-otp-27`).
+
+- **Detection skips more code that isn't the project's:** `hct init`
+  leaves out directories it skips in any case (`Examples/`), hidden
+  directories (`.jenkins/`), `templates/` and test data
+  (`tests_data/`, `test-data/`), so a Jenkinsfile, a code generator's
+  templates or an example no longer adds a language.
 
 ## 0.5.0 (2026-10-28)
 
