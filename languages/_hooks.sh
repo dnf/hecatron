@@ -214,28 +214,58 @@ dotnet_test_target() {
     fi
 }
 
+# A directory's .NET project files, when it has no solution and several:
+# `dotnet` acts on one at a time there.
+dotnet_projects() {
+    [ -z "$(ls -- *.sln *.slnx 2>/dev/null || true)" ] || return 0
+    [ "$(ls -- *.csproj *.fsproj *.vbproj 2>/dev/null | grep -c .)" -gt 1 ] || return 0
+    ls -- *.csproj *.fsproj *.vbproj 2>/dev/null || true
+}
+# Whether a project file is a test project: it references the test SDK or
+# says it is one.
+dotnet_is_test_project() {
+    grep -qsE 'Microsoft\.NET\.Test\.Sdk|<IsTestProject>[[:space:]]*true' "$1"
+}
+
 # .NET (C#, F#, VB.NET): the solution or project in the directory, else in
 # each directory below with one (protobuf's csharp/src/), else the nearest
-# above, acting there. `dotnet format` checks C# and VB.NET only, so F#'s lint
-# hook is its own.
+# above, acting there; in a directory with several projects and no solution,
+# on each (each test project, to test). `dotnet format` checks C# and VB.NET
+# only, so F#'s lint hook is its own.
+#
+# Tests run on the newest installed runtime when the one a project targets
+# isn't installed (DOTNET_ROLL_FORWARD=Major): hecatron installs one SDK,
+# whose runtime runs a test project that targets an older .NET.
 dotnet_hook() {
     find_build '*.sln' '*.slnx' '*.csproj' '*.fsproj' '*.vbproj' ||
         unknown "no .sln, .slnx or project file here, below, or above it in the project"
     note_build_dir
     cd "${build_dir}"
-    local _target
-    _target="$(dotnet_target)"
-    case "$1" in
-        test)
-            local _args=()
-            read -r -a _args <<<"$(dotnet_test_target "${_target}")"
-            run dotnet test ${_args[@]+"${_args[@]}"} ;;
-        build) run dotnet build ${_target:+"${_target}"} ;;
-        clean) run dotnet clean ${_target:+"${_target}"} ;;
-        lint)
-            checks_format
-            run dotnet format ${_target:+"${_target}"} --verify-no-changes ;;
-    esac
+    local _targets=() _project _target
+    while IFS= read -r _project; do
+        if [ "$1" != test ] || dotnet_is_test_project "${_project}"; then _targets+=("${_project}"); fi
+    done < <(dotnet_projects)
+    if [ "${#_targets[@]}" -gt 0 ]; then
+        echo "${HECATRON_LANG:-}: ${_hook_action}: no solution, so each project: ${_targets[*]}"
+    elif [ -n "$(dotnet_projects)" ]; then
+        skip "no test project among $(dotnet_projects | paste -sd ' ' -)"
+    else
+        _targets=("$(dotnet_target)")
+    fi
+    for _target in "${_targets[@]}"; do
+        case "$1" in
+            test)
+                export DOTNET_ROLL_FORWARD="${DOTNET_ROLL_FORWARD:-Major}"
+                local _args=()
+                read -r -a _args <<<"$(dotnet_test_target "${_target}")"
+                run dotnet test ${_args[@]+"${_args[@]}"} ;;
+            build) run dotnet build ${_target:+"${_target}"} ;;
+            clean) run dotnet clean ${_target:+"${_target}"} ;;
+            lint)
+                checks_format
+                run dotnet format ${_target:+"${_target}"} --verify-no-changes ;;
+        esac
+    done
 }
 
 # SwiftPM: the package here, each package below, or the one above whose
@@ -535,31 +565,38 @@ node_hook() {
     esac
 }
 
-# JVM builds (Java, Kotlin, Scala, Groovy): Maven, Gradle or sbt, whichever
-# the directory has, through its wrapper when it ships one. Gradle's `check`
-# without tests runs whatever checkers the build configures (Checkstyle,
-# Spotless, detekt...).
+# JVM builds (Java, Kotlin, Scala, Groovy): Maven, Gradle, sbt or Mill,
+# whichever the directory has, through its wrapper when it ships one.
+# Gradle's `check` without tests runs whatever checkers the build configures
+# (Checkstyle, Spotless, detekt...).
 #
 # Without a build file here: a Gradle settings file above makes this
-# directory one of that build's projects (Beam's sdks/java, whose tasks run
-# for every project under it), and Gradle, run from here, acts on it. Else
-# the builds in the directories below, each; else a Makefile above with a
-# target for this directory (make_target_above).
+# directory part of that build (gradle_project_dir says which project), and
+# Gradle, run from that project's directory, acts on it. Else the builds in
+# the directories below, each; else a Makefile above with a target for this
+# directory (make_target_above).
 jvm_hook() {
-    local _gradle_above=""
-    if ! has_any pom.xml build.gradle build.gradle.kts build.sbt; then
+    local _gradle_above="" _project
+    jvm_utf8_locale
+    if ! has_any pom.xml build.gradle build.gradle.kts build.sbt build.mill build.sc; then
         if _gradle_above="$(dir_above_with settings.gradle settings.gradle.kts)"; then
-            echo "${HECATRON_LANG:-}: ${_hook_action}: $(pwd) is a project of the Gradle build in ${_gradle_above}"
+            _project="$(gradle_project_dir "${_gradle_above}")"
+            if [ "${_project}" = "$(pwd -P)" ]; then
+                echo "${HECATRON_LANG:-}: ${_hook_action}: $(pwd) is a project of the Gradle build in ${_gradle_above}"
+            else
+                echo "${HECATRON_LANG:-}: ${_hook_action}: $(pwd) is in the Gradle project ${_project}"
+                cd "${_project}"
+            fi
         else
-            find_build pom.xml build.gradle build.gradle.kts build.sbt || true
+            find_build pom.xml build.gradle build.gradle.kts build.sbt build.mill build.sc || true
             make_target_above "$1"
-            unknown "no pom.xml, build.gradle(.kts) or build.sbt here or below, no Gradle settings above, and no Makefile above with a target for $(basename "$(pwd)")"
+            unknown "no pom.xml, build.gradle(.kts), build.sbt or build.mill here or below, no Gradle settings above, and no Makefile above with a target for $(basename "$(pwd)")"
         fi
     fi
     jvm_select_jdk
     if [ -f pom.xml ]; then
         case "$1" in
-            test) maven test ;;
+            test) maven_test ;;
             build) maven package -DskipTests ;;
             clean) maven clean ;;
             lint) skip "Maven has no standard lint goal" ;;
@@ -568,7 +605,7 @@ jvm_hook() {
         esac
     elif is_gradle || [ -n "${_gradle_above}" ]; then
         case "$1" in
-            test) gradle_ test ;;
+            test) gradle_test ;;
             build) gradle_ assemble ;;
             clean) gradle_ clean ;;
             lint) gradle_ check -x test ;;
@@ -586,9 +623,79 @@ jvm_hook() {
             format) jvm_format_sbt ;;
             deps) run sbt update ;;
         esac
+    elif [ -f build.mill ] || [ -f build.sc ]; then
+        case "$1" in
+            test) mill_ -i -k __.test ;;
+            build) mill_ -i __.compile ;;
+            clean) mill_ clean ;;
+            lint) skip "Mill has no standard lint task" ;;
+            format) skip "Mill has no standard format task" ;;
+            deps) skip "Mill has no standard dependency task" ;;
+        esac
     else
-        unknown "no pom.xml, build.gradle(.kts) or build.sbt"
+        unknown "no pom.xml, build.gradle(.kts), build.sbt or build.mill"
     fi
+}
+
+# The Gradle project a directory without a build file of its own belongs to,
+# given the build's root directory: the one whose sources it holds (moshi for
+# moshi/src/main/java: the directory above the nearest src); the root, for a
+# build of one project (a settings file with no include, whose build script
+# may name any directory a source directory); else the directory itself, a
+# project Gradle makes for a path its settings include (Beam's sdks/java).
+gradle_project_dir() {
+    local _root="$1" _dir _relative _part _path="" _project="" _parts=()
+    _dir="$(pwd -P)"
+    _relative="${_dir#"${_root}"/}"
+    IFS=/ read -r -a _parts <<<"${_relative}"
+    for _part in "${_parts[@]}"; do
+        if [ "${_part}" = src ]; then _project="${_root}${_path:+/${_path}}"; fi
+        _path="${_path:+${_path}/}${_part}"
+    done
+    if [ -n "${_project}" ]; then
+        echo "${_project}"
+    elif ! grep -qsE '^[[:space:]]*include[[:space:](]' "${_root}/settings.gradle" "${_root}/settings.gradle.kts"; then
+        echo "${_root}"
+    else
+        echo "${_dir}"
+    fi
+}
+
+# Maven's tests. A multi-module build's modules can need each other's
+# packaged jars (a module path, a multi-release jar), which the test phase
+# doesn't make, so there the tests run through the package phase.
+maven_test() {
+    if grep -qs '<modules>' pom.xml; then
+        echo "${HECATRON_LANG:-}: ${_hook_action}: a multi-module build: running its tests through the package phase"
+        maven package
+    else
+        maven test
+    fi
+}
+
+# Gradle's tests: the test task, or, in a Kotlin Multiplatform build, which
+# has none, allTests (every target's tests).
+gradle_test() {
+    local _log _status=0
+    _log="$(mktemp)"
+    gradle_ test 2>&1 | tee "${_log}" || _status=$?
+    if [ "${_status}" -ne 0 ] && grep -q "Task 'test' not found" "${_log}"; then
+        rm -f "${_log}"
+        echo "${HECATRON_LANG:-}: ${_hook_action}: no test task (a Kotlin Multiplatform build): running allTests"
+        gradle_ allTests
+        return
+    fi
+    rm -f "${_log}"
+    return "${_status}"
+}
+
+# Mill, through the project's ./mill launcher when it ships one.
+mill_() { if [ -x ./mill ]; then run ./mill "$@"; else run mill "$@"; fi; }
+
+# The JVM names files in the locale's encoding: without one (a container's
+# POSIX locale), a class or resource with a non-ASCII name can't be written.
+jvm_utf8_locale() {
+    if [ -z "${LC_ALL:-}${LC_CTYPE:-}${LANG:-}" ]; then export LANG=C.UTF-8; fi
 }
 
 # Formatting is a plugin the build configures, run through the build so it
@@ -658,8 +765,8 @@ java_feature() { echo "$1" | sed 's/^1\.\([0-9]*\).*/\1/; s/[^0-9].*//'; }
 
 # Clojure: the Clojure CLI (deps.edn) or Leiningen (project.clj). The CLI
 # runs the :test alias as a function (-X, :exec-fn) or a main (-M,
-# :main-opts), whichever it defines, and builds through tools.build's
-# build.clj. Lint is clj-kondo, which the CLI fetches at a pinned version when
+# :main-opts), whichever it defines (without one, Leiningen tests a project
+# that has both), and builds through tools.build's build.clj. Lint is clj-kondo, which the CLI fetches at a pinned version when
 # it isn't installed.
 _CLJ_KONDO_VERSION="2026.08.04"
 clojure_hook() {
@@ -669,7 +776,11 @@ clojure_hook() {
                 case "$(clojure_alias_kind test)" in
                     X) run clojure -X:test ;;
                     M) run clojure -M:test ;;
-                    *) unknown "deps.edn has no :test alias with :exec-fn or :main-opts" ;;
+                    *)
+                        # deps.edn beside project.clj can be there only for
+                        # consumers' git dependencies.
+                        [ -f project.clj ] || unknown "deps.edn has no :test alias with :exec-fn or :main-opts"
+                        run lein test ;;
                 esac ;;
             build)
                 [ -f build.clj ] || skip "no build.clj (tools.build)"

@@ -6,6 +6,19 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **JVM and .NET builds in real projects:** a Java, Kotlin, Scala or
+  Groovy directory inside a Gradle build that isn't one of its projects
+  (`moshi/src/main/java`) runs Gradle from the project it belongs to,
+  instead of failing as "not part of the build"; a Kotlin Multiplatform
+  build without a `test` task runs `allTests`; a multi-module Maven build
+  tests through the package phase; Mill builds (`build.mill`) are tested;
+  the JVM gets a UTF-8 locale when none is set; Maven, Gradle and sbt are
+  installed for builds below the language's directory too. .NET tests roll
+  forward to the installed runtime (a test project targeting net8.0 runs on
+  .NET 10), and a directory with several projects and no solution tests
+  each test project. A Clojure project with `deps.edn` but no `:test`
+  alias tests with Leiningen when it has `project.clj`.
+
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
   checksum file, or the publisher's index). Gleam and Zig install that way,
