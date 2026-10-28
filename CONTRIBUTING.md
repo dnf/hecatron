@@ -79,16 +79,18 @@ for every language on every platform each week and writes
 
 ## Releasing
 
-Each change adds a line under `## Unreleased` in [CHANGELOG.md](CHANGELOG.md).
-To release, from an up-to-date `main`:
+Each change adds its changelog entry as its own file,
+`changelog.d/<branch>.md`, not by editing `CHANGELOG.md`, so parallel pull
+requests don't conflict ([changelog.d/README.md](changelog.d/README.md)). A
+change users can't see adds none and is labelled `no changelog`. To release, from an up-to-date `main`:
 
 ```bash
 libexec/maintenance/release.sh 0.4.0 --dry-run   # the checks, the changes and the notes
 libexec/maintenance/release.sh 0.4.0
 ```
 
-It checks the tree and the changelog and runs `hct self test`, then bumps
-`VERSION`, dates the changelog section and updates the README's status line
+It checks the tree and that there are changes to release, and runs `hct self test`, then bumps
+`VERSION`, moves the fragments into a dated changelog section and updates the README's status line
 in a pull request, merges it when CI passes, tags `v0.4.0` and publishes a
 GitHub release with the changelog section as its notes. The installer
 installs the newest tag. Before 1.0, a release that changes behaviour bumps

@@ -1,10 +1,25 @@
 name: CI
 
+# Documentation-only changes skip this workflow; docs.yml checks them.
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "changelog.d/**"
+      - "assets/**"
+      - "LICENSE.md"
+      - "llms.txt"
   pull_request:
     branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "changelog.d/**"
+      - "assets/**"
+      - "LICENSE.md"
+      - "llms.txt"
 
 # A new push to a pull request cancels its run still going; every commit on
 # main keeps its own run.

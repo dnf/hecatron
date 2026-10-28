@@ -5,11 +5,13 @@
 #   libexec/maintenance/release.sh 0.3.0
 #
 # 1. Checks: on main, clean and up to date with origin; gh signed in; the
-#    version is X.Y.Z, newer than VERSION, and not tagged yet; CHANGELOG.md
-#    has an "## Unreleased" section with entries; `hecatron self test` passes.
-# 2. On a release-X.Y.Z branch: VERSION, the Unreleased heading becomes
-#    "## X.Y.Z (date)" under a new empty Unreleased, and the README's
-#    "version X.Y" status line.
+#    version is X.Y.Z, newer than VERSION, and not tagged yet; there are
+#    changes to release (changelog.d/ fragments, or entries under CHANGELOG.md's
+#    "## Unreleased"); `hecatron self test` passes.
+# 2. On a release-X.Y.Z branch: VERSION; the Unreleased heading becomes
+#    "## X.Y.Z (date)" under a new empty Unreleased, with the changelog.d/
+#    fragments added to it in the order they were merged and removed; and the
+#    README's "version X.Y" status line.
 # 3. A pull request, merged (squash) once its CI passes.
 # 4. The tag vX.Y.Z on the merge commit, and a GitHub release whose notes are
 #    the changelog section.
@@ -41,6 +43,8 @@ newer() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -t. -k1,1n
 
 # The changelog's Unreleased entries (between its heading and the next one).
 unreleased_entries() { awk '/^## Unreleased$/ {on = 1; next} /^## / {on = 0} on' CHANGELOG.md; }
+# Each pull request's entries, one file each (changelog.d/README.md).
+fragments() { find changelog.d -name '*.md' ! -name README.md 2>/dev/null; }
 # A released section's text, for the release notes, with the repository's
 # relative links made absolute (a release page has no repository to resolve
 # them against).
@@ -67,19 +71,31 @@ check() {
     newer "${_version}" "${_released}" || fail "${_version} isn't newer than ${_released}"
     if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
         grep -qx '## Unreleased' CHANGELOG.md || fail "CHANGELOG.md has no '## Unreleased' section"
-        [ -n "$(unreleased_entries | tr -d '[:space:]')" ] || fail "CHANGELOG.md's Unreleased section is empty"
+        [ -n "$(unreleased_entries | tr -d '[:space:]')" ] || [ -n "$(fragments)" ] ||
+            fail "nothing to release: no changelog.d/ fragments and CHANGELOG.md's Unreleased section is empty"
     fi
     bin/hecatron self test >/dev/null 2>&1 || fail "hecatron self test fails; run it to see why"
 }
 
+# The fragments, oldest merge first: the order the changes landed.
+fragments_in_merge_order() {
+    local _fragment
+    fragments | while read -r _fragment; do
+        printf '%s %s\n' "$(git log -1 --diff-filter=A --format=%ct -- "${_fragment}")" "${_fragment}"
+    done | sort -n -k1,1 -k2,2 | cut -d' ' -f2-
+}
+
 bump() {
     echo "${_version}" > VERSION
-    python3 - "${_version}" "${_date}" <<'EOF'
+    # Fragment names are branch names: no spaces.
+    # shellcheck disable=SC2046
+    python3 - "${_version}" "${_date}" $(fragments_in_merge_order) <<'EOF'
 import re, sys
-version, date = sys.argv[1], sys.argv[2]
+version, date, paths = sys.argv[1], sys.argv[2], sys.argv[3:]
+added = "".join("\n" + open(path).read().strip() + "\n" for path in paths)
 with open("CHANGELOG.md") as f:
     text = f.read()
-text = text.replace("## Unreleased\n", f"## Unreleased\n\n## {version} ({date})\n", 1)
+text = text.replace("## Unreleased\n", f"## Unreleased\n\n## {version} ({date})\n{added}", 1)
 with open("CHANGELOG.md", "w") as f:
     f.write(text)
 major_minor = ".".join(version.split(".")[:2])
@@ -89,6 +105,7 @@ text = re.sub(r"(Hecatron is young: version )\d+\.\d+\.", rf"\g<1>{major_minor}.
 with open("README.md", "w") as f:
     f.write(text)
 EOF
+    fragments | while read -r _fragment; do git rm --quiet "${_fragment}"; done
     # The Agent Skill and its plugin carry the version too.
     python3 libexec/codegen/skill.py
 }
@@ -101,7 +118,8 @@ if [ "${_dry_run}" -eq 1 ]; then
     git --no-pager diff -- VERSION README.md
     say "Release notes:"
     release_notes
-    git checkout --quiet -- VERSION CHANGELOG.md README.md plugins/
+    git reset --quiet -- changelog.d
+    git checkout --quiet -- VERSION CHANGELOG.md README.md plugins/ changelog.d
     exit 0
 fi
 

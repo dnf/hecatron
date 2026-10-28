@@ -64,6 +64,11 @@ bin/hecatron self test    # shellcheck (zero warnings), then the unit tests
   every place to update. `tests/test_language_count.py` fails on a marked
   line with another count and on an unmarked line stating it. CHANGELOG.md
   is history and is exempt.
+- **Changelog fragments.** A user-visible change adds
+  `changelog.d/<branch>.md` (entries as they'll read in CHANGELOG.md); never
+  edit CHANGELOG.md's Unreleased section, which conflicts with every other
+  open pull request. `release.sh` gathers the fragments. A change users can't
+  see adds none and gets the `no changelog` label.
 - **Name over comment.** Extract a named function or variable instead of a
   comment explaining what a line does; comments explain why.
 
