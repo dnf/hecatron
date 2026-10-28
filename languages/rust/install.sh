@@ -49,9 +49,22 @@ _install_versions() {
         rustup toolchain install "${toolchain}" --profile default </dev/null
     done <<<"${specs}"
 }
+# Components rustup leaves out of the default profile that crates need:
+# rust-src for ui_test's UI tests (it builds them against the standard
+# library's sources), in every toolchain the project uses.
+_install_components() {
+    local toolchain
+    grep -qx ui_test <<<"$(cargo_lock_crates rust)" || return 0
+    log "Adding rust-src, which ui_test's UI tests need..."
+    while IFS= read -r toolchain; do
+        [ -n "${toolchain}" ] || continue
+        rustup component add rust-src --toolchain "${toolchain}" </dev/null
+    done < <(rustup toolchain list | sed 's/ .*//')
+}
 deps() {
     _install_versions
     cargo_dependencies rust
+    _install_components
 }
 
 log "Installing Rust..."
