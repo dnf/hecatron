@@ -1,1 +1,0 @@
-- A fresh install from `install.sh` no longer prints git's "is not a commit" warning and its detached HEAD advice.

@@ -6,6 +6,182 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+## 0.6.0 (2026-10-28)
+
+- **Detection:** dotfiles aren't sources (a `.nvim.lua` no longer adds
+  Lua); Lua isn't detected from premake build scripts, nor R from an
+  Octave package's `DESCRIPTION`.
+
+- **Default hooks find more layouts:** PHP's test and deps hooks use the
+  nearest `composer.json` above (a root one covering `lang/php`, running
+  its PHPUnit on the directory's `phpunit.xml`); Dart's test hook tests the
+  packages below with a `test/` (a pub workspace's root, `pkgs/*`); R's
+  tests each package below with `tests/testthat/` (`R-package/`), and its
+  deps hook installs a `DESCRIPTION`'s missing dependencies from CRAN
+  (`hct install r` now fetches them); Ruby compiles a gem's native
+  extension (`rake compile`) before testing; Racket links sibling packages
+  (each with its `info.rkt`) before `raco test`; Elm runs
+  `elm-explorations/test` 1.x on the last elm-test supporting it, with
+  Elm 0.19.1.
+
+- **Installs:** PHP installs the extensions a `composer.json` or its
+  dependencies require (`ext-curl`, `ext-mongodb`...) where packages
+  exist; opam installs the system packages dependencies need; Tcl installs
+  `make` for TEA extensions' tests.
+
+- **Node.js workspaces built before their tests:** when a package in the
+  workspace a test runs in needs building (a native addon or entry point
+  not built yet), `hct test typescript` and `hct test javascript` build
+  the workspace first (`pnpm -r run build`, `npm run build --workspaces`,
+  Yarn's `workspaces foreach --topological run build`), so a root `test`
+  script that runs every package's tests, or a package importing another
+  one's `dist/`, finds them built.
+
+- **.NET's `rollForward: latestMajor` is a floor:** a `global.json` asking
+  for SDK 8.0.100 or later now gets hecatron's default SDK (10), or the
+  newest of its own major when that is newer than the default, raised to
+  the newest major the component's projects target (`net11.0` needs SDK
+  11). Before, it read as SDK 8, which can't build a project targeting
+  `net10.0`. Definitions name such files in the new `floorFiles` key.
+
+- **`hct self`:** hecatron's own commands take a space, as `rustup self`
+  and `uv self` do: `hct self update`, `hct self test` and `hct self
+  build`; `hct self` lists them. `self-test` and `self-build` still work.
+
+- **`hct self update`:** updates an installation install.sh made to the
+  latest release (or `--version X.Y.Z`), its binary checked against the
+  release's `SHA256SUMS` and the new version swapped in whole, so a
+  failure leaves the old one working; rewrites `env` and `env.fish` as
+  install.sh does, so new PATH entries (the toolchains' links) take
+  effect; refreshes the Agent Skill `hct skill install` put in place. `--check` only reports (exit 3: a newer release).
+  Once a day at most, a release binary looks for a newer release in the
+  background and says so in one line after a command, on a terminal in
+  human output only (never in CI, agent or JSON output, or with
+  `HECATRON_NO_UPDATE_CHECK=1`); `hct status` reports it from that check.
+  Hecatron never updates itself. Needs the binary.
+
+- **Detection:** a language whose build files are all more than three
+  levels below the directory the layout gives it (antlr4's Go module in
+  `runtime/Go/antlr/v4`, jsii's in `packages/@jsii/...`) gets its own
+  `implPaths` entry instead, since the hooks look no deeper and failed with
+  "no go.mod here, below, or above it"; files under `vendored/` no longer
+  make a language.
+
+- **JVM and .NET builds in real projects:** a Java, Kotlin, Scala or
+  Groovy directory inside a Gradle build that isn't one of its projects
+  (`moshi/src/main/java`) runs Gradle from the project it belongs to,
+  instead of failing as "not part of the build"; a Kotlin Multiplatform
+  build without a `test` task runs `jvmTest`, else `allTests`; a
+  multi-module Maven build tests through the package phase; Mill builds (`build.mill`) are tested;
+  the JVM gets a UTF-8 locale when none is set; Maven, Gradle and sbt are
+  installed for builds below the language's directory too. .NET tests roll
+  forward to the installed runtime (a test project targeting net8.0 runs on
+  .NET 10), and a directory with several projects and no solution tests
+  each test project. A Clojure project with `deps.edn` but no `:test`
+  alias tests with Leiningen when it has `project.clj`. A Gradle build's
+  toolchain JDK is found from its root and its version catalog
+  (`libs.versions.jdk`), so a source directory's build gets it installed,
+  and a build whose `java` is a runtime without `javac` (a JRE another
+  package pulled in) runs on the newest installed JDK.
+
+- **`hct dockerfile`:** the generated Dockerfile gives curl a config file
+  (through `CURL_HOME`) with the installers' retry policy plus
+  `--retry-all-errors`, so a transient download failure, such as a dropped
+  TLS connection to api.adoptium.net, is retried instead of failing the
+  build. It applies to every `curl` in the build and in the image.
+
+- **Python tests in monorepos:** `hct test python` in a directory without
+  a `pyproject.toml`, `setup.py` or `setup.cfg` now tests the Python
+  projects in the directories below (`py-polars/`, `python-package/`),
+  each in its own environment, instead of running pytest over the whole
+  tree; with none below, pytest runs there on its own as before.
+
+- **Swift:** a package that declares no test target (a C library's
+  `Package.swift` for SwiftPM users) passes `hct test` instead of failing
+  on "no tests found".
+
+- **pnpm and Yarn for every language's hooks:** Corepack's pnpm and Yarn
+  shims live in `~/.cache/hecatron/corepack-shims`, which `hct install`
+  now creates when a package needs them and which is a static `path`
+  entry of JavaScript and TypeScript, so another language's build or
+  tests that run `pnpm` (a Rust test in a pnpm monorepo) find it.
+
+- **Bash is detected from a Bats suite:** a definition's `detectTests`
+  (Bash's `*.bats`) count in `test/` and `tests/` for a language not
+  otherwise found, placing it at the directory tested, so bats-core and
+  Bash-it are Bash projects. Bash's test hook leaves out `.bats` files
+  under a `fixtures/` directory, which are test data.
+
+- **Fixed: a random "Unknown language", skipped dependencies or wrong doctor
+  result under load.** The shell scripts checked list membership by piping
+  into `grep -q`; when grep matched early, the writer was killed and, under
+  `pipefail`, the check said "not found". They now use a plain loop (#197).
+
+- **A Kotlin JVM target picks the JDK:** a Gradle build whose Kotlin sets
+  `jvmTarget` (11 or later) and that sets no Java target or toolchain runs on
+  that JDK, which `hct install` installs, instead of failing Kotlin's check
+  that Java and Kotlin target the same JVM.
+
+- **JDK 8 installs:** a Gradle or Maven toolchain asking for JDK 8 gets
+  Temurin 8, whose releases are named `jdk8u412-b08`. Before, `hct install`
+  failed with "No Temurin JDK release matches 8" and installed no other JDK
+  the build needed either.
+
+- **Native builds:** C, C++ and Objective-C build with CMake or Meson in
+  `_build/` when the project tracks files in `build/` (configuring into it
+  mixed build output with its sources, and `hct clean` deleted them); a CMake
+  project that never sets up a test passes `hct test` after building instead
+  of failing on "No tests were found"; installers install Meson and Ninja
+  where a component builds with Meson, pkg-config (which Makefiles call)
+  with C and C++, and the libraries PCRE2 and cJSON where a CMake build
+  looks for them.
+
+- **Native tests:** a CMake project that calls `enable_testing()` in a
+  subdirectory rather than at its top level (Zstandard) runs its CTest tests
+  from that subdirectory's build directory instead of failing on "No tests
+  were found"; a Makefile project builds its default target before `make
+  check` or `make test` (Redis's tests run programs only `make` builds); and
+  a Meson build directory a failed setup left behind is set up again.
+
+- **Rust's system dependencies:** `hct install rust` installs what a
+  component's crates build with, read from its Cargo.lock files: the
+  libraries common `-sys` crates link (OpenSSL, GLib, GTK and WebKitGTK,
+  D-Bus, ALSA...), Python's headers for PyO3, and the tools build
+  dependencies run (CMake for the `cmake` crate and zlib-ng, `protoc` for
+  prost-build unless protoc is vendored, Cap'n Proto, libclang for bindgen),
+  and the `rust-src` component where ui_test's UI tests need it.
+
+- **Python test dependencies in dependency groups:** `hct test python`
+  and `hct deps python` now install every PEP 735 dependency group
+  (`uv run --all-groups`, `uv sync --all-groups`), not only `dev`, so
+  test dependencies kept in a `test` or `tests` group are there.
+
+- **Meson versions:** where a `meson.build` asks for a newer Meson
+  (`project(..., meson_version: '>=1.8.3')`) than the one installed, `hct
+  doctor` reports it and `hct install c` (or `cpp`, `objectivec`) installs
+  the current Meson from PyPI as a uv tool on Linux, whose distribution
+  Meson lags (Ubuntu 24.04's 1.3 can't build NumPy or SciPy).
+
+- **Rust's system dependencies:** `hct install rust` reads every Cargo.lock
+  in the project outside the trees detection skips (examples, tests,
+  vendored code...), not only those of the Rust components, so a crate
+  another language's build compiles (a Java binding's Maven build running
+  cargo) gets what it needs too, such as `protoc`.
+
+- **Rust tests:** `hct test rust` runs `cargo test` rather than `cargo test
+  --all-targets`: Cargo's default targets, now with doctests, and without
+  running benchmarks as tests (a nightly-only benchmark broke stable builds,
+  and others fail or run long in test mode).
+
+- A fresh install from `install.sh` no longer prints git's "is not a commit" warning and its detached HEAD advice.
+
+- **`hct self uninstall`** removes hecatron: `~/.hecatron`, its lines in
+  your shell's startup files and fish's conf.d, and its Agent Skill. It
+  asks first (`--yes` skips the question). The toolchains it installed
+  stay; `--all` also removes those it unpacked (`~/.local/share/hecatron`)
+  and its download cache (`~/.cache/hecatron`). Run from a checkout, it
+  keeps the checkout.
+
 - **Node.js packages built before their tests:** `hct test typescript`
   and `hct test javascript` first build a package whose tests need it
   built: a native addon (napi-rs, node-gyp) not built yet, or an entry
