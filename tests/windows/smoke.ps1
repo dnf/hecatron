@@ -95,3 +95,4 @@ if ($failures) {
     exit 1
 }
 Write-Host 'All native commands ran.'
+exit 0 # not the last hct's status, which the runner would take

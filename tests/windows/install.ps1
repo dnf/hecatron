@@ -64,3 +64,4 @@ try {
     Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue
 }
 Write-Host 'install.ps1 works.'
+exit 0
