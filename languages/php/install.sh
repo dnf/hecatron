@@ -126,16 +126,23 @@ _extension_package() {
 
 # The extensions the project requires that a line lacks, from its packages
 # where they exist: one that isn't packaged stays the project's to provide.
+# Again while that adds some: Composer's dry run names one dependency's
+# missing extensions at a time.
 _install_extensions() {
-    local line="$1" ext package loaded missing=()
-    loaded="$("/usr/bin/php${line}" -m 2>/dev/null | tr '[:upper:]' '[:lower:]')"
-    while IFS= read -r ext; do
-        [ -n "${ext}" ] || continue
-        grep -qx "${ext}" <<<"${loaded}" && continue
-        package="$(_extension_package "${line}" "${ext}")"
-        if apt_has "${package}"; then missing+=("${package}"); fi
-    done < <(_required_extensions)
-    [ "${#missing[@]}" -eq 0 ] || apt_install "${missing[@]}"
+    local line="$1" ext package loaded missing round
+    for round in 1 2 3 4 5; do
+        loaded="$("/usr/bin/php${line}" -m 2>/dev/null | tr '[:upper:]' '[:lower:]')"
+        missing=()
+        while IFS= read -r ext; do
+            [ -n "${ext}" ] || continue
+            grep -qx "${ext}" <<<"${loaded}" && continue
+            package="$(_extension_package "${line}" "${ext}")"
+            if apt_has "${package}"; then missing+=("${package}"); fi
+        done < <(_required_extensions)
+        [ "${#missing[@]}" -gt 0 ] || return 0
+        log "PHP ${line}: installing extensions the project requires (round ${round}): ${missing[*]}"
+        apt_install "${missing[@]}"
+    done
 }
 
 _install_versions() {
