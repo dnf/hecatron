@@ -27,6 +27,8 @@ minor version can change behaviour. Numbers are
   command appends a table of languages and components with status and
   time, then each failure's error lines, log and rerun command; `audit`,
   `licenses` and `advisor` add their findings (#101).
+- **The run commands' help lists `--output`, `--timeout` and `--changed`**
+  (`hct test help`), noting that they need hecatron's binary.
 
 ## 0.5.0 (2026-10-28)
 
