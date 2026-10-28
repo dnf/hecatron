@@ -6,7 +6,8 @@
 # A language is healthy when the build and lint dependencies named in its
 # config.json run, and its doctor.sh (the project's, else the built-in one)
 # passes. A doctor.sh prints one line per problem and exits non-zero when it
-# finds any. With --fix, an unhealthy language's install.sh runs (installers
+# finds any; a line starting "note: " is shown under the language but isn't a
+# problem. With --fix, an unhealthy language's install.sh runs (installers
 # repair the states their doctor.sh detects), and the language is checked again.
 set -euo pipefail
 
@@ -73,21 +74,32 @@ _problems() (
     fi
 )
 
+# A doctor.sh line starting "note: " is worth saying (which toolchain a
+# component pairs with which) but isn't a problem.
+_notes_of() { printf '%s\n' "$1" | sed -n 's/^note: //p'; }
+_problems_of() { printf '%s\n' "$1" | grep -v '^note: ' || true; }
+
 _unhealthy=()
 for _lang in "${_langs[@]}"; do
-    _found="$(_problems "${_lang}")"
+    _output="$(_problems "${_lang}")"
+    _found="$(_problems_of "${_output}")"
     if [ -n "${_found}" ] && ${_fix}; then
         _installer="$(_resolve "${_lang}" install.sh)"
         echo "${_lang}: repairing with ${_installer}"
         bash "${_installer}" || true
-        _found="$(_problems "${_lang}")"
+        _output="$(_problems "${_lang}")"
+        _found="$(_problems_of "${_output}")"
     fi
+    _notes="$(_notes_of "${_output}")"
     if [ -z "${_found}" ]; then
         printf '  ok    %s\n' "${_lang}"
     else
         printf '  FAIL  %s\n' "${_lang}"
         printf '%s\n' "${_found}" | sed 's/^/          /'
         _unhealthy+=("${_lang}")
+    fi
+    if [ -n "${_notes}" ]; then
+        printf '%s\n' "${_notes}" | sed 's/^/          /'
     fi
     # A component whose version comes from what it supports or its commit's
     # date (docs/design.md §18), so nobody wonders where the version came from.

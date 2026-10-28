@@ -503,7 +503,10 @@ modules by path.
 
 Unchanged from sayable's design, now shared: `doctor` checks each language's
 `dependency` and `lintDependency` commands from `config.json`, then runs the
-optional `doctor.sh`, which reports one `problem` per line. Installers are
+optional `doctor.sh`, which reports one `problem` per line. A line starting
+`note: ` (`note` in `_common.sh`) is shown under the language, like the
+version notes, but isn't a problem: a language with only notes is healthy,
+and `--fix` repairs only problems. Installers are
 idempotent and repair what their doctor detects (a linter built with an older
 Go, luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula).
 `doctor --fix` runs the installer of each unhealthy language and checks
