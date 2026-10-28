@@ -313,6 +313,17 @@ class InitTest(Fixture):
         self.assertEqual((config["languages"], config["implPath"], config.get("implPaths")),
                          (["go", "rust"], "{lang}", None))
 
+    def test_a_build_file_deeper_than_the_hooks_look_gets_its_own_path(self):
+        # antlr4: languages at the root, and Go's module four levels down,
+        # deeper than the Go hook looks below the root.
+        config = self.detected({"CMakeLists.txt": "", "src/a.cpp": "", "runtime/Go/antlr/v4/go.mod": "module x\n",
+                                "runtime/Go/antlr/v4/a.go": "", "pyproject.toml": ""})
+        self.assertEqual((config["implPath"], config.get("implPaths")), (".", {"go": "runtime/Go/antlr/v4"}))
+
+    def test_templates_are_not_the_project(self):
+        config = self.detected({"Cargo.toml": "", "crates/cli/src/templates/go.mod": "module x\n"})
+        self.assertEqual(config["languages"], ["rust"])
+
     def test_init_writes_a_path_for_a_language_outside_the_layout(self):
         write(self.path("go", "go.mod"), "module x\n")
         write(self.path("java", "pom.xml"), "<project/>\n")

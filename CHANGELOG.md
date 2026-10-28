@@ -22,6 +22,14 @@ minor version can change behaviour. Numbers are
   dependencies run (CMake for the `cmake` crate and zlib-ng, `protoc` for
   prost-build unless protoc is vendored, Cap'n Proto, libclang for bindgen).
 
+- **Detection:** a language whose build files are all more than three
+  levels below the directory the layout gives it (antlr4's Go module in
+  `runtime/Go/antlr/v4`, jsii's in `packages/@jsii/...`) gets its own
+  `implPaths` entry instead, since the hooks look no deeper and failed with
+  "no go.mod here, below, or above it"; files under `templates/` (project
+  scaffolding a tool generates from), `test_data/`, `tests_data/` and
+  `vendored/` no longer make a language.
+
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
   checksum file, or the publisher's index). Gleam and Zig install that way,

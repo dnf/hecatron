@@ -20,8 +20,9 @@ import (
 // language's directory is placed there.
 var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildSrc": true, "demo": true, "demos": true,
 	"doc": true, "docs": true, "example": true, "examples": true, "external": true, "fixtures": true,
-	"hooks": true, "node_modules": true, "playground": true, "sample": true, "samples": true, "test": true,
-	"testdata": true, "tests": true, "third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true}
+	"hooks": true, "node_modules": true, "playground": true, "sample": true, "samples": true, "templates": true, "test": true,
+	"test_data": true, "testdata": true, "tests": true, "tests_data": true, "third_party": true, "tools": true,
+	"tutorial": true, "tutorials": true, "vendor": true, "vendored": true}
 
 // preferredParents are where projects keep per-language code; when layouts
 // disagree, one under these (or at the root) beats one covering more
@@ -155,6 +156,10 @@ func splitByDir(files []string) (byDir, skipped namesByDir) {
 // for a language without detectSources, which can't tell its sources, any
 // file when the directory sits at the root or under a preferredParents
 // directory (Thrift's lib/go, not a languages/go/ holding Go's definition).
+// A build file deeper than the hooks look for one (hookSearchDepth levels
+// below) doesn't count, and with only such build files the directory
+// doesn't hold the language: its hooks would find no build (antlr4's
+// runtime/Go/antlr/v4/go.mod under the root).
 func holdsLanguage(byDir namesByDir, defs []detection) func(lang, directory string) (bool, error) {
 	byLang := map[string]detection{}
 	for _, d := range defs {
@@ -162,19 +167,57 @@ func holdsLanguage(byDir namesByDir, defs []detection) func(lang, directory stri
 	}
 	return func(lang, directory string) (bool, error) {
 		d := byLang[lang]
-		patterns := append(append([]string(nil), d.detect...), d.sources...)
-		inside := false
+		inside, nearBuild, deepBuild := false, false, false
 		for sub, names := range byDir {
-			if !under(sub, directory) {
+			if under(sub, directory) {
+				inside = true
+				if matched, err := anyMatch(names, d.sources); err != nil || matched {
+					return matched, err
+				}
+			}
+			if directory != "." && !under(sub, directory) {
 				continue
 			}
-			inside = true
-			if matched, err := anyMatch(names, patterns); err != nil || matched {
-				return matched, err
+			matched, err := anyMatch(names, d.detect)
+			if err != nil {
+				return false, err
 			}
+			if matched && depthBelow(sub, directory) <= hookSearchDepth {
+				nearBuild = true
+			}
+			deepBuild = deepBuild || matched
 		}
-		return len(d.sources) == 0 && inside && preference(directory)[0] == 0, nil
+		if nearBuild {
+			return true, nil
+		}
+		return !deepBuild && len(d.sources) == 0 && inside && preference(directory)[0] == 0, nil
 	}
+}
+
+// hookSearchDepth is how many levels below a directory the default hooks
+// look for a build file (dirs_below_with in languages/_hooks.sh).
+const hookSearchDepth = 3
+
+// allDeeper is whether every directory is deeper below the root than the
+// hooks look.
+func allDeeper(dirs dirSet) bool {
+	for directory := range dirs {
+		if depthBelow(directory, ".") <= hookSearchDepth {
+			return false
+		}
+	}
+	return true
+}
+
+func depthBelow(sub, directory string) int {
+	depth := 0
+	if sub != "." {
+		depth = len(strings.Split(sub, "/"))
+	}
+	if directory != "." {
+		depth -= len(strings.Split(directory, "/"))
+	}
+	return depth
 }
 
 func anyMatch(names map[string]bool, patterns []string) (bool, error) {
@@ -554,7 +597,22 @@ func InferLayout(found map[string]dirSet, names map[string][]string,
 		}
 	}
 	if len(templates) == 0 {
-		return Layout{Components: []string{"."}, ImplPath: ".", ImplPaths: map[string]string{}}, nil
+		// Every language at the root, unless its hooks would find no build
+		// from there: one whose files are all deeper than they look.
+		overrides := map[string]string{}
+		for lang, dirs := range found {
+			if holds == nil || !allDeeper(dirs) {
+				continue
+			}
+			held, err := holds(lang, ".")
+			if err != nil {
+				return Layout{}, err
+			}
+			if !held {
+				overrides[lang] = ownDirectory(dirs)
+			}
+		}
+		return Layout{Components: []string{"."}, ImplPath: ".", ImplPaths: overrides}, nil
 	}
 	var split [][]string
 	lengths := map[int]bool{}
