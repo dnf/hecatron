@@ -33,9 +33,9 @@ var preferredParents = map[string]bool{"bindings": true, "ffi": true, "lang": tr
 
 // detection is what one built-in definition says about finding it.
 type detection struct {
-	lang                                   string
-	detect, sources, unless, shared, names []string
-	script                                 string
+	lang                                          string
+	detect, sources, unless, shared, names, tests []string
+	script                                        string
 }
 
 // detectionDefinitions are the built-in definitions' detection keys, in
@@ -63,7 +63,7 @@ func detectionDefinitions(home Home) ([]detection, error) {
 		}
 		d := detection{lang: lang}
 		for key, target := range map[string]*[]string{"detect": &d.detect, "detectSources": &d.sources,
-			"detectUnless": &d.unless, "sharedBuildFiles": &d.shared, "dirNames": &d.names} {
+			"detectUnless": &d.unless, "sharedBuildFiles": &d.shared, "dirNames": &d.names, "detectTests": &d.tests} {
 			if raw, present := object.Get(key); present {
 				if *target, err = toStrings(raw, lang+" "+key); err != nil {
 					return nil, err
@@ -329,6 +329,17 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 			}
 			fromSources[d.lang] = true
 		}
+		if len(directories) == 0 && len(d.tests) > 0 {
+			inTests, err := hits(skipped, d.tests, nil)
+			if err != nil {
+				return nil, err
+			}
+			for directory := range inTests {
+				if tested, ok := testedDirectory(directory); ok {
+					directories[tested] = true
+				}
+			}
+		}
 		if len(directories) > 0 {
 			result.Found[d.lang] = directories
 			continue
@@ -397,6 +408,26 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 		}
 	}
 	return result, nil
+}
+
+// testedDirectory is the directory a test directory (test/ or tests/, in
+// any case) tests: its parent. Not ok when the test directory is itself in
+// skipped code (vendor/x/test/) or the directory isn't in one.
+func testedDirectory(directory string) (string, bool) {
+	parts := strings.Split(directory, "/")
+	for i, part := range parts {
+		lower := strings.ToLower(part)
+		if lower == "test" || lower == "tests" {
+			if i == 0 {
+				return ".", true
+			}
+			return strings.Join(parts[:i], "/"), true
+		}
+		if skippedDirs[lower] {
+			return "", false
+		}
+	}
+	return "", false
 }
 
 // sharedSources counts the language's source files in a directory and

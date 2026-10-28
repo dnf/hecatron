@@ -238,6 +238,13 @@ class InitTest(Fixture):
                                {"rust": {"detect": ["Cargo.toml"]}, "lua": {"detect": [], "detectSources": ["*.lua"]}})
         self.assertEqual(found, {"rust": {"."}})
 
+    def test_a_test_suite_names_the_language_of_the_directory_it_tests(self):
+        # bats-core and Bash-it: Bash, found only by their Bats suites.
+        defs = {"bash": {"detect": [], "detectTests": ["*.bats"]}, "go": {"detect": ["go.mod"]}}
+        found, _ = self.detect({"test/a.bats": "", "cli/Tests/b.bats": "", "vendor/y/test/c.bats": "",
+                                "go.mod": ""}, defs)
+        self.assertEqual(found, {"bash": {".", "cli"}, "go": {"."}})
+
     def test_build_files_outrank_sources(self):
         found, _ = self.detect({"java/pom.xml": "", "java/src/main/A.java": "", "tools/B.java": "",
                                 "kt/x.kt": ""},

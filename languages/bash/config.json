@@ -6,6 +6,9 @@
   "dependency": "bash",
   "lintDependency": "shellcheck",
   "detect": [],
+  "detectTests": [
+    "*.bats"
+  ],
   "buildSystems": [],
   "testing": "Bats",
   "linting": "ShellCheck"

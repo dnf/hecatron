@@ -544,7 +544,9 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
       TypeScript), and, for a language with a "detectScript", where its
       package.json has no such npm script (Cucumber's jsonschema/, tooling
       with no test script).
-    - Nothing under SKIPPED_DIRS counts.
+    - Nothing under SKIPPED_DIRS counts, except a language's "detectTests"
+      (Bats' *.bats) in a test/ or tests/ directory, for a language
+      otherwise not found: it is the language of the directory tested.
     - A language found only by its sources keeps only the directories
       outside every other language's (protobuf's C in upb/, not the native
       extensions in python/ and ruby/), and isn't added when there are none
@@ -603,6 +605,9 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
         if not directories and sources:
             directories = source_hits(by_dir, sources, unless)
             from_sources.add(lang)
+        if not directories and d.get("detectTests"):
+            directories = {_tested_directory(directory) for directory in hits(skipped_dirs, d["detectTests"], [])}
+            directories.discard(None)
         if directories:
             found[lang] = directories
         elif hits(skipped_dirs, d.get("detect", []) + sources, unless):
@@ -623,6 +628,19 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
             not_added[lang] = f"its files are all inside {', '.join(everyone)}'s directories"
             del found[lang]
     return found, not_added
+
+
+def _tested_directory(directory: str) -> str | None:
+    """The directory a test directory (test/ or tests/, in any case) tests:
+    its parent. None when the test directory is itself in skipped code
+    (vendor/x/test/) or the directory isn't in one."""
+    parts = directory.split("/")
+    for i, part in enumerate(parts):
+        if part.lower() in ("test", "tests"):
+            return "/".join(parts[:i]) or "."
+        if part.lower() in SKIPPED_DIRS:
+            return None
+    return None
 
 
 def _has_npm_script(root: str, directory: str, script: str) -> bool:
