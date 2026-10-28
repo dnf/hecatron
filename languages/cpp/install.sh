@@ -7,6 +7,7 @@ install_linux() { apt_install build-essential cmake; }
 
 deps() {
     cmake_dependencies cpp
+    if meson_missing cpp; then meson_install; fi
     # uv runs the pinned clang-format hecatron format uses (languages/_format.sh).
     if clang_format_missing cpp; then uv_install; fi
 }

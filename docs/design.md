@@ -321,7 +321,11 @@ directory, scoped to it as far as the tool allows; elsewhere the hook acts
 where the build file is (`swift --package-path`, the CMake project's
 `build/`). A CMake or Meson file counts only when it declares a `project()`,
 and a root Makefile only through a target named for the directory or language
-(`check_cxx` for `cxx/`). Node.js hooks and installers use the package manager
+(`check_cxx` for `cxx/`). CMake and Meson build in `build/`, or `_build/`
+when the project keeps files of its own in `build/` (Zstandard's CMake
+build); a CMake project whose files never set up a test (no `add_test`,
+`enable_testing` or CTest) has nothing to test, and its test hook skips
+after building, while one that does but registered none fails. Node.js hooks and installers use the package manager
 the package declares (`packageManager`, else its lockfile, here or in the
 workspace above; pnpm and Yarn through Corepack), installing Corepack or Bun
 only when a component needs them.
