@@ -9,9 +9,10 @@
 // Ported: --version, help, the run commands (test, lint, build, clean,
 // rebuild, retest, audit, format, deps, outdated: run.go), doctor
 // (doctor.go; each language's doctor.sh stays bash), version's help, list,
-// env (with a language, its environment for a component), status, sync, advisor, and the
+// env (with a language, its environment for a component), status, sync, advisor, the
 // project commands (init, add, remove, enable, disable, check, dockerfile,
-// workflows: manage.go, init.go). The prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
+// workflows: manage.go, init.go), and install and uninstall (install.go; each
+// language's install.sh and uninstall.sh stay bash). The prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
 
 import (
@@ -123,6 +124,8 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"dockerfile": (*cli).dockerfile,
 	"workflows":  (*cli).workflows,
 	"version":    (*cli).versionHelp,
+	"install":    (*cli).install,
+	"uninstall":  (*cli).uninstall,
 }
 
 // findProject finds the project (like git). A git repository with no
