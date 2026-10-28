@@ -194,9 +194,29 @@ func anyMatch(names map[string]bool, patterns []string) (bool, error) {
 // hits are the directories with a name matching patterns and none matching
 // unless.
 func hits(dirs namesByDir, patterns, unless []string) (dirSet, error) {
+	return hitsAmong(dirs, patterns, unless, false)
+}
+
+// sourceHits are hits for source files, leaving out dotfiles: a .nvim.lua
+// or .eslintrc.js configures an editor or a tool, it isn't the project's
+// code.
+func sourceHits(dirs namesByDir, sources, unless []string) (dirSet, error) {
+	return hitsAmong(dirs, sources, unless, true)
+}
+
+func hitsAmong(dirs namesByDir, patterns, unless []string, noDotfiles bool) (dirSet, error) {
 	found := dirSet{}
 	for directory, names := range dirs {
-		matched, err := anyMatch(names, patterns)
+		candidates := names
+		if noDotfiles {
+			candidates = map[string]bool{}
+			for name := range names {
+				if !strings.HasPrefix(name, ".") {
+					candidates[name] = true
+				}
+			}
+		}
+		matched, err := anyMatch(candidates, patterns)
 		if err != nil {
 			return nil, err
 		}
@@ -304,7 +324,7 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 			}
 		}
 		if len(directories) == 0 && len(d.sources) > 0 {
-			if directories, err = hits(byDir, d.sources, d.unless); err != nil {
+			if directories, err = sourceHits(byDir, d.sources, d.unless); err != nil {
 				return nil, err
 			}
 			fromSources[d.lang] = true

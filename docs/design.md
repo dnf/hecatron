@@ -393,6 +393,7 @@ saves it, as init would. Init itself:
    JavaScript unless a `tsconfig.json` makes it TypeScript), and a
    `package.json` without the definition's `detectScript` npm script doesn't
    count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
+   Dotfiles aren't sources (a `.nvim.lua` configures an editor).
    Examples, tests and test data, docs, tools, hooks, a generator's
    templates and vendored code (`examples/`, `tests/`, `tests_data/`,
    `tools/`, `hooks/`, `templates/`, `fixtures/`, `android/`,

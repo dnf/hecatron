@@ -227,6 +227,17 @@ class InitTest(Fixture):
         self.assertEqual(found, {"go": {"go"}})
         self.assertEqual(set(skipped), {"java", "groovy"})
 
+    def test_dotfiles_arent_sources(self):
+        # ripgrep's .nvim.lua configures an editor.
+        found, _ = self.detect({"Cargo.toml": "", ".nvim.lua": "", "lua/x.lua": ""},
+                               {"rust": {"detect": ["Cargo.toml"]}, "lua": {"detect": [], "detectSources": ["*.lua"]}})
+        self.assertEqual(found, {"rust": {"."}, "lua": {"lua"}})
+
+    def test_only_a_dotfile_adds_no_language(self):
+        found, _ = self.detect({"Cargo.toml": "", ".nvim.lua": ""},
+                               {"rust": {"detect": ["Cargo.toml"]}, "lua": {"detect": [], "detectSources": ["*.lua"]}})
+        self.assertEqual(found, {"rust": {"."}})
+
     def test_build_files_outrank_sources(self):
         found, _ = self.detect({"java/pom.xml": "", "java/src/main/A.java": "", "tools/B.java": "",
                                 "kt/x.kt": ""},

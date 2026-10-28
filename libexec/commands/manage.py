@@ -558,6 +558,14 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
         return {directory for directory, names in dirs.items()
                 if _matches(names, patterns) and not _matches(names, unless)}
 
+    def source_hits(dirs: dict[str, set[str]], sources: list[str], unless: list[str]) -> set[str]:
+        """hits for source files, leaving out dotfiles: a .nvim.lua or
+        .eslintrc.js configures an editor or a tool, it isn't the project's
+        code."""
+        return {directory for directory, names in dirs.items()
+                if _matches({name for name in names if not name.startswith(".")}, sources)
+                and not _matches(names, unless)}
+
     def count(names: set[str], patterns: list[str]) -> int:
         return sum(1 for name in names if any(fnmatch.fnmatch(name, pattern) for pattern in patterns))
 
@@ -593,7 +601,7 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
                 not_added[lang] = f"no {script} script"
                 continue
         if not directories and sources:
-            directories = hits(by_dir, sources, unless)
+            directories = source_hits(by_dir, sources, unless)
             from_sources.add(lang)
         if directories:
             found[lang] = directories
