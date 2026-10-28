@@ -3,7 +3,7 @@
 source "$(dirname "$0")/../_common.sh"
 
 install_macos() { brew_install cmake; }
-install_linux() { apt_install build-essential cmake; }
+install_linux() { apt_install build-essential cmake pkg-config; }
 
 deps() {
     cmake_dependencies cpp
