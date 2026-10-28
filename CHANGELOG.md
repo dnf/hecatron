@@ -31,6 +31,8 @@ minor version can change behaviour. Numbers are
   command appends a table of languages and components with status and
   time, then each failure's error lines, log and rerun command; `audit`,
   `licenses` and `advisor` add their findings (#101).
+- **The run commands' help lists `--output`, `--timeout` and `--changed`**
+  (`hct test help`), noting that they need hecatron's binary.
 - **OSV-Scanner for `hct licenses`:** every language `hct licenses` reads
   (TypeScript, JavaScript, Python, Go, Ruby, PHP, C#, F#, VB.NET and
   Clojure, besides those whose audit already used it) installs OSV-Scanner
