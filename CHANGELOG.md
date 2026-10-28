@@ -48,7 +48,6 @@ minor version can change behaviour. Numbers are
   the engine would install; the eleven languages converted so far come
   from apt, which isn't cached, so this grows with the languages moved to
   downloads.
-
 - **Uninstalling a language leaves shared and system software:** an
   `uninstall.sh` removes only what is the language's own and hecatron
   installed. A toolchain another language's installer also installs stays,
@@ -61,7 +60,6 @@ minor version can change behaviour. Numbers are
   Python builds, unless Mojo runs on one. PHP removes only the `-cli`,
   `-xml` and `-mbstring` packages its installer installs, instead of
   `php*` followed by `apt-get autoremove`. D also removes dub.
-
 - **Elixir versions:** Elixir installs side by side from builds.hex.pm's
   precompiled releases, with a default of 1.20.4 (it was Ubuntu's apt 1.14,
   which current libraries warn about), a `.tool-versions` or `mise.toml`
@@ -85,7 +83,6 @@ minor version can change behaviour. Numbers are
   whether it's installed (it never installs), and runs `hct check` when the
   config, hooks or generated files changed. Never pulls or fetches; needs
   the binary (#92).
-
 - **Reports every CI reads:** with the binary, `HECATRON_REPORT_DIR`
   receives JUnit XML from `hct test`, `lint` and `build` (a suite per
   language and component, with the tools' own test cases where they write
@@ -96,32 +93,25 @@ minor version can change behaviour. Numbers are
   beside the normal output; `--output junit` and `--output sarif` print one
   instead. The generated GitLab pipeline hands JUnit and Code Quality to
   the merge request widgets (#100).
-
 - **GitHub Actions job summary:** with `GITHUB_STEP_SUMMARY` set, each run
   command appends a table of languages and components with status and
   time, then each failure's error lines, log and rerun command; `audit`,
   `licenses` and `advisor` add their findings (#101).
-
 - **`hct install` and `hct uninstall` run in the binary:** choosing the
   languages, running their installers and fetching the deferred
   dependencies no longer goes through manage.py (76 ms to 12 ms around a stub
   installer); the installers stay scripts.
-
 - **`hct version <version>` runs in the binary** (90 ms to 11 ms around a
   stub hook); each language's `version.sh` stays a script.
-
 - **`hct banner` runs in the binary,** without Python: 3 ms instead of
   51 ms, for generators that call it for every file they write.
-
 - **The run commands' help lists `--output`, `--timeout` and `--changed`**
   (`hct test help`), noting that they need hecatron's binary.
-
 - **OSV-Scanner for `hct licenses`:** every language `hct licenses` reads
   (TypeScript, JavaScript, Python, Go, Ruby, PHP, C#, F#, VB.NET and
   Clojure, besides those whose audit already used it) installs OSV-Scanner
   2.7.0 with its toolchain, so a project of only those languages no longer
   stops at "OSV-Scanner isn't installed".
-
 - **Pin files can drop a suffix:** a `pinFiles` or `supportFiles` entry's
   `"strip"`, a regular expression, is removed from the version the file
   gives, for ecosystems that write more than the version in it (asdf's and
