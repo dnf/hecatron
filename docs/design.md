@@ -336,7 +336,15 @@ multi-module build (its modules can need each other's jars), Gradle's
 `jvmTest`, else `allTests`, in a Kotlin Multiplatform build (no `test`
 task), and Mill's `__.test` where the build is `build.mill`; .NET tests roll forward to the
 installed runtime, and a directory with several projects and no solution
-tests each test project. Node.js hooks and installers use the package manager
+tests each test project. CMake and Meson build in `build/`, or `_build/`
+when the project keeps files of its own in `build/` (Zstandard's CMake
+build); a CMake project whose files never set up a test (no `add_test`,
+`enable_testing` or CTest) has nothing to test, and its test hook skips
+after building, while one that does but registered none fails. CTest runs
+from the build directory of the subdirectory that calls `enable_testing()`
+when the top level doesn't (Zstandard's `build/cmake/`). A Makefile's test
+hook builds the default target before `make check` or `make test`, which
+needn't depend on everything the tests run (Redis's). Node.js hooks and installers use the package manager
 the package declares (`packageManager`, else its lockfile, here or in the
 workspace above; pnpm and Yarn through Corepack, with Corepack's shim on
 PATH for scripts that call the package manager by name: in
