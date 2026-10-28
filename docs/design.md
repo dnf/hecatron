@@ -268,7 +268,7 @@ recipes do today. Output of single-language runs streams and is also saved to
 | `hecatron env` | Shell code for a project's own scripts: `eval "$(hecatron env)"` loads the language lists and helpers | `source helpers.sh` |
 | `hecatron parallel <name> "job"...` | Run a project's own job list (just recipes by default) with the parallel display and logs | `run-parallel.sh` |
 | `hecatron --version` | Hecatron's own version | new |
-| `hecatron self update\|test\|build` | Manage hecatron itself: update to a release (§13), its own checks, build its binary from a checkout | new |
+| `hecatron self update\|uninstall\|test\|build` | Manage hecatron itself: update to a release (§13), remove it, its own checks, build its binary from a checkout | new |
 
 Flags shared by the run commands: `-j N|P%|unlimited` (concurrency) and
 `-s scroll|full|zoom` (display) for parallel runs, as today, and `-c
@@ -283,7 +283,7 @@ bootstrap` sets up a fresh machine for the project (base packages, then
 
 **Commands about hecatron itself go under `hct self` (decided
 2026-10-28),** with a space, as package managers do (`rustup self update`,
-`uv self update`): `self update`, `self test`, `self build`, and any later
+`uv self update`): `self update`, `self uninstall`, `self test`, `self build`, and any later
 self-management command. `hct self` lists them. `self-test` and
 `self-build`, their earlier names, still work, unlisted.
 
@@ -639,6 +639,16 @@ So it only says a release is out and updates when asked, as `gh` does:
   made (`--user`, and each `--dir`, recorded in `.skill-installs`).
   `--check` only reports: exit 0 up to date, 3 a newer release, 1 the
   check failed.
+- **`hct self uninstall`** (binary only) removes an installation
+  install.sh made, its lines in the startup files (each line ending
+  `  # hecatron`, as install.sh replaces them), fish's conf.d file and the
+  skill copies, lines first, so a failure never leaves a shell sourcing a
+  file that's gone. Run from a checkout it keeps the checkout. It refuses
+  an installation with changes to its own files. Toolchains stay: they're
+  the projects', and `hct uninstall <language>` knows what each installed;
+  `--all` adds the data directory (unpacked toolchains, receipts, links)
+  and the download cache. It asks first, and without a terminal needs
+  `--yes`.
 - **The notice.** A release binary (not a dev build) reads
   `.update-check.json` in the installation (the latest version and when it
   was checked) before each command. Once it is 24 hours old, it writes the
@@ -1220,8 +1230,8 @@ entry points' output byte for byte. Decided with the first port
   output and status byte for byte; the one wording left out is which pair
   of values a failed sort names.
 - **`hct self update`** and the update notice (`internal/selfupdate`) are
-  native only (§13). `bin/hecatron self update` without the binary says
-  so.
+  native only (§13), as is `hct self uninstall`. `bin/hecatron self
+  update` (or `uninstall`) without the binary says so.
 
 ### Language definitions: data, families, scripts
 

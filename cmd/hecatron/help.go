@@ -60,6 +60,7 @@ Project:
 
 Hecatron itself:
   self update [--check]      Update hecatron to the latest release (install.sh's installs)
+  self uninstall [--all]     Remove hecatron (and with --all the toolchains it unpacked)
   self test                  Check hecatron's own code: shellcheck and the unit tests
   self build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
@@ -74,10 +75,11 @@ const selfUsageText = `Usage: hecatron self <command>     (or: hct self <command
 
 Manage hecatron itself:
   update [--check]     Update hecatron to the latest release (install.sh's installs)
+  uninstall [--all]    Remove hecatron (and with --all the toolchains it unpacked)
   test                 Check hecatron's own code: shellcheck and the unit tests
   build                Build the Go binary from this checkout, for working on hecatron
 
-Run 'hecatron self update help' for its options.
+Run 'hecatron self update help' or 'hecatron self uninstall help' for their options.
 `
 
 // self is `hecatron self <command>`: managing hecatron itself, as rustup
@@ -94,6 +96,8 @@ func (c *cli) self() int {
 		return 0
 	case "update":
 		return c.selfUpdate()
+	case "uninstall":
+		return c.selfUninstall()
 	case "test":
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
 	case "build":
