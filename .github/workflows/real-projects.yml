@@ -24,6 +24,12 @@ on:
 permissions:
   contents: read
 
+# A new push to a retest branch cancels that branch's run still going;
+# scheduled and dispatched runs keep their own.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'push' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   projects:
     runs-on: ubuntu-latest
