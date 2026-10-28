@@ -4,11 +4,18 @@
     "versions": "system",
     "packages": {
       "apt": [
-        "tcl"
+        "tcl",
+        "make"
       ],
       "brew": [
         "tcl-tk"
       ]
     }
+  },
+  "uninstall": {
+    "keep": [
+      "make"
+    ],
+    "because": "make is a shared build tool (a TEA extension's tests run through its Makefile)"
   }
 }
