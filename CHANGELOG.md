@@ -6,6 +6,13 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Detection:** a language whose build files are all more than three
+  levels below the directory the layout gives it (antlr4's Go module in
+  `runtime/Go/antlr/v4`, jsii's in `packages/@jsii/...`) gets its own
+  `implPaths` entry instead, since the hooks look no deeper and failed with
+  "no go.mod here, below, or above it"; files under `templates/` (project
+  scaffolding a tool generates from) no longer make a language.
+
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
   checksum file, or the publisher's index). Gleam and Zig install that way,

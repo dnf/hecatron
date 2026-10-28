@@ -382,8 +382,8 @@ saves it, as init would. Init itself:
    `package.json` without the definition's `detectScript` npm script doesn't
    count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
    Examples, tests, docs, tools, hooks and vendored code (`examples/`,
-   `tests/`, `tools/`, `hooks/`, `fixtures/`, `android/`, `third_party/`,
-   `vendor/`, `node_modules/` and the like) are skipped. A language left out
+   `tests/`, `tools/`, `hooks/`, `fixtures/`, `templates/`, `android/`,
+   `third_party/`, `vendor/`, `node_modules/` and the like) are skipped. A language left out
    is listed with the reason.
 3. Detects the layout. A language's directory may carry any of its
    definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If
@@ -398,7 +398,10 @@ saves it, as init would. Init itself:
    `detectSources`, any file when it sits at the root or under one of the
    parents above (`lib/`, `sdks/`...: Thrift's `lib/go`, whose `go.mod` is at
    the root). So a build file at the root keeps a language there beside a
-   `languages/go/` holding no Go. A directory another language was found in
+   `languages/go/` holding no Go. A build file more than three levels below
+   a directory doesn't count, since the hooks look no deeper: with only such
+   build files the directory doesn't fit, and the language gets the
+   directory holding them (antlr4's `runtime/Go/antlr/v4`, not the root). A directory another language was found in
    doesn't fit (Cucumber's `javascript/` is TypeScript's, so JavaScript found
    in `jsonschema/` gets `implPaths` `jsonschema`). `--components` and
    `--impl-path` set the layout explicitly.
