@@ -7,11 +7,34 @@ Issues and pull requests are welcome.
 Before sending a change, run:
 
 ```bash
-hct self-test    # ShellCheck with zero warnings, then the unit tests
+hct self test    # ShellCheck with zero warnings, then the unit tests
 ```
 
 CI runs the same checks on Ubuntu and macOS, and the unit tests again under
 bash 3.2, the version macOS ships.
+
+### What CI runs
+
+A pull request runs only the CI jobs its changes can affect: the first job,
+`changes`, lists the paths it changes against its base, and
+[`libexec/maintenance/ci-jobs.sh`](libexec/maintenance/ci-jobs.sh) maps
+them to jobs (documentation alone runs just the unit tests, a Go change the
+Go jobs, an installer change the installer tests; a workflow change or a
+path it doesn't know runs everything). Its tests,
+[`tests/test_ci_jobs.py`](tests/test_ci_jobs.py), show the mapping. A push
+to `main` runs every job.
+
+The last job, `ci-ok`, always runs: it fails if any job failed or was
+cancelled and passes when the rest succeeded or were skipped. It's the one
+CI check to require (with the Changelog workflow's `fragment`), so a pull
+request can merge itself once they pass:
+
+```bash
+gh pr merge --auto --squash
+```
+
+A new job goes in `ci-ok`'s `needs`, gets an `if:` on the `changes` job's
+output, and gets its paths in `ci-jobs.sh` and its tests.
 
 A change to a language's installer, doctor or hooks should also pass that
 language's Docker tests. They install the toolchain in a throwaway container
@@ -40,16 +63,16 @@ user's. They go through the Go binary, the way users get it, once it's
 built from your checkout:
 
 ```bash
-hct self-build    # needs Go 1.24 or later; rerun after changing Go code
+hct self build    # needs Go 1.24 or later; rerun after changing Go code
 hct test          # the Go tests and the Python suite, in parallel
 hct lint          # golangci-lint, the format check, shellcheck
 ```
 
-`bin/hecatron` runs a binary from `hct self-build` on any branch (a release's
+`bin/hecatron` runs a binary from `hct self build` on any branch (a release's
 binary only at its own commit). Until you rebuild, it keeps running the one
 you built, so rebuild after pulling or changing Go code; `HECATRON_NO_GO=1`
 keeps to the scripts. The Python suite always tests the scripts
-(`hct self-test` and the test task set `HECATRON_NO_GO=1`); the binary has
+(`hct self test` and the test task set `HECATRON_NO_GO=1`); the binary has
 its own tests, which compare it with the scripts.
 
 To run a binary by hand from elsewhere:
@@ -89,7 +112,7 @@ libexec/maintenance/release.sh 0.4.0 --dry-run   # the checks, the changes and t
 libexec/maintenance/release.sh 0.4.0
 ```
 
-It checks the tree and that there are changes to release, and runs `hct self-test`, then bumps
+It checks the tree and that there are changes to release, and runs `hct self test`, then bumps
 `VERSION`, moves the fragments into a dated changelog section and updates the README's status line
 in a pull request, merges it when CI passes, tags `v0.4.0` and publishes a
 GitHub release with the changelog section as its notes. The installer

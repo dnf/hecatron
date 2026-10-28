@@ -11,6 +11,9 @@
   "detectSources": [
     "*.lua"
   ],
+  "detectUnless": [
+    "premake*.lua"
+  ],
   "path": [
     "~/.luarocks/bin"
   ],

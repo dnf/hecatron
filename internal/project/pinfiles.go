@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 )
@@ -58,6 +59,7 @@ func init() {
 		"python-classifiers":  pythonClassifiers,
 		"github-setup":        githubSetup,
 		"maven-source-level":  mavenSourceLevel,
+		"target-framework":    targetFramework,
 	}
 }
 
@@ -309,6 +311,9 @@ func globalJSON(text string, _ pinKey) (pinned, error) {
 	result := plain(versionText, false)
 	if result.spec == "" || strings.Contains(result.spec, "-") {
 		return result, nil
+	}
+	if policy == "latestMajor" {
+		return pinnedSpec(floorPrefix + result.spec), nil
 	}
 	return pinnedSpec(strings.Join(prefixStrings(strings.Split(result.spec, "."), parts), ".")), nil
 }
@@ -593,4 +598,30 @@ func mavenSourceLevel(text string, _ pinKey) (pinned, error) {
 		}
 	}
 	return notPinned, nil
+}
+
+// floorPrefix marks a spec that is a floor, not a pin (versions.py's
+// FLOOR): any version at least this one will do.
+const floorPrefix = ">="
+
+var (
+	targetFrameworks   = regexp.MustCompile(`<TargetFrameworks?>([^<]*)<`)
+	targetFrameworkNet = regexp.MustCompile(`(?:^|[^A-Za-z0-9_.])net(\d+)\.\d+`)
+)
+
+// targetFramework is versions.py's _target_framework: the newest .NET an
+// MSBuild project builds for, as a floor on the SDK's major.
+func targetFramework(text string, _ pinKey) (pinned, error) {
+	newest := -1
+	for _, value := range targetFrameworks.FindAllStringSubmatch(text, -1) {
+		for _, match := range targetFrameworkNet.FindAllStringSubmatch(value[1], -1) {
+			if major, err := strconv.Atoi(match[1]); err == nil && major >= 5 && major > newest {
+				newest = major
+			}
+		}
+	}
+	if newest < 0 {
+		return notPinned, nil
+	}
+	return pinnedSpec(floorPrefix + strconv.Itoa(newest)), nil
 }

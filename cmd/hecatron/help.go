@@ -59,14 +59,52 @@ Project:
   metadata                   Update package metadata through metadata.sh hooks
 
 Hecatron itself:
-  self-test                  Check hecatron's own code: shellcheck and the unit tests
-  self-build                 Build the Go binary from this checkout, for working on hecatron
+  self update [--check]      Update hecatron to the latest release (install.sh's installs)
+  self test                  Check hecatron's own code: shellcheck and the unit tests
+  self build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
 
 Run 'hecatron <command> help' for a command's options, and 'hecatron help agents'
 for a compact reference for AI coding agents.
 hecatron %s
 `
+
+// selfUsageText is `hecatron self help`, as bin/hecatron prints it.
+const selfUsageText = `Usage: hecatron self <command>     (or: hct self <command>)
+
+Manage hecatron itself:
+  update [--check]     Update hecatron to the latest release (install.sh's installs)
+  test                 Check hecatron's own code: shellcheck and the unit tests
+  build                Build the Go binary from this checkout, for working on hecatron
+
+Run 'hecatron self update help' for its options.
+`
+
+// self is `hecatron self <command>`: managing hecatron itself, as rustup
+// self and uv self do (docs/design.md §8). self-test and self-build, the
+// earlier names, still work.
+func (c *cli) self() int {
+	command := "help"
+	if len(c.args) > 0 {
+		command, c.args = c.args[0], c.args[1:]
+	}
+	switch command {
+	case "help", "-h", "--help":
+		fmt.Print(selfUsageText)
+		return 0
+	case "update":
+		return c.selfUpdate()
+	case "test":
+		return c.delegate(bashScript("libexec/commands/self-test.sh"))
+	case "build":
+		return c.delegate(bashScript("libexec/commands/self-build.sh"))
+	}
+	if status := c.requirePython(); status != 0 {
+		return status
+	}
+	fmt.Fprintf(os.Stderr, "hecatron: self: unknown command '%s' (try 'hecatron self help')\n", command)
+	return 2
+}
 
 func (c *cli) usage() int {
 	version, _ := c.readVersion()
