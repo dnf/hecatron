@@ -418,8 +418,11 @@ saves it, as init would. Init itself:
    templates and vendored code (`examples/`, `tests/`, `tests_data/`,
    `tools/`, `hooks/`, `templates/`, `fixtures/`, `android/`,
    `third_party/`, `vendor/`, `vendored/`, `node_modules/` and the like, in any case:
-   `Examples/`) and hidden directories (`.jenkins/`) are skipped. A language left out
-   is listed with the reason.
+   `Examples/`) and hidden directories (`.jenkins/`) are skipped, except a
+   definition's `detectTests` files (Bash's `*.bats`) in a `test/` or
+   `tests/` directory, which, for a language not otherwise found, make it
+   the language of the directory tested (bats-core, Bash-it). A language
+   left out is listed with the reason.
 3. Detects the layout. A language's directory may carry any of its
    definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If
    the directories share a pattern with one part varying (`age/impl/go`,

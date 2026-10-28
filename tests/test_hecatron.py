@@ -238,6 +238,13 @@ class InitTest(Fixture):
                                {"rust": {"detect": ["Cargo.toml"]}, "lua": {"detect": [], "detectSources": ["*.lua"]}})
         self.assertEqual(found, {"rust": {"."}})
 
+    def test_a_test_suite_names_the_language_of_the_directory_it_tests(self):
+        # bats-core and Bash-it: Bash, found only by their Bats suites.
+        defs = {"bash": {"detect": [], "detectTests": ["*.bats"]}, "go": {"detect": ["go.mod"]}}
+        found, _ = self.detect({"test/a.bats": "", "cli/Tests/b.bats": "", "vendor/y/test/c.bats": "",
+                                "go.mod": ""}, defs)
+        self.assertEqual(found, {"bash": {".", "cli"}, "go": {"."}})
+
     def test_build_files_outrank_sources(self):
         found, _ = self.detect({"java/pom.xml": "", "java/src/main/A.java": "", "tools/B.java": "",
                                 "kt/x.kt": ""},
@@ -587,6 +594,19 @@ class InstallTest(Fixture):
         result = self.hecatron("install")
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("Failed to fetch dependencies: a", result.stderr)
+
+
+class BashTestHookTest(Fixture):
+    def test_bats_runs_the_suites_but_not_their_fixtures(self):
+        for name in ("test/a.bats", "test/sub/b.bats", "test/fixtures/bad.bats", "tests/c.bats"):
+            write(self.path(name), "")
+        fake = self.path(".fakebin", "bats")
+        write(fake, '#!/bin/sh\necho "ran bats $*"\n', 0o755)
+        env = {**os.environ, "PATH": f"{os.path.dirname(fake)}:{os.environ['PATH']}", "HECATRON_LANG": "bash"}
+        result = subprocess.run(["bash", os.path.join(HOME, "languages", "bash", "hooks", "test.sh")],
+                                cwd=self.root, env=env, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("ran bats test/a.bats test/sub/b.bats tests/c.bats", result.stdout)
 
 
 class LanguageCommandsTest(Fixture):
