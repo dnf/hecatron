@@ -80,7 +80,9 @@ try {
     $env:PATH = "$stub;$env:PATH"
     Check @('licenses') -Pattern 'NOT COVERED go'
 
-    # What needs bash says so, and how to get it.
+    # What needs bash says so, and how to get it: with git off PATH too,
+    # since the bash beside git.exe (Git for Windows') would be used.
+    $env:PATH = ($env:PATH -split ';' | Where-Object { -not (Test-Path (Join-Path $_ 'git.exe')) }) -join ';'
     Check @('test') -Status 3 -Pattern 'bash'
     Check @('doctor') -Status 3 -Pattern 'bash'
     Check @('install', 'go') -Status 3 -Pattern 'bash'

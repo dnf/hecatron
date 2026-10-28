@@ -70,6 +70,11 @@ func (p *Project) runInstalled(lang string) ([]Installed, error) {
 	path = platform.JoinPath(append(static, path)...)
 	env := setEnviron(p.environ(), "PATH", path)
 	bash, found := platform.Bash(path)
+	if !found && runtime.GOOS == "windows" {
+		// Nothing installed.sh could find yet: project.py, which would
+		// need bash as much, isn't there to fall back on.
+		return nil, nil
+	}
 	if !found {
 		return nil, unsupported("no bash on PATH to run %s", script)
 	}

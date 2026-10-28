@@ -1224,6 +1224,71 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
   recorded for its suite; build tools' report files count when written
   during its run.
 
+### Windows, phase 1
+
+Decided with the first Windows work (2026-10-28, #78): the binary installs
+and runs on Windows for every command that doesn't run a hook.
+
+- **Native:** `--version`, `help`, `init`, `list`, `status`, `check`,
+  `add`, `remove`, `enable`, `disable`, `env`, `advisor`, `licenses`,
+  `workflows`, `dockerfile` and `skill`, with neither bash nor Python on
+  PATH. `hct env` prints PowerShell there (`$env:NAME = '...'`, and
+  `$env:PATH = '...;' + $env:PATH`; `hct env go | Invoke-Expression`);
+  without a language, only `HECATRON_HOME` and `HECATRON_ROOT`, since
+  there is no bash to source the helpers into.
+- **Bash, for now:** the run commands, `doctor`, `install`, `uninstall`,
+  `bootstrap`, `parallel`, `get-started`, `metadata`, `version <v>`,
+  `self-test` and `self-build` run bash (hooks, doctor scripts,
+  installers) until the definitions are declarative (#77). On Windows they
+  use Git for Windows' bash: the first `bash.exe` on PATH outside
+  `System32` and the WindowsApps aliases (that `bash.exe` is WSL's launcher,
+  which would run the hook in a Linux distribution with Windows paths),
+  else `bin\bash.exe` above the `git.exe` on PATH. An interim, not
+  supported beyond starting the hooks: they also need Python (`python3`)
+  and the language's Unix-style tools. Without that bash, the command says
+  it needs bash, names Git for Windows and WSL, lists what runs natively,
+  and exits 3 (a toolchain missing).
+- **What differs, in one place** (`internal/platform`): PATH's separator
+  (`;`), an executable is a file with a `PATHEXT` extension rather than a
+  mode bit, environment names compare without case (Windows' environment
+  says `Path`), and the bash above. The model reads `USERPROFILE` where
+  Python's `expanduser` would; `os.path`'s functions are Go's `filepath`;
+  a path relative to the project is written with `/` (generated files,
+  `status`, `--changed`'s file matching and Dependabot directories are the
+  same on every platform). A stopped job's own process is killed on
+  Windows, not the processes it started (a job object would; later).
+- **Line ends:** the repository checks out LF everywhere
+  (`.gitattributes`: `* text=auto eol=lf`), since bash scripts and the
+  byte-for-byte fixtures break with CRLF; a project's own files are read
+  with Python's universal newlines, so CRLF there is fine.
+- **`install.ps1`** (PowerShell 5.1 or later; `irm .../install.ps1 | iex`):
+  the latest release (`HECATRON_VERSION` for another), its
+  `hecatron-windows-<amd64|arm64>.exe` checked against the release's
+  `SHA256SUMS`, inside the tag's source tree from GitHub's archive (the
+  definitions, scripts and `VERSION`, as install.sh's clone has them):
+  `%LOCALAPPDATA%\hecatron\home` (`HECATRON_INSTALL_DIR` for another
+  parent), the binary as `home\bin\hct.exe` and `hecatron.exe`. The
+  binary finds its home as in a clone, the directory above its own, so any
+  release's binary works there, and nothing is set but PATH; a binary
+  elsewhere also tries `%LOCALAPPDATA%\hecatron\home`. The previous home
+  is moved aside and removed once the new one is in place, so an update
+  that fails leaves a working install. `home\bin` goes on the user's PATH
+  (registry, kept unexpanded, once; `HECATRON_NO_MODIFY_PATH=1` to skip),
+  and the script prints how to undo both. `%LOCALAPPDATA%\hecatron` is left
+  for toolchains (above). The source archive isn't checksummed, as
+  install.sh's clone isn't: both come over HTTPS from the repository.
+- **CI:** a `windows-latest` job runs `go vet` and `go test` (tests that
+  compare with the scripts or use bash stand-ins skip on Windows), the
+  native commands on a fixture project with CRLF files and nothing holding
+  bash or Python on PATH (`tests/windows/smoke.ps1`), and `install.ps1`
+  against the latest release, under Windows PowerShell 5.1 and again under
+  PowerShell 7 through `iex` (`tests/windows/install.ps1`).
+- **Later phases:** declarative definitions run natively (#77), installers
+  per language (archives, vendor installers, winget or Scoop; `install.ps1`
+  where needed), `.ps1`, `.cmd` and `.exe` project hooks, job objects so a
+  time limit stops a hook's children, an arm64 runner, and a Windows column
+  in the coverage matrix.
+
 ### Migration
 
 **New features are Go only (decided 2026-10-27).** Each release ships the
