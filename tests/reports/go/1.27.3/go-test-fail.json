@@ -1,0 +1,13 @@
+{"Time":"2026-10-28T00:58:39.018911422Z","Action":"start","Package":"example.com/calc"}
+{"Time":"2026-10-28T00:58:39.021323976Z","Action":"run","Package":"example.com/calc","Test":"TestAdd"}
+{"Time":"2026-10-28T00:58:39.021384122Z","Action":"output","Package":"example.com/calc","Test":"TestAdd","Output":"=== RUN   TestAdd\n","OutputType":"frame"}
+{"Time":"2026-10-28T00:58:39.021401031Z","Action":"output","Package":"example.com/calc","Test":"TestAdd","Output":"    calc_test.go:7: Add(2, 3) = -1, want 5\n","OutputType":"error"}
+{"Time":"2026-10-28T00:58:39.02140681Z","Action":"output","Package":"example.com/calc","Test":"TestAdd","Output":"--- FAIL: TestAdd (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-28T00:58:39.021408807Z","Action":"fail","Package":"example.com/calc","Test":"TestAdd","Elapsed":0}
+{"Time":"2026-10-28T00:58:39.021412892Z","Action":"run","Package":"example.com/calc","Test":"TestAddZero"}
+{"Time":"2026-10-28T00:58:39.021413976Z","Action":"output","Package":"example.com/calc","Test":"TestAddZero","Output":"=== RUN   TestAddZero\n","OutputType":"frame"}
+{"Time":"2026-10-28T00:58:39.021416218Z","Action":"output","Package":"example.com/calc","Test":"TestAddZero","Output":"--- PASS: TestAddZero (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-28T00:58:39.02141747Z","Action":"pass","Package":"example.com/calc","Test":"TestAddZero","Elapsed":0}
+{"Time":"2026-10-28T00:58:39.021418671Z","Action":"output","Package":"example.com/calc","Output":"FAIL\n","OutputType":"frame"}
+{"Time":"2026-10-28T00:58:39.02173423Z","Action":"output","Package":"example.com/calc","Output":"FAIL\texample.com/calc\t0.003s\n","OutputType":"frame"}
+{"Time":"2026-10-28T00:58:39.021752592Z","Action":"fail","Package":"example.com/calc","Elapsed":0.003}

@@ -1,0 +1,38 @@
+[
+  {
+    "description": "ineffectual assignment to x (ineffassign)",
+    "check_name": "hct lint go",
+    "fingerprint": "620608217fc46c9ee8194d380b4c2bea",
+    "severity": "major",
+    "location": {
+      "path": "age/go/calc.go",
+      "lines": {
+        "begin": 3
+      }
+    }
+  },
+  {
+    "description": "exported function Add should have comment (revive)",
+    "check_name": "hct lint go",
+    "fingerprint": "96bcb85aac7efda21821cd3570cc36df",
+    "severity": "major",
+    "location": {
+      "path": "age/go/calc.go",
+      "lines": {
+        "begin": 9
+      }
+    }
+  },
+  {
+    "description": "Error return value is not checked (errcheck)",
+    "check_name": "hct lint go",
+    "fingerprint": "e6fbd1a789034e1818fefc62ece33f4a",
+    "severity": "major",
+    "location": {
+      "path": "date/go/date.go",
+      "lines": {
+        "begin": 4
+      }
+    }
+  }
+]

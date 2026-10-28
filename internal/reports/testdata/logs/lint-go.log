@@ -1,0 +1,10 @@
+=== lint age (go) ===
++ golangci-lint run ./...
+calc.go:3:2: ineffectual assignment to x (ineffassign)
+calc.go:9:1: exported function Add should have comment (revive)
+2 issues:
+=== lint date (go) ===
++ golangci-lint run ./...
+date.go:4:7: Error return value is not checked (errcheck)
+1 issues:
+go: lint failed: age date

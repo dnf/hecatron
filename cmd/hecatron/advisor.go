@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dnf/hecatron/internal/advisor"
+	"github.com/dnf/hecatron/internal/reports"
 	"github.com/dnf/hecatron/internal/runner"
 )
 
@@ -99,6 +100,7 @@ func (c *cli) advisor() int {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 1
 	}
+	appendStepSummary(reports.AdvisorSummary(report))
 	failing := report.Count(advisor.Recommended)
 	if failOn == advisor.Suggestion {
 		failing += report.Count(advisor.Suggestion)

@@ -10,6 +10,7 @@
 
 variables:
   HECATRON_VERSION: v0.4.0
+  HECATRON_REPORT_DIR: hecatron-reports
 
 default:
   image: 'ubuntu:24.04'
@@ -24,6 +25,11 @@ bash:
     - hct install bash
     - hct test bash
     - hct lint bash
+  artifacts:
+    when: always
+    reports:
+      junit: hecatron-reports/test-bash.junit.xml
+      codequality: hecatron-reports/lint-bash.codequality.json
 
 elixir:
   timeout: 60m
@@ -31,6 +37,11 @@ elixir:
     - hct install elixir
     - hct test elixir
     - hct lint elixir
+  artifacts:
+    when: always
+    reports:
+      junit: hecatron-reports/test-elixir.junit.xml
+      codequality: hecatron-reports/lint-elixir.codequality.json
 
 go:
   timeout: 60m
@@ -38,6 +49,11 @@ go:
     - hct install go
     - hct test go
     - hct lint go
+  artifacts:
+    when: always
+    reports:
+      junit: hecatron-reports/test-go.junit.xml
+      codequality: hecatron-reports/lint-go.codequality.json
 
 python:
   timeout: 60m
@@ -45,6 +61,11 @@ python:
     - hct install python
     - hct test python
     - hct lint python
+  artifacts:
+    when: always
+    reports:
+      junit: hecatron-reports/test-python.junit.xml
+      codequality: hecatron-reports/lint-python.codequality.json
 
 rust:
   timeout: 60m
@@ -52,3 +73,8 @@ rust:
     - hct install rust
     - hct test rust
     - hct lint rust
+  artifacts:
+    when: always
+    reports:
+      junit: hecatron-reports/test-rust.junit.xml
+      codequality: hecatron-reports/lint-rust.codequality.json

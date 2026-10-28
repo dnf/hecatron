@@ -42,8 +42,12 @@ func (c *cli) auditTool() int {
 			fmt.Fprintln(os.Stderr, "hecatron _audit:", err)
 			return 1
 		}
-		return deps.RunAuditReport(os.Stdout, os.Stderr, format, text, lang, component, reportConfig(),
+		status := deps.RunAuditReport(os.Stdout, os.Stderr, format, text, lang, component, reportConfig(),
 			os.Getenv("HECATRON_AUDIT_FAIL_ON"), time.Now().Format("2006-01-02"))
+		if dir := os.Getenv("HECATRON_AUDIT_FINDINGS"); dir != "" {
+			recordAudit(dir, format, text, lang, component)
+		}
+		return status
 	case len(args) == 3 && args[0] == "eol":
 		releases, _ := io.ReadAll(os.Stdin)
 		if warning := deps.EOLWarning(args[1], args[2], project.PyText(releases),

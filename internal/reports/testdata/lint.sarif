@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "hecatron",
+          "version": "0.5.0",
+          "informationUri": "https://github.com/dnf/hecatron",
+          "rules": [
+            {
+              "id": "lint/go",
+              "shortDescription": {
+                "text": "An error hct lint go reported"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            }
+          ]
+        }
+      },
+      "automationDetails": {
+        "id": "hct-lint/"
+      },
+      "results": [
+        {
+          "ruleId": "lint/go",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "ineffectual assignment to x (ineffassign)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "age/go/calc.go",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 3,
+                  "startColumn": 2
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "lint/go",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "exported function Add should have comment (revive)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "age/go/calc.go",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "lint/go",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Error return value is not checked (errcheck)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "date/go/date.go",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 7
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

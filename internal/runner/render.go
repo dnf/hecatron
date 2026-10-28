@@ -286,27 +286,13 @@ func WriteAnnotations(w io.Writer, r *Report, workspace string) {
 			continue
 		}
 		title := fmt.Sprintf("hct %s %s", r.Action, result.Label)
-		dirs := map[string]string{}
-		for _, c := range result.Components {
-			dirs[c.Name] = c.Dir
-		}
 		annotated := 0
 		for _, line := range result.Excerpt.Lines {
 			if line.File == "" || line.Line == 0 {
 				continue
 			}
-			file := line.File
-			if !filepath.IsAbs(file) {
-				base := dirs[line.Component]
-				if base == "" {
-					base = r.Root
-				}
-				file = filepath.Join(base, file)
-			}
-			if rel, err := filepath.Rel(workspace, file); err == nil && !strings.HasPrefix(rel, "..") {
-				file = rel
-			}
-			properties := "file=" + escapeProperty(filepath.ToSlash(file)) + ",line=" + fmt.Sprint(line.Line)
+			file := r.WorkspacePath(result, line, workspace)
+			properties := "file=" + escapeProperty(file) + ",line=" + fmt.Sprint(line.Line)
 			if line.Column > 0 {
 				properties += ",col=" + fmt.Sprint(line.Column)
 			}
@@ -329,6 +315,30 @@ func WriteAnnotations(w io.Writer, r *Report, workspace string) {
 			_, _ = fmt.Fprintf(w, "::error title=%s::%s\n", escapeProperty(title), escapeData(message))
 		}
 	}
+}
+
+// WorkspacePath is the file an error line names, joined to its component's
+// directory (else the root) when relative, and relative to the workspace
+// when inside it, with forward slashes.
+func (r *Report) WorkspacePath(result Result, line ErrorLine, workspace string) string {
+	if workspace == "" {
+		workspace = r.Root
+	}
+	file := line.File
+	if !filepath.IsAbs(file) {
+		base := r.Root
+		for _, c := range result.Components {
+			if c.Name == line.Component && c.Dir != "" {
+				base = c.Dir
+				break
+			}
+		}
+		file = filepath.Join(base, file)
+	}
+	if rel, err := filepath.Rel(workspace, file); err == nil && !strings.HasPrefix(rel, "..") {
+		file = rel
+	}
+	return filepath.ToSlash(file)
 }
 
 // writeTimedOutAnnotation is a timed-out job's one annotation: the limit,

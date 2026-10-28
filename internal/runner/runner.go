@@ -56,6 +56,11 @@ type Component struct {
 	Dir              string `json:"dir"`
 	Failed           bool   `json:"failed"`
 	ToolchainMissing bool   `json:"toolchainMissing,omitempty"`
+
+	// When its hooks started and how long they took, for the reports
+	// (JUnit, the job summary); zero where unknown.
+	Started  time.Time     `json:"-"`
+	Duration time.Duration `json:"-"`
 }
 
 // Status is how a job ended, or why it didn't run.

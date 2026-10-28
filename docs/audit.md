@@ -101,4 +101,29 @@ jobs:
 `HECATRON_AUDIT_REPORT_DIR=<dir>` saves each auditor's raw JSON report
 there, for a CI artifact or another tool.
 
+With the binary, `HECATRON_REPORT_DIR=<dir>` writes the findings as SARIF
+2.1.0 (`audit.sarif`, or `audit-<lang>.sarif` for `hct audit <lang>`), and
+`--output sarif` prints it instead of the normal output. Each advisory is a
+rule (its ID, title and link, tagged `security` with a
+`security-severity`: critical 9.5, high and unrated 8.0, moderate 5.5,
+low 2.0), and each affected package a result at the lock file or manifest
+the auditor read (OSV-Scanner names it per package), on the first line
+naming the package; levels are `error` for critical, high and unrated,
+`warning` for moderate, `note` for low. An accepted risk is a suppressed
+result with its reason and date. GitHub's code scanning shows them on the
+pull request:
+
+```yaml
+      - run: ~/.hecatron/bin/hct audit
+        env:
+          HECATRON_REPORT_DIR: hecatron-reports
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: hecatron-reports/audit.sarif
+```
+
+In GitHub Actions (`GITHUB_STEP_SUMMARY` set) the job summary gets a table
+of the findings. See [runner.md](runner.md#reports) for the other reports.
+
 Not yet: `--fix` (it changes lock files), secret scanning, static analysis.

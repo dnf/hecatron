@@ -1264,3 +1264,55 @@ func equalStrings(a, b []string) bool {
 	}
 	return true
 }
+
+// Classified is a report's findings as AuditReport sorts them, for
+// hecatron's own reports (SARIF, the job summary): those that count, and
+// those the project's accepted risks cover, with each entry's reason and
+// date.
+type Classified struct {
+	Finding  Finding
+	Accepted bool
+	Reason   string
+	Until    string
+}
+
+// Classify reads a report and applies the project's accepted risks as
+// AuditReport does, without printing anything.
+func Classify(format, text string, config any, today string) ([]Classified, error) {
+	if config == nil {
+		config = newObject()
+	}
+	findings, err := ParseAudit(format, text)
+	if err != nil {
+		return nil, err
+	}
+	audit, err := get(config, "audit", nil)
+	if err != nil {
+		return nil, err
+	}
+	ignore, err := get(or(audit, newObject()), "ignore", nil)
+	if err != nil {
+		return nil, err
+	}
+	kept, ignored, _, err := SplitIgnored(findings, or(ignore, []any{}), today)
+	if err != nil {
+		return nil, err
+	}
+	var out []Classified
+	for _, f := range kept {
+		out = append(out, Classified{Finding: f})
+	}
+	for _, a := range ignored {
+		out = append(out, Classified{Finding: a.Finding, Accepted: true, Reason: str(getOr(a.Entry, "reason", "")),
+			Until: str(a.Entry.Values["until"])})
+	}
+	return out, nil
+}
+
+// Text is a report's value as audit.py prints it (str()); "" for none.
+func Text(value any) string {
+	if value == nil {
+		return ""
+	}
+	return str(value)
+}

@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/dnf/hecatron/internal/project"
 	"github.com/dnf/hecatron/internal/runner"
@@ -56,7 +57,7 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 			if ctx.Err() != nil {
 				break // stopped: its time limit, or Ctrl-C
 			}
-			component := runner.Component{Name: dir.Component, Dir: dir.Dir}
+			component := runner.Component{Name: dir.Component, Dir: dir.Dir, Started: time.Now()}
 			_, _ = fmt.Fprintf(out, "=== %s %s (%s) ===\n", action, dir.Component, lang)
 			env, ok := r.languageEnv(ctx, out, base, lang, dir.Component)
 			if ok {
@@ -75,6 +76,9 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 				} else {
 					_ = checked.Close() // empty: the hook writes it by name
 					hookEnv := append(env, "HECATRON_COMPONENT="+dir.Component, "HECATRON_LANG="+lang)
+					if reports := r.testReportDir(lang, dir.Component); reports != "" {
+						hookEnv = append(hookEnv, "HECATRON_TEST_REPORTS="+reports)
+					}
 					ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECKED="+checked.Name()), hook, dir.Component)
 					if info, err := os.Stat(checked.Name()); formatHook != "" && err == nil && info.Size() == 0 {
 						ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECK=1"), formatHook, dir.Component) && ok
@@ -86,6 +90,7 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 				component.Failed = true
 				failed = append(failed, dir.Component)
 			}
+			component.Duration = time.Since(component.Started)
 			outcome.Components = append(outcome.Components, component)
 		}
 		switch {

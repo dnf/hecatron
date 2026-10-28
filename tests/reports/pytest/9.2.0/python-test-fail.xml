@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="3" time="0.017" timestamp="2026-10-28T00:58:40.564511+00:00" hostname="4944f1200964"><testcase classname="test_calc" name="test_add" time="0.000"><failure message="assert -1 == 5&#10; +  where -1 = add(2, 3)">def test_add():
+&gt;       assert add(2, 3) == 5
+E       assert -1 == 5
+E        +  where -1 = add(2, 3)
+
+test_calc.py:5: AssertionError</failure></testcase><testcase classname="test_calc" name="test_add_zero" time="0.000" /><testcase classname="test_calc" name="test_add_type" time="0.000"><failure message="TypeError: unsupported operand type(s) for -: 'NoneType' and 'int'">def test_add_type():
+&gt;       add(None, 1)
+
+test_calc.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = None, b = 1
+
+    def add(a, b):
+&gt;       return a - b
+               ^^^^^
+E       TypeError: unsupported operand type(s) for -: 'NoneType' and 'int'
+
+calc.py:2: TypeError</failure></testcase></testsuite></testsuites>
