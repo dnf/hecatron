@@ -92,6 +92,26 @@ func plain(value string, exact bool) pinned {
 	return pinnedSpec(value)
 }
 
+// stripPin is versions.py's strip_pin: an entry's "strip" removed from the
+// version a pin file gives (asdf's Elixir "1.17.3-otp-27" is 1.17.3), and
+// noVersion when what's left isn't one.
+func stripPin(value pinned, strip *regexp.Regexp) pinned {
+	if strip == nil || !value.pins || value.spec == "" {
+		return value
+	}
+	exact := strings.HasPrefix(value.spec, "=")
+	rest := strings.TrimPrefix(value.spec, "=")
+	rest = strip.ReplaceAllString(rest, "")
+	if !isVersion(rest) {
+		return noVersion
+	}
+	rest = strings.TrimLeft(rest, "v")
+	if exact {
+		rest = "=" + rest
+	}
+	return pinnedSpec(rest)
+}
+
 // firstLine is versions.py's _first_line: the first line with something
 // before any comment; ok is false for none.
 func firstLine(text string) (string, bool) {

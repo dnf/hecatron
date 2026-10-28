@@ -6,6 +6,10 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Doctor notes:** a `doctor.sh` line starting `note: ` (`note` in
+  `_common.sh`) is shown under the language, like the version notes, without
+  counting as a problem, for what's worth knowing about a healthy toolchain.
+
 - **`hct sync`:** after a pull, rebase or checkout, says in a few lines
   what changed for hecatron since where `HEAD` was (or a ref): runs
   `hct deps` for the components whose lock files changed (`--no-deps` only
@@ -29,6 +33,17 @@ minor version can change behaviour. Numbers are
   `licenses` and `advisor` add their findings (#101).
 - **`hct banner` runs in the binary,** without Python: 3 ms instead of
   51 ms, for generators that call it for every file they write.
+- **The run commands' help lists `--output`, `--timeout` and `--changed`**
+  (`hct test help`), noting that they need hecatron's binary.
+- **OSV-Scanner for `hct licenses`:** every language `hct licenses` reads
+  (TypeScript, JavaScript, Python, Go, Ruby, PHP, C#, F#, VB.NET and
+  Clojure, besides those whose audit already used it) installs OSV-Scanner
+  2.7.0 with its toolchain, so a project of only those languages no longer
+  stops at "OSV-Scanner isn't installed".
+- **Pin files can drop a suffix:** a `pinFiles` or `supportFiles` entry's
+  `"strip"`, a regular expression, is removed from the version the file
+  gives, for ecosystems that write more than the version in it (asdf's and
+  mise's Elixir `1.17.3-otp-27`).
 
 ## 0.5.0 (2026-10-28)
 

@@ -340,6 +340,19 @@ FORMATS = {
 }
 
 
+def strip_pin(spec, pattern: str | None):
+    """A pin's spec with an entry's "strip" (a regular expression) removed:
+    asdf's and mise's Elixir "1.17.3-otp-27" is Elixir 1.17.3, built for
+    OTP 27. None when what's left names no version."""
+    if pattern is None or spec is None or spec is NOT_PINNED:
+        return spec
+    exact = spec.startswith("=")
+    value = re.sub(pattern, "", spec[1:] if exact else spec)
+    if not is_version(value):
+        return None
+    return ("=" if exact else "") + value.lstrip("v")
+
+
 def read_pin(fmt: str, text: str, key: str | None = None):
     """A pin file's version as a spec, None when it names no version (a
     channel like "stable"), or NOT_PINNED when it doesn't pin this language."""
