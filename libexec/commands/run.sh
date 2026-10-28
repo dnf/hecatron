@@ -114,7 +114,8 @@ _usage() {
         "" \
         "With hecatron's binary (install.sh downloads it with a release; docs/runner.md):" \
         "  --output FORMAT" \
-        "             human, agent, json or ci (else HECATRON_OUTPUT; agent output for AI agents)" \
+        "             human, agent, json, ci, junit or sarif (else HECATRON_OUTPUT;" \
+        "             agent output for AI agents)" \
         "  --timeout DURATION" \
         "             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);" \
         "             by default 5x its usual time from history.log, at least 10 minutes"

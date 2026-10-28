@@ -187,7 +187,8 @@ func (c *cli) runHelpText() (text string, ok bool) {
 	// binary), so the help is the same either way.
 	out.WriteString("\nWith hecatron's binary (install.sh downloads it with a release; docs/runner.md):\n" +
 		"  --output FORMAT\n" +
-		"             human, agent, json or ci (else HECATRON_OUTPUT; agent output for AI agents)\n" +
+		"             human, agent, json, ci, junit or sarif (else HECATRON_OUTPUT;\n" +
+		"             agent output for AI agents)\n" +
 		"  --timeout DURATION\n" +
 		"             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);\n" +
 		"             by default 5x its usual time from history.log, at least 10 minutes\n")
