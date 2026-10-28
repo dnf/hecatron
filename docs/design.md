@@ -577,6 +577,19 @@ the Go core (§19) replaces them.
 - A downstream job that checks out sayable and runs `hecatron check` and
   `hecatron test go python` against it, so a hecatron change that breaks the
   project it came from fails hecatron's CI.
+- Real open-source projects (`tests/real-projects/`): a backlog of about
+  150 public repositories (`projects.json`: polyglot projects, a well-known
+  project or two per language, and monorepos), each cloned in a fresh
+  container and run as a newcomer would, `hct init`, `install`, `doctor`
+  and `test <lang>` with no configuration (`run.sh`). A monthly workflow
+  (`.github/workflows/real-projects.yml`) runs one job per project on
+  GitHub's runners and opens a pull request with the results:
+  `results.json` (each run: commit, detection, toolchain versions, per-step
+  exit codes and times, test counts, failure category and excerpt) and a
+  flat `results-by-language.json`, both described by `schema.json`, and
+  `docs/real-projects.md` rendered from them (`report.py`). It measures what
+  detection and the default hooks get right on code hecatron has never
+  seen.
 
 ## 15. Migration of sayable
 
