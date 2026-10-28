@@ -14,6 +14,7 @@ HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(HOME, "tests"))
 
 from test_hecatron import Fixture, write  # noqa: E402
+import project  # noqa: E402
 
 
 def package(**scripts: str) -> str:
@@ -42,7 +43,7 @@ class NodeTestHookTest(Fixture):
                 os.symlink(os.path.join(self.bin, tool), target)
         path = ":".join([fakes] + [d for d in os.environ["PATH"].split(":") if not self.real_node(d)])
         environ = {**os.environ, "PATH": path, "HECATRON_ROOT": self.root, "HECATRON_LANG": lang,
-                   "XDG_CACHE_HOME": self.path(".cache"), **env}
+                   "HOME": self.path("home"), **env}
         hook = os.path.join(HOME, "languages", lang, "hooks", "test.sh")
         return subprocess.run(["bash", hook], cwd=self.path(cwd), env=environ, capture_output=True, text=True)
 
@@ -196,6 +197,21 @@ class NodeTestHookTest(Fixture):
         with open(self.path(".calls")) as calls:
             first = calls.readline()
         self.assertEqual(first.split(" --install-directory ")[0], "ran corepack enable")
+        self.assertEqual(first.split(" --install-directory ")[1].split()[0],
+                         self.path("home", ".cache", "hecatron", "corepack-shims"))
+
+    def test_other_languages_hooks_have_the_shims_on_path(self):
+        # swc's Rust tests run pnpm: the shim directory is a static "path"
+        # entry of the Node.js languages, which other languages' hooks get.
+        os.makedirs(self.path("home", ".cache", "hecatron", "corepack-shims"))
+        self.configure(languages=["rust", "typescript"])
+        saved = os.environ.get("HOME")
+        os.environ["HOME"] = self.path("home")
+        try:
+            path = project.load(self.root).language_env("rust")["path"]
+        finally:
+            os.environ["HOME"] = saved
+        self.assertIn(self.path("home", ".cache", "hecatron", "corepack-shims"), path)
 
 if __name__ == "__main__":
     unittest.main()
