@@ -156,6 +156,15 @@ class InitTest(Fixture):
         found = {"go": {"age/impl/go", "date/impl/go"}, "rust": {"age/impl/rust", "date/impl/rust/src"}}
         self.assertEqual(manage.infer_layout(found), (["age", "date"], "{component}/impl/{lang}", {}))
 
+    def test_no_components_when_a_language_has_no_directory_named_for_it(self):
+        # OpenTelemetry's demo: Java and Kotlin under src/<service>/src/main/<lang>,
+        # TypeScript in src/frontend, which components there would leave out.
+        found = {"java": {"src/ad/src/main/java"}, "kotlin": {"src/fraud/src/main/kotlin"},
+                 "typescript": {"src/frontend"}}
+        self.assertEqual(manage.infer_layout(found),
+                         (["."], "src/ad/src/main/{lang}", {"kotlin": "src/fraud/src/main/kotlin",
+                                                             "typescript": "src/frontend"}))
+
     def test_a_directory_may_carry_any_of_a_languages_names(self):
         # Thrift's lib/rb and lib/netstd.
         found = {"ruby": {"lib/rb"}, "csharp": {"lib/netstd/src"}, "go": {"lib/go"}}
