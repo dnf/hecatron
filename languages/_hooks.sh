@@ -744,25 +744,59 @@ jvm_format_sbt() {
 
 # A build whose Gradle wrapper or Kotlin compiler predates the JDK it would
 # run on fails to start on it, so it runs on the newest installed JDK it
-# supports instead (libexec/lib/jvm.py; the JVM installers install one).
+# supports instead (libexec/lib/jvm.py; the JVM installers install one). A
+# build also can't run on a runtime without javac (a JRE another package
+# pulled in, first on PATH): then it runs on the newest installed JDK.
 jvm_select_jdk() {
     [ -n "${HECATRON_HOME:-}" ] || return 0
-    local _ceiling="" _why _current _version _home
+    local _ceiling="" _why _current _version _home _jdk_home=""
     IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling . "${HECATRON_ROOT:-.}") || true
-    [ -n "${_ceiling}" ] || return 0
-    _current="$(java_feature "$( (java -version 2>&1 || true) | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -1)")"
-    { [ -n "${_current}" ] && [ "${_current}" -le "${_ceiling}" ]; } && return 0
+    if [ -z "${_ceiling}" ]; then
+        jvm_has_compiler && return 0
+        _why="the java it would run on has no javac"
+    else
+        _current="$(java_feature "$( (java -version 2>&1 || true) | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -1)")"
+        { [ -n "${_current}" ] && [ "${_current}" -le "${_ceiling}" ] && jvm_has_compiler; } && return 0
+    fi
     while IFS=$'\t' read -r _version _home; do
-        [ "$(java_feature "${_version}")" -le "${_ceiling}" ] && break
-        _home=""
+        if [ -x "${_home}/bin/javac" ] && { [ -z "${_ceiling}" ] || [ "$(java_feature "${_version}")" -le "${_ceiling}" ]; }; then
+            _jdk_home="${_home}"
+            break
+        fi
     done < <(bash "${HECATRON_HOME}/languages/java/installed.sh" 2>/dev/null | sort -t. -k1,1nr -k2,2nr -k3,3nr)
-    if [ -z "${_home:-}" ]; then
-        echo "warning: ${_why}, which runs on JDK ${_ceiling} at the newest, and no such JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
+    if [ -z "${_jdk_home}" ]; then
+        if [ -n "${_ceiling}" ]; then
+            echo "warning: ${_why}, which runs on JDK ${_ceiling} at the newest, and no such JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
+        else
+            echo "warning: ${_why}, and no JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
+        fi
         return 0
     fi
-    echo "Using JDK ${_version} (${_home}): ${_why}, which runs on JDK ${_ceiling} at the newest."
-    export JAVA_HOME="${_home}"
-    export PATH="${_home}/bin:${PATH}"
+    if [ -n "${_ceiling}" ]; then
+        echo "Using JDK ${_version} (${_jdk_home}): ${_why}, which runs on JDK ${_ceiling} at the newest."
+    else
+        echo "Using JDK ${_version} (${_jdk_home}): ${_why}."
+    fi
+    export JAVA_HOME="${_jdk_home}"
+    export PATH="${_jdk_home}/bin:${PATH}"
+}
+# Whether the JDK a build would run on (JAVA_HOME's, else java's on PATH)
+# has a compiler.
+jvm_has_compiler() {
+    local _java
+    if [ -n "${JAVA_HOME:-}" ]; then
+        [ -x "${JAVA_HOME}/bin/javac" ]
+        return
+    fi
+    _java="$(command -v java)" || return 0
+    _java="$(cd "$(dirname "${_java}")" && pwd -P)/$(basename "${_java}")"
+    while [ -L "${_java}" ]; do
+        case "$(readlink "${_java}")" in
+            /*) _java="$(readlink "${_java}")" ;;
+            *) _java="$(dirname "${_java}")/$(readlink "${_java}")" ;;
+        esac
+    done
+    [ -x "$(dirname "${_java}")/javac" ]
 }
 # A Java version's feature release: 1.8.0_412 is 8, 21.0.2 is 21.
 java_feature() { echo "$1" | sed 's/^1\.\([0-9]*\).*/\1/; s/[^0-9].*//'; }

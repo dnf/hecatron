@@ -77,6 +77,34 @@ class GradleTest(BuildHookTest):
         self.assertIn("LANG=en_GB.UTF-8", self.hook("java", "test", ".", LANG="en_GB.UTF-8", LC_ALL="").stdout)
 
 
+class JdkTest(BuildHookTest):
+    """jvm_select_jdk, with a fake hecatron home listing the installed JDKs."""
+
+    def setUp(self):
+        super().setUp()
+        self.home = self.path(".fakehome")
+        os.makedirs(os.path.join(self.home, "libexec", "lib"))
+        os.symlink(os.path.join(HOME, "libexec", "lib", "jvm.py"), os.path.join(self.home, "libexec", "lib", "jvm.py"))
+        self.jdk = self.path(".jdk21")
+        write(os.path.join(self.jdk, "bin", "javac"), "#!/bin/sh\n", 0o755)
+        write(os.path.join(self.home, "languages", "java", "installed.sh"), f'printf "21.0.2\\t{self.jdk}\\n"\n')
+        write(self.path("build.gradle.kts"), "")
+        self.fake("gradle", 'echo "JAVA_HOME=${JAVA_HOME:-}"')
+
+    def test_a_runtime_without_javac_gives_way_to_an_installed_jdk(self):
+        write(os.path.join(self.bin, "java"), "#!/bin/sh\necho 'openjdk version \"21.0.12\"' >&2\n", 0o755)
+        result = self.hook("kotlin", "test", ".", HECATRON_HOME=self.home, JAVA_HOME="")
+        self.assertIn("has no javac", result.stdout)
+        self.assertIn("JAVA_HOME=" + self.jdk, result.stdout)
+
+    def test_a_jdk_with_javac_is_kept(self):
+        write(os.path.join(self.bin, "java"), "#!/bin/sh\n", 0o755)
+        write(os.path.join(self.bin, "javac"), "#!/bin/sh\n", 0o755)
+        result = self.hook("kotlin", "test", ".", HECATRON_HOME=self.home, JAVA_HOME="")
+        self.assertNotIn("Using JDK", result.stdout)
+        self.assertIn("JAVA_HOME=\n", result.stdout)
+
+
 class DotnetTest(BuildHookTest):
     TEST_PROJECT = '<Project><ItemGroup><PackageReference Include="Microsoft.NET.Test.Sdk" /></ItemGroup></Project>'
 

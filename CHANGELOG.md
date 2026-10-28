@@ -19,7 +19,9 @@ minor version can change behaviour. Numbers are
   each test project. A Clojure project with `deps.edn` but no `:test`
   alias tests with Leiningen when it has `project.clj`. A Gradle build's
   toolchain JDK is found from its root and its version catalog
-  (`libs.versions.jdk`), so a source directory's build gets it installed.
+  (`libs.versions.jdk`), so a source directory's build gets it installed,
+  and a build whose `java` is a runtime without `javac` (a JRE another
+  package pulled in) runs on the newest installed JDK.
 
 - **Other languages' tools on PATH:** a language's hooks (and
   `hct env LANG`) now also have the project's other added, enabled
