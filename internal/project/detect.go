@@ -15,13 +15,15 @@ import (
 // repository read without a config of its own.
 
 // skippedDirs hold code that isn't the project's own implementation:
-// vendored dependencies, samples, tests, docs and tooling (hooks/: git
-// hooks, build hooks). A language found only there isn't added, and no
-// language's directory is placed there.
-var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildSrc": true, "demo": true, "demos": true,
+// vendored dependencies, samples, tests and test data, docs, tooling (hooks/:
+// git hooks, build hooks) and a generator's templates, whatever their case
+// (Examples/), as do hidden directories (.jenkins/, .github/). A language
+// found only there isn't added, and no language's directory is placed there.
+var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildsrc": true, "demo": true, "demos": true,
 	"doc": true, "docs": true, "example": true, "examples": true, "external": true, "fixtures": true,
-	"hooks": true, "node_modules": true, "playground": true, "sample": true, "samples": true, "test": true,
-	"testdata": true, "tests": true, "third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true}
+	"hooks": true, "node_modules": true, "playground": true, "sample": true, "samples": true, "templates": true,
+	"test": true, "test-data": true, "test_data": true, "testdata": true, "tests": true, "tests_data": true,
+	"third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true}
 
 // preferredParents are where projects keep per-language code; when layouts
 // disagree, one under these (or at the root) beats one covering more
@@ -102,7 +104,7 @@ func TrackedFiles(root string) ([]string, error) {
 
 func isSkipped(directory string) bool {
 	for _, part := range strings.Split(directory, "/") {
-		if skippedDirs[part] {
+		if skippedDirs[strings.ToLower(part)] || strings.HasPrefix(part, ".") && part != "." {
 			return true
 		}
 	}
