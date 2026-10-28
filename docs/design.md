@@ -388,7 +388,8 @@ saves it, as init would. Init itself:
 3. Detects the layout. A language's directory may carry any of its
    definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If
    the directories share a pattern with one part varying (`age/impl/go`,
-   `date/impl/go`), it proposes `components` and `implPath`; otherwise one
+   `date/impl/go`) and every language has a directory named for it, it
+   proposes `components` and `implPath`; otherwise one
    component, at the pattern under `sdks/`, `sdk/`, `lib/`, `lang/`,
    `bindings/`, `ffi/`, `packages/` or the root if there is one, else the
    pattern covering most languages. A language whose directory doesn't fit
@@ -837,7 +838,11 @@ surprise.
   `hecatron env LANG [-c COMPONENT]` prints it as shell exports for a
   project's own recipes. With no installed version matching (or no
   `installed.sh`), entries and variables naming one are left out, static
-  entries still apply, and the doctor reports it.
+  entries still apply, and the doctor reports it. The project's other
+  added, enabled languages' static `path` entries follow the language's own
+  (in the project's language order, each directory once): a build in one
+  language often runs another's tool (a Ruby gem's Rakefile or a dune rule
+  calling `cargo`), installed where only that language's environment looks.
 - **Queries.** `project.py version LANG [COMPONENT]` prints the spec, where it
   came from and the installed match; `project.py versions LANG` prints each
   distinct spec the components resolve to with its sources (`-` for a pin
