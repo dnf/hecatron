@@ -36,10 +36,14 @@ type Step struct {
 	Args    []Arg             `json:"args,omitempty"` // added to Run's, in order, where they apply
 }
 
-// Arg is arguments a step's command takes where their condition holds.
+// Arg is arguments a step's command takes where their condition holds: Add
+// once, or with EachProject once for each project inside this one (a
+// directory below with one of those build files: ProjectsBelow), {dir} in
+// Add being its path.
 type Arg struct {
-	If  *Cond    `json:"if,omitempty"`
-	Add []string `json:"add"`
+	If          *Cond    `json:"if,omitempty"`
+	Add         []string `json:"add"`
+	EachProject []string `json:"eachProject,omitempty"`
 }
 
 // Action is how a language does one action: where its build files are, and

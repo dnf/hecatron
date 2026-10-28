@@ -150,8 +150,17 @@ func planSteps(def *Definition, steps []Step, dir string) ([]Op, error) {
 func withArgs(step Step, dir string) []string {
 	argv := append([]string(nil), step.Run...)
 	for _, arg := range step.Args {
-		if arg.If == nil || arg.If.holds(dir) {
+		if arg.If != nil && !arg.If.holds(dir) {
+			continue
+		}
+		if len(arg.EachProject) == 0 {
 			argv = append(argv, arg.Add...)
+			continue
+		}
+		for _, project := range ProjectsBelow(dir, arg.EachProject) {
+			for _, add := range arg.Add {
+				argv = append(argv, strings.ReplaceAll(add, "{dir}", project))
+			}
 		}
 	}
 	return argv
@@ -290,6 +299,54 @@ func FindName(dir, glob string) bool {
 		return nil
 	})
 	return found
+}
+
+// ProjectsBelow is the directories below dir, at most three levels down,
+// with a file matching one of the globs, leaving out any inside another:
+// the projects inside the one in dir, relative to it and sorted.
+func ProjectsBelow(dir string, globs []string) []string {
+	found := map[string]bool{}
+	_ = filepath.WalkDir(dir, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return nil
+		}
+		rel, _ := filepath.Rel(dir, path)
+		depth := strings.Count(rel, string(filepath.Separator)) + 1
+		if entry.IsDir() {
+			if rel != "." && (strings.HasPrefix(entry.Name(), ".") || notSearched[entry.Name()] || depth > 3) {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if depth < 2 {
+			return nil
+		}
+		for _, glob := range globs {
+			if ok, _ := filepath.Match(glob, entry.Name()); ok {
+				found[filepath.ToSlash(filepath.Dir(rel))] = true
+			}
+		}
+		return nil
+	})
+	dirs := make([]string, 0, len(found))
+	for sub := range found {
+		dirs = append(dirs, sub)
+	}
+	sort.Strings(dirs)
+	var outermost []string
+	for _, sub := range dirs {
+		inside := false
+		for _, kept := range outermost {
+			if strings.HasPrefix(sub, kept+"/") {
+				inside = true
+				break
+			}
+		}
+		if !inside {
+			outermost = append(outermost, sub)
+		}
+	}
+	return outermost
 }
 
 // DirsBelow is the shallowest directories below dir, at most three levels

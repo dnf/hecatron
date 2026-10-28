@@ -35,6 +35,17 @@ func TestPytestCollectsTestThingFiles(t *testing.T) {
 	}
 }
 
+func TestPytestIgnoresTheProjectsInside(t *testing.T) {
+	lines := planned(t, map[string]string{"pyproject.toml": "", "crates/pyo3/pyproject.toml": "",
+		"crates/pyo3/python/setup.py": "", "crates/pyo3-x/setup.py": "", "pydantic-core/pyproject.toml": "",
+		"node_modules/x/pyproject.toml": "", "a/b/c/d/pyproject.toml": ""})
+	want := "+ uv run --all-extras --all-groups --with pytest pytest" +
+		" --ignore=crates/pyo3 --ignore=crates/pyo3-x --ignore=pydantic-core"
+	if strings.Join(lines, "\n") != want {
+		t.Errorf("plan: %q, want %q", lines, want)
+	}
+}
+
 func TestFindNameSkipsHiddenAndVendoredDirectories(t *testing.T) {
 	_, dir := project{lang: "python", files: map[string]string{
 		".venv/lib/TestA.py": "", "node_modules/x/TestB.py": "", "src/pkg/TestC.py": ""}}.create(t, "")

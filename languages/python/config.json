@@ -164,6 +164,51 @@
                 "-o",
                 "python_files=test_*.py *_test.py Test*.py"
               ]
+            },
+            {
+              "if": {
+                "not": {
+                  "any": [
+                    {
+                      "contains": [
+                        "pytest.ini",
+                        "testpaths"
+                      ]
+                    },
+                    {
+                      "contains": [
+                        ".pytest.ini",
+                        "testpaths"
+                      ]
+                    },
+                    {
+                      "contains": [
+                        "pyproject.toml",
+                        "testpaths"
+                      ]
+                    },
+                    {
+                      "contains": [
+                        "setup.cfg",
+                        "testpaths"
+                      ]
+                    },
+                    {
+                      "contains": [
+                        "tox.ini",
+                        "testpaths"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "eachProject": [
+                "pyproject.toml",
+                "setup.py"
+              ],
+              "add": [
+                "--ignore={dir}"
+              ]
             }
           ]
         },

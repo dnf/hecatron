@@ -59,6 +59,18 @@ class PytestTest(Fixture):
                     "tests/TestFileStream.py": ""})
         self.assertEqual(self.pytest_args(), [])
 
+    def test_projects_inside_are_left_to_themselves(self):
+        # pydantic-core in pydantic, ast-grep's crates/pyo3.
+        self.files({"pyproject.toml": "", "tests/test_a.py": "", "pydantic-core/pyproject.toml": "",
+                    "crates/pyo3/pyproject.toml": "", "crates/pyo3/sub/setup.py": "",
+                    ".venv/lib/x/setup.py": ""})
+        self.assertEqual(self.pytest_args(), ["--ignore=crates/pyo3", "--ignore=pydantic-core"])
+
+    def test_projects_inside_testpaths_name_are_collected(self):
+        self.files({"pyproject.toml": '[tool.pytest.ini_options]\ntestpaths = ["tests", "core"]\n',
+                    "core/pyproject.toml": ""})
+        self.assertEqual(self.pytest_args(), [])
+
 
 class PythonLinkTest(Fixture):
     """link-python.sh, with a PATH of only the tools it needs and fakes."""

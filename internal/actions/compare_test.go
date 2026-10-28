@@ -47,6 +47,11 @@ func projects() []project {
 			"pyproject.toml": "", "tests/TestThing.py": "", "tests/unit/test_thing.py": ""}},
 		{name: "python TestThing.py, python_files set", lang: "python", files: map[string]string{
 			"setup.py": "", "setup.cfg": "[tool:pytest]\npython_files = Test*.py\n", "tests/TestThing.py": ""}},
+		{name: "python projects inside", lang: "python", files: map[string]string{
+			"pyproject.toml": "", "tests/test_a.py": "", "crates/pyo3/pyproject.toml": "", "crates/pyo3/inner/setup.py": "",
+			"crates/pyo3-b/setup.py": "", "core/pyproject.toml": "", ".venv/x/pyproject.toml": "", "a/b/c/d/pyproject.toml": ""}},
+		{name: "python projects inside, testpaths set", lang: "python", files: map[string]string{
+			"pyproject.toml": "[tool.pytest.ini_options]\ntestpaths = [\"tests\", \"core\"]\n", "core/pyproject.toml": ""}},
 		{name: "elixir locked, deps not fetched, credo", lang: "elixir", files: map[string]string{
 			"mix.exs": "defp deps, do: [{:credo, \"~> 1.7\"}]", "mix.lock": ""}},
 		{name: "elixir nothing to lint", lang: "elixir", files: map[string]string{"mix.exs": "", "mix.lock": "", "deps/x": ""}},

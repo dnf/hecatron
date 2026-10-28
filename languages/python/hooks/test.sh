@@ -29,14 +29,36 @@ has_below() {
         -type f -name "$1" -print -quit 2>/dev/null)" ]
 }
 
+# The Python projects inside this one, at most three levels down, only the
+# outermost where one is inside another (pydantic-core in pydantic,
+# ast-grep's crates/pyo3), sorted.
+nested_projects() {
+    local _skip=() _dir
+    for _dir in "${_skipped_dirs[@]}"; do _skip+=(-o -name "${_dir}"); done
+    find . -maxdepth 4 \( -type d ! -path . \( "${_skip[@]:1}" \) -prune \) -o \
+        -type f \( -name pyproject.toml -o -name setup.py \) -print 2>/dev/null |
+        sed 's|/[^/]*$||' | LC_ALL=C sort -u |
+        awk '$0 == "." { next }
+            { sub(/^\.\//, "")
+              for (i = 1; i <= n; i++) if (index($0, kept[i] "/") == 1) next
+              kept[++n] = $0; print }'
+}
+
 _args=()
 # Test files named TestThing.py (antlr4's Python runtime), where none has
 # the names pytest collects by default, and the project doesn't say which.
 if ! pytest_sets python_files && has_below 'Test*.py' && ! has_below 'test_*.py' && ! has_below '*_test.py'; then
     _args+=(-o "python_files=test_*.py *_test.py Test*.py")
 fi
+_project=0
+if [ -f pyproject.toml ] || [ -f setup.py ] || [ -f setup.cfg ]; then _project=1; fi
+# A project inside this one has an environment of its own, which this one's
+# doesn't install: its tests aren't this one's, unless testpaths say so.
+if [ "${_project}" -eq 1 ] && ! pytest_sets testpaths; then
+    while IFS= read -r _dir; do _args+=(--ignore="${_dir}"); done < <(nested_projects)
+fi
 if [ -n "${HECATRON_TEST_REPORTS:-}" ]; then _args+=(--junitxml="${HECATRON_TEST_REPORTS}/pytest.xml"); fi
-if [ -f pyproject.toml ] || [ -f setup.py ] || [ -f setup.cfg ]; then
+if [ "${_project}" -eq 1 ]; then
     run uv run --all-extras --all-groups --with pytest pytest ${_args[@]+"${_args[@]}"}
 else
     run uv run --with pytest pytest ${_args[@]+"${_args[@]}"}
