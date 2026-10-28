@@ -175,6 +175,12 @@ It doesn't build anything itself, and it doesn't know what your code does.
   [cucumber/cucumber-expressions](https://github.com/cucumber/cucumber-expressions)
   (8) pass every language's own test suite with `hct init`, `hct install`
   and `hct test`, and no configuration.
+- **Open-source projects, every month.** About 150 public repositories,
+  polyglot ones first (Protocol Buffers, Thrift, Avro, FlatBuffers, gRPC,
+  ANTLR, OpenDAL...), then well-known projects in each language and some
+  large monorepos, each cloned on a fresh machine and run through `hct init`,
+  `install`, `doctor` and `test`. [docs/real-projects.md](docs/real-projects.md)
+  has the results per project and per language.
 
 ## Hecatron or ad hoc?
 
@@ -304,6 +310,7 @@ expect changes before 1.0. Changes are listed in
 | [docs/design.md](docs/design.md) | How hecatron works and why: concepts, configuration, commands, and the decisions behind them |
 | [docs/languages.md](docs/languages.md) | Every language: its home, what it's for, and how hecatron builds, tests and lints it |
 | [docs/coverage.md](docs/coverage.md) | Which languages install and work on which platforms |
+| [docs/real-projects.md](docs/real-projects.md) | Hecatron on about 150 open-source projects, per project and per language |
 | [docs/audit.md](docs/audit.md) | `hct audit`: each language's dependency auditor, severities, accepted risks, CI |
 | [docs/outdated.md](docs/outdated.md) | `hct outdated`: each language's report of newer dependency versions, `--json`, `--fail` |
 | [docs/format.md](docs/format.md) | `hct format`: each language's formatter, `--check`, and the format check in `hct lint` |

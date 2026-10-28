@@ -1,0 +1,6279 @@
+{
+ "schemaVersion": 1,
+ "verified": "2026-10-28",
+ "criteria": "Exists under this name, not archived, pushed to within two years, and under 1.5 GB, per the GitHub API (tests/real-projects/verify.py).",
+ "projects": [
+  {
+   "repo": "antlr/antlr4",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "csharp",
+    "dart",
+    "go",
+    "java",
+    "javascript",
+    "php",
+    "python",
+    "swift",
+    "typescript"
+   ],
+   "why": "Parser generator with runtimes for ten targets under runtime/",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "ANTLR (ANother Tool for Language Recognition) is a powerful parser generator for reading, processing, executing, or translating structured text or binary files.",
+    "topics": [
+     "antlr",
+     "antlr4",
+     "cpp",
+     "csharp",
+     "dart",
+     "golang",
+     "grammar",
+     "java",
+     "javascript",
+     "language-recognition",
+     "parse",
+     "parser-generator",
+     "parsing",
+     "php",
+     "python",
+     "swift"
+    ],
+    "license": "BSD-3-Clause",
+    "stars": 19037,
+    "forks": 3465,
+    "sizeKB": 70649,
+    "defaultBranch": "dev",
+    "pushedAt": "2026-02-16T21:29:09Z",
+    "archived": false,
+    "primaryLanguage": "Java",
+    "languageBytes": {
+     "Java": 2437339,
+     "C++": 1047730,
+     "C#": 1043416,
+     "Python": 951378,
+     "Swift": 873956,
+     "Dart": 587430,
+     "JavaScript": 500645,
+     "Go": 457229,
+     "ANTLR": 112525,
+     "GAP": 109962,
+     "Assembly": 92577,
+     "CMake": 35749,
+     "Objective-C++": 28237,
+     "C": 17247,
+     "Shell": 8062,
+     "Batchfile": 6675,
+     "Smalltalk": 2453,
+     "TypeScript": 804,
+     "Makefile": 688,
+     "Dockerfile": 684,
+     "Objective-C": 408
+    },
+    "homepage": "http://antlr.org"
+   }
+  },
+  {
+   "repo": "apache/arrow",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "python",
+    "r",
+    "ruby"
+   ],
+   "why": "Columnar format: C++ core with C GLib, Python, R and Ruby bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Apache Arrow is the universal columnar format and multi-language toolbox for fast data interchange and in-memory analytics",
+    "topics": [
+     "arrow",
+     "parquet"
+    ],
+    "license": "Apache-2.0",
+    "stars": 17236,
+    "forks": 4404,
+    "sizeKB": 237119,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:22:11Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 33178139,
+     "Python": 3613836,
+     "Ruby": 2410929,
+     "Cython": 2039105,
+     "R": 1825967,
+     "MATLAB": 930089,
+     "CMake": 746268,
+     "C": 710658,
+     "Shell": 414380,
+     "Meson": 173569,
+     "Dockerfile": 167274,
+     "Thrift": 52728,
+     "Batchfile": 31759,
+     "Vala": 24760,
+     "Jinja": 20985,
+     "Objective-C++": 11446,
+     "Lua": 8771,
+     "Makefile": 8369,
+     "HTML": 3737,
+     "JavaScript": 2489,
+     "CSS": 510
+    },
+    "homepage": "https://arrow.apache.org/"
+   }
+  },
+  {
+   "repo": "apache/arrow-adbc",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "csharp",
+    "go",
+    "java",
+    "python",
+    "r",
+    "ruby",
+    "rust"
+   ],
+   "why": "Database connectivity API with drivers in C, Go, Java, Rust and more",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Database connectivity API standard and libraries for Apache Arrow",
+    "topics": [
+     "arrow",
+     "database"
+    ],
+    "license": "Apache-2.0",
+    "stars": 637,
+    "forks": 236,
+    "sizeKB": 88213,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T23:42:58Z",
+    "archived": false,
+    "primaryLanguage": "C#",
+    "languageBytes": {
+     "C#": 4687081,
+     "C++": 2156039,
+     "Go": 754880,
+     "Java": 727627,
+     "Rust": 569318,
+     "C": 417656,
+     "Python": 399536,
+     "Shell": 247248,
+     "R": 141737,
+     "CMake": 129193,
+     "Ruby": 102482,
+     "Go Template": 91803,
+     "Cython": 85142,
+     "TypeScript": 75273,
+     "PowerShell": 50249,
+     "Meson": 29524,
+     "Dockerfile": 27837,
+     "Makefile": 4694,
+     "Batchfile": 3195,
+     "Vala": 2312
+    },
+    "homepage": "https://arrow.apache.org/adbc/"
+   }
+  },
+  {
+   "repo": "apache/avro",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "csharp",
+    "java",
+    "javascript",
+    "perl",
+    "php",
+    "python",
+    "ruby",
+    "rust"
+   ],
+   "why": "Serialization format with an implementation per language under lang/",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Apache Avro is a data serialization system.",
+    "topics": [
+     "avro",
+     "bigdata",
+     "c",
+     "cplusplus",
+     "csharp",
+     "dotnet",
+     "java",
+     "perl",
+     "php",
+     "python",
+     "ruby"
+    ],
+    "license": "Apache-2.0",
+    "stars": 3309,
+    "forks": 1784,
+    "sizeKB": 74990,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-26T04:03:35Z",
+    "archived": false,
+    "primaryLanguage": "Java",
+    "languageBytes": {
+     "Java": 4863159,
+     "C#": 1608823,
+     "C": 985493,
+     "C++": 892031,
+     "Python": 508897,
+     "JavaScript": 358739,
+     "PHP": 357380,
+     "Ruby": 254717,
+     "Perl": 123664,
+     "HTML": 78608,
+     "Shell": 58962,
+     "CMake": 34511,
+     "Dockerfile": 9932,
+     "ANTLR": 9184,
+     "CSS": 3564,
+     "Batchfile": 3090,
+     "Vim Script": 2765,
+     "Thrift": 1559,
+     "Makefile": 1421
+    },
+    "homepage": "https://avro.apache.org/"
+   }
+  },
+  {
+   "repo": "apache/beam",
+   "category": "polyglot",
+   "languages": [
+    "dart",
+    "go",
+    "groovy",
+    "java",
+    "javascript",
+    "kotlin",
+    "python",
+    "typescript"
+   ],
+   "why": "Data processing SDKs in Java, Python, Go and TypeScript, built with Gradle",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Apache Beam is a unified programming model for Batch and Streaming data processing.",
+    "topics": [
+     "batch",
+     "beam",
+     "big-data",
+     "golang",
+     "java",
+     "python",
+     "sql",
+     "streaming"
+    ],
+    "license": "Apache-2.0",
+    "stars": 8697,
+    "forks": 4740,
+    "sizeKB": 1110609,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-28T01:43:33Z",
+    "archived": false,
+    "primaryLanguage": "Java",
+    "languageBytes": {
+     "Java": 57660009,
+     "Python": 16809442,
+     "Go": 7458873,
+     "TypeScript": 2111426,
+     "Dart": 1240438,
+     "Shell": 435793,
+     "SCSS": 317637,
+     "Groovy": 285860,
+     "HCL": 233174,
+     "HTML": 211707,
+     "Kotlin": 156846,
+     "JavaScript": 130731,
+     "Jupyter Notebook": 128502,
+     "Dockerfile": 82623,
+     "Cython": 79172,
+     "Go Template": 63224,
+     "Sass": 27557,
+     "FreeMarker": 19859,
+     "CSS": 16377,
+     "Rust": 6535,
+     "C": 3869,
+     "Lua": 3620,
+     "Thrift": 3260,
+     "PLpgSQL": 1677,
+     "ANTLR": 1598,
+     "Scala": 1423,
+     "PureBasic": 506
+    },
+    "homepage": "https://beam.apache.org/"
+   }
+  },
+  {
+   "repo": "apache/fory",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "dart",
+    "go",
+    "java",
+    "javascript",
+    "kotlin",
+    "python",
+    "rust",
+    "scala"
+   ],
+   "why": "Serialization framework with an implementation per language",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A blazingly fast multi-language serialization framework for idiomatic domain objects, schema IDL, and cross-language data exchange.",
+    "topics": [
+     "compression",
+     "cpp",
+     "cross-language",
+     "encoding",
+     "fast",
+     "golang",
+     "hacktoberfest",
+     "java",
+     "javascript",
+     "jit",
+     "lightning",
+     "marshalling",
+     "multiple-language",
+     "persistence",
+     "python",
+     "rpc",
+     "rust",
+     "serialization",
+     "transfer",
+     "zero-copy"
+    ],
+    "license": "Apache-2.0",
+    "stars": 4573,
+    "forks": 470,
+    "sizeKB": 45411,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T13:13:48Z",
+    "archived": false,
+    "primaryLanguage": "Java",
+    "languageBytes": {
+     "Java": 12560593,
+     "Python": 3528950,
+     "Rust": 2423800,
+     "C++": 2408208,
+     "Go": 1760622,
+     "C#": 1615925,
+     "Dart": 1395897,
+     "Swift": 1341236,
+     "Kotlin": 939009,
+     "TypeScript": 898015,
+     "Scala": 707903,
+     "Cython": 395785,
+     "Shell": 154292,
+     "JavaScript": 79072,
+     "C": 69364,
+     "CMake": 34616,
+     "Starlark": 29153
+    },
+    "homepage": "https://fory.apache.org"
+   }
+  },
+  {
+   "repo": "apache/opendal",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "csharp",
+    "dart",
+    "go",
+    "haskell",
+    "java",
+    "javascript",
+    "lua",
+    "ocaml",
+    "php",
+    "python",
+    "ruby",
+    "rust",
+    "swift",
+    "zig"
+   ],
+   "why": "Storage access layer in Rust with bindings for about 15 languages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Apache OpenDAL: One Layer, All Storage.",
+    "topics": [
+     "azblob",
+     "gcs",
+     "hacktoberfest",
+     "redis",
+     "rust",
+     "s3",
+     "storage"
+    ],
+    "license": "Apache-2.0",
+    "stars": 5429,
+    "forks": 843,
+    "sizeKB": 94449,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T19:37:53Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 6882905,
+     "C#": 545591,
+     "Python": 420498,
+     "Java": 419787,
+     "Go": 344210,
+     "C++": 318670,
+     "JavaScript": 294819,
+     "C": 114119,
+     "Dart": 95047,
+     "CSS": 82450,
+     "Haskell": 63603,
+     "OCaml": 51890,
+     "Ruby": 42796,
+     "Shell": 36012,
+     "Zig": 29474,
+     "Jinja": 22261,
+     "D": 22124,
+     "PHP": 15157,
+     "CMake": 13747,
+     "Makefile": 12906,
+     "MDX": 12887,
+     "Lua": 12311,
+     "Swift": 9623,
+     "Just": 8239,
+     "Dockerfile": 3891,
+     "Jupyter Notebook": 2980,
+     "TypeScript": 1694,
+     "Dune": 1488,
+     "MoonBit": 960
+    },
+    "homepage": "https://opendal.apache.org"
+   }
+  },
+  {
+   "repo": "apache/qpid-proton",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "go",
+    "python",
+    "ruby"
+   ],
+   "why": "AMQP library in C with C++, Python, Ruby and Go bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Mirror of Apache Qpid Proton",
+    "topics": [
+     "amqp",
+     "amqp-client",
+     "amqp-connection",
+     "amqp-messages",
+     "amqp10",
+     "amqps",
+     "apache",
+     "c",
+     "cpp",
+     "golang",
+     "library",
+     "messaging",
+     "python",
+     "python3",
+     "qpid",
+     "ruby"
+    ],
+    "license": "Apache-2.0",
+    "stars": 249,
+    "forks": 228,
+    "sizeKB": 16948,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-22T15:13:33Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 2129963,
+     "C": 2021662,
+     "Python": 997555,
+     "Ruby": 367917,
+     "Go": 324779,
+     "CMake": 137587,
+     "SWIG": 33606,
+     "Shell": 31775,
+     "Dockerfile": 1522
+    },
+    "homepage": "https://qpid.apache.org/proton"
+   }
+  },
+  {
+   "repo": "apache/thrift",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "csharp",
+    "d",
+    "dart",
+    "erlang",
+    "go",
+    "haxe",
+    "java",
+    "javascript",
+    "lua",
+    "pascal",
+    "perl",
+    "php",
+    "python",
+    "ruby",
+    "rust",
+    "typescript"
+   ],
+   "why": "RPC framework with libraries for about 20 languages under lib/",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Apache Thrift",
+    "topics": [
+     "actionscript",
+     "c",
+     "cplusplus",
+     "csharp",
+     "d",
+     "dart",
+     "http",
+     "library",
+     "network-client",
+     "network-server",
+     "thrift"
+    ],
+    "license": "Apache-2.0",
+    "stars": 10962,
+    "forks": 4117,
+    "sizeKB": 42106,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-28T00:51:10Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 5447009,
+     "Java": 1596453,
+     "C": 1251607,
+     "Go": 948730,
+     "PHP": 894759,
+     "Ruby": 841509,
+     "Python": 828185,
+     "D": 753355,
+     "JavaScript": 742521,
+     "Pascal": 689183,
+     "C#": 636583,
+     "Thrift": 577387,
+     "Rust": 503106,
+     "Erlang": 479725,
+     "Haxe": 392000,
+     "Makefile": 274832,
+     "Dart": 218668,
+     "Perl": 185061,
+     "M4": 175277,
+     "CMake": 158930,
+     "Lua": 158001,
+     "PowerShell": 118766,
+     "Shell": 102330,
+     "StringTemplate": 67019,
+     "OCaml": 64828,
+     "Kotlin": 60734,
+     "TypeScript": 47757,
+     "Common Lisp": 41010,
+     "Batchfile": 40536,
+     "HTML": 40469,
+     "Dockerfile": 38172,
+     "Yacc": 30812,
+     "Lex": 11224,
+     "Inno Setup": 7639,
+     "Emacs Lisp": 5361,
+     "Vim Script": 2846,
+     "CSS": 1070
+    },
+    "homepage": "https://thrift.apache.org/"
+   }
+  },
+  {
+   "repo": "ast-grep/ast-grep",
+   "category": "polyglot",
+   "languages": [
+    "javascript",
+    "python",
+    "rust",
+    "typescript"
+   ],
+   "why": "Rust code search with Python and Node.js bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "⚡A CLI tool for code structural search, lint and rewriting. Written in Rust",
+    "topics": [
+     "ast",
+     "babel",
+     "codemod",
+     "codereview",
+     "command-line",
+     "command-line-tool",
+     "grep",
+     "linter",
+     "refactoring",
+     "rust",
+     "search",
+     "static-analysis",
+     "structural-search",
+     "tree-sitter",
+     "typescript"
+    ],
+    "license": "MIT",
+    "stars": 16376,
+    "forks": 484,
+    "sizeKB": 10746,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T19:32:58Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 1291227,
+     "TypeScript": 27822,
+     "Python": 21643,
+     "JavaScript": 18046,
+     "Vue": 272
+    },
+    "homepage": "https://ast-grep.github.io/"
+   }
+  },
+  {
+   "repo": "aws/jsii",
+   "category": "polyglot",
+   "languages": [
+    "csharp",
+    "go",
+    "java",
+    "javascript",
+    "python",
+    "typescript"
+   ],
+   "why": "TypeScript compiled to libraries for .NET, Go, Java and Python",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "jsii allows code in any language to naturally interact with JavaScript classes. It is the technology that enables the AWS Cloud Development Kit to deliver polyglot libraries from a single codebase!",
+    "topics": [
+     "aws",
+     "cross-language",
+     "hacktoberfest",
+     "node",
+     "typescript"
+    ],
+    "license": "Apache-2.0",
+    "stars": 2869,
+    "forks": 271,
+    "sizeKB": 222445,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-26T11:57:35Z",
+    "archived": false,
+    "primaryLanguage": "TypeScript",
+    "languageBytes": {
+     "TypeScript": 1593218,
+     "C#": 471979,
+     "Java": 269594,
+     "Go": 207300,
+     "Python": 188607,
+     "JavaScript": 36925,
+     "Shell": 20540,
+     "CSS": 4505,
+     "PowerShell": 3305,
+     "F#": 442,
+     "Batchfile": 30
+    },
+    "homepage": "https://aws.github.io/jsii"
+   }
+  },
+  {
+   "repo": "bytecodealliance/wit-bindgen",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "csharp",
+    "go",
+    "rust"
+   ],
+   "why": "WebAssembly binding generator with guest tests in several languages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A language binding generator for WebAssembly interface types",
+    "topics": [
+     "interface-types",
+     "module-linking",
+     "rust",
+     "wasi",
+     "wasmtime",
+     "webassembly"
+    ],
+    "license": "Apache-2.0",
+    "stars": 1471,
+    "forks": 300,
+    "sizeKB": 16632,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-22T17:25:39Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 2100533,
+     "MoonBit": 205704,
+     "C++": 169848,
+     "D": 120424,
+     "C": 113734,
+     "C#": 101538,
+     "Go": 51578,
+     "Shell": 9530,
+     "WebAssembly": 833,
+     "Dockerfile": 728
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "cucumber/ci-environment",
+   "category": "polyglot",
+   "languages": [
+    "csharp",
+    "go",
+    "java",
+    "javascript",
+    "python",
+    "ruby",
+    "typescript"
+   ],
+   "why": "Detects CI systems; one implementation per language over shared fixtures",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Detect CI Environment from environment variables",
+    "topics": [
+     "continuous-delivery",
+     "continuous-integration",
+     "github-actions",
+     "gitlab-ci",
+     "go",
+     "java",
+     "javascript",
+     "jenkins",
+     "polyglot-release",
+     "python",
+     "ruby",
+     "tidelift"
+    ],
+    "license": "MIT",
+    "stars": 14,
+    "forks": 6,
+    "sizeKB": 2423,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:09:42Z",
+    "archived": false,
+    "primaryLanguage": "Java",
+    "languageBytes": {
+     "Java": 25610,
+     "Go": 11688,
+     "Ruby": 8819,
+     "TypeScript": 8192,
+     "Python": 6031,
+     "Makefile": 4035,
+     "FreeMarker": 834
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "cucumber/cucumber-expressions",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "csharp",
+    "dart",
+    "go",
+    "java",
+    "python",
+    "ruby",
+    "typescript"
+   ],
+   "why": "One library in eight languages with a shared acceptance suite",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Human friendly alternative to Regular Expressions",
+    "topics": [
+     "dotnet",
+     "go",
+     "java",
+     "javascript",
+     "polyglot-release",
+     "python",
+     "ruby",
+     "tidelift"
+    ],
+    "license": "MIT",
+    "stars": 201,
+    "forks": 66,
+    "sizeKB": 12066,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:55:08Z",
+    "archived": false,
+    "primaryLanguage": "Java",
+    "languageBytes": {
+     "Java": 230262,
+     "C++": 134530,
+     "Go": 116874,
+     "C#": 105911,
+     "Dart": 101348,
+     "Python": 100143,
+     "TypeScript": 97225,
+     "Ruby": 91463,
+     "CMake": 9893,
+     "Makefile": 307
+    },
+    "homepage": "https://cucumber.io/docs/cucumber/cucumber-expressions/"
+   }
+  },
+  {
+   "repo": "cucumber/gherkin",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "csharp",
+    "dart",
+    "elixir",
+    "go",
+    "java",
+    "perl",
+    "php",
+    "python",
+    "ruby",
+    "typescript"
+   ],
+   "why": "One parser in a dozen languages, one directory each, sharing test data",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A parser and compiler for the Gherkin language.",
+    "topics": [
+     "c",
+     "dart",
+     "dotnet",
+     "elixir",
+     "gherkin",
+     "go",
+     "java",
+     "javascript",
+     "lexer",
+     "objective-c",
+     "parser",
+     "perl",
+     "php",
+     "polyglot-release",
+     "python",
+     "ruby",
+     "tidelift"
+    ],
+    "license": "MIT",
+    "stars": 419,
+    "forks": 101,
+    "sizeKB": 13531,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:08:34Z",
+    "archived": false,
+    "primaryLanguage": "C",
+    "languageBytes": {
+     "C": 549740,
+     "C++": 388719,
+     "Java": 343333,
+     "C#": 321821,
+     "PHP": 307852,
+     "Perl": 271591,
+     "Python": 262005,
+     "Elixir": 254396,
+     "Dart": 252123,
+     "TypeScript": 212753,
+     "Go": 203859,
+     "Ruby": 200219,
+     "HTML": 91476,
+     "Makefile": 48465,
+     "CMake": 14471,
+     "jq": 8291,
+     "FreeMarker": 5376,
+     "Gherkin": 2207,
+     "JavaScript": 1005,
+     "Dockerfile": 626,
+     "Shell": 372
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "cucumber/html-formatter",
+   "category": "polyglot",
+   "languages": [
+    "java",
+    "javascript",
+    "ruby",
+    "typescript"
+   ],
+   "why": "Report formatter with Java, Ruby and JavaScript packages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "HTML formatter for reporting Cucumber results",
+    "topics": [
+     "bdd",
+     "cucumber",
+     "java",
+     "javascript",
+     "polyglot-release",
+     "ruby",
+     "tidelift"
+    ],
+    "license": "MIT",
+    "stars": 21,
+    "forks": 6,
+    "sizeKB": 20615,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:23:14Z",
+    "archived": false,
+    "primaryLanguage": "C#",
+    "languageBytes": {
+     "C#": 36233,
+     "Java": 27138,
+     "Ruby": 11623,
+     "TypeScript": 10150,
+     "Makefile": 1712,
+     "SCSS": 1241,
+     "JavaScript": 794,
+     "Mustache": 488,
+     "CSS": 71
+    },
+    "homepage": "https://cucumber.io/"
+   }
+  },
+  {
+   "repo": "cucumber/messages",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "csharp",
+    "dart",
+    "elixir",
+    "go",
+    "java",
+    "javascript",
+    "perl",
+    "php",
+    "python",
+    "ruby",
+    "typescript"
+   ],
+   "why": "Code generated from one JSON schema into a dozen languages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A message protocol for representing results and other information from Cucumber",
+    "topics": [
+     "dotnet",
+     "elixir",
+     "go",
+     "java",
+     "javascript",
+     "perl",
+     "php",
+     "polyglot-release",
+     "ruby",
+     "tidelift"
+    ],
+    "license": "MIT",
+    "stars": 41,
+    "forks": 24,
+    "sizeKB": 5326,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:23:08Z",
+    "archived": false,
+    "primaryLanguage": "C#",
+    "languageBytes": {
+     "C#": 233829,
+     "PHP": 223687,
+     "Java": 215962,
+     "C++": 208450,
+     "Dart": 188630,
+     "Ruby": 147612,
+     "Perl": 87521,
+     "Elixir": 59056,
+     "HTML": 50625,
+     "Python": 48117,
+     "Go": 22718,
+     "Makefile": 17197,
+     "TypeScript": 15811,
+     "CMake": 7364,
+     "JavaScript": 1043
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "cucumber/query",
+   "category": "polyglot",
+   "languages": [
+    "java",
+    "javascript",
+    "typescript"
+   ],
+   "why": "Cucumber message queries in Java and JavaScript/TypeScript",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A query API for https://github.com/cucumber/messages",
+    "topics": [
+     "java",
+     "javascript",
+     "polyglot-release",
+     "tidelift"
+    ],
+    "license": "MIT",
+    "stars": 4,
+    "forks": 1,
+    "sizeKB": 3735,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:09:05Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 111083,
+     "Java": 98532,
+     "C#": 78654,
+     "TypeScript": 43611,
+     "Ruby": 26735,
+     "CMake": 10101
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "cucumber/tag-expressions",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "csharp",
+    "go",
+    "java",
+    "perl",
+    "php",
+    "python",
+    "ruby",
+    "typescript"
+   ],
+   "why": "Small library in nine languages, the simplest Cucumber layout",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Cucumber tag expression parser",
+    "topics": [
+     "go",
+     "java",
+     "javascript",
+     "perl",
+     "polyglot-release",
+     "python",
+     "ruby",
+     "tidelift"
+    ],
+    "license": "MIT",
+    "stars": 22,
+    "forks": 10,
+    "sizeKB": 6280,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:08:10Z",
+    "archived": false,
+    "primaryLanguage": "Python",
+    "languageBytes": {
+     "Python": 55289,
+     "C#": 25672,
+     "C++": 25237,
+     "Perl": 18041,
+     "Java": 14425,
+     "PHP": 14009,
+     "Go": 10589,
+     "Ruby": 10134,
+     "TypeScript": 8500,
+     "CMake": 6381,
+     "Makefile": 2463
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "dmlc/xgboost",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "java",
+    "python",
+    "r",
+    "scala"
+   ],
+   "why": "Gradient boosting: C++ core, Python, R and JVM packages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Scalable, Portable and Distributed Gradient Boosting (GBDT, GBRT or GBM) Library,  for Python, R, Java, Scala, C and more. Runs on single machine, Hadoop, Spark, Dask, Flink and DataFlow",
+    "topics": [
+     "distributed-systems",
+     "gbdt",
+     "gbm",
+     "gbrt",
+     "machine-learning",
+     "xgboost"
+    ],
+    "license": "Apache-2.0",
+    "stars": 28916,
+    "forks": 8952,
+    "sizeKB": 39103,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T22:43:34Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 3624698,
+     "Python": 1615246,
+     "Cuda": 1310565,
+     "R": 566121,
+     "Scala": 375181,
+     "Java": 262019,
+     "CMake": 61786,
+     "Shell": 46950,
+     "C": 29298,
+     "PowerShell": 5267
+    },
+    "homepage": "https://xgboost.readthedocs.io/"
+   }
+  },
+  {
+   "repo": "ethereum/c-kzg-4844",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "csharp",
+    "elixir",
+    "go",
+    "java",
+    "javascript",
+    "nim",
+    "python",
+    "rust"
+   ],
+   "why": "C library with bindings for eight languages under bindings/",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A minimal implementation of the Polynomial Commitments API for EIP-4844 and EIP-7594, written in C.",
+    "topics": [],
+    "license": "Apache-2.0",
+    "stars": 178,
+    "forks": 163,
+    "sizeKB": 16686,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-06T18:40:55Z",
+    "archived": false,
+    "primaryLanguage": "C",
+    "languageBytes": {
+     "C": 376397,
+     "Rust": 113287,
+     "Java": 55101,
+     "Go": 47449,
+     "C#": 42797,
+     "C++": 34147,
+     "Zig": 29175,
+     "TypeScript": 27180,
+     "Nim": 23376,
+     "Elixir": 22276,
+     "Python": 21283,
+     "Makefile": 15488,
+     "JavaScript": 7077,
+     "Dockerfile": 724,
+     "Shell": 547
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "facebook/flow",
+   "category": "polyglot",
+   "languages": [
+    "javascript",
+    "ocaml"
+   ],
+   "why": "OCaml type checker with JavaScript packages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Adds static typing to JavaScript to improve developer productivity and code quality.",
+    "topics": [],
+    "license": "MIT",
+    "stars": 22306,
+    "forks": 1892,
+    "sizeKB": 188699,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:15:17Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 23452009,
+     "JavaScript": 7743416,
+     "Shell": 413831,
+     "TypeScript": 268316,
+     "CSS": 96714,
+     "Python": 67212,
+     "Makefile": 7790,
+     "MDX": 6607,
+     "Vim Snippet": 248,
+     "RenderScript": 190,
+     "Ruby": 73
+    },
+    "homepage": "https://flow.org/"
+   }
+  },
+  {
+   "repo": "google/brotli",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "csharp",
+    "go",
+    "java",
+    "javascript",
+    "python"
+   ],
+   "why": "Compression library in C with Go, Java, Python and JS ports",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Brotli compression format",
+    "topics": [],
+    "license": "MIT",
+    "stars": 15045,
+    "forks": 1386,
+    "sizeKB": 42846,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T17:44:12Z",
+    "archived": false,
+    "primaryLanguage": "TypeScript",
+    "languageBytes": {
+     "TypeScript": 13362930,
+     "C": 2216162,
+     "C#": 748417,
+     "Java": 575541,
+     "Go": 454666,
+     "JavaScript": 332565,
+     "Kotlin": 210268,
+     "Python": 131534,
+     "C++": 119712,
+     "Starlark": 22638,
+     "CMake": 19027,
+     "Shell": 7210,
+     "Makefile": 1161
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "google/flatbuffers",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "csharp",
+    "dart",
+    "java",
+    "javascript",
+    "kotlin",
+    "lua",
+    "nim",
+    "objectivec",
+    "php",
+    "python",
+    "rust",
+    "swift",
+    "typescript"
+   ],
+   "why": "Serialization library: a C++ compiler plus runtimes for 15 languages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "FlatBuffers: Memory Efficient Serialization Library",
+    "topics": [
+     "c",
+     "c-plus-plus",
+     "c-sharp",
+     "cross-platform",
+     "flatbuffers",
+     "go",
+     "grpc",
+     "java",
+     "javascript",
+     "json-parser",
+     "marshalling",
+     "mmap",
+     "protobuf",
+     "python",
+     "rpc",
+     "rust",
+     "serialization",
+     "serialization-library",
+     "typescript",
+     "zero-copy"
+    ],
+    "license": "Apache-2.0",
+    "stars": 26583,
+    "forks": 3716,
+    "sizeKB": 22280,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T21:28:19Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 4157476,
+     "Rust": 1482537,
+     "Swift": 857698,
+     "Python": 761550,
+     "C#": 619745,
+     "Java": 613433,
+     "JavaScript": 580231,
+     "Kotlin": 449990,
+     "Dart": 409903,
+     "TypeScript": 404057,
+     "PHP": 189050,
+     "Go": 152917,
+     "Lua": 98702,
+     "Nim": 98085,
+     "CMake": 67537,
+     "Lobster": 67009,
+     "Starlark": 46267,
+     "Shell": 26809,
+     "Batchfile": 2105,
+     "C": 1552,
+     "Ruby": 1002,
+     "Roff": 648,
+     "Makefile": 481
+    },
+    "homepage": "https://flatbuffers.dev/"
+   }
+  },
+  {
+   "repo": "google/jsonnet",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "python"
+   ],
+   "why": "Jsonnet in C++ with C and Python bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Jsonnet - The data templating language",
+    "topics": [
+     "config",
+     "configuration",
+     "functional",
+     "json",
+     "jsonnet"
+    ],
+    "license": "Apache-2.0",
+    "stars": 7585,
+    "forks": 483,
+    "sizeKB": 59731,
+    "defaultBranch": "master",
+    "pushedAt": "2026-03-30T14:23:57Z",
+    "archived": false,
+    "primaryLanguage": "Jsonnet",
+    "languageBytes": {
+     "Jsonnet": 1039972,
+     "C++": 602223,
+     "Python": 88688,
+     "C": 46655,
+     "Shell": 37380,
+     "CMake": 16915,
+     "HTML": 15889,
+     "Makefile": 11002,
+     "Starlark": 10079,
+     "Java": 8813,
+     "CSS": 4684,
+     "Dockerfile": 332
+    },
+    "homepage": "http://jsonnet.org"
+   }
+  },
+  {
+   "repo": "google/libphonenumber",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "java",
+    "javascript"
+   ],
+   "why": "Phone number library in Java, C++ and JavaScript",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Google's common Java, C++ and JavaScript library for parsing, formatting, and validating international phone numbers.",
+    "topics": [],
+    "license": "Apache-2.0",
+    "stars": 18335,
+    "forks": 2190,
+    "sizeKB": 335741,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-26T08:18:37Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 3989080,
+     "Java": 2248677,
+     "JavaScript": 1182635,
+     "CMake": 28532,
+     "C": 17110,
+     "Closure Templates": 9848,
+     "HTML": 7719,
+     "Shell": 3845,
+     "CSS": 2572
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "google/magika",
+   "category": "polyglot",
+   "languages": [
+    "go",
+    "javascript",
+    "python",
+    "rust",
+    "typescript"
+   ],
+   "why": "File type detection with Python, Rust, JS and Go clients",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Fast and accurate AI powered file content types detection ",
+    "topics": [
+     "ai",
+     "deep-learning",
+     "filetype",
+     "keras-classification-models",
+     "keras-models",
+     "mime-types",
+     "onnx"
+    ],
+    "license": "Apache-2.0",
+    "stars": 18745,
+    "forks": 1188,
+    "sizeKB": 229010,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-23T14:04:00Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 968819,
+     "YARA": 194999,
+     "Python": 171366,
+     "TypeScript": 118825,
+     "Shell": 54240,
+     "Rich Text Format": 32354,
+     "C": 30967,
+     "Svelte": 28283,
+     "Go": 22572,
+     "JavaScript": 7299,
+     "CSS": 5452,
+     "Dockerfile": 3489,
+     "Dart": 2175,
+     "Jupyter Notebook": 1978,
+     "Elixir": 1890,
+     "MDX": 1644,
+     "Clojure": 1587,
+     "HTML": 1288,
+     "C#": 1012,
+     "Jinja": 689,
+     "TeX": 672,
+     "Groovy": 609,
+     "Twig": 416,
+     "Lua": 346,
+     "Smali": 336,
+     "Erlang": 307,
+     "Fortran": 288,
+     "Just": 224,
+     "HCL": 200,
+     "Assembly": 179,
+     "Ruby": 175,
+     "Awk": 162,
+     "Handlebars": 140,
+     "Zig": 97,
+     "Makefile": 75,
+     "Swift": 66,
+     "PHP": 52,
+     "Vue": 40,
+     "Batchfile": 33
+    },
+    "homepage": "https://securityresearch.google/magika/"
+   }
+  },
+  {
+   "repo": "google/or-tools",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "csharp",
+    "go",
+    "java",
+    "julia",
+    "python"
+   ],
+   "why": "Optimization suite in C++ with Python, Java, .NET and Go wrappers",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Google's Operations Research tools:",
+    "topics": [
+     "combinatorial-optimization",
+     "linear-programming",
+     "operations-research",
+     "optimization",
+     "or-tools"
+    ],
+    "license": "Apache-2.0",
+    "stars": 14281,
+    "forks": 2534,
+    "sizeKB": 1315912,
+    "defaultBranch": "stable",
+    "pushedAt": "2026-10-27T17:27:34Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 26084978,
+     "Python": 2090948,
+     "Julia": 1046938,
+     "Starlark": 708560,
+     "C#": 693616,
+     "Java": 671692,
+     "SWIG": 436390,
+     "CMake": 384746,
+     "Makefile": 230559,
+     "Go": 169402,
+     "Dockerfile": 152793,
+     "Shell": 124553,
+     "C": 53823,
+     "MiniZinc": 33940,
+     "Yacc": 27938,
+     "Batchfile": 23029,
+     "Lex": 2839,
+     "HTML": 2787,
+     "CSS": 1160,
+     "sed": 45
+    },
+    "homepage": "https://developers.google.com/optimization/"
+   }
+  },
+  {
+   "repo": "google/re2",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "python"
+   ],
+   "why": "Regular expression library in C++ with Python bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "RE2 is a fast, safe, thread-friendly alternative to backtracking regular expression engines like those used in PCRE, Perl, and Python. It is a C++ library.",
+    "topics": [],
+    "license": "BSD-3-Clause",
+    "stars": 9836,
+    "forks": 1257,
+    "sizeKB": 10511,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-02T18:28:05Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 1119137,
+     "Python": 62389,
+     "Starlark": 16061,
+     "Makefile": 12365,
+     "CMake": 9419,
+     "Perl": 5930,
+     "Shell": 3751,
+     "TypeScript": 2551,
+     "JavaScript": 743,
+     "HTML": 204
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "grpc/grpc",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "csharp",
+    "objectivec",
+    "php",
+    "python",
+    "ruby",
+    "swift"
+   ],
+   "why": "gRPC core in C++ with wrapped languages under src/",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "C++ based gRPC (C++, Python, Ruby, Objective-C, PHP, C#)",
+    "topics": [],
+    "license": "Apache-2.0",
+    "stars": 45401,
+    "forks": 11329,
+    "sizeKB": 631604,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T23:02:31Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 28290809,
+     "Python": 3869642,
+     "Starlark": 1656431,
+     "C": 925121,
+     "Shell": 858619,
+     "Ruby": 637299,
+     "Objective-C": 525582,
+     "PHP": 495988,
+     "Cython": 330219,
+     "Objective-C++": 225154,
+     "Dockerfile": 202907,
+     "C#": 189925,
+     "Batchfile": 48636,
+     "Go": 34795,
+     "CMake": 33403,
+     "Swift": 17969,
+     "XSLT": 9855,
+     "PowerShell": 6839,
+     "Java": 6259,
+     "Pawn": 6004,
+     "Awk": 5444,
+     "JavaScript": 4863,
+     "CSS": 1519,
+     "Linker Script": 46,
+     "HTML": 14
+    },
+    "homepage": "https://grpc.io"
+   }
+  },
+  {
+   "repo": "huggingface/tokenizers",
+   "category": "polyglot",
+   "languages": [
+    "javascript",
+    "python",
+    "rust",
+    "typescript"
+   ],
+   "why": "Rust tokenizers with Python and Node.js bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "💥 Fast State-of-the-Art Tokenizers optimized for Research and Production",
+    "topics": [
+     "bert",
+     "gpt",
+     "language-model",
+     "natural-language-processing",
+     "natural-language-understanding",
+     "nlp",
+     "transformers"
+    ],
+    "license": "Apache-2.0",
+    "stars": 11204,
+    "forks": 1237,
+    "sizeKB": 23248,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T15:28:03Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 1578462,
+     "Python": 59884,
+     "Makefile": 9088,
+     "TypeScript": 8485,
+     "Shell": 3110,
+     "JavaScript": 1085
+    },
+    "homepage": "https://huggingface.co/docs/tokenizers"
+   }
+  },
+  {
+   "repo": "lance-format/lance",
+   "category": "polyglot",
+   "languages": [
+    "java",
+    "python",
+    "rust"
+   ],
+   "why": "Rust columnar format with Python and Java bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Open Lakehouse Format for Multimodal AI. Convert from Parquet in 2 lines of code for 100x faster random access, vector index, and data versioning. Compatible with Pandas, DuckDB, Polars, Pyarrow, and PyTorch with more integrations coming..",
+    "topics": [
+     "apache-arrow",
+     "computer-vision",
+     "data-analysis",
+     "data-analytics",
+     "data-centric",
+     "data-format",
+     "data-science",
+     "dataops",
+     "deep-learning",
+     "duckdb",
+     "embeddings",
+     "llms",
+     "machine-learning",
+     "mlops",
+     "python",
+     "rust"
+    ],
+    "license": "Apache-2.0",
+    "stars": 7221,
+    "forks": 912,
+    "sizeKB": 112709,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T01:48:39Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 40506361,
+     "Python": 3074324,
+     "HTML": 2786444,
+     "Java": 1951966,
+     "Jupyter Notebook": 477500,
+     "Shell": 81262,
+     "C": 45018,
+     "C++": 15395,
+     "Makefile": 4318,
+     "Handlebars": 1855,
+     "Dockerfile": 239
+    },
+    "homepage": "https://lance.org"
+   }
+  },
+  {
+   "repo": "microsoft/TypeChat",
+   "category": "polyglot",
+   "languages": [
+    "csharp",
+    "python",
+    "typescript"
+   ],
+   "why": "LLM schema library in TypeScript, Python and .NET",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "TypeChat is a library that makes it easy to build natural language interfaces using types.",
+    "topics": [
+     "ai",
+     "llm",
+     "natural-language",
+     "types"
+    ],
+    "license": "MIT",
+    "stars": 8692,
+    "forks": 420,
+    "sizeKB": 2706,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T21:22:44Z",
+    "archived": false,
+    "primaryLanguage": "TypeScript",
+    "languageBytes": {
+     "TypeScript": 250284,
+     "Python": 165881,
+     "JavaScript": 75388,
+     "Jupyter Notebook": 23504,
+     "Nunjucks": 10384,
+     "CSS": 2807,
+     "HTML": 277
+    },
+    "homepage": "https://microsoft.github.io/TypeChat/"
+   }
+  },
+  {
+   "repo": "mlpack/mlpack",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "go",
+    "julia",
+    "python",
+    "r"
+   ],
+   "why": "C++ machine learning library with generated bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "mlpack: a fast, header-only C++ machine learning library",
+    "topics": [
+     "c-plus-plus",
+     "deep-learning",
+     "machine-learning",
+     "machine-learning-library",
+     "nearest-neighbor-search",
+     "regression",
+     "scientific-computing"
+    ],
+    "license": "NOASSERTION",
+    "stars": 5718,
+    "forks": 1726,
+    "sizeKB": 279666,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T15:30:05Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 12725350,
+     "C": 1113328,
+     "CMake": 232596,
+     "Python": 110674,
+     "Shell": 58051,
+     "Go": 39457,
+     "R": 16291,
+     "Julia": 15552,
+     "Groovy": 1525
+    },
+    "homepage": "https://www.mlpack.org/"
+   }
+  },
+  {
+   "repo": "mozilla/uniffi-rs",
+   "category": "polyglot",
+   "languages": [
+    "kotlin",
+    "python",
+    "rust",
+    "swift"
+   ],
+   "why": "Rust binding generator tested against Kotlin, Python, Swift and Ruby",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "a multi-language bindings generator for rust",
+    "topics": [
+     "ffi-layer",
+     "rust-crate"
+    ],
+    "license": "MPL-2.0",
+    "stars": 5070,
+    "forks": 339,
+    "sizeKB": 70312,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-26T21:16:31Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 2480957,
+     "Kotlin": 328303,
+     "Python": 225489,
+     "Ruby": 209403,
+     "Swift": 198207,
+     "WebIDL": 112857,
+     "Shell": 12769,
+     "C": 3429,
+     "Makefile": 2031,
+     "RenderScript": 1
+    },
+    "homepage": "https://mozilla.github.io/uniffi-rs/"
+   }
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-demo",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "csharp",
+    "elixir",
+    "go",
+    "java",
+    "javascript",
+    "kotlin",
+    "php",
+    "python",
+    "ruby",
+    "rust",
+    "typescript"
+   ],
+   "why": "Microservice demo with a service in each of a dozen languages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "This repository contains the OpenTelemetry Astronomy Shop, a microservice-based distributed system intended to illustrate the implementation of OpenTelemetry in a near real-world environment.",
+    "topics": [
+     "demo",
+     "jaeger",
+     "opentelemetry",
+     "opentelemetry-collector",
+     "opentelemetry-dotnet",
+     "opentelemetry-erlang",
+     "opentelemetry-go",
+     "opentelemetry-java-agent",
+     "opentelemetry-javascript",
+     "opentelemetry-python",
+     "opentelemetry-rust",
+     "prometheus"
+    ],
+    "license": "Apache-2.0",
+    "stars": 3423,
+    "forks": 7378,
+    "sizeKB": 60991,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T19:22:57Z",
+    "archived": false,
+    "primaryLanguage": "TypeScript",
+    "languageBytes": {
+     "TypeScript": 297086,
+     "Elixir": 130436,
+     "Python": 91751,
+     "Go": 62401,
+     "C#": 42829,
+     "Java": 42003,
+     "Dockerfile": 36867,
+     "C++": 19640,
+     "Rust": 18318,
+     "Makefile": 16972,
+     "JavaScript": 14118,
+     "Jinja": 8827,
+     "PHP": 8046,
+     "Kotlin": 5393,
+     "CSS": 5078,
+     "Ruby": 4472,
+     "Shell": 3847,
+     "CMake": 3212,
+     "HTML": 3170,
+     "Go Template": 1056,
+     "Batchfile": 48
+    },
+    "homepage": "https://opentelemetry.io/docs/demo/"
+   }
+  },
+  {
+   "repo": "pact-foundation/pact-reference",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "rust"
+   ],
+   "why": "Rust Pact core with a C FFI",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Reference implementations for the pact specifications",
+    "topics": [
+     "pact",
+     "smartbear-supported"
+    ],
+    "license": "MIT",
+    "stars": 106,
+    "forks": 58,
+    "sizeKB": 13099,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-22T10:19:26Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 5816413,
+     "C": 131325,
+     "Gherkin": 100820,
+     "CMake": 48454,
+     "XSLT": 23632,
+     "Groovy": 7666,
+     "Shell": 1665,
+     "Just": 1305,
+     "Dockerfile": 950
+    },
+    "homepage": "https://pact.io"
+   }
+  },
+  {
+   "repo": "protocolbuffers/protobuf",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "csharp",
+    "java",
+    "lua",
+    "objectivec",
+    "php",
+    "python",
+    "ruby",
+    "rust"
+   ],
+   "why": "Protocol Buffers: C++ compiler and runtimes for many languages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Protocol Buffers - Google's data interchange format",
+    "topics": [
+     "marshalling",
+     "protobuf",
+     "protobuf-runtime",
+     "protoc",
+     "protocol-buffers",
+     "protocol-compiler",
+     "rpc",
+     "serialization"
+    ],
+    "license": "NOASSERTION",
+    "stars": 72135,
+    "forks": 16331,
+    "sizeKB": 250149,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T01:30:50Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 16603301,
+     "Java": 13956915,
+     "C#": 7911170,
+     "C": 5046355,
+     "Objective-C": 3013490,
+     "Python": 1574479,
+     "Starlark": 1357983,
+     "Rust": 617656,
+     "PHP": 580584,
+     "Ruby": 389009,
+     "CMake": 167783,
+     "Kotlin": 132844,
+     "Shell": 78677,
+     "NASL": 29680,
+     "Lua": 27280,
+     "Swift": 25869,
+     "Pawn": 9778,
+     "Emacs Lisp": 6642,
+     "Batchfile": 2657,
+     "Vim Script": 2524,
+     "Objective-C++": 1244,
+     "Makefile": 829,
+     "PowerShell": 794,
+     "Awk": 684,
+     "M4": 454,
+     "Linker Script": 60
+    },
+    "homepage": "http://protobuf.dev"
+   }
+  },
+  {
+   "repo": "pulumi/pulumi",
+   "category": "polyglot",
+   "languages": [
+    "go",
+    "javascript",
+    "python",
+    "typescript"
+   ],
+   "why": "Infrastructure as code: Go engine with Node.js and Python SDKs",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Pulumi - Infrastructure as Code in any programming language 🚀",
+    "topics": [
+     "aws",
+     "azure",
+     "cloud",
+     "cloud-computing",
+     "containers",
+     "csharp",
+     "dotnet",
+     "fsharp",
+     "gcp",
+     "go",
+     "golang",
+     "iac",
+     "infrastructure-as-code",
+     "javascript",
+     "kubernetes",
+     "python",
+     "serverless",
+     "typescript"
+    ],
+    "license": "Apache-2.0",
+    "stars": 25823,
+    "forks": 1470,
+    "sizeKB": 397426,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-28T01:05:52Z",
+    "archived": false,
+    "primaryLanguage": "Go",
+    "languageBytes": {
+     "Go": 24637556,
+     "Python": 2546739,
+     "TypeScript": 2372387,
+     "JavaScript": 91972,
+     "Makefile": 44988,
+     "Shell": 35960,
+     "Go Template": 8967,
+     "Dockerfile": 1795,
+     "C#": 1455,
+     "Batchfile": 1020,
+     "Assembly": 812,
+     "HCL": 439,
+     "Puppet": 89
+    },
+    "homepage": "https://www.pulumi.com"
+   }
+  },
+  {
+   "repo": "safetensors/safetensors",
+   "category": "polyglot",
+   "languages": [
+    "python",
+    "rust"
+   ],
+   "why": "Rust file format with Python bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Simple, safe way to store and distribute tensors",
+    "topics": [],
+    "license": "Apache-2.0",
+    "stars": 3936,
+    "forks": 404,
+    "sizeKB": 3431,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-06T17:33:11Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 279049,
+     "Python": 211348,
+     "Makefile": 1192,
+     "Nix": 951
+    },
+    "homepage": "https://huggingface.co/docs/safetensors"
+   }
+  },
+  {
+   "repo": "semgrep/semgrep",
+   "category": "polyglot",
+   "languages": [
+    "ocaml",
+    "python"
+   ],
+   "why": "OCaml analysis engine with a Python CLI",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code.",
+    "topics": [
+     "c",
+     "go",
+     "java",
+     "javascript",
+     "python",
+     "r2c",
+     "ruby",
+     "sast",
+     "semgrep",
+     "static-analysis",
+     "static-code-analysis",
+     "typescript"
+    ],
+    "license": "LGPL-2.1",
+    "stars": 17311,
+    "forks": 1132,
+    "sizeKB": 141116,
+    "defaultBranch": "develop",
+    "pushedAt": "2026-10-28T00:06:23Z",
+    "archived": false,
+    "primaryLanguage": "C",
+    "languageBytes": {
+     "C": 447395130,
+     "OCaml": 21517497,
+     "Python": 2928797,
+     "JavaScript": 1426353,
+     "Standard ML": 377297,
+     "C++": 375816,
+     "Move": 337020,
+     "Go": 126976,
+     "Shell": 98491,
+     "Ruby": 41821,
+     "Makefile": 37978,
+     "C#": 32486,
+     "Nix": 32357,
+     "Dockerfile": 21552,
+     "Dune": 18171,
+     "Java": 13990,
+     "Jsonnet": 12518,
+     "Scala": 9371,
+     "Elixir": 7835,
+     "Reason": 6660,
+     "Julia": 6509,
+     "Swift": 4989,
+     "PHP": 4766,
+     "Mustache": 4118,
+     "HTML": 3271,
+     "Cairo": 2865,
+     "TypeScript": 2771,
+     "Kotlin": 2218,
+     "Lua": 1976,
+     "Objective-C": 923,
+     "HCL": 831,
+     "Jinja": 592,
+     "Starlark": 577,
+     "Max": 302,
+     "Dart": 134,
+     "Rust": 101,
+     "ColdFusion": 89,
+     "Haskell": 47,
+     "Vue": 32,
+     "Rebol": 22,
+     "RenderScript": 15
+    },
+    "homepage": "https://semgrep.dev"
+   }
+  },
+  {
+   "repo": "snowballstem/snowball",
+   "category": "polyglot",
+   "languages": [
+    "ada",
+    "c",
+    "cpp",
+    "dart",
+    "java",
+    "pascal",
+    "python",
+    "rust"
+   ],
+   "why": "A compiler that generates stemmers for many target languages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Snowball compiler and stemming algorithms",
+    "topics": [],
+    "license": "BSD-3-Clause",
+    "stars": 886,
+    "forks": 211,
+    "sizeKB": 3728,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-17T07:29:57Z",
+    "archived": false,
+    "primaryLanguage": "C",
+    "languageBytes": {
+     "C": 874604,
+     "Makefile": 42671,
+     "Ada": 35026,
+     "C#": 27743,
+     "Zig": 24550,
+     "Rust": 21375,
+     "Java": 18561,
+     "Python": 17991,
+     "JavaScript": 16064,
+     "Pascal": 13354,
+     "PHP": 12979,
+     "Go": 12235,
+     "Perl": 11645,
+     "Dart": 10169,
+     "C++": 6197,
+     "Shell": 1254
+    },
+    "homepage": "https://snowballstem.org/"
+   }
+  },
+  {
+   "repo": "supranational/blst",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "csharp",
+    "go",
+    "java",
+    "javascript",
+    "python",
+    "rust"
+   ],
+   "why": "BLS12-381 signatures in C and assembly with bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Multilingual BLS12-381 signature library",
+    "topics": [
+     "bls-signature",
+     "bls12-381",
+     "blst",
+     "blst-library",
+     "eth2",
+     "filecoin",
+     "hash-to-curve",
+     "signatures"
+    ],
+    "license": "Apache-2.0",
+    "stars": 576,
+    "forks": 238,
+    "sizeKB": 2006,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-26T15:28:07Z",
+    "archived": false,
+    "primaryLanguage": "Assembly",
+    "languageBytes": {
+     "Assembly": 2464362,
+     "C": 501312,
+     "Go": 206179,
+     "Rust": 167702,
+     "Python": 118238,
+     "C++": 61446,
+     "Zig": 58569,
+     "C#": 47559,
+     "SWIG": 38405,
+     "Shell": 12556,
+     "TypeScript": 6165,
+     "JavaScript": 2378,
+     "Java": 2220,
+     "Batchfile": 2073,
+     "HTML": 1534,
+     "Makefile": 1338
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "temporalio/features",
+   "category": "polyglot",
+   "languages": [
+    "csharp",
+    "go",
+    "java",
+    "python",
+    "ruby",
+    "typescript"
+   ],
+   "why": "One feature test suite run against every Temporal SDK",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Behavior and history compatibility testing for Temporal SDKs",
+    "topics": [],
+    "license": null,
+    "stars": 34,
+    "forks": 30,
+    "sizeKB": 2513,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T23:19:23Z",
+    "archived": false,
+    "primaryLanguage": "Go",
+    "languageBytes": {
+     "Go": 441114,
+     "Java": 198868,
+     "PHP": 174656,
+     "Python": 138911,
+     "TypeScript": 119413,
+     "C#": 79573,
+     "Rust": 38154,
+     "Dockerfile": 17681,
+     "Ruby": 10829,
+     "JavaScript": 2633
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "tree-sitter/tree-sitter-json",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "go",
+    "javascript",
+    "python",
+    "rust",
+    "swift"
+   ],
+   "why": "A small grammar with the standard set of bindings",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "JSON grammar for tree-sitter",
+    "topics": [
+     "json",
+     "parser",
+     "tree-sitter"
+    ],
+    "license": "MIT",
+    "stars": 204,
+    "forks": 82,
+    "sizeKB": 225,
+    "defaultBranch": "master",
+    "pushedAt": "2026-09-13T07:52:01Z",
+    "archived": false,
+    "primaryLanguage": "JavaScript",
+    "languageBytes": {
+     "JavaScript": 2482,
+     "Tree-sitter Query": 172
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "tree-sitter/tree-sitter-python",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "cpp",
+    "go",
+    "javascript",
+    "python",
+    "rust",
+    "swift"
+   ],
+   "why": "A tree-sitter grammar with bindings for C, Go, Node.js, Python, Rust and Swift",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Python grammar for tree-sitter",
+    "topics": [
+     "parser",
+     "python",
+     "tree-sitter"
+    ],
+    "license": "MIT",
+    "stars": 572,
+    "forks": 256,
+    "sizeKB": 23716,
+    "defaultBranch": "master",
+    "pushedAt": "2026-09-13T07:52:59Z",
+    "archived": false,
+    "primaryLanguage": "JavaScript",
+    "languageBytes": {
+     "JavaScript": 26978,
+     "C": 15470,
+     "Tree-sitter Query": 2307,
+     "Python": 1999
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "tree-sitter/tree-sitter-rust",
+   "category": "polyglot",
+   "languages": [
+    "c",
+    "go",
+    "javascript",
+    "python",
+    "rust",
+    "swift"
+   ],
+   "why": "A grammar with generated bindings in six languages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Rust grammar for tree-sitter",
+    "topics": [
+     "parser",
+     "rust",
+     "tree-sitter"
+    ],
+    "license": "MIT",
+    "stars": 532,
+    "forks": 163,
+    "sizeKB": 51352,
+    "defaultBranch": "master",
+    "pushedAt": "2026-09-16T03:42:31Z",
+    "archived": false,
+    "primaryLanguage": "JavaScript",
+    "languageBytes": {
+     "JavaScript": 38893,
+     "C": 12588,
+     "Tree-sitter Query": 4968
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "unicode-org/icu4x",
+   "category": "polyglot",
+   "languages": [
+    "cpp",
+    "dart",
+    "java",
+    "rust",
+    "typescript"
+   ],
+   "why": "Rust Unicode library with FFI bindings for C++, Dart, JS and Kotlin",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Solving i18n for client-side and resource-constrained environments.",
+    "topics": [
+     "cldr",
+     "icu",
+     "internationalization",
+     "localization",
+     "rust",
+     "unicode"
+    ],
+    "license": "NOASSERTION",
+    "stars": 1876,
+    "forks": 300,
+    "sizeKB": 786071,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T19:04:40Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 13200796,
+     "WebAssembly": 366107,
+     "JavaScript": 220317,
+     "Jinja": 61491,
+     "Dart": 27900,
+     "Makefile": 4550,
+     "HTML": 3560,
+     "Shell": 1989,
+     "Kotlin": 1608,
+     "C++": 1379,
+     "Dockerfile": 569,
+     "SCSS": 562
+    },
+    "homepage": "https://icu4x.unicode.org"
+   }
+  },
+  {
+   "repo": "valkey-io/valkey-glide",
+   "category": "polyglot",
+   "languages": [
+    "csharp",
+    "go",
+    "java",
+    "javascript",
+    "python",
+    "rust",
+    "typescript"
+   ],
+   "why": "Rust core with Python, Java, Node.js, Go and C# clients",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "An open source Valkey client library that supports Valkey, and Redis open source 6.2, 7.0 and 7.2. Valkey GLIDE is designed for reliability, optimized performance, and high-availability, for Valkey and Redis OSS based applications. GLIDE is a multi language client library, written in Rust with programming language bindings, such as Java and Python",
+    "topics": [
+     "cache",
+     "csharp",
+     "database",
+     "fault-tolerance",
+     "golang",
+     "java",
+     "javascript",
+     "key-value",
+     "kotlin",
+     "nodejs",
+     "open-source",
+     "performance",
+     "pubsub",
+     "python",
+     "reliability",
+     "rust",
+     "scala",
+     "typescript",
+     "valkey",
+     "valkey-client"
+    ],
+    "license": "Apache-2.0",
+    "stars": 804,
+    "forks": 194,
+    "sizeKB": 1423162,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:39:58Z",
+    "archived": false,
+    "primaryLanguage": "Java",
+    "languageBytes": {
+     "Java": 8502703,
+     "Rust": 7016026,
+     "Python": 5528300,
+     "Go": 3297249,
+     "TypeScript": 3085915,
+     "C": 183791,
+     "Shell": 36367,
+     "JavaScript": 20231,
+     "Makefile": 12783,
+     "Dockerfile": 1489,
+     "Batchfile": 800
+    },
+    "homepage": "https://glide.valkey.io"
+   }
+  },
+  {
+   "repo": "aardappel/goose",
+   "category": "single",
+   "languages": [
+    "goose"
+   ],
+   "why": "The Goose language's own repository, with its test programs",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "The Goose Programming Language",
+    "topics": [],
+    "license": "Apache-2.0",
+    "stars": 2371,
+    "forks": 93,
+    "sizeKB": 12080,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-28T00:43:02Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 2922497,
+     "Python": 517655,
+     "C": 228558,
+     "JavaScript": 133960,
+     "Rust": 81713,
+     "CMake": 34361,
+     "Tree-sitter Query": 3600,
+     "GLSL": 687,
+     "Makefile": 679,
+     "Shell": 144
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "alire-project/alire",
+   "category": "single",
+   "languages": [
+    "ada"
+   ],
+   "why": "The Ada package manager, built with itself (Alire)",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Command-line tool from the Alire project and supporting library",
+    "topics": [
+     "ada",
+     "ada-2012",
+     "package-management",
+     "package-manager",
+     "package-manager-tool",
+     "reproducible-builds"
+    ],
+    "license": "GPL-3.0",
+    "stars": 415,
+    "forks": 65,
+    "sizeKB": 7512,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-28T01:12:45Z",
+    "archived": false,
+    "primaryLanguage": "Ada",
+    "languageBytes": {
+     "Ada": 2209012,
+     "Python": 654698,
+     "Shell": 30639,
+     "JavaScript": 4609,
+     "C": 1464,
+     "Qt Script": 989,
+     "PowerShell": 916,
+     "Dockerfile": 896
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "App-vNext/Polly",
+   "category": "single",
+   "languages": [
+    "csharp"
+   ],
+   "why": ".NET resilience library with a large test suite",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Polly is a .NET resilience and transient-fault-handling library that allows developers to express policies such as Retry, Circuit Breaker, Timeout, Bulkhead Isolation, and Fallback in a fluent and thread-safe manner. From version 6.0.1, Polly targets .NET Standard 1.1 and 2.0+.",
+    "topics": [
+     "circuit-breaker",
+     "circuit-breaker-pattern",
+     "dotnet",
+     "fault-handler",
+     "resilience",
+     "resiliency-patterns",
+     "retry-strategies",
+     "transient-fault-handling"
+    ],
+    "license": "BSD-3-Clause",
+    "stars": 14257,
+    "forks": 1301,
+    "sizeKB": 62947,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T17:29:22Z",
+    "archived": false,
+    "primaryLanguage": "C#",
+    "languageBytes": {
+     "C#": 4464136,
+     "PowerShell": 8123,
+     "Batchfile": 128
+    },
+    "homepage": "https://www.thepollyproject.org"
+   }
+  },
+  {
+   "repo": "apple/swift-algorithms",
+   "category": "single",
+   "languages": [
+    "swift"
+   ],
+   "why": "Swift package of algorithms with XCTest tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Commonly used sequence and collection algorithms for Swift",
+    "topics": [
+     "algorithm",
+     "iterator",
+     "itertools"
+    ],
+    "license": "Apache-2.0",
+    "stars": 6340,
+    "forks": 484,
+    "sizeKB": 736,
+    "defaultBranch": "main",
+    "pushedAt": "2026-09-25T17:40:43Z",
+    "archived": false,
+    "primaryLanguage": "Swift",
+    "languageBytes": {
+     "Swift": 445976,
+     "Shell": 744
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "apple/swift-argument-parser",
+   "category": "single",
+   "languages": [
+    "swift"
+   ],
+   "why": "Swift package with XCTest tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Straightforward, type-safe argument parsing for Swift",
+    "topics": [
+     "cli",
+     "command-line",
+     "flag",
+     "option"
+    ],
+    "license": "Apache-2.0",
+    "stars": 3798,
+    "forks": 431,
+    "sizeKB": 4103,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-24T16:11:36Z",
+    "archived": false,
+    "primaryLanguage": "Swift",
+    "languageBytes": {
+     "Swift": 1063126,
+     "Shell": 84899,
+     "Roff": 17688,
+     "CMake": 11058
+    },
+    "homepage": "https://swiftpackageindex.com/apple/swift-argument-parser/documentation"
+   }
+  },
+  {
+   "repo": "atilaneves/unit-threaded",
+   "category": "single",
+   "languages": [
+    "d"
+   ],
+   "why": "D test framework built with dub",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Advanced unit test framework for D",
+    "topics": [
+     "d",
+     "dlang",
+     "dlanguage",
+     "integration-testing",
+     "mock",
+     "mocking",
+     "property-based-testing",
+     "property-testing",
+     "testing",
+     "unit-testing",
+     "unittest"
+    ],
+    "license": "BSD-3-Clause",
+    "stars": 124,
+    "forks": 39,
+    "sizeKB": 1586,
+    "defaultBranch": "master",
+    "pushedAt": "2026-09-22T20:05:39Z",
+    "archived": false,
+    "primaryLanguage": "D",
+    "languageBytes": {
+     "D": 297670,
+     "Python": 4151,
+     "Shell": 3102,
+     "Batchfile": 1177
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "Badgerati/Pode",
+   "category": "single",
+   "languages": [
+    "csharp",
+    "powershell"
+   ],
+   "why": "PowerShell web server with Pester tests and a C# listener",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Pode is a Cross-Platform PowerShell web framework for creating REST APIs, Web Sites, and TCP/SMTP servers",
+    "topics": [
+     "active-directory",
+     "authentication",
+     "cross-platform",
+     "docker",
+     "framework",
+     "https",
+     "openapi",
+     "powershell",
+     "powershell-core",
+     "raspberry-pi",
+     "rest",
+     "server",
+     "serverless",
+     "session",
+     "swagger",
+     "unix",
+     "web",
+     "webserver",
+     "windows"
+    ],
+    "license": "MIT",
+    "stars": 1069,
+    "forks": 109,
+    "sizeKB": 45036,
+    "defaultBranch": "develop",
+    "pushedAt": "2026-10-26T22:24:21Z",
+    "archived": false,
+    "primaryLanguage": "PowerShell",
+    "languageBytes": {
+     "PowerShell": 3580094,
+     "C#": 337401,
+     "JavaScript": 3035,
+     "Dockerfile": 1577,
+     "HTML": 266
+    },
+    "homepage": "https://badgerati.github.io/Pode"
+   }
+  },
+  {
+   "repo": "Bash-it/bash-it",
+   "category": "single",
+   "languages": [
+    "bash"
+   ],
+   "why": "Bash framework with a Bats suite",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A community Bash framework.",
+    "topics": [
+     "bash",
+     "bash-alias",
+     "bash-completion",
+     "bash-configuration",
+     "bash-hacks",
+     "bash-prompt",
+     "productivity",
+     "shell",
+     "terminal",
+     "themes"
+    ],
+    "license": "MIT",
+    "stars": 15286,
+    "forks": 2311,
+    "sizeKB": 43302,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T06:58:58Z",
+    "archived": false,
+    "primaryLanguage": "Shell",
+    "languageBytes": {
+     "Shell": 803753
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "bats-core/bats-core",
+   "category": "single",
+   "languages": [
+    "bash"
+   ],
+   "why": "The Bash test framework, tested with itself",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Bash Automated Testing System",
+    "topics": [
+     "bash",
+     "bats",
+     "junit",
+     "shell",
+     "tap",
+     "testing",
+     "testing-tools",
+     "xunit"
+    ],
+    "license": "MIT",
+    "stars": 6332,
+    "forks": 500,
+    "sizeKB": 2864,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T19:04:51Z",
+    "archived": false,
+    "primaryLanguage": "Shell",
+    "languageBytes": {
+     "Shell": 395409,
+     "Dockerfile": 2440
+    },
+    "homepage": "https://bats-core.readthedocs.io/"
+   }
+  },
+  {
+   "repo": "benoitc/hackney",
+   "category": "single",
+   "languages": [
+    "erlang"
+   ],
+   "why": "HTTP client built with rebar3",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "simple HTTP client in Erlang",
+    "topics": [
+     "client",
+     "erlang",
+     "http"
+    ],
+    "license": "NOASSERTION",
+    "stars": 1419,
+    "forks": 457,
+    "sizeKB": 30163,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-26T05:01:14Z",
+    "archived": false,
+    "primaryLanguage": "Erlang",
+    "languageBytes": {
+     "Erlang": 1694992,
+     "Makefile": 2091
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "Bogdanp/deta",
+   "category": "single",
+   "languages": [
+    "racket"
+   ],
+   "why": "Racket database library with rackunit tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A database mapper for Racket.",
+    "topics": [
+     "linq",
+     "racket"
+    ],
+    "license": null,
+    "stars": 65,
+    "forks": 11,
+    "sizeKB": 507,
+    "defaultBranch": "master",
+    "pushedAt": "2026-07-16T04:55:58Z",
+    "archived": false,
+    "primaryLanguage": "Racket",
+    "languageBytes": {
+     "Racket": 205162,
+     "Shell": 597
+    },
+    "homepage": "https://deta.defn.io"
+   }
+  },
+  {
+   "repo": "BurntSushi/ripgrep",
+   "category": "single",
+   "languages": [
+    "rust"
+   ],
+   "why": "Cargo workspace with integration tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "ripgrep recursively searches directories for a regex pattern while respecting your gitignore",
+    "topics": [
+     "cli",
+     "command-line",
+     "command-line-tool",
+     "gitignore",
+     "grep",
+     "recursively-search",
+     "regex",
+     "ripgrep",
+     "rust",
+     "search"
+    ],
+    "license": "Unlicense",
+    "stars": 69514,
+    "forks": 4780,
+    "sizeKB": 5772,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T18:31:31Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 1879988,
+     "Python": 47804,
+     "Shell": 37190,
+     "Roff": 13861,
+     "Ruby": 804,
+     "Lua": 192
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "ccgus/fmdb",
+   "category": "single",
+   "languages": [
+    "objectivec"
+   ],
+   "why": "SQLite wrapper in Objective-C",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A Cocoa / Objective-C wrapper around SQLite",
+    "topics": [],
+    "license": "NOASSERTION",
+    "stars": 13822,
+    "forks": 2729,
+    "sizeKB": 1674,
+    "defaultBranch": "master",
+    "pushedAt": "2026-03-15T21:06:50Z",
+    "archived": false,
+    "primaryLanguage": "Objective-C",
+    "languageBytes": {
+     "Objective-C": 385728,
+     "C": 6383,
+     "Roff": 3114,
+     "Ruby": 1993,
+     "Swift": 1810
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "CodeNarc/CodeNarc",
+   "category": "single",
+   "languages": [
+    "groovy"
+   ],
+   "why": "Groovy static analysis, built with Gradle",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "CodeNarc is a static analysis tool for Groovy source code",
+    "topics": [
+     "code-quality",
+     "code-quality-analyzer",
+     "code-quality-checker",
+     "groovy",
+     "static-analysis",
+     "static-analysis-tools"
+    ],
+    "license": "Apache-2.0",
+    "stars": 343,
+    "forks": 142,
+    "sizeKB": 14695,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-22T13:05:04Z",
+    "archived": false,
+    "primaryLanguage": "Groovy",
+    "languageBytes": {
+     "Groovy": 4029800,
+     "Java": 150773,
+     "CSS": 4399,
+     "JavaScript": 3236,
+     "Dockerfile": 1680,
+     "Shell": 1390
+    },
+    "homepage": "https://codenarc.org/"
+   }
+  },
+  {
+   "repo": "colinhacks/zod",
+   "category": "single",
+   "languages": [
+    "typescript"
+   ],
+   "why": "Schema validation library, a pnpm workspace",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "TypeScript-first schema validation with static type inference",
+    "topics": [
+     "runtime-validation",
+     "schema-validation",
+     "static-types",
+     "type-inference",
+     "typescript"
+    ],
+    "license": "MIT",
+    "stars": 44211,
+    "forks": 2296,
+    "sizeKB": 26988,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-19T22:46:10Z",
+    "archived": false,
+    "primaryLanguage": "TypeScript",
+    "languageBytes": {
+     "TypeScript": 3556305,
+     "MDX": 388554,
+     "HTML": 18546,
+     "JavaScript": 16936,
+     "CSS": 4291,
+     "Shell": 239
+    },
+    "homepage": "https://zod.dev"
+   }
+  },
+  {
+   "repo": "com-lihaoyi/os-lib",
+   "category": "single",
+   "languages": [
+    "scala"
+   ],
+   "why": "Scala file system library built with Mill",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "OS-Lib is a simple, flexible, high-performance Scala interface to common OS filesystem and subprocess APIs",
+    "topics": [],
+    "license": "NOASSERTION",
+    "stars": 743,
+    "forks": 89,
+    "sizeKB": 925,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T21:14:03Z",
+    "archived": false,
+    "primaryLanguage": "Scala",
+    "languageBytes": {
+     "Scala": 367166,
+     "Batchfile": 9898,
+     "Shell": 8087,
+     "Java": 7661
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "dart-lang/shelf",
+   "category": "single",
+   "languages": [
+    "dart"
+   ],
+   "why": "Web server middleware: a pub workspace of packages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Web server middleware for Dart",
+    "topics": [
+     "dart",
+     "http",
+     "server"
+    ],
+    "license": "BSD-3-Clause",
+    "stars": 1012,
+    "forks": 140,
+    "sizeKB": 1685,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-23T20:18:58Z",
+    "archived": false,
+    "primaryLanguage": "Dart",
+    "languageBytes": {
+     "Dart": 409290,
+     "Shell": 5223,
+     "HTML": 229
+    },
+    "homepage": "https://pub.dev/packages/shelf"
+   }
+  },
+  {
+   "repo": "DaveGamble/cJSON",
+   "category": "single",
+   "languages": [
+    "c"
+   ],
+   "why": "Small C library built with CMake or make",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Ultralightweight JSON parser in ANSI C",
+    "topics": [],
+    "license": "MIT",
+    "stars": 13057,
+    "forks": 3552,
+    "sizeKB": 2764,
+    "defaultBranch": "master",
+    "pushedAt": "2026-09-16T01:55:35Z",
+    "archived": false,
+    "primaryLanguage": "C",
+    "languageBytes": {
+     "C": 713209,
+     "Ruby": 131482,
+     "CMake": 17811,
+     "Makefile": 13634,
+     "Python": 11112,
+     "Shell": 874
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "dfinke/ImportExcel",
+   "category": "single",
+   "languages": [
+    "powershell"
+   ],
+   "why": "PowerShell module tested with Pester",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "PowerShell module to import/export Excel spreadsheets, without Excel",
+    "topics": [
+     "excel",
+     "powershell"
+    ],
+    "license": "Apache-2.0",
+    "stars": 2751,
+    "forks": 415,
+    "sizeKB": 77644,
+    "defaultBranch": "master",
+    "pushedAt": "2026-08-22T00:21:14Z",
+    "archived": false,
+    "primaryLanguage": "PowerShell",
+    "languageBytes": {
+     "PowerShell": 602365
+    },
+    "homepage": "https://www.powershellgallery.com/packages/ImportExcel/"
+   }
+  },
+  {
+   "repo": "edicl/cl-ppcre",
+   "category": "single",
+   "languages": [
+    "lisp"
+   ],
+   "why": "Common Lisp regular expressions with an ASDF test system",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Common Lisp regular expression library",
+    "topics": [
+     "common-lisp",
+     "regular-expression-engine",
+     "regular-expressions"
+    ],
+    "license": "BSD-2-Clause",
+    "stars": 320,
+    "forks": 46,
+    "sizeKB": 477,
+    "defaultBranch": "master",
+    "pushedAt": "2025-06-06T20:13:19Z",
+    "archived": false,
+    "primaryLanguage": "Common Lisp",
+    "languageBytes": {
+     "Common Lisp": 394961,
+     "Perl": 3345
+    },
+    "homepage": "https://edicl.github.io/cl-ppcre/"
+   }
+  },
+  {
+   "repo": "elixir-plug/plug",
+   "category": "single",
+   "languages": [
+    "elixir"
+   ],
+   "why": "Elixir web library tested with ExUnit",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Compose web applications with functions",
+    "topics": [],
+    "license": "NOASSERTION",
+    "stars": 3020,
+    "forks": 609,
+    "sizeKB": 2868,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-26T07:45:55Z",
+    "archived": false,
+    "primaryLanguage": "Elixir",
+    "languageBytes": {
+     "Elixir": 663158,
+     "HTML": 33459,
+     "Erlang": 15973
+    },
+    "homepage": "https://hex.pm/packages/plug"
+   }
+  },
+  {
+   "repo": "exercism/wren",
+   "category": "single",
+   "languages": [
+    "wren"
+   ],
+   "why": "Wren exercises, each with a test file",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Exercism exercises in Wren.",
+    "topics": [
+     "community-contributions-paused",
+     "exercism-track",
+     "maintained"
+    ],
+    "license": "MIT",
+    "stars": 6,
+    "forks": 15,
+    "sizeKB": 1351,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-09T17:38:17Z",
+    "archived": false,
+    "primaryLanguage": "Wren",
+    "languageBytes": {
+     "Wren": 634797,
+     "Shell": 11389,
+     "PowerShell": 1857
+    },
+    "homepage": "https://exercism.org/tracks/wren"
+   }
+  },
+  {
+   "repo": "expressjs/express",
+   "category": "single",
+   "languages": [
+    "javascript"
+   ],
+   "why": "Web framework tested with Mocha",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Fast, unopinionated, minimalist web framework for node.",
+    "topics": [
+     "express",
+     "javascript",
+     "nodejs",
+     "server"
+    ],
+    "license": "MIT",
+    "stars": 69577,
+    "forks": 25290,
+    "sizeKB": 10066,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T13:54:02Z",
+    "archived": false,
+    "primaryLanguage": "JavaScript",
+    "languageBytes": {
+     "JavaScript": 515401
+    },
+    "homepage": "https://expressjs.com"
+   }
+  },
+  {
+   "repo": "faker-ruby/faker",
+   "category": "single",
+   "languages": [
+    "ruby"
+   ],
+   "why": "Fake data generator tested with Minitest",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A library for generating fake data such as names, addresses, and phone numbers.",
+    "topics": [
+     "fake",
+     "ruby"
+    ],
+    "license": "MIT",
+    "stars": 11946,
+    "forks": 3208,
+    "sizeKB": 15077,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T23:42:44Z",
+    "archived": false,
+    "primaryLanguage": "Ruby",
+    "languageBytes": {
+     "Ruby": 1046995,
+     "Shell": 384
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "FluentValidation/FluentValidation",
+   "category": "single",
+   "languages": [
+    "csharp"
+   ],
+   "why": ".NET validation library with xUnit tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A popular .NET validation library for building strongly-typed validation rules.",
+    "topics": [],
+    "license": "Apache-2.0",
+    "stars": 9769,
+    "forks": 1277,
+    "sizeKB": 20039,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-23T15:21:50Z",
+    "archived": false,
+    "primaryLanguage": "C#",
+    "languageBytes": {
+     "C#": 1135008,
+     "PowerShell": 1392,
+     "Batchfile": 81,
+     "Shell": 31
+    },
+    "homepage": "https://fluentvalidation.net"
+   }
+  },
+  {
+   "repo": "fmtlib/fmt",
+   "category": "single",
+   "languages": [
+    "cpp"
+   ],
+   "why": "Formatting library with a CMake test suite",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A modern formatting library",
+    "topics": [
+     "c-plus-plus",
+     "chrono",
+     "cpp",
+     "cross-platform",
+     "floating-point",
+     "formatting",
+     "multiplatform",
+     "output",
+     "performance",
+     "printf",
+     "ranges",
+     "unicode"
+    ],
+    "license": "MIT",
+    "stars": 25898,
+    "forks": 3090,
+    "sizeKB": 17726,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-25T16:49:29Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 2572763,
+     "Python": 53485,
+     "CMake": 47963,
+     "C": 11005,
+     "Shell": 2113,
+     "Cuda": 905,
+     "Makefile": 299
+    },
+    "homepage": "https://fmt.dev"
+   }
+  },
+  {
+   "repo": "fortran-lang/fpm",
+   "category": "single",
+   "languages": [
+    "fortran"
+   ],
+   "why": "The Fortran package manager, built with itself",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Fortran Package Manager (fpm)",
+    "topics": [
+     "build-system",
+     "fortran",
+     "fortran-package-manager",
+     "fpm",
+     "package-manager"
+    ],
+    "license": "MIT",
+    "stars": 1078,
+    "forks": 146,
+    "sizeKB": 88247,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T17:33:51Z",
+    "archived": false,
+    "primaryLanguage": "Fortran",
+    "languageBytes": {
+     "Fortran": 1754359,
+     "Shell": 33306,
+     "C": 11708,
+     "NSIS": 2701,
+     "C++": 977,
+     "Makefile": 600
+    },
+    "homepage": "https://fpm.fortran-lang.org"
+   }
+  },
+  {
+   "repo": "gabime/spdlog",
+   "category": "single",
+   "languages": [
+    "cpp"
+   ],
+   "why": "Header-mostly C++ logging library with CMake tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Fast C++ logging library.",
+    "topics": [
+     "cpp",
+     "cpp11",
+     "header-only",
+     "logging",
+     "spdlog"
+    ],
+    "license": "NOASSERTION",
+    "stars": 29713,
+    "forks": 5340,
+    "sizeKB": 42950,
+    "defaultBranch": "v1.x",
+    "pushedAt": "2026-10-24T12:55:41Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 1173811,
+     "CMake": 39504,
+     "C": 10403,
+     "Shell": 856,
+     "Python": 497
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "giraffe-fsharp/Giraffe",
+   "category": "single",
+   "languages": [
+    "fsharp"
+   ],
+   "why": "F# web framework with xUnit tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A native functional ASP.NET Core web framework for F# developers.",
+    "topics": [
+     "aspnet-core",
+     "dotliquid",
+     "dotnet",
+     "dotnet-core",
+     "fsharp",
+     "giraffe",
+     "http-handler",
+     "micro-framework",
+     "middleware",
+     "model-view-presenter",
+     "template-engine",
+     "web-framework"
+    ],
+    "license": "Apache-2.0",
+    "stars": 2255,
+    "forks": 267,
+    "sizeKB": 2285,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T16:56:50Z",
+    "archived": false,
+    "primaryLanguage": "F#",
+    "languageBytes": {
+     "F#": 517846,
+     "HTML": 148
+    },
+    "homepage": "https://giraffe.wiki"
+   }
+  },
+  {
+   "repo": "gleam-lang/stdlib",
+   "category": "single",
+   "languages": [
+    "gleam"
+   ],
+   "why": "The Gleam standard library",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "🎁  Gleam's standard library",
+    "topics": [
+     "gleam",
+     "stdlib",
+     "types"
+    ],
+    "license": "Apache-2.0",
+    "stars": 712,
+    "forks": 226,
+    "sizeKB": 8779,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-08T17:04:40Z",
+    "archived": false,
+    "primaryLanguage": "Gleam",
+    "languageBytes": {
+     "Gleam": 474752,
+     "JavaScript": 58782,
+     "Erlang": 22185
+    },
+    "homepage": "https://hexdocs.pm/gleam_stdlib/"
+   }
+  },
+  {
+   "repo": "gnu-octave/statistics",
+   "category": "single",
+   "languages": [
+    "octave"
+   ],
+   "why": "Octave statistics package with built-in tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "The Statistics package for GNU Octave",
+    "topics": [],
+    "license": "GPL-3.0",
+    "stars": 42,
+    "forks": 44,
+    "sizeKB": 164227,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T19:58:17Z",
+    "archived": false,
+    "primaryLanguage": "MATLAB",
+    "languageBytes": {
+     "MATLAB": 13324151,
+     "C++": 636133,
+     "RPC": 171275,
+     "M": 76408,
+     "Gnuplot": 50835,
+     "Wolfram Language": 22549,
+     "mupad": 8665,
+     "C": 7504,
+     "Makefile": 3768,
+     "Edge": 2473,
+     "B": 1931,
+     "KFramework": 1549,
+     "KCL": 1423,
+     "R": 938,
+     "Nu": 930,
+     "Assembly": 860,
+     "Roff": 647,
+     "Logos": 359,
+     "HLSL": 351
+    },
+    "homepage": "https://gnu-octave.github.io/statistics/"
+   }
+  },
+  {
+   "repo": "google/gson",
+   "category": "single",
+   "languages": [
+    "java"
+   ],
+   "why": "JSON library built with Maven",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A Java serialization/deserialization library to convert Java Objects into JSON and back",
+    "topics": [],
+    "license": "Apache-2.0",
+    "stars": 24234,
+    "forks": 4492,
+    "sizeKB": 23554,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-24T12:10:16Z",
+    "archived": false,
+    "primaryLanguage": "Java",
+    "languageBytes": {
+     "Java": 2022078
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "google/json_serializable.dart",
+   "category": "single",
+   "languages": [
+    "dart"
+   ],
+   "why": "Code generation packages with build_runner tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Generates utilities to aid in serializing to/from JSON.",
+    "topics": [
+     "dart-build-system",
+     "dartlang",
+     "json",
+     "source-gen"
+    ],
+    "license": "BSD-3-Clause",
+    "stars": 1619,
+    "forks": 462,
+    "sizeKB": 3058,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-20T19:44:35Z",
+    "archived": false,
+    "primaryLanguage": "Dart",
+    "languageBytes": {
+     "Dart": 710645,
+     "Shell": 3668
+    },
+    "homepage": "https://pub.dev/packages/json_serializable"
+   }
+  },
+  {
+   "repo": "guzzle/guzzle",
+   "category": "single",
+   "languages": [
+    "php"
+   ],
+   "why": "HTTP client tested with PHPUnit",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Guzzle, an extensible PHP HTTP client",
+    "topics": [
+     "curl",
+     "guzzle",
+     "http-client",
+     "httpclient",
+     "php",
+     "psr-7",
+     "requests",
+     "webservices"
+    ],
+    "license": "MIT",
+    "stars": 23444,
+    "forks": 2393,
+    "sizeKB": 13933,
+    "defaultBranch": "8.3",
+    "pushedAt": "2026-10-25T21:37:36Z",
+    "archived": false,
+    "primaryLanguage": "PHP",
+    "languageBytes": {
+     "PHP": 2403674,
+     "Makefile": 2853,
+     "Dockerfile": 349
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "haskell/aeson",
+   "category": "single",
+   "languages": [
+    "haskell"
+   ],
+   "why": "JSON library built with Cabal",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A fast Haskell JSON library",
+    "topics": [],
+    "license": "NOASSERTION",
+    "stars": 1306,
+    "forks": 338,
+    "sizeKB": 41429,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-26T16:55:54Z",
+    "archived": false,
+    "primaryLanguage": "Haskell",
+    "languageBytes": {
+     "Haskell": 886816,
+     "Shell": 1980,
+     "Makefile": 156
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "haxetink/tink_core",
+   "category": "single",
+   "languages": [
+    "haxe"
+   ],
+   "why": "Haxe core library with a test suite",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Core utilities",
+    "topics": [
+     "core-library",
+     "haxe",
+     "tink"
+    ],
+    "license": "MIT",
+    "stars": 124,
+    "forks": 34,
+    "sizeKB": 741,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-22T12:45:50Z",
+    "archived": false,
+    "primaryLanguage": "Haxe",
+    "languageBytes": {
+     "Haxe": 115252
+    },
+    "homepage": "https://haxetink.github.io/tink_core"
+   }
+  },
+  {
+   "repo": "immerjs/immer",
+   "category": "single",
+   "languages": [
+    "typescript"
+   ],
+   "why": "Immutable state library tested with Vitest",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Create the next immutable state by mutating the current one",
+    "topics": [
+     "immutable",
+     "immutables",
+     "reducer",
+     "redux",
+     "state-tree"
+    ],
+    "license": "MIT",
+    "stars": 28996,
+    "forks": 904,
+    "sizeKB": 7347,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-22T11:23:15Z",
+    "archived": false,
+    "primaryLanguage": "JavaScript",
+    "languageBytes": {
+     "JavaScript": 311535,
+     "TypeScript": 141568,
+     "MDX": 86865,
+     "HTML": 38507,
+     "CSS": 1564
+    },
+    "homepage": "https://immerjs.github.io/immer/"
+   }
+  },
+  {
+   "repo": "jacobwilliams/json-fortran",
+   "category": "single",
+   "languages": [
+    "fortran"
+   ],
+   "why": "Fortran JSON library built with CMake or fpm",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A Modern Fortran JSON API",
+    "topics": [
+     "fortran",
+     "fortran-package-manager",
+     "json"
+    ],
+    "license": "NOASSERTION",
+    "stars": 384,
+    "forks": 99,
+    "sizeKB": 218157,
+    "defaultBranch": "master",
+    "pushedAt": "2026-06-11T11:25:28Z",
+    "archived": false,
+    "primaryLanguage": "Fortran",
+    "languageBytes": {
+     "Fortran": 968102,
+     "CMake": 28553,
+     "Perl": 17115,
+     "Shell": 14742,
+     "Pascal": 9362,
+     "C++": 2880,
+     "Pawn": 2480
+    },
+    "homepage": "https://jacobwilliams.github.io/json-fortran/"
+   }
+  },
+  {
+   "repo": "jamesnvc/lsp_server",
+   "category": "single",
+   "languages": [
+    "prolog"
+   ],
+   "why": "SWI-Prolog pack with a pack.pl: a language server for Prolog",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Language Server Protocol server for SWI-Prolog",
+    "topics": [],
+    "license": "BSD-2-Clause",
+    "stars": 130,
+    "forks": 11,
+    "sizeKB": 301,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-04T09:21:33Z",
+    "archived": false,
+    "primaryLanguage": "Prolog",
+    "languageBytes": {
+     "Prolog": 167648,
+     "JavaScript": 1069,
+     "PowerShell": 327,
+     "Shell": 233
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "janet-lang/spork",
+   "category": "single",
+   "languages": [
+    "janet"
+   ],
+   "why": "Janet's extended standard library, tested with jpm",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Various Janet utility modules - the official \"Contrib\" library.",
+    "topics": [],
+    "license": "MIT",
+    "stars": 191,
+    "forks": 56,
+    "sizeKB": 2904,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T23:27:15Z",
+    "archived": false,
+    "primaryLanguage": "Janet",
+    "languageBytes": {
+     "Janet": 819723,
+     "C": 124149,
+     "C++": 3106
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "jhy/jsoup",
+   "category": "single",
+   "languages": [
+    "java"
+   ],
+   "why": "HTML parser built with Maven",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "jsoup: the Java HTML parser, built for HTML editing, cleaning, scraping, and XSS safety.",
+    "topics": [
+     "css",
+     "css-selectors",
+     "dom",
+     "html",
+     "java",
+     "java-html-parser",
+     "jsoup",
+     "parser",
+     "web-scraping",
+     "xml",
+     "xpath"
+    ],
+    "license": "MIT",
+    "stars": 11415,
+    "forks": 2318,
+    "sizeKB": 7862,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-23T04:14:23Z",
+    "archived": false,
+    "primaryLanguage": "Java",
+    "languageBytes": {
+     "Java": 2669647,
+     "HTML": 327659
+    },
+    "homepage": "https://jsoup.org"
+   }
+  },
+  {
+   "repo": "JuliaCollections/DataStructures.jl",
+   "category": "single",
+   "languages": [
+    "julia"
+   ],
+   "why": "Julia package with a Pkg test suite",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Julia implementation of Data structures",
+    "topics": [
+     "data-structures",
+     "julia"
+    ],
+    "license": "MIT",
+    "stars": 747,
+    "forks": 261,
+    "sizeKB": 4458,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-09T08:31:35Z",
+    "archived": false,
+    "primaryLanguage": "Julia",
+    "languageBytes": {
+     "Julia": 607420
+    },
+    "homepage": "https://juliacollections.github.io/DataStructures.jl/dev/"
+   }
+  },
+  {
+   "repo": "kemalcr/kemal",
+   "category": "single",
+   "languages": [
+    "crystal"
+   ],
+   "why": "Web framework tested with crystal spec",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Fast, Effective, Simple Web Framework",
+    "topics": [
+     "api",
+     "crystal",
+     "efficient",
+     "fast",
+     "json",
+     "kemal",
+     "rest",
+     "simple",
+     "web-framework",
+     "websocket"
+    ],
+    "license": "MIT",
+    "stars": 3929,
+    "forks": 206,
+    "sizeKB": 1168,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-26T16:01:52Z",
+    "archived": false,
+    "primaryLanguage": "Crystal",
+    "languageBytes": {
+     "Crystal": 544618,
+     "HTML": 972
+    },
+    "homepage": "https://kemalcr.com"
+   }
+  },
+  {
+   "repo": "kikito/inspect.lua",
+   "category": "single",
+   "languages": [
+    "lua"
+   ],
+   "why": "Small Lua library tested with busted",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Human-readable representation of Lua tables",
+    "topics": [
+     "human-readable",
+     "lua",
+     "tables"
+    ],
+    "license": "MIT",
+    "stars": 1545,
+    "forks": 199,
+    "sizeKB": 170,
+    "defaultBranch": "master",
+    "pushedAt": "2026-01-05T16:28:00Z",
+    "archived": false,
+    "primaryLanguage": "Lua",
+    "languageBytes": {
+     "Lua": 33053,
+     "Makefile": 285
+    },
+    "homepage": "https://github.com/kikito/inspect.lua"
+   }
+  },
+  {
+   "repo": "laytan/odin-http",
+   "category": "single",
+   "languages": [
+    "odin"
+   ],
+   "why": "HTTP server and client in Odin",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A HTTP/1.1 client/server implementation for Odin.",
+    "topics": [
+     "http",
+     "http-client",
+     "http-server",
+     "odin-lib"
+    ],
+    "license": "MIT",
+    "stars": 456,
+    "forks": 53,
+    "sizeKB": 107310,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T23:56:29Z",
+    "archived": false,
+    "primaryLanguage": "Odin",
+    "languageBytes": {
+     "Odin": 310088,
+     "JavaScript": 325,
+     "Rust": 268,
+     "Go": 194,
+     "TypeScript": 152
+    },
+    "homepage": "https://odin-http.laytan.dev/"
+   }
+  },
+  {
+   "repo": "libuv/libuv",
+   "category": "single",
+   "languages": [
+    "c"
+   ],
+   "why": "Event loop library with CMake and autotools",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Cross-platform asynchronous I/O",
+    "topics": [
+     "asynchronous",
+     "deep-io",
+     "io",
+     "networking",
+     "unicorns",
+     "unix",
+     "velociraptors",
+     "windows"
+    ],
+    "license": "MIT",
+    "stars": 27286,
+    "forks": 3968,
+    "sizeKB": 18259,
+    "defaultBranch": "v1.x",
+    "pushedAt": "2026-10-26T11:29:34Z",
+    "archived": false,
+    "primaryLanguage": "C",
+    "languageBytes": {
+     "C": 3310261,
+     "M4": 37036,
+     "CMake": 32227,
+     "Makefile": 22701,
+     "Python": 2623,
+     "Shell": 2489,
+     "Batchfile": 1312
+    },
+    "homepage": "https://libuv.org/"
+   }
+  },
+  {
+   "repo": "lunarmodules/Penlight",
+   "category": "single",
+   "languages": [
+    "lua"
+   ],
+   "why": "Lua utility library tested with busted",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A set of pure Lua libraries focusing on input data handling (such as reading configuration files), functional programming (such as map, reduce, placeholder expressions,etc), and OS path management.  Much of the functionality is inspired by the Python standard libraries.",
+    "topics": [
+     "lua",
+     "lua-library",
+     "lua-modules",
+     "luajit",
+     "luarocks",
+     "penlight"
+    ],
+    "license": "MIT",
+    "stars": 2134,
+    "forks": 263,
+    "sizeKB": 2893,
+    "defaultBranch": "master",
+    "pushedAt": "2026-09-03T17:16:02Z",
+    "archived": false,
+    "primaryLanguage": "Lua",
+    "languageBytes": {
+     "Lua": 728802,
+     "Linker Script": 874
+    },
+    "homepage": "https://lunarmodules.github.io/Penlight/"
+   }
+  },
+  {
+   "repo": "mdgriffith/elm-ui",
+   "category": "single",
+   "languages": [
+    "elm"
+   ],
+   "why": "Elm UI package with elm-test tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "What if you never had to write CSS again?",
+    "topics": [],
+    "license": "BSD-3-Clause",
+    "stars": 1385,
+    "forks": 108,
+    "sizeKB": 1656,
+    "defaultBranch": "master",
+    "pushedAt": "2026-09-21T19:40:54Z",
+    "archived": false,
+    "primaryLanguage": "Elm",
+    "languageBytes": {
+     "Elm": 699174,
+     "JavaScript": 25402,
+     "HTML": 7376,
+     "Shell": 848,
+     "Makefile": 66
+    },
+    "homepage": "https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/"
+   }
+  },
+  {
+   "repo": "meyfa/CobolCraft",
+   "category": "single",
+   "languages": [
+    "cobol"
+   ],
+   "why": "A Minecraft server written in GnuCOBOL",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A Minecraft server written in COBOL",
+    "topics": [
+     "cobol",
+     "minecraft",
+     "minecraft-server"
+    ],
+    "license": "MIT",
+    "stars": 704,
+    "forks": 63,
+    "sizeKB": 1300,
+    "defaultBranch": "main",
+    "pushedAt": "2026-06-28T05:05:18Z",
+    "archived": false,
+    "primaryLanguage": "COBOL",
+    "languageBytes": {
+     "COBOL": 1101321,
+     "C++": 13444,
+     "Makefile": 5829,
+     "C": 4499,
+     "Dockerfile": 1038
+    },
+    "homepage": "https://hub.docker.com/r/meyfa/cobolcraft"
+   }
+  },
+  {
+   "repo": "michaelbull/kotlin-result",
+   "category": "single",
+   "languages": [
+    "kotlin"
+   ],
+   "why": "Kotlin Multiplatform library built with Gradle",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A multiplatform Result monad for modelling success or failure operations.",
+    "topics": [
+     "browser",
+     "class",
+     "either",
+     "fp",
+     "functional",
+     "functional-programming",
+     "ios",
+     "js",
+     "jvm",
+     "kotlin",
+     "kotlin-multiplatform",
+     "monad",
+     "result",
+     "type"
+    ],
+    "license": "ISC",
+    "stars": 1260,
+    "forks": 80,
+    "sizeKB": 1358,
+    "defaultBranch": "master",
+    "pushedAt": "2026-07-04T03:27:54Z",
+    "archived": false,
+    "primaryLanguage": "Kotlin",
+    "languageBytes": {
+     "Kotlin": 334251
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "michalmuskala/jason",
+   "category": "single",
+   "languages": [
+    "elixir"
+   ],
+   "why": "JSON parser tested with ExUnit",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A blazing fast JSON parser and generator in pure Elixir.",
+    "topics": [
+     "elixir",
+     "json"
+    ],
+    "license": "NOASSERTION",
+    "stars": 1679,
+    "forks": 181,
+    "sizeKB": 3677,
+    "defaultBranch": "master",
+    "pushedAt": "2026-05-05T14:34:16Z",
+    "archived": false,
+    "primaryLanguage": "Elixir",
+    "languageBytes": {
+     "Elixir": 117081
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "mirage/ocaml-cohttp",
+   "category": "single",
+   "languages": [
+    "ocaml"
+   ],
+   "why": "HTTP library built with dune, several opam packages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "An OCaml library for HTTP clients and servers using Lwt or Async",
+    "topics": [
+     "http",
+     "http-client",
+     "lwt",
+     "ocaml",
+     "unix"
+    ],
+    "license": "NOASSERTION",
+    "stars": 779,
+    "forks": 187,
+    "sizeKB": 8042,
+    "defaultBranch": "main",
+    "pushedAt": "2026-09-08T14:57:57Z",
+    "archived": false,
+    "primaryLanguage": "OCaml",
+    "languageBytes": {
+     "OCaml": 631314,
+     "Dune": 10840,
+     "Nix": 5532,
+     "JavaScript": 481,
+     "Shell": 473,
+     "Makefile": 325
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "Mojo-Numerics-and-Algorithms-group/NuMojo",
+   "category": "single",
+   "languages": [
+    "mojo"
+   ],
+   "why": "Numerical library in Mojo, built with pixi",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "NuMojo is a library for numerical computing in Mojo 🔥 similar to numpy in Python.",
+    "topics": [
+     "mathematics",
+     "numerical-analysis"
+    ],
+    "license": "Apache-2.0",
+    "stars": 247,
+    "forks": 28,
+    "sizeKB": 5523,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-25T22:41:48Z",
+    "archived": false,
+    "primaryLanguage": "Mojo",
+    "languageBytes": {
+     "Mojo": 2092891,
+     "Python": 59066,
+     "Shell": 526
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "mojolicious/mojo",
+   "category": "single",
+   "languages": [
+    "perl"
+   ],
+   "why": "Web framework tested with prove",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": ":sparkles: Mojolicious - Perl real-time web framework",
+    "topics": [
+     "cloud-native",
+     "event-loop",
+     "html",
+     "http",
+     "json",
+     "mojolicious",
+     "mvc",
+     "perl",
+     "user-agent",
+     "web-framework",
+     "web-server",
+     "websocket"
+    ],
+    "license": "Artistic-2.0",
+    "stars": 2757,
+    "forks": 589,
+    "sizeKB": 30518,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T17:07:43Z",
+    "archived": false,
+    "primaryLanguage": "Perl",
+    "languageBytes": {
+     "Perl": 2504108,
+     "CSS": 4580,
+     "JavaScript": 124,
+     "XProc": 121,
+     "Wolfram Language": 61
+    },
+    "homepage": "https://mojolicious.org"
+   }
+  },
+  {
+   "repo": "moment/luxon",
+   "category": "single",
+   "languages": [
+    "javascript"
+   ],
+   "why": "Date library tested with Jest",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "⏱ A library for working with dates and times in JS",
+    "topics": [
+     "dates",
+     "datetime",
+     "intl",
+     "times",
+     "timezones"
+    ],
+    "license": "MIT",
+    "stars": 16457,
+    "forks": 810,
+    "sizeKB": 100637,
+    "defaultBranch": "master",
+    "pushedAt": "2026-08-09T12:44:46Z",
+    "archived": false,
+    "primaryLanguage": "JavaScript",
+    "languageBytes": {
+     "JavaScript": 692999
+    },
+    "homepage": "https://moment.github.io/luxon"
+   }
+  },
+  {
+   "repo": "ocaml-community/yojson",
+   "category": "single",
+   "languages": [
+    "ocaml"
+   ],
+   "why": "JSON library built with dune",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Low-level JSON parsing and pretty-printing library for OCaml",
+    "topics": [
+     "json",
+     "ocaml",
+     "parser",
+     "yojson"
+    ],
+    "license": "BSD-3-Clause",
+    "stars": 368,
+    "forks": 61,
+    "sizeKB": 864,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-07T13:42:48Z",
+    "archived": false,
+    "primaryLanguage": "OCaml",
+    "languageBytes": {
+     "OCaml": 145649,
+     "Dune": 1495,
+     "Makefile": 509
+    },
+    "homepage": "https://ocaml-community.github.io/yojson/"
+   }
+  },
+  {
+   "repo": "pallets/click",
+   "category": "single",
+   "languages": [
+    "python"
+   ],
+   "why": "CLI library tested with pytest",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Python composable command line interface toolkit",
+    "topics": [
+     "cli",
+     "click",
+     "pallets",
+     "python"
+    ],
+    "license": "BSD-3-Clause",
+    "stars": 17802,
+    "forks": 3946,
+    "sizeKB": 5091,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-06T20:58:59Z",
+    "archived": false,
+    "primaryLanguage": "Python",
+    "languageBytes": {
+     "Python": 971989,
+     "Shell": 165
+    },
+    "homepage": "https://click.palletsprojects.com"
+   }
+  },
+  {
+   "repo": "psf/requests",
+   "category": "single",
+   "languages": [
+    "python"
+   ],
+   "why": "HTTP library tested with pytest",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A simple, yet elegant, HTTP library.",
+    "topics": [
+     "client",
+     "cookies",
+     "forhumans",
+     "http",
+     "humans",
+     "python",
+     "python-requests",
+     "requests"
+    ],
+    "license": "Apache-2.0",
+    "stars": 54589,
+    "forks": 12108,
+    "sizeKB": 13635,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-26T17:14:44Z",
+    "archived": false,
+    "primaryLanguage": "Python",
+    "languageBytes": {
+     "Python": 390104,
+     "Makefile": 2527
+    },
+    "homepage": "https://requests.readthedocs.io/en/latest/"
+   }
+  },
+  {
+   "repo": "rack/rack",
+   "category": "single",
+   "languages": [
+    "ruby"
+   ],
+   "why": "Ruby web server interface tested with Minitest",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A modular Ruby web server interface.",
+    "topics": [
+     "rack",
+     "ruby",
+     "web"
+    ],
+    "license": "NOASSERTION",
+    "stars": 5135,
+    "forks": 1695,
+    "sizeKB": 10732,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-20T00:08:30Z",
+    "archived": false,
+    "primaryLanguage": "Ruby",
+    "languageBytes": {
+     "Ruby": 750989,
+     "HTML": 49,
+     "CSS": 47,
+     "JavaScript": 34
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "scopt/scopt",
+   "category": "single",
+   "languages": [
+    "scala"
+   ],
+   "why": "Scala command-line parser built with sbt",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "command line options parsing for Scala",
+    "topics": [
+     "command-line",
+     "options-parsing",
+     "scala"
+    ],
+    "license": "NOASSERTION",
+    "stars": 1445,
+    "forks": 158,
+    "sizeKB": 2213,
+    "defaultBranch": "develop",
+    "pushedAt": "2026-10-27T03:05:21Z",
+    "archived": false,
+    "primaryLanguage": "Scala",
+    "languageBytes": {
+     "Scala": 158145
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "Seldaek/monolog",
+   "category": "single",
+   "languages": [
+    "php"
+   ],
+   "why": "Logging library tested with PHPUnit",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Sends your logs to files, sockets, inboxes, databases and various web services",
+    "topics": [
+     "hacktoberfest",
+     "logger",
+     "logging",
+     "php",
+     "psr-3"
+    ],
+    "license": "MIT",
+    "stars": 21403,
+    "forks": 1919,
+    "sizeKB": 5233,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-05T21:03:46Z",
+    "archived": false,
+    "primaryLanguage": "PHP",
+    "languageBytes": {
+     "PHP": 1014891
+    },
+    "homepage": "https://seldaek.github.io/monolog/"
+   }
+  },
+  {
+   "repo": "serde-rs/json",
+   "category": "single",
+   "languages": [
+    "rust"
+   ],
+   "why": "JSON for serde, a Cargo package",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Strongly typed JSON library for Rust",
+    "topics": [
+     "json",
+     "rust",
+     "serde"
+    ],
+    "license": "Apache-2.0",
+    "stars": 5658,
+    "forks": 693,
+    "sizeKB": 3044,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-16T04:04:36Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 705702
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "spf13/cobra",
+   "category": "single",
+   "languages": [
+    "go"
+   ],
+   "why": "CLI library, a standard Go module",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A Commander for modern Go CLI interactions",
+    "topics": [
+     "cli",
+     "cli-app",
+     "cobra",
+     "cobra-generator",
+     "cobra-library",
+     "command",
+     "command-cobra",
+     "command-line",
+     "commandline",
+     "go",
+     "golang",
+     "golang-application",
+     "golang-library",
+     "posix",
+     "posix-compliant-flags",
+     "subcommands"
+    ],
+    "license": "Apache-2.0",
+    "stars": 44728,
+    "forks": 5169,
+    "sizeKB": 2107,
+    "defaultBranch": "main",
+    "pushedAt": "2026-07-11T00:43:07Z",
+    "archived": false,
+    "primaryLanguage": "Go",
+    "languageBytes": {
+     "Go": 468120,
+     "Makefile": 941
+    },
+    "homepage": "https://cobra.dev"
+   }
+  },
+  {
+   "repo": "square/moshi",
+   "category": "single",
+   "languages": [
+    "java",
+    "kotlin"
+   ],
+   "why": "JSON library in Kotlin and Java, built with Gradle",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A modern JSON library for Kotlin and Java.",
+    "topics": [],
+    "license": "Apache-2.0",
+    "stars": 10167,
+    "forks": 820,
+    "sizeKB": 5744,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-20T09:05:34Z",
+    "archived": false,
+    "primaryLanguage": "Kotlin",
+    "languageBytes": {
+     "Kotlin": 623982,
+     "Java": 428489
+    },
+    "homepage": "https://square.github.io/moshi/1.x/"
+   }
+  },
+  {
+   "repo": "stretchr/testify",
+   "category": "single",
+   "languages": [
+    "go"
+   ],
+   "why": "Go test helpers",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A toolkit with common assertions and mocks that plays nicely with the standard library",
+    "topics": [
+     "assertions",
+     "go",
+     "golang",
+     "mocking",
+     "testify",
+     "testing",
+     "toolkit"
+    ],
+    "license": "MIT",
+    "stars": 26236,
+    "forks": 1870,
+    "sizeKB": 2066,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-19T11:52:30Z",
+    "archived": false,
+    "primaryLanguage": "Go",
+    "languageBytes": {
+     "Go": 896208,
+     "Shell": 2825,
+     "Go Template": 743
+    },
+    "homepage": "https://pkg.go.dev/github.com/stretchr/testify"
+   }
+  },
+  {
+   "repo": "svenvc/NeoJSON",
+   "category": "single",
+   "languages": [
+    "pharo"
+   ],
+   "why": "JSON for Pharo in Tonel format",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "NeoJSON is an elegant and efficient standalone Smalltalk framework to read and write JSON converting to or from Smalltalk objects.",
+    "topics": [
+     "json",
+     "mapping",
+     "pharo",
+     "smalltalk"
+    ],
+    "license": "MIT",
+    "stars": 47,
+    "forks": 26,
+    "sizeKB": 260,
+    "defaultBranch": "master",
+    "pushedAt": "2025-09-11T12:11:44Z",
+    "archived": false,
+    "primaryLanguage": "Smalltalk",
+    "languageBytes": {
+     "Smalltalk": 155292,
+     "Nix": 6806
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "tcltk/tcllib",
+   "category": "single",
+   "languages": [
+    "tcl"
+   ],
+   "why": "The Tcl standard library",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "tcllib (Mirror of core.tcl-lang.org).",
+    "topics": [],
+    "license": "NOASSERTION",
+    "stars": 165,
+    "forks": 74,
+    "sizeKB": 92787,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-21T06:38:48Z",
+    "archived": false,
+    "primaryLanguage": "Tcl",
+    "languageBytes": {
+     "Tcl": 24505736,
+     "HTML": 9067130,
+     "Roff": 8013673,
+     "C": 668106,
+     "TeX": 282930,
+     "Pascal": 91199,
+     "M4": 76318,
+     "C++": 64024,
+     "BitBake": 14906,
+     "Yacc": 12196,
+     "Shell": 10601,
+     "NASL": 9452,
+     "Fortran": 7055,
+     "Makefile": 4501,
+     "Pawn": 3815,
+     "Perl": 3757,
+     "Gnuplot": 3743,
+     "Python": 1211,
+     "CSS": 1127,
+     "PHP": 873,
+     "Ruby": 409,
+     "Assembly": 110
+    },
+    "homepage": "https://core.tcl-lang.org/tcllib/"
+   }
+  },
+  {
+   "repo": "tidyverse/stringr",
+   "category": "single",
+   "languages": [
+    "r"
+   ],
+   "why": "R package tested with testthat",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A fresh approach to string manipulation in R",
+    "topics": [
+     "r",
+     "regular-expression",
+     "strings"
+    ],
+    "license": "NOASSERTION",
+    "stars": 673,
+    "forks": 202,
+    "sizeKB": 8150,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T13:51:19Z",
+    "archived": false,
+    "primaryLanguage": "R",
+    "languageBytes": {
+     "R": 155590,
+     "CSS": 288,
+     "JavaScript": 247
+    },
+    "homepage": "https://stringr.tidyverse.org"
+   }
+  },
+  {
+   "repo": "treeform/jsony",
+   "category": "single",
+   "languages": [
+    "nim"
+   ],
+   "why": "JSON library tested with nimble",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A loose, direct to object json parser with hooks.",
+    "topics": [],
+    "license": "MIT",
+    "stars": 299,
+    "forks": 42,
+    "sizeKB": 276,
+    "defaultBranch": "master",
+    "pushedAt": "2026-05-24T20:41:01Z",
+    "archived": false,
+    "primaryLanguage": "Nim",
+    "languageBytes": {
+     "Nim": 69241
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "ugexe/zef",
+   "category": "single",
+   "languages": [
+    "raku"
+   ],
+   "why": "The Raku module manager, with a META6.json and t/ tests",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Raku Module Management",
+    "topics": [
+     "hacktoberfest",
+     "meta-search",
+     "module-installer",
+     "package-manager",
+     "perl6",
+     "raku",
+     "toolchain"
+    ],
+    "license": "Artistic-2.0",
+    "stars": 225,
+    "forks": 46,
+    "sizeKB": 2616,
+    "defaultBranch": "main",
+    "pushedAt": "2026-09-17T23:15:25Z",
+    "archived": false,
+    "primaryLanguage": "Raku",
+    "languageBytes": {
+     "Raku": 309434
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "vlang/vsl",
+   "category": "single",
+   "languages": [
+    "v"
+   ],
+   "why": "Scientific library for V",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "V library to develop Artificial Intelligence and High-Performance Scientific Computations",
+    "topics": [
+     "computational-geometry",
+     "differential-equations",
+     "eigenvalues",
+     "eigenvectors",
+     "hacktoberfest",
+     "linear-algebra",
+     "openblas",
+     "opencl",
+     "optimization",
+     "parallel-computations",
+     "scientific-computing",
+     "sparse-systems",
+     "v"
+    ],
+    "license": "MIT",
+    "stars": 405,
+    "forks": 52,
+    "sizeKB": 18830,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-26T13:37:54Z",
+    "archived": false,
+    "primaryLanguage": "V",
+    "languageBytes": {
+     "V": 2542034,
+     "C": 192220,
+     "Shell": 26233,
+     "Python": 21356,
+     "HTML": 11725,
+     "GLSL": 9284,
+     "CSS": 5511,
+     "Dockerfile": 2237
+    },
+    "homepage": "https://vlang.github.io/vsl"
+   }
+  },
+  {
+   "repo": "weavejester/medley",
+   "category": "single",
+   "languages": [
+    "clojure"
+   ],
+   "why": "Clojure utility library built with Leiningen",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A lightweight library of useful Clojure functions",
+    "topics": [
+     "clojure",
+     "utility-library"
+    ],
+    "license": "EPL-1.0",
+    "stars": 918,
+    "forks": 72,
+    "sizeKB": 334,
+    "defaultBranch": "master",
+    "pushedAt": "2026-08-18T18:08:07Z",
+    "archived": false,
+    "primaryLanguage": "Clojure",
+    "languageBytes": {
+     "Clojure": 52522
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "Xor-el/HashLib4Pascal",
+   "category": "single",
+   "languages": [
+    "pascal"
+   ],
+   "why": "Pascal hashing library with FPCUnit tests in Lazarus projects",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Hashing for Modern Object Pascal",
+    "topics": [
+     "byte-array",
+     "checksum",
+     "computing-hashes",
+     "delphi",
+     "encoding",
+     "fpc",
+     "hash",
+     "pascal",
+     "stream",
+     "untyped-data"
+    ],
+    "license": "MIT",
+    "stars": 272,
+    "forks": 93,
+    "sizeKB": 4060,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T16:42:26Z",
+    "archived": false,
+    "primaryLanguage": "Assembly",
+    "languageBytes": {
+     "Assembly": 1996970,
+     "Pascal": 1867813,
+     "Pawn": 185909,
+     "C++": 84699,
+     "Java": 27708,
+     "PowerShell": 8917
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "zigtools/zls",
+   "category": "single",
+   "languages": [
+    "zig"
+   ],
+   "why": "The Zig language server, built with zig build",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A language server for Zig supporting developers with features like autocomplete and goto definition",
+    "topics": [
+     "language-server",
+     "lsp",
+     "lsp-server",
+     "zig",
+     "zls"
+    ],
+    "license": "MIT",
+    "stars": 5301,
+    "forks": 468,
+    "sizeKB": 10018,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-28T01:38:52Z",
+    "archived": false,
+    "primaryLanguage": "Zig",
+    "languageBytes": {
+     "Zig": 2076116,
+     "Nix": 3713
+    },
+    "homepage": "https://zigtools.org/zls/install/"
+   }
+  },
+  {
+   "repo": "zoppa-software/ZoppaLibrary",
+   "category": "single",
+   "languages": [
+    "vbnet"
+   ],
+   "why": "VB.NET library with test projects",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": null,
+    "topics": [],
+    "license": "Apache-2.0",
+    "stars": 0,
+    "forks": 0,
+    "sizeKB": 534,
+    "defaultBranch": "main",
+    "pushedAt": "2026-05-06T01:02:23Z",
+    "archived": false,
+    "primaryLanguage": "Visual Basic .NET",
+    "languageBytes": {
+     "Visual Basic .NET": 1380747
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "apache/kafka",
+   "category": "stress",
+   "languages": [
+    "java",
+    "scala"
+   ],
+   "why": "Gradle build mixing Java and Scala modules",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Apache Kafka - A distributed event streaming platform",
+    "topics": [
+     "java",
+     "kafka",
+     "scala",
+     "streaming"
+    ],
+    "license": "Apache-2.0",
+    "stars": 34142,
+    "forks": 15634,
+    "sizeKB": 322464,
+    "defaultBranch": "trunk",
+    "pushedAt": "2026-10-28T01:13:47Z",
+    "archived": false,
+    "primaryLanguage": "Java",
+    "languageBytes": {
+     "Java": 73103028,
+     "Scala": 6160008,
+     "Python": 1468627,
+     "Shell": 146934,
+     "Batchfile": 40169,
+     "Dockerfile": 23992,
+     "XSLT": 7116,
+     "HTML": 3739
+    },
+    "homepage": "https://kafka.apache.org/"
+   }
+  },
+  {
+   "repo": "bytecodealliance/wasmtime",
+   "category": "stress",
+   "languages": [
+    "c",
+    "cpp",
+    "rust"
+   ],
+   "why": "Large Cargo workspace with a C API",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A lightweight WebAssembly runtime that is fast, secure, and standards-compliant",
+    "topics": [
+     "aot",
+     "cranelift",
+     "jit",
+     "lightweight",
+     "portable",
+     "runtime",
+     "rust",
+     "sandbox",
+     "standalone",
+     "wasi",
+     "wasm",
+     "wasmtime",
+     "webassembly"
+    ],
+    "license": "Apache-2.0",
+    "stars": 18789,
+    "forks": 1898,
+    "sizeKB": 169665,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T22:45:34Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 25545215,
+     "WebAssembly": 8992193,
+     "Common Lisp": 3152525,
+     "C++": 474309,
+     "C": 432274,
+     "Shell": 66903,
+     "JavaScript": 31812,
+     "CMake": 13344,
+     "Dockerfile": 8031,
+     "OCaml": 6903,
+     "CSS": 2496,
+     "Makefile": 1857,
+     "Python": 1238
+    },
+    "homepage": "https://wasmtime.dev/"
+   }
+  },
+  {
+   "repo": "denoland/deno",
+   "category": "stress",
+   "languages": [
+    "javascript",
+    "rust",
+    "typescript"
+   ],
+   "why": "JavaScript runtime in Rust, a large Cargo workspace",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A modern runtime for JavaScript and TypeScript.",
+    "topics": [
+     "deno",
+     "javascript",
+     "rust",
+     "typescript"
+    ],
+    "license": "MIT",
+    "stars": 108791,
+    "forks": 6466,
+    "sizeKB": 253890,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-26T11:32:40Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 20558800,
+     "TypeScript": 8597837,
+     "JavaScript": 3409811,
+     "C": 408112,
+     "HTML": 11518,
+     "CSS": 8595,
+     "Nix": 5616,
+     "Shell": 1863,
+     "WebAssembly": 1566,
+     "C++": 1416,
+     "Svelte": 664,
+     "Mustache": 280,
+     "Dockerfile": 257,
+     "Python": 214,
+     "Astro": 152,
+     "Vento": 52,
+     "Nunjucks": 45
+    },
+    "homepage": "https://deno.com"
+   }
+  },
+  {
+   "repo": "duckdb/duckdb",
+   "category": "stress",
+   "languages": [
+    "cpp",
+    "python"
+   ],
+   "why": "Large C++ codebase built with CMake and make",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "DuckDB is a high-performance analytical database system",
+    "topics": [
+     "analytics",
+     "database",
+     "embedded-database",
+     "olap",
+     "sql"
+    ],
+    "license": "MIT",
+    "stars": 42643,
+    "forks": 4070,
+    "sizeKB": 565043,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T23:45:26Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 56046111,
+     "Python": 1991496,
+     "C": 1942093,
+     "Swift": 287372,
+     "CMake": 263611,
+     "HTML": 71156,
+     "Makefile": 41696,
+     "Shell": 40825,
+     "TSQL": 23099,
+     "CSS": 6204
+    },
+    "homepage": "http://www.duckdb.org"
+   }
+  },
+  {
+   "repo": "facebook/zstd",
+   "category": "stress",
+   "languages": [
+    "c",
+    "cpp",
+    "python"
+   ],
+   "why": "C library with many build systems (make, CMake, Meson, Bazel)",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Zstandard - Fast real-time compression algorithm",
+    "topics": [],
+    "license": "NOASSERTION",
+    "stars": 28108,
+    "forks": 2658,
+    "sizeKB": 40610,
+    "defaultBranch": "dev",
+    "pushedAt": "2026-10-06T01:11:59Z",
+    "archived": false,
+    "primaryLanguage": "C",
+    "languageBytes": {
+     "C": 4640824,
+     "C++": 830077,
+     "Shell": 189171,
+     "Python": 152764,
+     "Makefile": 119686,
+     "CMake": 49131,
+     "Roff": 38102,
+     "Meson": 28796,
+     "Assembly": 19676,
+     "Starlark": 10760,
+     "Batchfile": 6275,
+     "Lua": 1707,
+     "Swift": 1264,
+     "HTML": 982,
+     "Dockerfile": 661
+    },
+    "homepage": "http://www.zstd.net"
+   }
+  },
+  {
+   "repo": "Kotlin/kotlinx.coroutines",
+   "category": "stress",
+   "languages": [
+    "java",
+    "kotlin"
+   ],
+   "why": "Kotlin Multiplatform library with a large Gradle build",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Library support for Kotlin coroutines ",
+    "topics": [
+     "async",
+     "coroutines",
+     "kotlin"
+    ],
+    "license": "Apache-2.0",
+    "stars": 13822,
+    "forks": 1951,
+    "sizeKB": 44078,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T16:39:53Z",
+    "archived": false,
+    "primaryLanguage": "Kotlin",
+    "languageBytes": {
+     "Kotlin": 4019123,
+     "Java": 35566,
+     "Python": 3107,
+     "Shell": 2685
+    },
+    "homepage": null
+   }
+  },
+  {
+   "repo": "lightgbm-org/LightGBM",
+   "category": "stress",
+   "languages": [
+    "cpp",
+    "python",
+    "r"
+   ],
+   "why": "C++ library with Python and R packages and CMake",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A fast, distributed, high performance gradient boosting (GBT, GBDT, GBRT, GBM or MART) framework based on decision tree algorithms, used for ranking, classification and many other machine learning tasks.",
+    "topics": [
+     "data-mining",
+     "decision-trees",
+     "distributed",
+     "gbdt",
+     "gbm",
+     "gbrt",
+     "gradient-boosting",
+     "kaggle",
+     "lightgbm",
+     "machine-learning",
+     "parallel",
+     "python",
+     "r"
+    ],
+    "license": "MIT",
+    "stars": 18933,
+    "forks": 4099,
+    "sizeKB": 26678,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T01:38:48Z",
+    "archived": false,
+    "primaryLanguage": "C++",
+    "languageBytes": {
+     "C++": 2312431,
+     "Python": 1187298,
+     "R": 543080,
+     "Cuda": 383562,
+     "C": 141017,
+     "Shell": 81022,
+     "CMake": 51950,
+     "PowerShell": 28043,
+     "SWIG": 26710,
+     "M4": 5288,
+     "Dockerfile": 420
+    },
+    "homepage": "https://lightgbm.readthedocs.io/en/latest/"
+   }
+  },
+  {
+   "repo": "napi-rs/napi-rs",
+   "category": "stress",
+   "languages": [
+    "javascript",
+    "rust",
+    "typescript"
+   ],
+   "why": "Rust Node.js bindings with TypeScript tooling",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "A framework for building compiled Node.js add-ons in Rust via Node-API",
+    "topics": [
+     "javascript",
+     "napi",
+     "napi-rs",
+     "node",
+     "node-api",
+     "nodejs",
+     "rust"
+    ],
+    "license": "NOASSERTION",
+    "stars": 7997,
+    "forks": 422,
+    "sizeKB": 69930,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T00:49:11Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 3106188,
+     "TypeScript": 1563618,
+     "JavaScript": 151512,
+     "Dockerfile": 6231,
+     "WebAssembly": 4136,
+     "C": 1874,
+     "RenderScript": 3
+    },
+    "homepage": "https://napi.rs"
+   }
+  },
+  {
+   "repo": "neovim/neovim",
+   "category": "stress",
+   "languages": [
+    "c",
+    "lua"
+   ],
+   "why": "C editor with Lua runtime and CMake build",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Vim-fork focused on extensibility and usability",
+    "topics": [
+     "api",
+     "c",
+     "lua",
+     "neovim",
+     "nvim",
+     "text-editor",
+     "vim"
+    ],
+    "license": "NOASSERTION",
+    "stars": 103222,
+    "forks": 7279,
+    "sizeKB": 404978,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-28T01:38:17Z",
+    "archived": false,
+    "primaryLanguage": "Vim Script",
+    "languageBytes": {
+     "Vim Script": 16919723,
+     "Lua": 14383768,
+     "C": 11561688,
+     "CMake": 156566,
+     "Zig": 73180,
+     "Shell": 59369,
+     "JavaScript": 39476,
+     "Tree-sitter Query": 30241,
+     "HTML": 12301,
+     "Makefile": 10991,
+     "Roff": 9360,
+     "Python": 8405,
+     "C++": 5852,
+     "Batchfile": 320,
+     "CSS": 199,
+     "Ruby": 182
+    },
+    "homepage": "https://neovim.io"
+   }
+  },
+  {
+   "repo": "numpy/numpy",
+   "category": "stress",
+   "languages": [
+    "c",
+    "cpp",
+    "python"
+   ],
+   "why": "Python package with C extensions, built with Meson",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "The fundamental package for scientific computing with Python.",
+    "topics": [
+     "numpy",
+     "python"
+    ],
+    "license": "NOASSERTION",
+    "stars": 33188,
+    "forks": 13011,
+    "sizeKB": 185794,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T01:20:00Z",
+    "archived": false,
+    "primaryLanguage": "Python",
+    "languageBytes": {
+     "Python": 14399515,
+     "C": 6571990,
+     "C++": 844815,
+     "Cython": 159792,
+     "Meson": 103546,
+     "Fortran": 45833,
+     "Shell": 6563,
+     "sed": 5706,
+     "Smarty": 4129,
+     "Makefile": 1716
+    },
+    "homepage": "https://numpy.org"
+   }
+  },
+  {
+   "repo": "pola-rs/polars",
+   "category": "stress",
+   "languages": [
+    "python",
+    "rust"
+   ],
+   "why": "Large Cargo workspace with a Python package built by maturin",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Extremely fast Query Engine for DataFrames, written in Rust",
+    "topics": [
+     "arrow",
+     "dataframe",
+     "dataframe-library",
+     "dataframes",
+     "out-of-core",
+     "polars",
+     "python",
+     "rust"
+    ],
+    "license": "MIT",
+    "stars": 40220,
+    "forks": 3205,
+    "sizeKB": 233803,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T21:29:02Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 19313005,
+     "Python": 11821715,
+     "Makefile": 22579,
+     "Nix": 19540,
+     "CSS": 4699,
+     "JavaScript": 3481,
+     "HTML": 899,
+     "RenderScript": 1
+    },
+    "homepage": "https://docs.pola.rs"
+   }
+  },
+  {
+   "repo": "prometheus/prometheus",
+   "category": "stress",
+   "languages": [
+    "go",
+    "typescript"
+   ],
+   "why": "Go server with a TypeScript web UI",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "The Prometheus monitoring system and time series database.",
+    "topics": [
+     "alerting",
+     "graphing",
+     "hacktoberfest",
+     "metrics",
+     "monitoring",
+     "prometheus",
+     "time-series"
+    ],
+    "license": "Apache-2.0",
+    "stars": 66819,
+    "forks": 10932,
+    "sizeKB": 295421,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T21:32:10Z",
+    "archived": false,
+    "primaryLanguage": "Go",
+    "languageBytes": {
+     "Go": 12190778,
+     "TypeScript": 1433749,
+     "Yacc": 57845,
+     "Python": 35704,
+     "Shell": 34855,
+     "JavaScript": 31114,
+     "SCSS": 18605,
+     "CSS": 15323,
+     "Lex": 11286,
+     "Makefile": 9199,
+     "HTML": 4562,
+     "Dockerfile": 1431,
+     "Go Template": 642
+    },
+    "homepage": "https://prometheus.io/"
+   }
+  },
+  {
+   "repo": "pydantic/pydantic",
+   "category": "stress",
+   "languages": [
+    "python",
+    "rust"
+   ],
+   "why": "Python library with its Rust core (pydantic-core) in one repository",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Data validation using Python type hints",
+    "topics": [
+     "hints",
+     "json-schema",
+     "parsing",
+     "pydantic",
+     "python",
+     "python310",
+     "python311",
+     "python312",
+     "python313",
+     "python314",
+     "validation"
+    ],
+    "license": "MIT",
+    "stars": 29216,
+    "forks": 3090,
+    "sizeKB": 469817,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T20:18:10Z",
+    "archived": false,
+    "primaryLanguage": "Python",
+    "languageBytes": {
+     "Python": 6343721,
+     "Rust": 1339833,
+     "Makefile": 9760,
+     "JavaScript": 4369,
+     "HTML": 2544,
+     "Shell": 2167
+    },
+    "homepage": "https://pydantic.dev/docs/validation"
+   }
+  },
+  {
+   "repo": "PyO3/pyo3",
+   "category": "stress",
+   "languages": [
+    "python",
+    "rust"
+   ],
+   "why": "Rust bindings for Python with a Python test package",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Rust bindings for the Python interpreter",
+    "topics": [
+     "binding",
+     "ffi",
+     "python",
+     "python-c-api",
+     "rust"
+    ],
+    "license": "Apache-2.0",
+    "stars": 16276,
+    "forks": 1043,
+    "sizeKB": 63944,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-26T08:14:35Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 4118413,
+     "Python": 162255,
+     "Makefile": 6764,
+     "Meson": 5927,
+     "Shell": 2402,
+     "JavaScript": 2370,
+     "HTML": 1425,
+     "CSS": 407,
+     "Rhai": 360,
+     "C": 172
+    },
+    "homepage": "https://pyo3.rs"
+   }
+  },
+  {
+   "repo": "python-pillow/Pillow",
+   "category": "stress",
+   "languages": [
+    "c",
+    "python"
+   ],
+   "why": "Python package with a C extension",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Python Imaging Library (fork)",
+    "topics": [
+     "c",
+     "cross-platform",
+     "image",
+     "image-processing",
+     "pil",
+     "pillow",
+     "python",
+     "python-3"
+    ],
+    "license": "NOASSERTION",
+    "stars": 13935,
+    "forks": 2580,
+    "sizeKB": 212210,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-28T01:49:07Z",
+    "archived": false,
+    "primaryLanguage": "Python",
+    "languageBytes": {
+     "Python": 2586489,
+     "C": 1379447,
+     "PostScript": 11949,
+     "Shell": 10480,
+     "Makefile": 4699,
+     "CMake": 3740,
+     "Gnuplot": 1105,
+     "Batchfile": 207
+    },
+    "homepage": "https://python-pillow.org"
+   }
+  },
+  {
+   "repo": "rails/rails",
+   "category": "stress",
+   "languages": [
+    "javascript",
+    "ruby",
+    "typescript"
+   ],
+   "why": "Ruby monorepo of gems with JavaScript packages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Ruby on Rails",
+    "topics": [
+     "activejob",
+     "activerecord",
+     "framework",
+     "html",
+     "mvc",
+     "rails",
+     "ruby"
+    ],
+    "license": "MIT",
+    "stars": 58858,
+    "forks": 24511,
+    "sizeKB": 293564,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T22:10:20Z",
+    "archived": false,
+    "primaryLanguage": "Ruby",
+    "languageBytes": {
+     "Ruby": 19859741,
+     "JavaScript": 244286,
+     "HTML": 205626,
+     "SCSS": 50851,
+     "CSS": 27100,
+     "Dockerfile": 2104,
+     "Shell": 841
+    },
+    "homepage": "https://rubyonrails.org"
+   }
+  },
+  {
+   "repo": "redis/redis",
+   "category": "stress",
+   "languages": [
+    "c",
+    "tcl"
+   ],
+   "why": "C server with a Tcl test suite",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "For developers, who are building real-time data-driven applications, Redis is the preferred, fastest, and most feature-rich cache, data structure server, and document and vector query engine.",
+    "topics": [
+     "cache",
+     "caching",
+     "database",
+     "distributed-systems",
+     "in-memory",
+     "in-memory-database",
+     "json",
+     "key-value",
+     "key-value-store",
+     "message-broker",
+     "message-queue",
+     "no-sql",
+     "nosql",
+     "open-source",
+     "real-time",
+     "realtime",
+     "redis",
+     "time-series",
+     "vector-databases",
+     "vector-search"
+    ],
+    "license": "NOASSERTION",
+    "stars": 77140,
+    "forks": 24940,
+    "sizeKB": 219446,
+    "defaultBranch": "unstable",
+    "pushedAt": "2026-10-27T11:48:52Z",
+    "archived": false,
+    "primaryLanguage": "C",
+    "languageBytes": {
+     "C": 9961475,
+     "Tcl": 4552244,
+     "Python": 250656,
+     "Shell": 106883,
+     "Makefile": 47826,
+     "Ruby": 23536,
+     "C++": 5987,
+     "Smarty": 1047,
+     "JavaScript": 953
+    },
+    "homepage": "http://redis.io"
+   }
+  },
+  {
+   "repo": "rerun-io/rerun",
+   "category": "stress",
+   "languages": [
+    "cpp",
+    "python",
+    "rust"
+   ],
+   "why": "Rust, C++ and Python SDKs built with pixi",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Visualize, query, and stream to train on multimodal robotics data.",
+    "topics": [
+     "computer-vision",
+     "cpp",
+     "multimodal",
+     "python",
+     "robotics",
+     "rust",
+     "visualization"
+    ],
+    "license": "Apache-2.0",
+    "stars": 11653,
+    "forks": 886,
+    "sizeKB": 297644,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T21:26:26Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 23680659,
+     "Python": 3348478,
+     "C++": 531156,
+     "WGSL": 166241,
+     "TypeScript": 125241,
+     "CSS": 70782,
+     "JavaScript": 56589,
+     "CMake": 35019,
+     "HTML": 31655,
+     "Shell": 13376,
+     "C": 4905,
+     "ImHex Pattern Language": 4525,
+     "Dockerfile": 1568,
+     "Batchfile": 583
+    },
+    "homepage": "https://rerun.io/"
+   }
+  },
+  {
+   "repo": "scipy/scipy",
+   "category": "stress",
+   "languages": [
+    "c",
+    "cpp",
+    "fortran",
+    "python"
+   ],
+   "why": "Python with C, C++, Fortran and Cython, built with Meson",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "SciPy library main repository",
+    "topics": [
+     "algorithms",
+     "closember",
+     "python",
+     "scientific-computing",
+     "scipy"
+    ],
+    "license": "BSD-3-Clause",
+    "stars": 15159,
+    "forks": 6037,
+    "sizeKB": 208533,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T22:07:09Z",
+    "archived": false,
+    "primaryLanguage": "Python",
+    "languageBytes": {
+     "Python": 22242854,
+     "C": 7025185,
+     "C++": 3745611,
+     "Cython": 1227022,
+     "Meson": 129815,
+     "Shell": 12928,
+     "Makefile": 6554,
+     "MATLAB": 4346,
+     "R": 3059,
+     "Batchfile": 1343
+    },
+    "homepage": "https://scipy.org"
+   }
+  },
+  {
+   "repo": "sparklemotion/nokogiri",
+   "category": "stress",
+   "languages": [
+    "c",
+    "java",
+    "ruby"
+   ],
+   "why": "Ruby gem with a C extension and a JRuby Java extension",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Nokogiri (鋸) makes it easy and painless to work with XML and HTML from Ruby.",
+    "topics": [
+     "libxml2",
+     "libxslt",
+     "nokogiri",
+     "ruby",
+     "ruby-gem",
+     "sax",
+     "xerces",
+     "xml",
+     "xslt"
+    ],
+    "license": "MIT",
+    "stars": 6282,
+    "forks": 952,
+    "sizeKB": 45872,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-26T23:23:45Z",
+    "archived": false,
+    "primaryLanguage": "C",
+    "languageBytes": {
+     "C": 1487167,
+     "Ruby": 1341709,
+     "Java": 666858,
+     "C++": 273316,
+     "HTML": 97500,
+     "Ragel": 97111,
+     "Shell": 7574,
+     "Dockerfile": 7110,
+     "Yacc": 6793,
+     "Makefile": 5853,
+     "REXX": 1949,
+     "XSLT": 1868,
+     "CSS": 422,
+     "sed": 354
+    },
+    "homepage": "https://nokogiri.org/"
+   }
+  },
+  {
+   "repo": "swc-project/swc",
+   "category": "stress",
+   "languages": [
+    "javascript",
+    "rust",
+    "typescript"
+   ],
+   "why": "Rust compiler with many npm packages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Rust-based platform for the Web",
+    "topics": [
+     "babel",
+     "compiler",
+     "ecmascript",
+     "ecmascript-parser",
+     "javascript",
+     "parser",
+     "rust",
+     "swc",
+     "typescript",
+     "typescript-compiler",
+     "typescript-parser"
+    ],
+    "license": "Apache-2.0",
+    "stars": 34204,
+    "forks": 1539,
+    "sizeKB": 469901,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T07:26:25Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 28005182,
+     "JavaScript": 613818,
+     "TypeScript": 191328,
+     "Shell": 35938,
+     "Python": 1539,
+     "SCSS": 22,
+     "RenderScript": 8
+    },
+    "homepage": "https://swc.rs"
+   }
+  },
+  {
+   "repo": "swig/swig",
+   "category": "stress",
+   "languages": [
+    "c",
+    "cpp"
+   ],
+   "why": "Wrapper generator in C++ whose examples span many languages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "SWIG is a software development tool that connects programs written in C and C++ with a variety of high-level programming languages.",
+    "topics": [],
+    "license": "NOASSERTION",
+    "stars": 6334,
+    "forks": 1315,
+    "sizeKB": 82606,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-25T20:55:41Z",
+    "archived": false,
+    "primaryLanguage": "SWIG",
+    "languageBytes": {
+     "SWIG": 3138220,
+     "C++": 2725434,
+     "C": 1308431,
+     "Yacc": 423817,
+     "M4": 144818,
+     "Shell": 55307,
+     "Makefile": 43862,
+     "Python": 18699,
+     "OCaml": 13263,
+     "CMake": 10235,
+     "HTML": 5376,
+     "Go Template": 4731,
+     "Dockerfile": 3333,
+     "Scheme": 2384,
+     "GDB": 1312,
+     "Perl": 688,
+     "Assembly": 358,
+     "Ruby": 234
+    },
+    "homepage": "http://www.swig.org"
+   }
+  },
+  {
+   "repo": "tauri-apps/tauri",
+   "category": "stress",
+   "languages": [
+    "javascript",
+    "rust",
+    "typescript"
+   ],
+   "why": "App framework: Rust crates and TypeScript packages",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Build smaller, faster, and more secure desktop and mobile applications with a web frontend.",
+    "topics": [
+     "desktop-app",
+     "high-performance",
+     "mobile-app",
+     "native-app",
+     "rust",
+     "web-frontend",
+     "webview"
+    ],
+    "license": "Apache-2.0",
+    "stars": 112245,
+    "forks": 4121,
+    "sizeKB": 113148,
+    "defaultBranch": "dev",
+    "pushedAt": "2026-10-28T00:49:02Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 3383014,
+     "TypeScript": 378890,
+     "NSIS": 123479,
+     "JavaScript": 91605,
+     "Kotlin": 74350,
+     "Shell": 64764,
+     "Swift": 25190,
+     "Dockerfile": 2143,
+     "HTML": 2143,
+     "PowerShell": 1951,
+     "AppleScript": 1828,
+     "Svelte": 1747,
+     "CSS": 1658,
+     "Standard ML": 1348,
+     "Ruby": 839,
+     "Objective-C": 414,
+     "Objective-C++": 100,
+     "C++": 82
+    },
+    "homepage": "https://tauri.app"
+   }
+  },
+  {
+   "repo": "tree-sitter/tree-sitter",
+   "category": "stress",
+   "languages": [
+    "c",
+    "javascript",
+    "rust"
+   ],
+   "why": "Rust CLI, C library and Node and Wasm bindings in one repository",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "An incremental parsing system for programming tools",
+    "topics": [
+     "c",
+     "incremental",
+     "parser",
+     "parsing",
+     "rust",
+     "tree-sitter",
+     "wasm"
+    ],
+    "license": "MIT",
+    "stars": 27303,
+    "forks": 2999,
+    "sizeKB": 24269,
+    "defaultBranch": "master",
+    "pushedAt": "2026-10-27T05:37:58Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 2354237,
+     "C": 840639,
+     "TypeScript": 207906,
+     "JavaScript": 37751,
+     "C++": 35088,
+     "Nix": 21250,
+     "Python": 15112,
+     "Zig": 14335,
+     "HTML": 13588,
+     "Makefile": 8793,
+     "CMake": 7873,
+     "Java": 2839,
+     "Swift": 1577,
+     "Go": 749,
+     "Shell": 107
+    },
+    "homepage": "https://tree-sitter.github.io"
+   }
+  },
+  {
+   "repo": "vercel/turborepo",
+   "category": "stress",
+   "languages": [
+    "go",
+    "javascript",
+    "rust",
+    "typescript"
+   ],
+   "why": "Rust build system with TypeScript packages, a pnpm monorepo",
+   "github": {
+    "fetched": "2026-10-28",
+    "description": "Build system optimized for JavaScript and TypeScript, written in Rust",
+    "topics": [
+     "build-system",
+     "build-tool",
+     "javascript",
+     "monorepo",
+     "typescript"
+    ],
+    "license": "MIT",
+    "stars": 31265,
+    "forks": 2477,
+    "sizeKB": 847327,
+    "defaultBranch": "main",
+    "pushedAt": "2026-10-27T19:10:55Z",
+    "archived": false,
+    "primaryLanguage": "Rust",
+    "languageBytes": {
+     "Rust": 15484296,
+     "TypeScript": 1846634,
+     "MDX": 1154327,
+     "JavaScript": 320407,
+     "PowerShell": 23316,
+     "Shell": 16787,
+     "CSS": 12854,
+     "Dockerfile": 5090,
+     "HTML": 1741,
+     "Cap'n Proto": 1664,
+     "Go": 506,
+     "Batchfile": 327,
+     "Python": 304,
+     "Handlebars": 278
+    },
+    "homepage": "https://turborepo.dev"
+   }
+  }
+ ],
+ "dropped": [
+  {
+   "repo": "google/diff-match-patch",
+   "reason": "archived (last pushed 2024-05-22); tried earlier",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "pydantic/pydantic-core",
+   "reason": "archived: merged into pydantic/pydantic",
+   "replacement": "pydantic/pydantic",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "saviorand/lightbug_http",
+   "reason": "archived (now Lightbug-HQ/lightbug_http)",
+   "replacement": "Mojo-Numerics-and-Algorithms-group/NuMojo",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "mndrix/regex",
+   "reason": "archived, last pushed 2017",
+   "replacement": "jamesnvc/lsp_server",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "raku-community-modules/JSON-Tiny",
+   "reason": "not found",
+   "replacement": "ugexe/zef",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "onox/json-ada",
+   "reason": "last pushed 2024-07-28",
+   "replacement": "alire-project/alire",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "elm-community/list-extra",
+   "reason": "last pushed 2024-08-14",
+   "replacement": "mdgriffith/elm-ui",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "inhabitedtype/angstrom",
+   "reason": "last pushed 2024-09-12",
+   "replacement": "mirage/ocaml-cohttp",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "JetBrains/kotlin",
+   "reason": "4.4 GB",
+   "replacement": "Kotlin/kotlinx.coroutines",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "grafana/grafana",
+   "reason": "2.1 GB",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "huggingface/safetensors",
+   "reason": "renamed to safetensors/safetensors",
+   "replacement": "safetensors/safetensors",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "lancedb/lance",
+   "reason": "renamed to lance-format/lance",
+   "replacement": "lance-format/lance",
+   "date": "2026-10-28"
+  },
+  {
+   "repo": "microsoft/LightGBM",
+   "reason": "renamed to lightgbm-org/LightGBM",
+   "replacement": "lightgbm-org/LightGBM",
+   "date": "2026-10-28"
+  }
+ ]
+}
