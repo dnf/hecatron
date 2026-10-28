@@ -53,4 +53,11 @@ cp ~/.profile ~/.profile.before
 HECATRON_NO_MODIFY_PATH=1 HECATRON_INSTALL_DIR=~/other sh < /hecatron/install.sh >/dev/null 2>&1
 check "profile untouched" 'cmp -s ~/.profile ~/.profile.before'
 check "still installed" '[ -x ~/other/bin/hecatron ]'
+echo "== 8. HECATRON_VERSION: a release, a series"
+HECATRON_NO_MODIFY_PATH=1 HECATRON_INSTALL_DIR=~/release HECATRON_VERSION=v0.4.0 sh < /hecatron/install.sh >/dev/null 2>&1
+check "the release" '[ "$(cat ~/release/VERSION)" = 0.4.0 ]'
+HECATRON_NO_MODIFY_PATH=1 HECATRON_INSTALL_DIR=~/series HECATRON_VERSION=v0.5 sh < /hecatron/install.sh >/dev/null 2>&1
+check "the series' latest" '[ "$(cat ~/series/VERSION)" = 0.5.0 ]'
+out="$(HECATRON_NO_MODIFY_PATH=1 HECATRON_INSTALL_DIR=~/none HECATRON_VERSION=v0.99 sh < /hecatron/install.sh 2>&1)"
+check "no release in the series" 'echo "$out" | grep -q "no release of hecatron matches v0.99" && [ ! -e ~/none ]'
 exit "${_failed}"

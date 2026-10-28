@@ -282,6 +282,12 @@ can also override any file of a built-in language definition there, or define
 a language hecatron doesn't know. [docs/design.md](docs/design.md) describes
 the full configuration.
 
+To have teammates and CI run the same hecatron, pin it: `"hecatron": "0.6"`
+takes any 0.6.x, `"hecatron": "0.6.1"` only that release (`">=0.6.0"` sets a
+minimum instead). Another version warns on every `hct` command and fails
+`hct check`; a generated GitLab pipeline installs the pinned one
+(`HECATRON_VERSION=v0.6` makes install.sh install the series' latest).
+
 ## Languages
 
 Hecatron ships definitions for 54 languages: <!-- language-count -->
