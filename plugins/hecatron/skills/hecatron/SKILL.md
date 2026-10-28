@@ -1,6 +1,6 @@
 ---
 name: hecatron
-description: Builds, tests, lints and formats code, fetches dependencies and checks them for vulnerabilities, in almost any programming language, through one CLI, hecatron (`hct`), instead of each language's own commands. Use in a git repository when asked to run tests, lint, build or format code, fetch or audit dependencies, or set up a language's toolchain, especially in an unfamiliar language or a repository with several languages, or when the user mentions hct, hecatron or a .hecatron directory.
+description: Sets up, builds, tests, lints and formats code in almost any programming language through one CLI, hecatron (`hct`). Use it whenever you are about to get a repository working, build it or run its tests, including one you have just cloned or been asked to set up, before installing compilers, SDKs or package managers yourself; and whenever the user mentions hct, hecatron or a .hecatron directory. `hct status` says which languages a repository uses and which toolchains are missing, `hct install` sets them up, and `hct test` runs every language's tests.
 license: MIT
 compatibility: Needs the hct command (macOS or Linux), installed with hecatron's install.sh.
 metadata:
