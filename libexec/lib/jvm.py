@@ -184,8 +184,32 @@ def _newest_lts(table, version: str) -> int:
     return LTS[0] if table is _GRADLE_RUNS_ON else table[-1][-1]
 
 
+# A Kotlin compile's JVM target, and anything that sets Java's (a toolchain,
+# a source or target compatibility, javac's --release).
+_KOTLIN_JVM_TARGET = re.compile(r"JvmTarget\.JVM_(\d+)\b|\bjvmTarget\s*(?:=|\.set\()\s*[\"'](\d+)[\"']")
+_JAVA_TARGET_SET = re.compile(r"JavaLanguageVersion|jvmToolchain|sourceCompatibility|targetCompatibility|options\.release")
+
+
+def _kotlin_jvm_target(directory: str, root: str | None) -> int | None:
+    """The JVM a Gradle build's Kotlin targets (jvmTarget), when nothing sets
+    Java's: Kotlin's Gradle plugin then fails a build whose Java target, the
+    JDK it runs on, differs ("Inconsistent JVM Target Compatibility"), so the
+    build has to run on that JDK. Targets before 11 aren't one hecatron can
+    run Gradle on."""
+    targets = set()
+    for path in _files(_gradle_root(directory, root), (".gradle", ".gradle.kts"), depth=2):
+        text = _read(path)
+        if _JAVA_TARGET_SET.search(text):
+            return None
+        targets.update(int(a or b) for a, b in _KOTLIN_JVM_TARGET.findall(text))
+    return min(targets) if targets and min(targets) >= 11 else None
+
+
 def ceiling(directory: str, root: str | None = None) -> tuple[int, str] | None:
     limits = []
+    target = _kotlin_jvm_target(directory, root)
+    if target:
+        limits.append((target, f"its Kotlin targets JVM {target} and nothing sets Java's target to match"))
     gradle = _gradle_wrapper(directory, root)
     if gradle:
         limits.append((_newest_lts(_GRADLE_RUNS_ON, gradle), f"its Gradle wrapper is Gradle {gradle}"))
