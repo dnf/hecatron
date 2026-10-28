@@ -14,7 +14,9 @@ which Gradle and Maven's toolchains plugin find among the installed JDKs
 different: a Gradle wrapper or a Kotlin compiler from before a JDK's release
 fails on it (Gradle doesn't start; Kotlin 2.1 throws IllegalArgumentException
 parsing "25.0.5", and Kotlin 2.2 can't target the JDK's bytecode version that
-Java compiles to), so the build has to run on an older JDK.
+Java compiles to), so the build has to run on an older JDK. So does one whose
+Kotlin targets an older JVM (jvmTarget) while nothing sets Java's target,
+which is then the JDK's own: Kotlin's Gradle plugin fails on the mismatch.
 """
 
 from __future__ import annotations
