@@ -258,6 +258,26 @@ class InitTest(Fixture):
                                 "typescript": {"detect": ["tsconfig.json"]}})
         self.assertEqual(found, {"javascript": {"js"}, "typescript": {"ts"}})
 
+    def test_a_tsconfig_beside_mostly_javascript_is_a_javascript_package(self):
+        # antlr4's runtime/JavaScript: JavaScript sources, type declarations
+        # and a tsconfig.json for them.
+        found, _ = self.detect({"rt/package.json": "", "rt/tsconfig.json": "", "rt/src/a.js": "",
+                                "rt/src/b.mjs": "", "rt/src/a.d.ts": "", "rt/src/b.d.ts": "", "rt/src/c.ts": "",
+                                "rt/.eslintrc.js": "",
+                                "web/package.json": "", "web/tsconfig.json": "", "web/src/a.ts": "",
+                                "web/vite.config.js": ""},
+                               {"javascript": {"detect": ["package.json"], "detectUnless": ["tsconfig.json"]},
+                                "typescript": {"detect": ["tsconfig.json"],
+                                               "detectYields": {"to": "javascript", "where": ["*.js", "*.mjs"],
+                                                                "outnumber": ["*.ts"], "except": ["*.d.ts"]}}})
+        self.assertEqual(found, {"javascript": {"rt"}, "typescript": {"web"}})
+
+    def test_a_language_whose_build_files_all_yield_isnt_added(self):
+        found, not_added = self.detect({"package.json": '{"scripts": {"test": "x"}}', "tsconfig.json": "",
+                                        "lib/a.js": "", "types/a.d.ts": ""}, None)
+        self.assertEqual(found, {"javascript": {"."}})
+        self.assertEqual(not_added, {"typescript": "its tsconfig.json only sits beside mostly JavaScript"})
+
     def test_a_package_without_a_test_script_isnt_a_language(self):
         # Cucumber messages: jsonschema/package.json is tooling with no tests.
         defs = {"javascript": {"detect": ["package.json"], "detectScript": "test"}}
@@ -516,6 +536,15 @@ class LanguageDirectoryTest(Fixture):
         write(self.path("javascript", "tsconfig.json"), "{}")
         write(self.path("js", "package.json"), "{}")
         self.assertEqual(project.load(self.root).impl_dirs("javascript"), [(".", self.path("js"))])
+
+    def test_a_tsconfig_beside_mostly_javascript_leaves_the_directory_javascripts(self):
+        self.configure(languages=["javascript", "typescript"], implPath="{lang}")
+        for name in ("package.json", "tsconfig.json", "src/a.js", "src/b.js", "src/a.d.ts"):
+            write(self.path("javascript", name), "{}")
+        self.commit()
+        p = project.load(self.root)
+        self.assertEqual(p.impl_dirs("javascript"), [(".", self.path("javascript"))])
+        self.assertEqual(p.impl_dirs("typescript"), [])
 
     def test_a_language_whose_only_directory_holds_a_detect_unless_file_has_none(self):
         self.configure(languages=["javascript"], implPath="{lang}")

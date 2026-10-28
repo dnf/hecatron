@@ -25,6 +25,7 @@ Shell queries:
 from __future__ import annotations
 
 import fnmatch
+import functools
 import glob
 import json
 import os
@@ -83,6 +84,43 @@ def ignore_project_files(root: str) -> None:
     if missing:
         with open(path, "a", encoding="utf-8") as f:
             f.write(("" if not existing or existing.endswith("\n") else "\n") + "\n".join(missing) + "\n")
+
+
+# Trees holding code that isn't the project's own implementation: vendored
+# dependencies, samples, tests and test data, docs, tooling (hooks/: git
+# hooks, build hooks) and a generator's templates, whatever their case
+# (Examples/), and hidden directories (.jenkins/, .github/): detection
+# doesn't count them (manage.py).
+SKIPPED_DIRS = {"android", "benchmarks", "buildsrc", "demo", "demos", "doc", "docs", "example", "examples",
+                "external", "fixtures", "hooks", "node_modules", "playground", "sample", "samples", "templates", "test",
+                "test-data", "test_data", "testdata", "tests", "tests_data", "third_party", "tools", "tutorial",
+                "tutorials", "vendor", "vendored"}
+
+
+def yields(rule: dict, names) -> bool:
+    """Whether a definition's "detectYields" rule holds for a directory, from
+    the names of the files in it and below: more match its "where" than its
+    "outnumber" (less those matching its "except"), dotfiles left out. A
+    tsconfig.json beside mostly JavaScript (antlr4's runtime/JavaScript,
+    with type declarations) is a JavaScript package's."""
+    def matching(patterns: list[str], but: list[str]) -> int:
+        return sum(1 for name in names if not name.startswith(".")
+                   and any(fnmatch.fnmatch(name, p) for p in patterns)
+                   and not any(fnmatch.fnmatch(name, p) for p in but))
+    return matching(rule.get("where", []), []) > matching(rule.get("outnumber", []), rule.get("except", []))
+
+
+@functools.lru_cache(maxsize=None)
+def tracked_names_below(directory: str) -> tuple[str, ...]:
+    """The names of the files git tracks in a directory and below it, outside
+    SKIPPED_DIRS and hidden directories, as detection counts them."""
+    listing = _git(directory, "ls-files")
+    names = []
+    for path in (listing or "").splitlines():
+        parts = path.split("/")
+        if not any(part.lower() in SKIPPED_DIRS or part.startswith(".") for part in parts[:-1]):
+            names.append(parts[-1])
+    return tuple(names)
 
 
 def _git(directory: str, *args: str) -> str | None:
@@ -213,17 +251,38 @@ class Project:
         """(the directory found or None, the one to fall back to). A directory
         found by a language's name is its only when none of its "detectUnless"
         files sit there: a javascript/ holding a tsconfig.json is TypeScript's.
-        A template without {lang} names its directory outright."""
+        A "detectYields" rule that holds there, as detection decides, gives
+        the directory to the other language: a tsconfig.json beside mostly
+        JavaScript is JavaScript's. A template without {lang} names its
+        directory outright."""
         template = self.impl_template(lang).replace("{component}", component)
         candidates = [os.path.normpath(os.path.join(self.root, template.replace("{lang}", name)))
                       for name in self.dir_names(lang)]
-        unless = self.definitions.get(lang, {}).get("detectUnless", []) if "{lang}" in template else []
+        by_name = "{lang}" in template
+        unless = self.definitions.get(lang, {}).get("detectUnless", []) if by_name else []
 
         def is_own(directory: str) -> bool:
-            return os.path.isdir(directory) and not any(
-                fnmatch.fnmatch(name, pattern) for name in os.listdir(directory) for pattern in unless)
+            if not os.path.isdir(directory):
+                return False
+            listing = os.listdir(directory)
+            if not by_name:
+                return True
+            if self._yields_in(lang, directory, listing):
+                return False
+            return not any(fnmatch.fnmatch(name, pattern) for name in listing for pattern in unless) or any(
+                self._yields_in(other, directory, listing) for other, d in self.definitions.items()
+                if (d.get("detectYields") or {}).get("to") == lang)
 
         return next((c for c in candidates if is_own(c)), None), candidates[0]
+
+    def _yields_in(self, lang: str, directory: str, listing: list[str]) -> bool:
+        """Whether one of the language's build files is in the directory and
+        its "detectYields" rule holds there, as detection decides: the
+        directory is the other language's."""
+        d = self.definitions.get(lang, {})
+        rule = d.get("detectYields")
+        return bool(rule) and any(fnmatch.fnmatch(name, pattern) for name in listing
+                                  for pattern in d.get("detect", [])) and yields(rule, tracked_names_below(directory))
 
     def impl_dir(self, component: str, lang: str) -> str:
         """Where a component's code in a language lives: the template filled

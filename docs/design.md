@@ -188,7 +188,7 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `project` | Name used in banners, Docker image tags and messages | directory name |
 | `components` | Component names, in order | `["."]` (one, unnamed) |
 | `implPath` | Where a component's code in a language lives | `{lang}` with one component, else `{component}/{lang}` |
-| `implPaths` | A language's own `implPath`, for one kept elsewhere (`{"csharp": "dotnet"}`). A directory filled in from `{lang}` is the language's only when none of its `detectUnless` files sit there; one named outright is taken as written | `{}` |
+| `implPaths` | A language's own `implPath`, for one kept elsewhere (`{"csharp": "dotnet"}`). A directory filled in from `{lang}` is the language's only when none of its `detectUnless` files sit there (or another language's `detectYields` gives it back) and its own `detectYields` doesn't give it away; one named outright is taken as written | `{}` |
 | `languages` | Languages the project implements (was `added.json`) | `[]` |
 | `tools` | Non-language dependencies, as `{ "dependency": "<command>" }` | `{}` |
 | `generated.dockerfile` | Where `hecatron dockerfile` writes; omit for none | none |
@@ -429,7 +429,12 @@ saves it, as init would. Init itself:
    C's and C++'s `CMakeLists.txt`) counts for the one with the most sources
    beside it or under its `src/` and `include/`. A hit is dropped where one
    of the definition's `detectUnless` files sits beside it (`package.json` is
-   JavaScript unless a `tsconfig.json` makes it TypeScript), and a
+   JavaScript unless a `tsconfig.json` makes it TypeScript), except where
+   the other definition's `detectYields` rule gives it back: a
+   `tsconfig.json` beside more JavaScript than TypeScript files (`.d.ts`
+   declarations aside; tracked files in the directory and below, as
+   detection counts them) is a JavaScript package's, as antlr4's
+   `runtime/JavaScript` with its type declarations is. A
    `package.json` without the definition's `detectScript` npm script doesn't
    count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
    Dotfiles aren't sources (a `.nvim.lua` configures an editor).

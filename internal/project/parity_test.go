@@ -556,6 +556,9 @@ func parityCases() []parityCase {
 		{name: "found from a subdirectory", files: config(`, "languages": ["go"]`), cwd: "a/b/c"},
 		{name: "several components", files: components},
 		{name: "several components from inside one", files: components, cwd: "date/impl"},
+		{name: "a tsconfig.json beside mostly javascript", git: true, files: with(components, map[string]string{
+			"date/impl/javascript/src/a.js": "", "date/impl/javascript/src/b.cjs": "", "date/impl/javascript/a.d.ts": "",
+			"date/impl/javascript/src/c.ts": "", "date/impl/javascript/test/d.js": "", "date/impl/javascript/.x.js": ""})},
 		{name: "project overrides and a project-only language", files: overrides},
 		{name: "local.json disables", files: with(config(`, "languages": ["rust", "go", "python"]`), map[string]string{
 			".hecatron/local.json": `{"disabled": ["rust", "go", "haskell"]}`})},

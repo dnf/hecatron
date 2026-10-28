@@ -8,6 +8,26 @@
   "detect": [
     "tsconfig.json"
   ],
+  "detectYields": {
+    "to": "javascript",
+    "where": [
+      "*.js",
+      "*.jsx",
+      "*.mjs",
+      "*.cjs"
+    ],
+    "outnumber": [
+      "*.ts",
+      "*.tsx",
+      "*.mts",
+      "*.cts"
+    ],
+    "except": [
+      "*.d.ts",
+      "*.d.mts",
+      "*.d.cts"
+    ]
+  },
   "dirNames": [
     "typescript",
     "ts",

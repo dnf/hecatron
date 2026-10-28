@@ -69,10 +69,17 @@ func sortedKeys(m map[string]string) []string {
 // detectionRepos are fixture repositories shaped like the layouts
 // detection has to tell apart (tests/test_hecatron.py's InitTest).
 var detectionRepos = map[string]map[string]string{
-	"languages at the root":       {"go/go.mod": "", "rust/Cargo.toml": "", "python/pyproject.toml": "", "README": ""},
-	"components":                  {"age/impl/go/go.mod": "", "date/impl/go/go.mod": "", "age/impl/rust/Cargo.toml": "", "date/impl/rust/src/lib.rs": "", "date/impl/rust/Cargo.toml": ""},
-	"one language at the root":    {"go.mod": "", "main.go": ""},
-	"nothing":                     {"README.md": ""},
+	"languages at the root":    {"go/go.mod": "", "rust/Cargo.toml": "", "python/pyproject.toml": "", "README": ""},
+	"components":               {"age/impl/go/go.mod": "", "date/impl/go/go.mod": "", "age/impl/rust/Cargo.toml": "", "date/impl/rust/src/lib.rs": "", "date/impl/rust/Cargo.toml": ""},
+	"one language at the root": {"go.mod": "", "main.go": ""},
+	"nothing":                  {"README.md": ""},
+	"tsconfig beside mostly javascript": {"runtime/JavaScript/package.json": "{\"scripts\": {\"test\": \"jasmine\"}}",
+		"runtime/JavaScript/tsconfig.json": "", "runtime/JavaScript/src/a.js": "", "runtime/JavaScript/src/b.js": "",
+		"runtime/JavaScript/src/a.d.ts": "", "runtime/JavaScript/src/b.d.ts": "", "runtime/JavaScript/src/c.ts": "",
+		"runtime/JavaScript/.eslintrc.js": "", "runtime/JavaScript/spec/x.js": "", "runtime/JavaScript/spec/y.js": "",
+		"runtime/Go/go.mod": "", "web/tsconfig.json": "", "web/package.json": "{}", "web/src/a.ts": "", "web/webpack.config.js": ""},
+	"only tsconfigs beside mostly javascript": {"package.json": "{\"scripts\": {\"test\": \"x\"}}", "tsconfig.json": "",
+		"lib/a.js": "", "lib/b.mjs": "", "types/a.d.ts": ""},
 	"names":                       {"lib/rb/Gemfile": "", "lib/rb/x.gemspec": "", "lib/netstd/src/x.csproj": "", "lib/go/go.mod": ""},
 	"preferred parent":            {"sdks/go/go.mod": "", "learning/katas/go/go.mod": "", "sdks/java/pom.xml": "", "learning/katas/java/pom.xml": "", "learning/katas/kotlin/build.gradle.kts": ""},
 	"outside the layout":          {"go/go.mod": "", "java/pom.xml": "", "javascript/package.json": "{\"scripts\": {\"test\": \"x\"}}", "javascript/tsconfig.json": "", "CMakeLists.txt": "", "src/a.cpp": ""},

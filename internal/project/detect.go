@@ -36,6 +36,8 @@ type detection struct {
 	lang                                          string
 	detect, sources, unless, shared, names, tests []string
 	script                                        string
+	yields                                        *yieldsRule
+	name                                          string // "name", else lang
 }
 
 // detectionDefinitions are the built-in definitions' detection keys, in
@@ -73,6 +75,16 @@ func detectionDefinitions(home Home) ([]detection, error) {
 		if raw, present := object.Get("detectScript"); present && truthy(raw) {
 			if d.script, ok = raw.(string); !ok {
 				return nil, unsupported("%s detectScript is not a string", lang)
+			}
+		}
+		raw, present := object.Get("detectYields")
+		if d.yields, err = parseYields(raw, present, lang); err != nil {
+			return nil, err
+		}
+		d.name = lang
+		if raw, present := object.Get("name"); present {
+			if d.name, ok = raw.(string); !ok {
+				return nil, unsupported("%s name is not a string", lang)
 			}
 		}
 		names := []string{lang}
@@ -340,12 +352,67 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 		return result
 	}
 
+	// A hit a language's "detectYields" rule holds for is the other
+	// language's, whose "detectUnless" doesn't keep it out there.
+	yielded, granted := map[string]dirSet{}, map[string]dirSet{}
+	for _, d := range defs {
+		if d.yields == nil {
+			continue
+		}
+		directories, err := hits(byDir, d.detect, d.unless)
+		if err != nil {
+			return nil, err
+		}
+		for directory := range directories {
+			var names []string
+			for sub, inside := range byDir {
+				if directory == "." || under(sub, directory) {
+					for name := range inside {
+						names = append(names, name)
+					}
+				}
+			}
+			holds, err := d.yields.holds(names)
+			if err != nil {
+				return nil, err
+			}
+			if holds {
+				if yielded[d.lang] == nil {
+					yielded[d.lang] = dirSet{}
+				}
+				if granted[d.yields.To] == nil {
+					granted[d.yields.To] = dirSet{}
+				}
+				yielded[d.lang][directory] = true
+				granted[d.yields.To][directory] = true
+			}
+		}
+	}
+	nameOf := map[string]string{}
+	for _, d := range defs {
+		nameOf[d.lang] = d.name
+	}
+
 	result := &Detected{Found: map[string]dirSet{}, NotAdded: map[string]string{}}
 	fromSources := map[string]bool{}
 	for _, d := range defs {
 		directories, err := hits(byDir, d.detect, d.unless)
 		if err != nil {
 			return nil, err
+		}
+		for directory := range yielded[d.lang] {
+			delete(directories, directory)
+		}
+		if len(granted[d.lang]) > 0 {
+			beside, err := hits(byDir, d.detect, nil)
+			if err != nil {
+				return nil, err
+			}
+			for directory := range granted[d.lang] {
+				if beside[directory] {
+					directories[directory] = true
+				}
+			}
 		}
 		for directory := range sharedHits(d.lang) {
 			directories[directory] = true
@@ -384,6 +451,14 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 		}
 		if len(directories) > 0 {
 			result.Found[d.lang] = directories
+			continue
+		}
+		if len(yielded[d.lang]) > 0 {
+			other, ok := nameOf[d.yields.To]
+			if !ok {
+				other = d.yields.To
+			}
+			result.NotAdded[d.lang] = "its " + strings.Join(d.detect, ", ") + " only sits beside mostly " + other
 			continue
 		}
 		inSkipped, err := hits(skipped, append(append([]string(nil), d.detect...), d.sources...), d.unless)
