@@ -128,14 +128,18 @@ _hecatron_fetch() {
     fi
     if [ -d "${_hecatron_dir}/.git" ]; then
         _hecatron_say "Updating ${_hecatron_dir} to ${_hecatron_version}..."
-        _hecatron_retry git -C "${_hecatron_dir}" fetch --quiet --tags --force "${_hecatron_repo}" "${_hecatron_version}" &&
-            git -C "${_hecatron_dir}" checkout --quiet --force FETCH_HEAD
     elif [ -e "${_hecatron_dir}" ]; then
         _hecatron_fail "${_hecatron_dir} exists and isn't a hecatron clone; move it or set HECATRON_INSTALL_DIR"
+        return 1
     else
         _hecatron_say "Installing hecatron ${_hecatron_version} into ${_hecatron_dir}..."
-        _hecatron_retry git clone --quiet --branch "${_hecatron_version}" "${_hecatron_repo}" "${_hecatron_dir}"
+        # Not `git clone --branch`: at an annotated tag it warns "is not a
+        # commit" and explains detached HEAD, even with --quiet.
+        git init --quiet "${_hecatron_dir}" &&
+            git -C "${_hecatron_dir}" remote add origin "${_hecatron_repo}" || return 1
     fi
+    _hecatron_retry git -C "${_hecatron_dir}" fetch --quiet --tags --force "${_hecatron_repo}" "${_hecatron_version}" &&
+        git -C "${_hecatron_dir}" checkout --quiet --force FETCH_HEAD
 }
 
 # The Go binary for this machine (docs/design.md §19) from the release the
