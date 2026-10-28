@@ -50,7 +50,7 @@ BUILD_TOOLS = {
     "raco", "raku", "rake", "rebar3", "Rscript", "rspec", "ruby", "sbt", "scala-cli", "shards",
     "stack", "swift", "swipl", "tox", "uv", "v", "wren", "yarn", "zef", "zig",
 }
-COMMAND = re.compile(r"^\+ (\S+)", re.M)
+COMMAND = re.compile(r"^\+ (?:corepack )?(\S+)", re.M)
 
 # Each test runner's summary, and the counts in it. Every match counts: a
 # language with several components runs its tool once per component.
@@ -177,11 +177,15 @@ def failure_category(rc: int, text: str, job: dict | None, install_failed: bool,
         return "toolchain"
     if NO_COMMAND.search(text):
         return "no-command"
-    if found and found.get("failed"):
+    # Failures beside passes are the tests' own; with no test passing, an
+    # error before the tests ran (an import, a fetch) explains them better.
+    if found and found.get("failed") and found.get("passed"):
         return "tests"
     for category, pattern in FAILURE_PATTERNS:
         if pattern.search(text):
             return category
+    if found and found.get("failed"):
+        return "tests"
     return "toolchain" if install_failed else "other"
 
 
