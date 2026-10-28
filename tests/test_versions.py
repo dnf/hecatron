@@ -169,6 +169,17 @@ jobs:
         self.assertEqual(self.read("sdkmanrc", "java=21.0.2-tem\ngradle=8.5\n"), "21.0.2")
         self.assertEqual(self.read("sdkmanrc", "java=21.0.2-tem\ngradle=8.5\n", "gradle"), "8.5")
 
+    def test_strip_removes_a_pattern_from_the_version(self):
+        otp = "-otp-[0-9]+$"
+        self.assertEqual(versions.strip_pin("1.17.3-otp-27", otp), "1.17.3")
+        self.assertEqual(versions.strip_pin("=1.17.3-otp-27", otp), "=1.17.3")
+        self.assertEqual(versions.strip_pin("1.19.1", otp), "1.19.1")
+        self.assertEqual(versions.strip_pin("1.16.0-rc.1", otp), "1.16.0-rc.1")
+        self.assertIsNone(versions.strip_pin(None, otp))
+        self.assertIs(versions.strip_pin(versions.NOT_PINNED, otp), versions.NOT_PINNED)
+        self.assertIsNone(versions.strip_pin("1.2.3", "[0-9.]+"))
+        self.assertEqual(versions.strip_pin("1.17.3-otp-27", None), "1.17.3-otp-27")
+
     def test_an_unknown_format_is_an_error(self):
         with self.assertRaises(ValueError):
             self.read("no-such-format", "1.0")
@@ -250,6 +261,19 @@ class ResolutionTest(VersionFixture):
         write(self.path("a", "tool", ".tool-version"), "system\n")
         self.assertEqual(self.load().resolve_version("tool", "a"),
                          {"spec": None, "source": "pin:a/tool/.tool-version", "exact": False})
+
+    def test_a_pin_file_entry_can_strip_a_suffix(self):
+        self.define(version="=2.0.0", pinFiles=[{"file": ".tool-versions", "format": "tool-versions",
+                                                  "key": "tool", "strip": "-otp-[0-9]+$"}])
+        write(self.path("a", "tool", ".tool-versions"), "erlang 27.1\ntool 1.17.3-otp-27\n")
+        self.assertEqual(self.load().resolve_version("tool", "a"),
+                         {"spec": "1.17.3", "source": "pin:a/tool/.tool-versions", "exact": False})
+
+    def test_a_strip_that_isnt_a_regular_expression_is_an_error(self):
+        self.define(version="=2.0.0", pinFiles=[{"file": ".tool-version", "format": "python-version", "strip": "("}])
+        write(self.path("a", "tool", ".tool-version"), "1.5\n")
+        with self.assertRaisesRegex(project.ProjectError, "is not a regular expression"):
+            self.load().resolve_version("tool", "a")
 
     def test_a_project_can_add_pin_files(self):
         self.override(pinFiles=[{"file": "tool.txt", "format": "python-version"}])

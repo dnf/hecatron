@@ -36,6 +36,10 @@ minor version can change behaviour. Numbers are
   Clojure, besides those whose audit already used it) installs OSV-Scanner
   2.7.0 with its toolchain, so a project of only those languages no longer
   stops at "OSV-Scanner isn't installed".
+- **Pin files can drop a suffix:** a `pinFiles` or `supportFiles` entry's
+  `"strip"`, a regular expression, is removed from the version the file
+  gives, for ecosystems that write more than the version in it (asdf's and
+  mise's Elixir `1.17.3-otp-27`).
 
 ## 0.5.0 (2026-10-28)
 
