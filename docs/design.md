@@ -184,7 +184,7 @@ hooks, CI templates and config as they were at the split. Default hooks
 | Key | Meaning | Default |
 | --- | --- | --- |
 | `schema` | Config format version; hecatron refuses formats it doesn't know | required |
-| `hecatron` | Minimum hecatron version the project needs | none |
+| `hecatron` | The hecatron the project uses: `"0.6"` (any 0.6.x) or `"0.6.1"` pins it (binary only; §13), `">=0.6.0"` sets a minimum | none |
 | `project` | Name used in banners, Docker image tags and messages | directory name |
 | `components` | Component names, in order | `["."]` (one, unnamed) |
 | `implPath` | Where a component's code in a language lives | `{lang}` with one component, else `{component}/{lang}` |
@@ -534,10 +534,10 @@ DO NOT EDIT banner naming the generator and its source:
 - **GitLab pipeline** (`generated.ci: "gitlab"`, or `hecatron workflows
   --ci gitlab`): `.gitlab-ci.yml`, written from the project's languages
   rather than a template: one job per language that installs hecatron with
-  install.sh (pinned to the generating version, `HECATRON_VERSION`) and runs
-  `hct install`, `hct test` and `hct lint` for the language, which cover
-  every component. The job's image is `ci.image`, and its `timeout` the
-  same limit a GitHub job gets (`60m`, or `ci.timeoutMinutes`, or the
+  install.sh (`HECATRON_VERSION`: the project's pinned version, §13, else
+  the generating one) and runs `hct install`, `hct test` and `hct lint`
+  for the language, which cover every component. The job's image is
+  `ci.image`, and its `timeout` the same limit a GitHub job gets (`60m`, or `ci.timeoutMinutes`, or the
   language's `ci.languages` entry).
 - **Caching** (`"ci": {"cache": true}`, off by default so that turning it
   on is what changes existing projects' files): each definition's `cache`
@@ -688,7 +688,36 @@ So it only says a release is out and updates when asked, as `gh` does:
   the check. `hct status` reports the cached newer release in every format
   (`update` in JSON) and suggests `hct self update`, asking the user
   first; it never checks itself.
-- A project pinning the hecatron version it needs is tracked separately.
+
+**A project pins its hecatron (decided 2026-10-28).** Teammates and CI
+should run the hecatron a project was set up with, as Go's `toolchain`
+line, Gradle's wrapper and mise do; auto-update was ruled out above. So
+config.json's `hecatron` takes a version as well as a minimum: `"0.6"`
+pins a series (any 0.6.x, matched on dot boundaries, so not 0.60.0),
+`"0.6.1"` a release, and `">=0.6.0"` stays a minimum. A version older than
+the pin is refused as a minimum is, by both implementations; the rest is
+the binary's only (`internal/project/pin.go`):
+
+- **A warning.** Every command that finds the project says once on stderr
+  `hecatron: warning: this project pins hecatron 0.6, but this is 0.7.0
+  (hct self update --version 0.6.N installs one that matches)`, but not
+  `hct help`, `--version`, `self`, `version` or the hidden commands; the
+  hct commands it runs (tasks, hooks) don't repeat it
+  (`HECATRON_PIN_WARNED`).
+- **`hct check` fails** on the mismatch, so CI catches drift, and on a
+  `hecatron` that is neither a version nor a minimum. A dev build (`hct self
+  build`'s, `bin/.hecatron-go.commit` saying `dev`) only warns: its VERSION
+  is the last release's whatever the checkout holds, so the pin can't tell
+  whether it matches.
+- **Generated CI installs the pin.** The GitLab pipeline's
+  `HECATRON_VERSION` is the pinned version (else the generating one, as
+  before), and toolchain cache keys carry it. A release is installed by its
+  own install.sh; a series (`v0.6`) by main's, which resolves it to the
+  series' latest tag. The Dockerfile doesn't install hecatron, and GitHub
+  workflows are the project's own templates, so neither changes.
+- **Later:** hct fetching and running the pinned version itself, as Go
+  does with `GOTOOLCHAIN`, from `hct self update`'s download and checksum
+  code.
 
 ## 14. Implementation and testing
 
@@ -1210,9 +1239,12 @@ entry points' output byte for byte. Decided with the first port
   `doctor --fix` name the languages whose install may need root, say why,
   and run `sudo -v` before any installer, refreshing it every minute until
   they finish (`cmd/hecatron/sudo.go`). An installer script may need root
-  wherever it runs; one from data, when its plan has a `sudo` command. The
-  aim beyond that is to need root less: tools hecatron downloads itself go
-  under `~/.local/share/hecatron` rather than `/usr/local/bin`.
+  where its definition's `installNeedsRoot` says (anywhere, without it, or
+  for a project's own); one from data, when its plan has a `sudo` command.
+  To need root less, tools hecatron downloads itself go in
+  `~/.local/share/hecatron/bin` rather than `/usr/local/bin`, and `hct`
+  puts that directory first on PATH, as install.sh's env does, so hooks a
+  GUI runs and CI find them too.
 
 - **`banner`** (`hecatron banner --generator PATH ...`, for a project's own
   generators) ported next, with `internal/generate`'s banner. It needs no

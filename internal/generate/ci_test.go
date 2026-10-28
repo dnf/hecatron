@@ -280,3 +280,37 @@ func TestEngineToolchainCache(t *testing.T) {
 		t.Errorf("GitLab: %q %q", yaml, links)
 	}
 }
+
+func TestGitLabCIPinned(t *testing.T) {
+	installer := func(ref string) string {
+		return `curl -fsSL "https://raw.githubusercontent.com/dnf/hecatron/` + ref + `/install.sh"`
+	}
+	for _, tc := range []struct{ pin, version, tag, ref string }{
+		{`">=0.1.0"`, "", "", ""}, // a minimum: the generating hecatron
+		{`"0"`, "0", "v0", "main"},
+		{`"0.6"`, "0.6", "v0.6", "main"}, // a series: main's install.sh finds its latest
+		{`" 0.5.1 "`, "0.5.1", "v0.5.1", "${HECATRON_VERSION}"},
+	} {
+		p := ciFixture(t, strings.Replace(ciConfig, "%s", `, "hecatron": `+tc.pin, 1))
+		version := HecatronVersion(p)
+		if tc.version == "" {
+			if version != p.Home.Version() {
+				t.Errorf("%s: installs %s, not the generating %s", tc.pin, version, p.Home.Version())
+			}
+			continue
+		}
+		if version != tc.version {
+			t.Errorf("%s: installs %s, want %s", tc.pin, version, tc.version)
+		}
+		settings, _ := p.CISettings()
+		got, err := GitLabCI(p, settings, version)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, want := range []string{"  HECATRON_VERSION: " + tc.tag + "\n", installer(tc.ref), "and hecatron " + tc.tag + " "} {
+			if !strings.Contains(got, want) {
+				t.Errorf("%s: no %q in\n%s", tc.pin, want, got)
+			}
+		}
+	}
+}

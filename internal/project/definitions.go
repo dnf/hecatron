@@ -3,6 +3,7 @@ package project
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -99,6 +100,24 @@ func (p *Project) Resolve(lang, filename string) string {
 		return builtin
 	}
 	return ""
+}
+
+// ScriptNeedsRoot is whether lang's install.sh may need root on osName
+// ("linux", "macos"): where its definition's "installNeedsRoot" says. A
+// project's own install.sh, or a definition that doesn't say, may anywhere.
+func (p *Project) ScriptNeedsRoot(lang, osName string) (bool, error) {
+	if isFile(pyJoin(p.projectLanguages(), lang, "install.sh")) {
+		return true, nil
+	}
+	defs, err := p.Definitions()
+	if err != nil {
+		return false, err
+	}
+	if _, ok := defs.Get(lang).Get("installNeedsRoot"); !ok {
+		return true, nil
+	}
+	platforms, err := p.definitionStrings(lang, "installNeedsRoot")
+	return slices.Contains(platforms, osName), err
 }
 
 // definitionStrings is a definition's list-of-strings key (dirNames,

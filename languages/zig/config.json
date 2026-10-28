@@ -26,5 +26,8 @@
   "track": "stable",
   "path": [
     "{home}"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

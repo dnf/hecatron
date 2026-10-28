@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
-# Uninstall Goose
+# Uninstall Goose: hecatron's toolchains directory's, and /opt/goose, where
+# versions before it went.
 source "$(dirname "$0")/../_common.sh"
 
-uninstall_macos() { ${SUDO} rm -rf /opt/goose /usr/local/bin/goose; }
-uninstall_linux() { ${SUDO} rm -rf /opt/goose /usr/local/bin/goose; }
+uninstall() {
+    toolchain_uninstall goose
+    if [ -e /opt/goose ]; then
+        unlink_into /opt/goose
+        ${SUDO} rm -rf /opt/goose
+    fi
+}
+uninstall_macos() { uninstall; }
+uninstall_linux() { uninstall; }
 
 log "Uninstalling Goose..."
 "uninstall_${OS}"

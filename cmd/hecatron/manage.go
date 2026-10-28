@@ -174,7 +174,7 @@ func (c *cli) ciFiles() ([]generatedFile, error) {
 		}
 		content, ok, err := generate.Workflow(p, lang)
 		if err == nil && ok && settings.Cache {
-			content, ok, err = generate.CachedWorkflow(p, lang, p.Home.Version())
+			content, ok, err = generate.CachedWorkflow(p, lang, generate.HecatronVersion(p))
 		}
 		if err != nil {
 			return nil, err
@@ -189,7 +189,7 @@ func (c *cli) ciFiles() ([]generatedFile, error) {
 		files = append(files, generatedFile{path, project.PyRelpath(path, p.Root), content})
 	}
 	if contains(settings.Systems, project.CIGitLab) {
-		content, err := generate.GitLabCI(p, settings, p.Home.Version())
+		content, err := generate.GitLabCI(p, settings, generate.HecatronVersion(p))
 		if err != nil {
 			return nil, err
 		}
@@ -600,6 +600,7 @@ func (c *cli) check() (int, bool) {
 		out.WriteString("Generated files are up to date and every workflow covers every component.\n")
 	}
 	problems = append(problems, c.generatedProblems()...)
+	problems = append(problems, c.pinProblems()...)
 	for _, problem := range problems {
 		fmt.Fprintf(&out, ".hecatron/config.json: %s\n", problem)
 	}

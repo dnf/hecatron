@@ -177,5 +177,8 @@
   "renovate": [
     "npm",
     "bun"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

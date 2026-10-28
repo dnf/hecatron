@@ -14,8 +14,8 @@ import (
 )
 
 // needRoot are the languages among choices whose install may need root: a
-// script (which may run apt-get, or write to /usr/local or /opt), and from
-// data, every one when the plan runs a command with sudo.
+// script, where its definition says it may (apt-get, /usr/local, /opt), and
+// from data, every one when the plan runs a command with sudo.
 func needRoot(p *project.Project, choices []installerChoice, env []string, manager *install.Manager) []string {
 	var data []installerChoice
 	for _, choice := range choices {
@@ -32,7 +32,11 @@ func needRoot(p *project.Project, choices []installerChoice, env []string, manag
 	}
 	var langs []string
 	for _, choice := range choices {
-		if choice.def == nil || dataNeedsRoot {
+		needs := dataNeedsRoot
+		if choice.def == nil {
+			needs, _ = p.ScriptNeedsRoot(choice.lang, platform().OS)
+		}
+		if needs {
 			langs = append(langs, choice.lang)
 		}
 	}
@@ -62,7 +66,7 @@ func adminRights(langs []string) (stop func(), ok bool) {
 			return stop, true
 		}
 		fmt.Fprintf(os.Stderr, "hecatron: installing %s may need administrator rights:\n", sentenceList(langs))
-		fmt.Fprintln(os.Stderr, "  installers add system packages and put tools in /usr/local and /opt, which belong to root.")
+		fmt.Fprintln(os.Stderr, "  their installers add system packages or write to /usr/local or /opt, which belong to root.")
 		fmt.Fprintln(os.Stderr, "  sudo asks for your password once, now, and hecatron keeps it valid until they finish.")
 		sudo := exec.Command("sudo", "-v")
 		sudo.Stdin, sudo.Stdout, sudo.Stderr = os.Stdin, os.Stdout, os.Stderr

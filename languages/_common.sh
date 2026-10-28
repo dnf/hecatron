@@ -16,6 +16,15 @@ if [ "$(id -u)" -ne 0 ]; then
     SUDO="sudo"
 fi
 
+# hecatron's own bin directory (~/.local/share/hecatron/bin), where
+# installers put and link the tools they install without root; first on
+# PATH, as install.sh's env and hecatron put it, so they find them too.
+_hecatron_bin="${XDG_DATA_HOME:-${HOME}/.local/share}/hecatron/bin"
+case ":${PATH}:" in
+    *":${_hecatron_bin}:"*) ;;
+    *) export PATH="${_hecatron_bin}:${PATH}" ;;
+esac
+
 # Homebrew asks before each install by default since 2025; hct install and
 # doctor --fix are the request. Hints about its environment variables are
 # noise in an installer's output.
@@ -927,8 +936,8 @@ uv_install() {
 
 sha256_of() { if has sha256sum; then sha256sum "$1"; else shasum -a 256 "$1"; fi | cut -d' ' -f1; }
 
-# A tool's release download, checked against its checksum, into
-# /usr/local/bin: the binary itself, or the file at a path inside a .zip or
+# A tool's release download, checked against its checksum, into hecatron's
+# bin directory (no root): the binary itself, or the file at a path inside a .zip or
 # .tar.gz. Usage: release_binary_install NAME URL SHA256 [PATH-IN-ARCHIVE]
 release_binary_install() {
     local _name="$1" _url="$2" _sha256="$3" _member="${4:-$1}" _work
@@ -944,7 +953,8 @@ release_binary_install() {
         *.tar.gz | *.tgz) tar -C "${_work}" -xzf "${_work}/download" ;;
         *) mv "${_work}/download" "${_work}/${_member}" ;;
     esac
-    $SUDO install -m 0755 "${_work}/${_member}" "/usr/local/bin/${_name}"
+    mkdir -p "$(hecatron_bin)"
+    install -m 0755 "${_work}/${_member}" "$(hecatron_bin)/${_name}"
     rm -rf "${_work}"
 }
 
@@ -976,25 +986,42 @@ toolchain_release_install() {
 
 # hecatron's own data directory, and a version's directory in it.
 hecatron_data() { echo "${XDG_DATA_HOME:-${HOME}/.local/share}/hecatron"; }
+hecatron_bin() { echo "$(hecatron_data)/bin"; }
 toolchain_home() { echo "$(hecatron_data)/toolchains/$1/$2"; }
 
-# Link commands from a toolchain directory into ~/.local/share/hecatron/bin.
+# Link commands from a toolchain directory into hecatron's bin directory.
 # Usage: toolchain_link HOME COMMAND...
 toolchain_link() {
     local _home="$1" _command _bin
     shift
-    _bin="$(hecatron_data)/bin"
+    _bin="$(hecatron_bin)"
     mkdir -p "${_bin}"
     for _command in "$@"; do
         ln -sfn "${_home}/${_command}" "${_bin}/${_command}"
     done
 }
 
+# Remove the links into DIR that hecatron's bin directory and, from versions
+# before it used one, /usr/local/bin hold. Usage: unlink_into DIR
+unlink_into() {
+    local _link
+    for _link in "$(hecatron_bin)"/* /usr/local/bin/*; do
+        case "$(readlink "${_link}" 2>/dev/null)" in
+            "$1"/*)
+                case "${_link}" in
+                    /usr/local/bin/*) $SUDO rm -f "${_link}" ;;
+                    *) rm -f "${_link}" ;;
+                esac ;;
+        esac
+    done
+    return 0
+}
+
 # Remove a language's toolchains directory and the links into it.
 toolchain_uninstall() {
     local _dir _link
     _dir="$(hecatron_data)/toolchains/$1"
-    for _link in "$(hecatron_data)"/bin/*; do
+    for _link in "$(hecatron_bin)"/*; do
         case "$(readlink "${_link}" 2>/dev/null)" in
             "${_dir}"/*) rm -f "${_link}" ;;
         esac
@@ -1033,7 +1060,7 @@ install_from_data() {
 # OSV-Scanner (Google's), the dependency auditor `hecatron audit` uses for
 # ecosystems without one of their own (docs/audit.md), and what `hecatron
 # licenses` reads licenses with (docs/licenses.md): its release binary,
-# pinned and checked against its checksum, into /usr/local/bin.
+# pinned and checked against its checksum, into hecatron's bin directory.
 _OSV_SCANNER_VERSION="2.7.0"
 osv_scanner_install() {
     local _platform _sha256 _binary
@@ -1056,7 +1083,8 @@ osv_scanner_install() {
         echo "error: the OSV-Scanner download doesn't match its checksum" >&2
         return 1
     fi
-    $SUDO install -m 0755 "${_binary}" /usr/local/bin/osv-scanner
+    mkdir -p "$(hecatron_bin)"
+    install -m 0755 "${_binary}" "$(hecatron_bin)/osv-scanner"
     rm -f "${_binary}"
 }
 

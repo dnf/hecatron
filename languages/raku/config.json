@@ -24,5 +24,8 @@
     "lockFiles": [
       "META6.json"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

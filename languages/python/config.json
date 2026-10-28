@@ -414,5 +414,8 @@
     "setup-cfg",
     "pipenv",
     "poetry"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }
