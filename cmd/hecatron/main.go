@@ -13,7 +13,9 @@
 // env (with a language, its environment for a component), status, sync, advisor, the
 // project commands (init, add, remove, enable, disable, check, dockerfile,
 // workflows: manage.go, init.go), banner (banner.go), and install and uninstall
-// (install.go; each language's install.sh and uninstall.sh stay bash). The prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
+// (install.go; each language's install.sh and uninstall.sh stay bash),
+// and self update (selfupdate.go), which only the binary has. The
+// prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
 
 import (
@@ -40,6 +42,7 @@ type cli struct {
 
 	pythonChecked bool
 	ci            string // workflows --ci: the CI system to generate for
+	notice        string // a newer release's notice, shown when the command is done
 }
 
 func run(argv []string) int {
@@ -47,6 +50,13 @@ func run(argv []string) int {
 	if len(argv) > 0 {
 		c.command, c.args = argv[0], argv[1:]
 	}
+	c.prepareUpdateNotice()
+	status := c.dispatch()
+	c.showUpdateNotice()
+	return status
+}
+
+func (c *cli) dispatch() int {
 	switch c.command {
 	case "help", "-h", "--help":
 		if len(c.args) > 0 && c.args[0] == "agents" {
@@ -65,6 +75,12 @@ func run(argv []string) int {
 		return c.licenses()
 	case "skill":
 		return c.skill()
+	case "self":
+		return c.self()
+	case "_update-check":
+		return c.updateCheck()
+	case "_write-env":
+		return writeEnv(c.args)
 	case "advisor":
 		return c.advisor()
 	case "_audit":
@@ -75,9 +91,9 @@ func run(argv []string) int {
 		return c.installHidden()
 	case "_gotest":
 		return c.goTestFilter()
-	case "self-test":
+	case "self-test": // self test's earlier name
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
-	case "self-build":
+	case "self-build": // self build's earlier name
 		return c.delegate(bashScript("libexec/commands/self-build.sh"))
 	}
 	implementation, known := delegated[c.command]

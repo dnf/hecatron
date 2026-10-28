@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hecatron self-test: the checks a change to hecatron must pass, zero
+# hecatron self test: the checks a change to hecatron must pass, zero
 # ShellCheck warnings on every shell script and the unit tests, run on the
 # hecatron installation itself (HECATRON_HOME) from anywhere.
 set -euo pipefail
@@ -36,16 +36,16 @@ fi
 
 echo "=== unit tests ==="
 if [ ! -d tests ]; then
-    echo "no tests/ in ${HECATRON_HOME}: self-test needs a hecatron checkout (git clone https://github.com/dnf/hecatron)" >&2
+    echo "no tests/ in ${HECATRON_HOME}: self test needs a hecatron checkout (git clone https://github.com/dnf/hecatron)" >&2
     _failed=1
-# They test the scripts: a binary from hecatron self-build has its own tests.
+# They test the scripts: a binary from hecatron self build has its own tests.
 elif ! HECATRON_NO_GO=1 python3 -m unittest discover -s tests; then
     _failed=1
 fi
 
 if [ "${_failed}" -eq 0 ]; then
-    echo "self-test passed"
+    echo "self test passed"
 else
-    echo "self-test failed" >&2
+    echo "self test failed" >&2
 fi
 exit "${_failed}"

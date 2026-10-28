@@ -32,6 +32,12 @@
       "selects": false
     }
   ],
+  "floorFiles": [
+    {
+      "file": "*.vbproj",
+      "format": "target-framework"
+    }
+  ],
   "oldestInstallable": "6.0",
   "releasesOf": "csharp",
   "env": {

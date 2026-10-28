@@ -78,12 +78,54 @@ def _poms(directory: str, root: str) -> list[str]:
     return poms
 
 
+def _gradle_root(directory: str, root: str | None) -> str:
+    """The root of the Gradle build a directory is in: the nearest directory,
+    it or above it within the project, with a settings file; else the
+    directory (a source directory's build files are above it)."""
+    directory = os.path.abspath(directory)
+    top = os.path.abspath(root) if root else directory
+    current = directory
+    while current.startswith(top):
+        if any(os.path.isfile(os.path.join(current, name)) for name in ("settings.gradle", "settings.gradle.kts")):
+            return current
+        if current == top:
+            break
+        current = os.path.dirname(current)
+    return directory
+
+
+def _catalog_versions(gradle_root: str) -> dict[str, str]:
+    """The version catalog's [versions], by the name a build script uses
+    (libs.versions.jdk.version for jdk-version)."""
+    versions, section = {}, ""
+    for line in _read(os.path.join(gradle_root, "gradle", "libs.versions.toml")).splitlines():
+        header = re.match(r"\s*\[([^\]]+)\]", line)
+        if header:
+            section = header.group(1).strip()
+            continue
+        entry = re.match(r"\s*([\w.-]+)\s*=\s*[\"'](\d+)[\"']", line)
+        if section == "versions" and entry:
+            versions[re.sub(r"[-_]", ".", entry.group(1))] = entry.group(2)
+    return versions
+
+
+# A toolchain's JDK, written out or from the version catalog
+# (libs.versions.jdk.map(JavaLanguageVersion::of), jvmToolchain(libs.versions.jdk.get().toInt())).
+_TOOLCHAIN_LINE = re.compile(r"JavaLanguageVersion|jvmToolchain|languageVersion")
+_CATALOG_REFERENCE = re.compile(r"libs\.versions\.((?:\w+\.)*?\w+)\.(?:get|map)\b")
+
+
 def toolchains(directory: str, root: str) -> list[int]:
     wanted = set()
-    for path in _files(directory, (".gradle", ".gradle.kts"), depth=4):
+    gradle_root = _gradle_root(directory, root)
+    catalog = _catalog_versions(gradle_root)
+    for path in _files(gradle_root, (".gradle", ".gradle.kts"), depth=4):
         text = _read(path)
         wanted.update(int(n) for n in re.findall(r"JavaLanguageVersion\.of\(\s*(\d+)\s*\)", text))
         wanted.update(int(n) for n in re.findall(r"jvmToolchain\(\s*(\d+)\s*\)", text))
+        for line in text.splitlines():
+            if _TOOLCHAIN_LINE.search(line):
+                wanted.update(int(catalog[name]) for name in _CATALOG_REFERENCE.findall(line) if name in catalog)
     for path in _poms(directory, root):
         text = _read(path)
         if "maven-toolchains-plugin" not in text:
@@ -110,8 +152,9 @@ def _gradle_wrapper(directory: str, root: str | None = None) -> str | None:
     return match.group(1) if match else None
 
 
-def _kotlin(directory: str) -> str | None:
-    """The Kotlin version a Maven or Gradle build compiles with, in its usual spellings."""
+def _kotlin(directory: str, root: str | None = None) -> str | None:
+    """The Kotlin version a Maven or Gradle build compiles with, in its usual
+    spellings: in the directory's build files, or its Gradle build root's."""
     patterns = (
         r"<kotlin\.version>\s*(\d[\w.-]*)\s*</kotlin\.version>",
         r"<artifactId>kotlin-maven-plugin</artifactId>\s*<version>\s*(\d[\w.-]*)",
@@ -120,8 +163,10 @@ def _kotlin(directory: str) -> str | None:
         r"kotlin_version\s*=\s*[\"'](\d[\w.-]*)",
         r"^\s*kotlin\s*=\s*\"(\d[\w.-]*)\"",
     )
-    files = [os.path.join(directory, name) for name in ("pom.xml",) + _BUILD_FILES]
-    files.append(os.path.join(directory, "gradle", "libs.versions.toml"))
+    files = []
+    for where in dict.fromkeys((directory, _gradle_root(directory, root))):
+        files += [os.path.join(where, name) for name in ("pom.xml",) + _BUILD_FILES]
+        files.append(os.path.join(where, "gradle", "libs.versions.toml"))
     for path in files:
         text = _read(path)
         for pattern in patterns:
@@ -144,7 +189,7 @@ def ceiling(directory: str, root: str | None = None) -> tuple[int, str] | None:
     gradle = _gradle_wrapper(directory, root)
     if gradle:
         limits.append((_newest_lts(_GRADLE_RUNS_ON, gradle), f"its Gradle wrapper is Gradle {gradle}"))
-    kotlin = _kotlin(directory)
+    kotlin = _kotlin(directory, root)
     if kotlin:
         limits.append((_newest_lts(_KOTLIN_RUNS_ON, kotlin), f"it compiles with Kotlin {kotlin}"))
     limits = [limit for limit in limits if limit[0] < LTS[-1]]

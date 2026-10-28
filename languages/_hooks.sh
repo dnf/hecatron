@@ -153,6 +153,14 @@ run_hook_in() {
     exit 0
 }
 
+# Run this hook in each directory below with a file matching the globs
+# (dirs_below_with), and exit; return when there are none.
+run_below_with() {
+    local _dir _dirs=()
+    while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(dirs_below_with "$@")
+    [ "${#_dirs[@]}" -eq 0 ] || run_hook_in "${_dirs[@]}"
+}
+
 # Where the build files matching the globs are: here (build_dir is .), or the
 # nearest directory above (build_dir is its path); when only directories
 # below have them, the hook runs in each and exits. Fails when none has.
@@ -169,8 +177,7 @@ find_build() {
     build_dir=.
     has_any "$@" && return 0
     if [ "${_above_first}" -eq 1 ] && build_dir="$(dir_above_with "$@")"; then return 0; fi
-    while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(dirs_below_with "$@")
-    [ "${#_dirs[@]}" -eq 0 ] || run_hook_in "${_dirs[@]}"
+    run_below_with "$@"
     if [ "${_above_first}" -eq 0 ] && build_dir="$(dir_above_with "$@")"; then return 0; fi
     build_dir=""
     return 1
@@ -214,28 +221,62 @@ dotnet_test_target() {
     fi
 }
 
+# A directory's .NET project files, when it has no solution and several:
+# `dotnet` acts on one at a time there.
+dotnet_projects() {
+    local _found=() _project
+    has_any '*.sln' '*.slnx' && return 0
+    for _project in *.csproj *.fsproj *.vbproj; do
+        if [ -f "${_project}" ]; then _found+=("${_project}"); fi
+    done
+    [ "${#_found[@]}" -gt 1 ] || return 0
+    printf '%s\n' "${_found[@]}"
+}
+# Whether a project file is a test project: it references the test SDK or
+# says it is one.
+dotnet_is_test_project() {
+    grep -qsE 'Microsoft\.NET\.Test\.Sdk|<IsTestProject>[[:space:]]*true' "$1"
+}
+
 # .NET (C#, F#, VB.NET): the solution or project in the directory, else in
 # each directory below with one (protobuf's csharp/src/), else the nearest
-# above, acting there. `dotnet format` checks C# and VB.NET only, so F#'s lint
-# hook is its own.
+# above, acting there; in a directory with several projects and no solution,
+# on each (each test project, to test). `dotnet format` checks C# and VB.NET
+# only, so F#'s lint hook is its own.
+#
+# Tests run on the newest installed runtime when the one a project targets
+# isn't installed (DOTNET_ROLL_FORWARD=Major): hecatron installs one SDK,
+# whose runtime runs a test project that targets an older .NET.
 dotnet_hook() {
     find_build '*.sln' '*.slnx' '*.csproj' '*.fsproj' '*.vbproj' ||
         unknown "no .sln, .slnx or project file here, below, or above it in the project"
     note_build_dir
     cd "${build_dir}"
-    local _target
-    _target="$(dotnet_target)"
-    case "$1" in
-        test)
-            local _args=()
-            read -r -a _args <<<"$(dotnet_test_target "${_target}")"
-            run dotnet test ${_args[@]+"${_args[@]}"} ;;
-        build) run dotnet build ${_target:+"${_target}"} ;;
-        clean) run dotnet clean ${_target:+"${_target}"} ;;
-        lint)
-            checks_format
-            run dotnet format ${_target:+"${_target}"} --verify-no-changes ;;
-    esac
+    local _targets=() _project _target
+    while IFS= read -r _project; do
+        if [ "$1" != test ] || dotnet_is_test_project "${_project}"; then _targets+=("${_project}"); fi
+    done < <(dotnet_projects)
+    if [ "${#_targets[@]}" -gt 0 ]; then
+        echo "${HECATRON_LANG:-}: ${_hook_action}: no solution, so each project: ${_targets[*]}"
+    elif [ -n "$(dotnet_projects)" ]; then
+        skip "no test project among $(dotnet_projects | paste -sd ' ' -)"
+    else
+        _targets=("$(dotnet_target)")
+    fi
+    for _target in "${_targets[@]}"; do
+        case "$1" in
+            test)
+                export DOTNET_ROLL_FORWARD="${DOTNET_ROLL_FORWARD:-Major}"
+                local _args=()
+                read -r -a _args <<<"$(dotnet_test_target "${_target}")"
+                run dotnet test ${_args[@]+"${_args[@]}"} ;;
+            build) run dotnet build ${_target:+"${_target}"} ;;
+            clean) run dotnet clean ${_target:+"${_target}"} ;;
+            lint)
+                checks_format
+                run dotnet format ${_target:+"${_target}"} --verify-no-changes ;;
+        esac
+    done
 }
 
 # SwiftPM: the package here, each package below, or the one above whose
@@ -554,8 +595,16 @@ PY
 # build writes and that isn't there (dist/index.js). Built through the build
 # script when there is one, else napi's or node-gyp's own build.
 node_build_first() {
-    local _kind
-    _kind="$(python3 - <<'PY'
+    case "$(node_build_kind)" in
+        script) run "${node_pm[@]}" run build ;;
+        napi) run node_modules/.bin/napi build --platform ;;
+        gyp) run npx --yes node-gyp rebuild ;;
+    esac
+}
+# How this package has to be built first (node_build_first): script, napi,
+# gyp, or nothing.
+node_build_kind() {
+    python3 - <<'PY'
 import glob, json, os, re
 
 def first_path(value):
@@ -588,17 +637,66 @@ if build and (native and not built or entry_missing):
 elif native and not built:
     print("napi" if napi else "gyp")
 PY
-)"
-    case "${_kind}" in
-        script) run "${node_pm[@]}" run build ;;
-        napi) run node_modules/.bin/napi build --platform ;;
-        gyp) run npx --yes node-gyp rebuild ;;
-    esac
+}
+
+# The workspace this package is in, at its root (here or above, within the
+# project: a pnpm-workspace.yaml, or a package.json with "workspaces"): when
+# any of its packages has to be built first (node_build_kind), as one this
+# package uses may, build the workspace, in dependency order where the
+# package manager gives one.
+node_workspace_build() {
+    local _root
+    _root="$(node_workspace_root)" || return 0
+    (
+        cd "${_root}"
+        node_workspace_needs_build || exit 0
+        echo "${HECATRON_LANG:-}: ${_hook_action}: building the workspace in ${_root} first"
+        case "${node_pm_name}" in
+            pnpm) run "${node_pm[@]}" -r --if-present run build ;;
+            npm) run npm run build --workspaces --if-present ;;
+            yarn)
+                if [ "$("${node_pm[@]}" --version 2>/dev/null | cut -d. -f1)" = 1 ]; then
+                    node_workspace_build_each
+                else
+                    run "${node_pm[@]}" workspaces foreach --all --topological run build
+                fi ;;
+            *) node_workspace_build_each ;;
+        esac
+    )
+}
+node_workspace_root() {
+    local _dir
+    while IFS= read -r _dir; do
+        if [ -f "${_dir}/pnpm-workspace.yaml" ] || python3 -c '
+import json, sys
+try:
+    sys.exit(0 if json.load(open(sys.argv[1])).get("workspaces") else 1)
+except (OSError, ValueError, AttributeError):
+    sys.exit(1)
+' "${_dir}/package.json"; then
+            echo "${_dir}"
+            return 0
+        fi
+    done < <(pwd; dirs_above)
+    return 1
+}
+node_workspace_needs_build() {
+    local _dir
+    while IFS= read -r _dir; do
+        [ -z "$(cd "${_dir}" && node_build_kind)" ] || return 0
+    done < <(node_workspaces_with "")
+    return 1
+}
+node_workspace_build_each() {
+    local _dir
+    while IFS= read -r _dir; do
+        (cd "${_dir}" && node_build_first)
+    done < <(node_workspaces_with "")
 }
 
 # A workspace root's packages (package.json "workspaces", or
 # pnpm-workspace.yaml's "packages") that define an npm script, one per line,
-# e.g. `node_workspaces_with test`.
+# e.g. `node_workspaces_with test`; every package for "".
 node_workspaces_with() {
     python3 - "$1" <<'PY'
 import glob, json, os, re, sys
@@ -634,7 +732,7 @@ for directory in sorted(included - excluded):
         scripts = json.load(open(os.path.join(directory, "package.json"))).get("scripts") or {}
     except (OSError, ValueError, AttributeError):
         continue
-    if sys.argv[1] in scripts:
+    if not sys.argv[1] or sys.argv[1] in scripts:
         print(directory)
 PY
 }
@@ -644,6 +742,7 @@ PY
 node_workspaces_run() {
     local _dir _dirs=() _failed_dirs=()
     while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(node_workspaces_with "$1")
+    node_workspace_build
     for _dir in "${_dirs[@]}"; do
         echo "--- ${HECATRON_LANG:-}: ${_hook_action} in ${_dir}"
         (cd "${_dir}" && node_build_first && run "${node_pm[@]}" run "$1") || _failed_dirs+=("${_dir}")
@@ -687,6 +786,7 @@ node_hook() {
             export CI="${CI:-true}"
             if npm_script test; then
                 npm_deps
+                node_workspace_build
                 node_build_first
                 run "${node_pm[@]}" run test
             elif [ -n "$(node_workspaces_with test)" ]; then
@@ -695,6 +795,7 @@ node_hook() {
             elif has_any 'vitest.config.*' 'jest.config.*' '.mocharc.*'; then
                 npm_deps
                 node_test_runner || unknown "package.json has no test script, and its test runner isn't installed"
+                node_workspace_build
                 node_build_first
                 run "${node_runner[@]}"
             else
@@ -717,31 +818,38 @@ node_hook() {
     esac
 }
 
-# JVM builds (Java, Kotlin, Scala, Groovy): Maven, Gradle or sbt, whichever
-# the directory has, through its wrapper when it ships one. Gradle's `check`
-# without tests runs whatever checkers the build configures (Checkstyle,
-# Spotless, detekt...).
+# JVM builds (Java, Kotlin, Scala, Groovy): Maven, Gradle, sbt or Mill,
+# whichever the directory has, through its wrapper when it ships one.
+# Gradle's `check` without tests runs whatever checkers the build configures
+# (Checkstyle, Spotless, detekt...).
 #
 # Without a build file here: a Gradle settings file above makes this
-# directory one of that build's projects (Beam's sdks/java, whose tasks run
-# for every project under it), and Gradle, run from here, acts on it. Else
-# the builds in the directories below, each; else a Makefile above with a
-# target for this directory (make_target_above).
+# directory part of that build (gradle_project_dir says which project), and
+# Gradle, run from that project's directory, acts on it. Else the builds in
+# the directories below, each; else a Makefile above with a target for this
+# directory (make_target_above).
 jvm_hook() {
-    local _gradle_above=""
-    if ! has_any pom.xml build.gradle build.gradle.kts build.sbt; then
+    local _gradle_above="" _project
+    jvm_utf8_locale
+    if ! has_any pom.xml build.gradle build.gradle.kts build.sbt build.mill build.sc; then
         if _gradle_above="$(dir_above_with settings.gradle settings.gradle.kts)"; then
-            echo "${HECATRON_LANG:-}: ${_hook_action}: $(pwd) is a project of the Gradle build in ${_gradle_above}"
+            _project="$(gradle_project_dir "${_gradle_above}")"
+            if [ "${_project}" = "$(pwd -P)" ]; then
+                echo "${HECATRON_LANG:-}: ${_hook_action}: $(pwd) is a project of the Gradle build in ${_gradle_above}"
+            else
+                echo "${HECATRON_LANG:-}: ${_hook_action}: $(pwd) is in the Gradle project ${_project}"
+                cd "${_project}"
+            fi
         else
-            find_build pom.xml build.gradle build.gradle.kts build.sbt || true
+            find_build pom.xml build.gradle build.gradle.kts build.sbt build.mill build.sc || true
             make_target_above "$1"
-            unknown "no pom.xml, build.gradle(.kts) or build.sbt here or below, no Gradle settings above, and no Makefile above with a target for $(basename "$(pwd)")"
+            unknown "no pom.xml, build.gradle(.kts), build.sbt or build.mill here or below, no Gradle settings above, and no Makefile above with a target for $(basename "$(pwd)")"
         fi
     fi
     jvm_select_jdk
     if [ -f pom.xml ]; then
         case "$1" in
-            test) maven test ;;
+            test) maven_test ;;
             build) maven package -DskipTests ;;
             clean) maven clean ;;
             lint) skip "Maven has no standard lint goal" ;;
@@ -750,7 +858,7 @@ jvm_hook() {
         esac
     elif is_gradle || [ -n "${_gradle_above}" ]; then
         case "$1" in
-            test) gradle_ test ;;
+            test) gradle_test ;;
             build) gradle_ assemble ;;
             clean) gradle_ clean ;;
             lint) gradle_ check -x test ;;
@@ -768,9 +876,79 @@ jvm_hook() {
             format) jvm_format_sbt ;;
             deps) run sbt update ;;
         esac
+    elif [ -f build.mill ] || [ -f build.sc ]; then
+        case "$1" in
+            test) mill_ -i -k __.test ;;
+            build) mill_ -i __.compile ;;
+            clean) mill_ clean ;;
+            lint) skip "Mill has no standard lint task" ;;
+            format) skip "Mill has no standard format task" ;;
+            deps) skip "Mill has no standard dependency task" ;;
+        esac
     else
-        unknown "no pom.xml, build.gradle(.kts) or build.sbt"
+        unknown "no pom.xml, build.gradle(.kts), build.sbt or build.mill"
     fi
+}
+
+# The Gradle project a directory without a build file of its own belongs to,
+# given the build's root directory: the one whose sources it holds (moshi for
+# moshi/src/main/java: the directory above the nearest src); the root, for a
+# build of one project (a settings file with no include, whose build script
+# may name any directory a source directory); else the directory itself, a
+# project Gradle makes for a path its settings include (Beam's sdks/java).
+gradle_project_dir() {
+    local _root="$1" _dir _relative _part _path="" _project="" _parts=()
+    _dir="$(pwd -P)"
+    _relative="${_dir#"${_root}"/}"
+    IFS=/ read -r -a _parts <<<"${_relative}"
+    for _part in "${_parts[@]}"; do
+        if [ "${_part}" = src ]; then _project="${_root}${_path:+/${_path}}"; fi
+        _path="${_path:+${_path}/}${_part}"
+    done
+    if [ -n "${_project}" ]; then
+        echo "${_project}"
+    elif ! grep -qsE '^[[:space:]]*include[[:space:](]' "${_root}/settings.gradle" "${_root}/settings.gradle.kts"; then
+        echo "${_root}"
+    else
+        echo "${_dir}"
+    fi
+}
+
+# Maven's tests. A multi-module build's modules can need each other's
+# packaged jars (a module path, a multi-release jar), which the test phase
+# doesn't make, so there the tests run through the package phase.
+maven_test() {
+    if grep -qs '<modules>' pom.xml; then
+        echo "${HECATRON_LANG:-}: ${_hook_action}: a multi-module build: running its tests through the package phase"
+        maven package
+    else
+        maven test
+    fi
+}
+
+# Gradle's tests: the test task, or, in a Kotlin Multiplatform build, which
+# has none, its JVM target's (jvmTest), else every target's (allTests: a JS
+# target's browser tests need a browser installed).
+gradle_test() {
+    local _log _status _task
+    _log="$(mktemp)"
+    for _task in test jvmTest allTests; do
+        _status=0
+        gradle_ "${_task}" 2>&1 | tee "${_log}" || _status=$?
+        if [ "${_status}" -eq 0 ] || ! grep -q "Task '${_task}' not found" "${_log}"; then break; fi
+        echo "${HECATRON_LANG:-}: ${_hook_action}: no ${_task} task (a Kotlin Multiplatform build)"
+    done
+    rm -f "${_log}"
+    return "${_status}"
+}
+
+# Mill, through the project's ./mill launcher when it ships one.
+mill_() { if [ -x ./mill ]; then run ./mill "$@"; else run mill "$@"; fi; }
+
+# The JVM names files in the locale's encoding: without one (a container's
+# POSIX locale), a class or resource with a non-ASCII name can't be written.
+jvm_utf8_locale() {
+    if [ -z "${LC_ALL:-}${LC_CTYPE:-}${LANG:-}" ]; then export LANG=C.UTF-8; fi
 }
 
 # Formatting is a plugin the build configures, run through the build so it
@@ -815,33 +993,67 @@ jvm_format_sbt() {
 
 # A build whose Gradle wrapper or Kotlin compiler predates the JDK it would
 # run on fails to start on it, so it runs on the newest installed JDK it
-# supports instead (libexec/lib/jvm.py; the JVM installers install one).
+# supports instead (libexec/lib/jvm.py; the JVM installers install one). A
+# build also can't run on a runtime without javac (a JRE another package
+# pulled in, first on PATH): then it runs on the newest installed JDK.
 jvm_select_jdk() {
     [ -n "${HECATRON_HOME:-}" ] || return 0
-    local _ceiling="" _why _current _version _home
+    local _ceiling="" _why _current _version _home _jdk_home=""
     IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling . "${HECATRON_ROOT:-.}") || true
-    [ -n "${_ceiling}" ] || return 0
-    _current="$(java_feature "$( (java -version 2>&1 || true) | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -1)")"
-    { [ -n "${_current}" ] && [ "${_current}" -le "${_ceiling}" ]; } && return 0
+    if [ -z "${_ceiling}" ]; then
+        jvm_has_compiler && return 0
+        _why="the java it would run on has no javac"
+    else
+        _current="$(java_feature "$( (java -version 2>&1 || true) | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -1)")"
+        { [ -n "${_current}" ] && [ "${_current}" -le "${_ceiling}" ] && jvm_has_compiler; } && return 0
+    fi
     while IFS=$'\t' read -r _version _home; do
-        [ "$(java_feature "${_version}")" -le "${_ceiling}" ] && break
-        _home=""
+        if [ -x "${_home}/bin/javac" ] && { [ -z "${_ceiling}" ] || [ "$(java_feature "${_version}")" -le "${_ceiling}" ]; }; then
+            _jdk_home="${_home}"
+            break
+        fi
     done < <(bash "${HECATRON_HOME}/languages/java/installed.sh" 2>/dev/null | sort -t. -k1,1nr -k2,2nr -k3,3nr)
-    if [ -z "${_home:-}" ]; then
-        echo "warning: ${_why}, which runs on JDK ${_ceiling} at the newest, and no such JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
+    if [ -z "${_jdk_home}" ]; then
+        if [ -n "${_ceiling}" ]; then
+            echo "warning: ${_why}, which runs on JDK ${_ceiling} at the newest, and no such JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
+        else
+            echo "warning: ${_why}, and no JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
+        fi
         return 0
     fi
-    echo "Using JDK ${_version} (${_home}): ${_why}, which runs on JDK ${_ceiling} at the newest."
-    export JAVA_HOME="${_home}"
-    export PATH="${_home}/bin:${PATH}"
+    if [ -n "${_ceiling}" ]; then
+        echo "Using JDK ${_version} (${_jdk_home}): ${_why}, which runs on JDK ${_ceiling} at the newest."
+    else
+        echo "Using JDK ${_version} (${_jdk_home}): ${_why}."
+    fi
+    export JAVA_HOME="${_jdk_home}"
+    export PATH="${_jdk_home}/bin:${PATH}"
+}
+# Whether the JDK a build would run on (JAVA_HOME's, else java's on PATH)
+# has a compiler.
+jvm_has_compiler() {
+    local _java
+    if [ -n "${JAVA_HOME:-}" ]; then
+        [ -x "${JAVA_HOME}/bin/javac" ]
+        return
+    fi
+    _java="$(command -v java)" || return 0
+    _java="$(cd "$(dirname "${_java}")" && pwd -P)/$(basename "${_java}")"
+    while [ -L "${_java}" ]; do
+        case "$(readlink "${_java}")" in
+            /*) _java="$(readlink "${_java}")" ;;
+            *) _java="$(dirname "${_java}")/$(readlink "${_java}")" ;;
+        esac
+    done
+    [ -x "$(dirname "${_java}")/javac" ]
 }
 # A Java version's feature release: 1.8.0_412 is 8, 21.0.2 is 21.
 java_feature() { echo "$1" | sed 's/^1\.\([0-9]*\).*/\1/; s/[^0-9].*//'; }
 
 # Clojure: the Clojure CLI (deps.edn) or Leiningen (project.clj). The CLI
 # runs the :test alias as a function (-X, :exec-fn) or a main (-M,
-# :main-opts), whichever it defines, and builds through tools.build's
-# build.clj. Lint is clj-kondo, which the CLI fetches at a pinned version when
+# :main-opts), whichever it defines (without one, Leiningen tests a project
+# that has both), and builds through tools.build's build.clj. Lint is clj-kondo, which the CLI fetches at a pinned version when
 # it isn't installed.
 _CLJ_KONDO_VERSION="2026.08.04"
 clojure_hook() {
@@ -851,7 +1063,11 @@ clojure_hook() {
                 case "$(clojure_alias_kind test)" in
                     X) run clojure -X:test ;;
                     M) run clojure -M:test ;;
-                    *) unknown "deps.edn has no :test alias with :exec-fn or :main-opts" ;;
+                    *)
+                        # deps.edn beside project.clj can be there only for
+                        # consumers' git dependencies.
+                        [ -f project.clj ] || unknown "deps.edn has no :test alias with :exec-fn or :main-opts"
+                        run lein test ;;
                 esac ;;
             build)
                 [ -f build.clj ] || skip "no build.clj (tools.build)"
@@ -1076,7 +1292,7 @@ cmake_compile() {
 cmake_test() {
     local _part _target
     _part="$(cmake_binary_dir)"
-    if ! ctest --test-dir "${_part}" -N 2>/dev/null | grep -q '^Total Tests: [1-9]'; then
+    if ! grep -q '^Total Tests: [1-9]' <<<"$(ctest --test-dir "${_part}" -N 2>/dev/null)"; then
         _target="$(cmake_test_target)"
         if [ -n "${_target}" ]; then
             run cmake --build build --parallel "$(build_jobs)" --target "${_target}"

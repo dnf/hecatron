@@ -39,8 +39,9 @@ type Step struct {
 type Action struct {
 	// Find says where to look for Files: "here" (the default), "above-first"
 	// (here, the nearest directory above, then the directories below; for
-	// tools that find their build file upward themselves) or "below-first"
-	// (here, below, then above).
+	// tools that find their build file upward themselves), "below-first"
+	// (here, below, then above) or "below-else-here" (here, below, else the
+	// steps run here anyway: for a tool that works without a build file).
 	Find    string   `json:"find,omitempty"`
 	Files   []string `json:"files,omitempty"`
 	Unknown string   `json:"unknown,omitempty"` // why, when no Files are found

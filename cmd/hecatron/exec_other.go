@@ -26,3 +26,7 @@ func replaceProcess(program string, argv, env []string) int {
 	}
 	return 0
 }
+
+// detach starts cmd on its own; on Windows a child outlives its parent
+// already.
+func detach(cmd *exec.Cmd) {}

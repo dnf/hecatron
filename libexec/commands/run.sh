@@ -34,7 +34,7 @@ for _a in "$@"; do
     esac
 done
 for _component in ${_components[@]+"${_components[@]}"}; do
-    if ! printf '%s\n' ${HECATRON_COMPONENTS} | grep -qx "${_component}"; then
+    if ! _in_list "${_component}" ${HECATRON_COMPONENTS}; then
         echo "hecatron: unknown component '${_component}' (components: ${HECATRON_COMPONENTS})" >&2
         exit 2
     fi
