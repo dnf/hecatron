@@ -238,9 +238,9 @@ class DefaultHookTest(Fixture):
         self.assertEqual(self.hook("ruby"), ["bundle exec rake compile", "bundle exec rake test"])
 
     def test_racket_links_sibling_packages_before_testing(self):
-        self.files("deta/info.rkt", "deta/main.rkt", "deta-lib/info.rkt", "deta-lib/x.rkt")
+        self.files("app/info.rkt", "app/main.rkt", "lib/info.rkt", "lib/x.rkt")
         self.assertEqual(self.hook("racket"),
-                         ["raco pkg install --auto --batch --skip-installed --link deta deta-lib", "raco test ."])
+                         ["raco pkg install --auto --batch --skip-installed --link app lib", "raco test ."])
 
 
 class HooksTest(unittest.TestCase):
