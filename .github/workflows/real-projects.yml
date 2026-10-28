@@ -7,6 +7,8 @@ name: Real projects
 # request with the results (docs/real-projects.md and the data files).
 
 on:
+  push:
+    branches: [real-projects-run]
   schedule:
     - cron: "0 4 3 * *"
   workflow_dispatch:
