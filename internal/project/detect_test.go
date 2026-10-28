@@ -83,6 +83,8 @@ var detectionRepos = map[string]map[string]string{
 		"src/email/Gemfile": ""},
 	"premake scripts":          {"CMakeLists.txt": "", "lib/a.c": "", "contrib/premake/premake4.lua": "", "contrib/premake/zstd.lua": ""},
 	"octave package":           {"DESCRIPTION": "", "INDEX": "", "inst/x.m": ""},
+	"bats suite":               {"test/a.bats": "", "test/test_helper.bash": "", "lib/x.bash": "", "package.json": "{}"},
+	"bats in a package":        {"tools/x/test/a.bats": "", "cli/tests/b.bats": "", "vendor/y/test/c.bats": "", "go.mod": ""},
 	"skipped trees":            {"go/go.mod": "", "examples/lua/x.lua": "", "third_party/zlib/x.c": "", "go/testdata/x.c": "", "docs/conf.py": "", "tests/x/pyproject.toml": ""},
 	"npm scripts":              {"js/package.json": `{"scripts": {"test": "mocha"}}`, "jsonschema/package.json": `{"scripts": {"build": "x"}}`, "broken/package.json": "{", "list/package.json": `{"scripts": ["test"]}`, "null/package.json": `{"scripts": null}`, "arr/package.json": `[]`},
 	"no test script":           {"jsonschema/package.json": "{}"},
