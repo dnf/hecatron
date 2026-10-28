@@ -150,6 +150,7 @@ jobs:
             tests/real-projects/projects.json
             tests/real-projects/results.json
             tests/real-projects/results-by-language.json
+            tests/real-projects/badges
       # A full run on main (every project, as the monthly one is) proposes its
       # results; a run for some projects, or on a branch, only uploads them.
       - name: Open or update the pull request with the results
@@ -157,15 +158,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          files="docs/real-projects.md tests/real-projects/projects.json tests/real-projects/results.json tests/real-projects/results-by-language.json"
-          if git diff --quiet -- ${files}; then
+          files="docs/real-projects.md tests/real-projects/projects.json tests/real-projects/results.json tests/real-projects/results-by-language.json tests/real-projects/badges"
+          # status, not diff: a newly tested project's badge is a new file.
+          if [ -z "$(git status --porcelain -- ${files})" ]; then
             echo "Results unchanged." >> "${GITHUB_STEP_SUMMARY}"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "${BRANCH}"
-          git add ${files}
+          git add -A -- ${files}
           git commit -q -m "Update the real-project results" -m "From the real-projects run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} at ${GITHUB_SHA}."
           git push -q -f origin "${BRANCH}"
           body="$(printf 'Real-project results from [this run](%s/%s/actions/runs/%s) at %s.\n\nOpened by the Real projects workflow, which updates this pull request each run; close and reopen it to run CI.\n' "${GITHUB_SERVER_URL}" "${GITHUB_REPOSITORY}" "${GITHUB_RUN_ID}" "${GITHUB_SHA}")"

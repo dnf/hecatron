@@ -280,3 +280,51 @@ For each language hecatron supports, the projects it was tested in.
 | vbnet | 0/1 | [zoppa-software/ZoppaLibrary](https://github.com/zoppa-software/ZoppaLibrary) ❌ |
 | wren | 0/1 | [exercism/wren](https://github.com/exercism/wren) ❌ |
 | zig | 1/6 | [apache/opendal](https://github.com/apache/opendal) ❌ [ethereum/c-kzg-4844](https://github.com/ethereum/c-kzg-4844) ❌ [supranational/blst](https://github.com/supranational/blst) ❌ [zigtools/zls](https://github.com/zigtools/zls) ✅ [neovim/neovim](https://github.com/neovim/neovim) ❌ [tree-sitter/tree-sitter](https://github.com/tree-sitter/tree-sitter) ❌ |
+
+## Badge
+
+Each tested project has a badge that follows its latest result here:
+`passing` when every language `hct init` found passes, `N/M languages`
+when some do, `failing` when none do. It updates with each monthly run.
+To show it in a project's README, copy its line:
+
+| Project | Markdown |
+| --- | --- |
+| bytecodealliance/wit-bindgen | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/bytecodealliance_wit-bindgen.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| cucumber/ci-environment | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/cucumber_ci-environment.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| cucumber/cucumber-expressions | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/cucumber_cucumber-expressions.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| cucumber/messages | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/cucumber_messages.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| cucumber/tag-expressions | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/cucumber_tag-expressions.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| google/libphonenumber | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/google_libphonenumber.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| microsoft/TypeChat | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/microsoft_TypeChat.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| App-vNext/Polly | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/App-vNext_Polly.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| apple/swift-algorithms | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/apple_swift-algorithms.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| atilaneves/unit-threaded | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/atilaneves_unit-threaded.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| DaveGamble/cJSON | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/DaveGamble_cJSON.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| expressjs/express | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/expressjs_express.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| faker-ruby/faker | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/faker-ruby_faker.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| FluentValidation/FluentValidation | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/FluentValidation_FluentValidation.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| fmtlib/fmt | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/fmtlib_fmt.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| gabime/spdlog | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/gabime_spdlog.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| haskell/aeson | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/haskell_aeson.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| immerjs/immer | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/immerjs_immer.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| jacobwilliams/json-fortran | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/jacobwilliams_json-fortran.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| jhy/jsoup | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/jhy_jsoup.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| JuliaCollections/DataStructures.jl | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/JuliaCollections_DataStructures.jl.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| kemalcr/kemal | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/kemalcr_kemal.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| kikito/inspect.lua | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/kikito_inspect.lua.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| libuv/libuv | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/libuv_libuv.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| lunarmodules/Penlight | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/lunarmodules_Penlight.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| michalmuskala/jason | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/michalmuskala_jason.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| mojolicious/mojo | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/mojolicious_mojo.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| ocaml-community/yojson | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/ocaml-community_yojson.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| rack/rack | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/rack_rack.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| serde-rs/json | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/serde-rs_json.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| spf13/cobra | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/spf13_cobra.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| svenvc/NeoJSON | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/svenvc_NeoJSON.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| treeform/jsony | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/treeform_jsony.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| ugexe/zef | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/ugexe_zef.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+| zigtools/zls | `[![hecatron](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges/zigtools_zls.json)](https://github.com/dnf/hecatron/blob/main/docs/real-projects.md)` |
+
+Projects not listed have a badge too, at
+`tests/real-projects/badges/OWNER_REPO.json`.

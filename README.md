@@ -180,7 +180,8 @@ It doesn't build anything itself, and it doesn't know what your code does.
   ANTLR, OpenDAL...), then well-known projects in each language and some
   large monorepos, each cloned on a fresh machine and run through `hct init`,
   `install`, `doctor` and `test`. [docs/real-projects.md](docs/real-projects.md)
-  has the results per project and per language.
+  has the results per project and per language, and a README badge for
+  each project that follows its latest result.
 
 ## Hecatron or ad hoc?
 

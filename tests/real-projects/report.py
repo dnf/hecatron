@@ -4,8 +4,9 @@
     report.py collect LOG...   add each log's run (tests/real-projects/run.sh)
                                to results.json, replacing that project's
                                previous one
-    report.py render           write docs/real-projects.md and
-                               results-by-language.json from projects.json
+    report.py render           write docs/real-projects.md,
+                               results-by-language.json and a badge per
+                               tested project (badges/) from projects.json
                                and results.json
     report.py summary LOG      one log's results, in Markdown (a CI job summary)
     report.py validate         check the data files against schema.json
@@ -29,8 +30,12 @@ RESULTS = os.path.join(HERE, "results.json")
 BY_LANGUAGE = os.path.join(HERE, "results-by-language.json")
 SCHEMA = os.path.join(HERE, "schema.json")
 DOC = os.path.join(ROOT, "docs", "real-projects.md")
+BADGES = os.path.join(HERE, "badges")
 SCHEMA_VERSION = 1
 REPO_URL = "https://github.com/dnf/hecatron"
+# shields.io's endpoint badge reads each project's badge file from main.
+BADGE_FILES_URL = "https://raw.githubusercontent.com/dnf/hecatron/main/tests/real-projects/badges"
+PAGE_URL = f"{REPO_URL}/blob/main/docs/real-projects.md"
 
 ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")
 STEP = re.compile(r"^### step (\S+): .*?\n(.*?)^### done \1 rc=(-?\d+) secs=(\d+)\n?", re.M | re.S)
@@ -408,6 +413,38 @@ def _project_state(project_rows: list[dict]) -> str | None:
     return "some" if passed else "none"
 
 
+def badge_name(repo: str) -> str:
+    return repo.replace("/", "_") + ".json"
+
+
+def badge(project_rows: list[dict]) -> dict | None:
+    """A shields.io endpoint badge: whether the project's detected languages pass."""
+    state = _project_state(project_rows)
+    if state is None:
+        return None
+    tested = [r for r in project_rows if r["detected"]]
+    passed = sum(r["result"] == "pass" for r in tested)
+    message, color = {
+        "all": ("passing", "brightgreen"),
+        "some": (f"{passed}/{len(tested)} languages", "yellow"),
+        "none": ("failing", "red"),
+    }[state]
+    return {"schemaVersion": 1, "label": "hecatron", "message": message, "color": color}
+
+
+def badges(projects: dict, results: dict) -> dict[str, dict]:
+    by_repo: dict[str, list[dict]] = {}
+    for r in rows(projects, results):
+        by_repo.setdefault(r["repo"], []).append(r)
+    found = {badge_name(repo): badge(rs) for repo, rs in by_repo.items()}
+    return {name: data for name, data in found.items() if data is not None}
+
+
+def badge_markdown(repo: str) -> str:
+    image = f"https://img.shields.io/endpoint?url={BADGE_FILES_URL}/{badge_name(repo)}"
+    return f"[![hecatron]({image})]({PAGE_URL})"
+
+
 def render_text(projects: dict, results: dict) -> str:
     table = rows(projects, results)
     by_repo: dict[str, list[dict]] = {}
@@ -510,6 +547,20 @@ def render_text(projects: dict, results: dict) -> str:
         if untested:
             listed = (listed + " · " if listed else "") + f"{untested} untested"
         out.append(f"| {language} | {passing} | {listed or '–'} |")
+
+    passing_repos = [p["repo"] for p in projects["projects"] if states.get(p["repo"]) == "all"]
+    out += ["", "## Badge", "",
+            "Each tested project has a badge that follows its latest result here:",
+            "`passing` when every language `hct init` found passes, `N/M languages`",
+            "when some do, `failing` when none do. It updates with each monthly run.",
+            "To show it in a project's README, copy its line:", ""]
+    if passing_repos:
+        out += ["| Project | Markdown |", "| --- | --- |"]
+        out += [f"| {repo} | `{badge_markdown(repo)}` |" for repo in passing_repos]
+    else:
+        out.append("No project passes in every language yet.")
+    out += ["", "Projects not listed have a badge too, at",
+            "`tests/real-projects/badges/OWNER_REPO.json`."]
     return "\n".join(out) + "\n"
 
 
@@ -531,6 +582,16 @@ def render() -> None:
     with open(DOC, "w", encoding="utf-8") as f:
         f.write(render_text(projects, results))
     save(BY_LANGUAGE, by_language_data(projects, results))
+    write_badges(badges(projects, results))
+
+
+def write_badges(wanted: dict[str, dict]) -> None:
+    os.makedirs(BADGES, exist_ok=True)
+    for name in os.listdir(BADGES):
+        if name.endswith(".json") and name not in wanted:
+            os.remove(os.path.join(BADGES, name))
+    for name, data in wanted.items():
+        save(os.path.join(BADGES, name), data)
 
 
 # ----- validating -----------------------------------------------------------

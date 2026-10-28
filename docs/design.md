@@ -567,7 +567,10 @@ the Go core (§19) replaces them.
   flat `results-by-language.json`, both described by `schema.json`, and
   `docs/real-projects.md` rendered from them (`report.py`). It measures what
   detection and the default hooks get right on code hecatron has never
-  seen.
+  seen. `report.py` also writes a shields.io endpoint file per tested
+  project (`badges/OWNER_REPO.json`: passing, N/M languages or failing), so
+  a project can show a badge that follows its latest result without running
+  anything itself; the page lists the Markdown for each passing project.
 
 ## 15. Migration of sayable
 
