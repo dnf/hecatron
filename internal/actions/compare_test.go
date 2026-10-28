@@ -45,6 +45,14 @@ func projects() []project {
 		{name: "gradle wrapper above", lang: "java", component: "lib/java", files: map[string]string{
 			"settings.gradle": "", "gradlew": "+x", "lib/java/build.gradle": ""}},
 		{name: "sbt", lang: "java", files: map[string]string{"build.sbt": ""}},
+		{name: "gradle source directory", lang: "java", component: "lib/src/main/java", files: map[string]string{
+			"settings.gradle": "include 'lib'\n", "gradlew": "+x", "lib/build.gradle": "", "lib/src/main/java/A.java": ""}},
+		{name: "gradle build of one project", lang: "java", component: "harness/java", files: map[string]string{
+			"settings.gradle": "rootProject.name = 'one'\n", "build.gradle": "", "harness/java/A.java": ""}},
+		{name: "gradle project the settings include", lang: "java", component: "sdks/java", files: map[string]string{
+			"settings.gradle.kts": "include(\":sdks:java:core\")\n", "build.gradle.kts": "", "sdks/java/core/build.gradle.kts": ""}},
+		{name: "maven multi-module", lang: "java", files: map[string]string{"pom.xml": "<modules><module>a</module></modules>"}},
+		{name: "mill", lang: "java", files: map[string]string{"build.mill": "", "mill": "+x"}},
 	}
 	for _, lang := range []string{"go", "rust", "elixir", "java"} {
 		cases = append(cases, project{name: lang + " nothing", lang: lang, files: map[string]string{"README": ""}})

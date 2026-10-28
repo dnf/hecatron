@@ -514,11 +514,28 @@ jvm_build_tools_missing() {
         { { [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ]; } && [ ! -x "${_dir}/gradlew" ]; } && _gradle=1
         [ -f "${_dir}/build.sbt" ] && _sbt=1
         _gradle_project_above "${_dir}" && _gradle=1
-    done < <(impl_dirs "$1")
+    done < <(impl_dirs "$1" | _jvm_build_dirs)
     if [ "${_maven}" -eq 1 ] && ! _maven_current; then echo maven; fi
     if [ "${_gradle}" -eq 1 ] && ! has gradle; then echo gradle; fi
     if [ "${_sbt}" -eq 1 ] && ! has sbt; then echo sbt; fi
     return 0
+}
+# Each directory read, or, for one with no build file of its own, the
+# shallowest directories below it with one, at most three levels down, where
+# the hooks run the build (find_build in _hooks.sh).
+_jvm_build_dirs() {
+    local _dir _below
+    while IFS= read -r _dir; do
+        echo "${_dir}"
+        [ -f "${_dir}/pom.xml" ] || [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ] ||
+            [ -f "${_dir}/build.sbt" ] && continue
+        _below="$(find "${_dir}" -mindepth 2 -maxdepth 4 \( -type d \( -name '.*' -o -name node_modules -o -name build -o -name target \) -prune \) -o \
+            -type f \( -name pom.xml -o -name build.gradle -o -name build.gradle.kts -o -name build.sbt \) -print 2>/dev/null |
+            sed 's|/[^/]*$||' | sort -u)"
+        [ -n "${_below}" ] || continue
+        awk -F/ 'NR == 1 || NF < least { least = NF } { depth[NR] = NF; dir[NR] = $0 }
+            END { for (i = 1; i <= NR; i++) if (depth[i] == least) print dir[i] }' <<<"${_below}"
+    done
 }
 # Whether a directory with no build file of its own is a project of a Gradle
 # build above it, in the project, without a wrapper (the hooks run Gradle

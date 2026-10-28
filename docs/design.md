@@ -328,7 +328,15 @@ directory, scoped to it as far as the tool allows; elsewhere the hook acts
 where the build file is (`swift --package-path`, the CMake project's
 `build/`). A CMake or Meson file counts only when it declares a `project()`,
 and a root Makefile only through a target named for the directory or language
-(`check_cxx` for `cxx/`). Node.js hooks and installers use the package manager
+(`check_cxx` for `cxx/`). A directory inside a Gradle build that isn't
+one of its projects runs Gradle from the project it belongs to: the one
+whose sources it holds (`moshi` for `moshi/src/main/java`), or the root of a
+build of one project. JVM tests run Maven's package phase in a
+multi-module build (its modules can need each other's jars), Gradle's
+`jvmTest`, else `allTests`, in a Kotlin Multiplatform build (no `test`
+task), and Mill's `__.test` where the build is `build.mill`; .NET tests roll forward to the
+installed runtime, and a directory with several projects and no solution
+tests each test project. Node.js hooks and installers use the package manager
 the package declares (`packageManager`, else its lockfile, here or in the
 workspace above; pnpm and Yarn through Corepack, with Corepack's shim on
 PATH for scripts that call the package manager by name), installing Corepack
