@@ -93,10 +93,12 @@ func (c *cli) licenses() int {
 	}
 	report, err := licenses.Gather(p.Root, targets, osvScanner)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "hecatron: licenses:", err)
 		if errors.Is(err, errNoOSVScanner) {
+			fmt.Fprintf(os.Stderr, "hecatron: licenses: %v; %s, or see https://google.github.io/osv-scanner/installation/\n",
+				err, osvScannerInstallHint(langs))
 			return 3
 		}
+		fmt.Fprintln(os.Stderr, "hecatron: licenses:", err)
 		return 1
 	}
 	report.Apply(p.LicensePolicy(), time.Now().Format("2006-01-02"))
@@ -143,7 +145,27 @@ func (c *cli) licenseLanguages(names []string) ([]string, int) {
 	return langs, 0
 }
 
-var errNoOSVScanner = errors.New("OSV-Scanner isn't installed; hecatron install rust (or java, kotlin, scala, groovy, dart, elixir, swift, r, haskell, c, cpp) installs it with the toolchain, or see https://google.github.io/osv-scanner/installation/")
+var errNoOSVScanner = errors.New("OSV-Scanner isn't installed")
+
+// osvScannerInstallHint names the hecatron install that brings OSV-Scanner:
+// every language whose licenses it reads installs it with its toolchain, so
+// any of the project's will do.
+func osvScannerInstallHint(langs []string) string {
+	var readable []string
+	for _, lang := range langs {
+		if licenses.Covers(lang) {
+			readable = append(readable, lang)
+		}
+	}
+	if len(readable) == 0 {
+		return "hecatron install of a language it reads installs it"
+	}
+	hint := "hecatron install " + readable[0] + " installs it with the toolchain"
+	if len(readable) > 1 {
+		hint += " (as does installing " + strings.Join(readable[1:], " or ") + ")"
+	}
+	return hint
+}
 
 // osvScanner runs OSV-Scanner's license report on a directory: every
 // package (--all-packages) with deps.dev's licenses. It exits 1 when it
