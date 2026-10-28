@@ -6,6 +6,14 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Node.js tests in more layouts:** `hct test typescript` and `hct test
+  javascript` now test a workspace root without a `test` script through its
+  packages' scripts, a package with a configured Vitest, Jest or Mocha but
+  no script through that runner, and a directory without a `package.json`
+  (or a root `package.json` holding only tooling) through the language's
+  packages below it, where they failed with "no test command". Scripts
+  that call pnpm or Yarn by name find Corepack's shim on PATH.
+
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
   checksum file, or the publisher's index). Gleam and Zig install that way,
