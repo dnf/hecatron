@@ -21,6 +21,10 @@ minor version can change behaviour. Numbers are
   human output only (never in CI, agent or JSON output, or with
   `HECATRON_NO_UPDATE_CHECK=1`); `hct status` reports it from that check.
   Hecatron never updates itself. Needs the binary.
+- **Detection:** `hct init` no longer proposes components from directories
+  like `src/<service>/src/main/<lang>` when another language's directory
+  isn't named for it (TypeScript in `src/frontend`), which left that
+  language, and every other one outside the pattern, with no directory.
 
 - **Other languages' tools on PATH:** a language's hooks (and
   `hct env LANG`) now also have the project's other added, enabled
