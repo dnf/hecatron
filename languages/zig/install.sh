@@ -1,28 +1,27 @@
 #!/usr/bin/env bash
-# Install Zig
+# Install Zig: the release for this machine at the version config.json
+# pins, checked against the SHA-256 in ziglang.org's index of downloads, into
+# hecatron's toolchains directory (where the binary installs it from
+# install.json).
 source "$(dirname "$0")/../_common.sh"
 
-install_macos() { brew_install zig; }
-# The latest release, from ziglang.org's index of downloads (which also has
-# each archive's URL: its naming changed after 0.14).
-install_linux() {
-    has zig && return
-    local url
-    url="$(curl -fsSL https://ziglang.org/download/index.json | python3 -c '
+_version="$(default_version zig)"
+case "${OS}-$(uname -m)" in
+    linux-x86_64) _target="x86_64-linux" ;;
+    linux-aarch64) _target="aarch64-linux" ;;
+    macos-x86_64) _target="x86_64-macos" ;;
+    macos-arm64) _target="aarch64-macos" ;;
+    *) echo "No Zig release for $(uname -sm)" >&2; exit 1 ;;
+esac
+_home="$(toolchain_home zig "${_version}")"
+
+log "Installing Zig ${_version}..."
+if ! "${_home}/zig" version >/dev/null 2>&1; then
+    _sha256="$(curl -fsSL https://ziglang.org/download/index.json | python3 -c '
 import json, sys
-releases = json.load(sys.stdin)
-latest = max((v for v in releases if v != "master"), key=lambda v: tuple(int(p) for p in v.split(".")))
-print(releases[latest][sys.argv[1] + "-linux"]["tarball"])
-' "$(uname -m)")"
-    log "Downloading ${url##*/}..."
-    $SUDO rm -rf /opt/zig
-    $SUDO mkdir -p /opt/zig
-    curl -fsSL "${url}" | $SUDO tar -C /opt/zig --strip-components=1 -xJ
-    $SUDO ln -sf /opt/zig/zig /usr/local/bin/zig
-}
-
-deps() { :; }
-
-log "Installing Zig..."
-"install_${OS}"
-deps
+print(json.load(sys.stdin)[sys.argv[1]][sys.argv[2]]["shasum"])
+' "${_version}" "${_target}")"
+    toolchain_release_install zig "${_version}" \
+        "https://ziglang.org/download/${_version}/zig-${_target}-${_version}.tar.xz" "${_sha256}" 1
+fi
+toolchain_link "${_home}" zig

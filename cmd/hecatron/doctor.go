@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/dnf/hecatron/internal/install"
 	"github.com/dnf/hecatron/internal/project"
 )
 
@@ -59,6 +60,7 @@ func (c *cli) doctor() (int, bool) {
 		exports = append(exports, export[0]+"="+export[1])
 	}
 	d := &doctorRun{cli: c, env: c.environment(exports)}
+	d.manager = packageManager(d.env)
 	d.project().Environ = d.env
 	// Everything the Go model answers is worked out once before any script
 	// runs, so a project it declines goes to doctor.sh untouched.
@@ -90,7 +92,20 @@ func addedLanguage(shell *project.Shell, name string) (string, bool) {
 
 type doctorRun struct {
 	*cli
-	env []string // doctor.sh's: hecatron's variables and the project's exports
+	env     []string // doctor.sh's: hecatron's variables and the project's exports
+	manager *install.Manager
+}
+
+// fromData is how a language installs when it's installed from its
+// install.json here (its def is nil otherwise): then the doctor derives its
+// checks from that and repairs with it, unless the project has its own
+// doctor.sh.
+func (d *doctorRun) fromData(lang string) installerChoice {
+	choice := chooseInstaller(d.project(), lang, "install.sh", d.manager)
+	if choice.def != nil && isProjectFile(d.project(), lang, "doctor.sh") {
+		choice.def = nil
+	}
+	return choice
 }
 
 func (d *doctorRun) project() *project.Project { return d.cli.project }
@@ -99,7 +114,12 @@ func (d *doctorRun) run(langs []string, fix bool) int {
 	var unhealthy []string
 	for _, lang := range langs {
 		found, notes := splitNotes(d.problems(lang))
-		if found != "" && fix {
+		if choice := d.fromData(lang); found != "" && fix && choice.def != nil {
+			fmt.Printf("%s: repairing with %s\n", lang, choice.path)
+			applyData(d.project(), []installerChoice{choice}, d.env, d.manager)
+			d.project().ForgetInstalled()
+			found = d.problems(lang)
+		} else if found != "" && fix {
 			installer := d.project().Resolve(lang, "install.sh")
 			if installer == "" {
 				return 1 // doctor.sh's `_installer="$(_resolve ...)"` under set -e
@@ -176,7 +196,11 @@ func (d *doctorRun) problems(lang string) string {
 	for _, m := range missing {
 		fmt.Fprintf(&out, "%s: %s %s not installed (from %s)\n", m.Component, lang, m.Spec, m.Source)
 	}
-	if script := d.project().Resolve(lang, "doctor.sh"); script != "" {
+	if choice := d.fromData(lang); choice.def != nil {
+		for _, problem := range dataProblems(d.project(), choice, d.env, d.manager) {
+			fmt.Fprintln(&out, problem)
+		}
+	} else if script := d.project().Resolve(lang, "doctor.sh"); script != "" {
 		cmd := exec.Command("bash", script)
 		cmd.Dir, cmd.Env = d.root, env
 		cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, &out, os.Stderr
@@ -190,7 +214,7 @@ func (d *doctorRun) problems(lang string) string {
 // failure ignored (the language is checked again).
 func (d *doctorRun) runInstaller(installer string) {
 	cmd := exec.Command("bash", installer)
-	cmd.Env = d.env
+	cmd.Env = setEnv(d.env, "HECATRON_BINARY", binaryPath())
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	_ = cmd.Run()
 }

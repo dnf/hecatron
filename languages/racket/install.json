@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "toolchain": {
+    "versions": "system",
+    "packages": {
+      "apt": [
+        "racket"
+      ],
+      "brew": [
+        "minimal-racket"
+      ]
+    }
+  },
+  "steps": [
+    {
+      "name": "compiler-lib",
+      "run": [
+        "raco",
+        "pkg",
+        "install",
+        "--auto",
+        "--skip-installed",
+        "compiler-lib"
+      ],
+      "check": {
+        "run": [
+          "raco",
+          "test",
+          "--help"
+        ]
+      },
+      "problem": "raco test is missing (package compiler-lib)"
+    },
+    {
+      "name": "rackunit-lib",
+      "run": [
+        "raco",
+        "pkg",
+        "install",
+        "--auto",
+        "--skip-installed",
+        "rackunit-lib"
+      ],
+      "check": {
+        "run": [
+          "racket",
+          "-l",
+          "rackunit",
+          "-e",
+          ""
+        ]
+      },
+      "problem": "rackunit is missing (package rackunit-lib)"
+    }
+  ]
+}

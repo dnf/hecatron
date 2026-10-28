@@ -85,6 +85,8 @@ func (c *cli) dispatch() int {
 		return c.auditTool()
 	case "_outdated":
 		return c.outdatedTool()
+	case "_install":
+		return c.installHidden()
 	case "_gotest":
 		return c.goTestFilter()
 	case "self-test":

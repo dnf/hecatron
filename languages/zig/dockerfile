@@ -1,6 +1,11 @@
-# Zig: the latest release, as install.sh installs it
+# Zig: the version config.json pins (each-version: there is one), checked
+# against ziglang.org's index of downloads
 # apt: python3 xz-utils
-RUN URL="$(curl -fsSL https://ziglang.org/download/index.json | python3 -c 'import json, sys; r = json.load(sys.stdin); v = max((v for v in r if v != "master"), key=lambda v: tuple(map(int, v.split(".")))); print(r[v][sys.argv[1] + "-linux"]["tarball"])' "$(uname -m)")" && \
-    mkdir -p /opt/zig && \
-    curl -fsSL "$URL" | tar -C /opt/zig --strip-components=1 -xJ && \
-    ln -s /opt/zig/zig /usr/local/bin/zig
+# each-version
+RUN V="{version}" && A="$(uname -m)-linux" && \
+    S="$(curl -fsSL https://ziglang.org/download/index.json | python3 -c 'import json, sys; print(json.load(sys.stdin)[sys.argv[1]][sys.argv[2]]["shasum"])' "${V}" "${A}")" && \
+    curl -fsSL -o /tmp/zig.tar.xz "https://ziglang.org/download/${V}/zig-${A}-${V}.tar.xz" && \
+    echo "${S}  /tmp/zig.tar.xz" | sha256sum -c - >/dev/null && \
+    mkdir -p /opt/zig && tar -C /opt/zig --strip-components=1 -xJf /tmp/zig.tar.xz && rm /tmp/zig.tar.xz && \
+    ln -sf /opt/zig/zig /usr/local/bin/zig
+# end-each-version

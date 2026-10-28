@@ -119,6 +119,18 @@ options.
   which is idempotent and repairs the broken states the doctor finds (a
   linter built with an older compiler, a moved virtualenv, an unlinked
   Homebrew formula).
+- **Installs as data, ready for CI caches.** Languages are moving from
+  install scripts to a declarative `install.json` that hecatron's binary
+  carries out: every step checked, so a rerun does nothing and
+  `hct doctor --fix` repairs only what's broken; one `apt-get` or `brew`
+  call for every language's packages; `hct install --plan` to see what
+  would happen; and uninstall that removes only what hecatron installed.
+  Toolchains it downloads go to `~/.local/share/hecatron/toolchains`, with
+  no root, so `"ci": {"cache": true}` caches and restores them. Thirteen
+  languages use it so far: Gleam and Zig as checksummed release downloads,
+  the rest from apt, which isn't cached; caching gets better as more
+  languages move to downloaded toolchains
+  ([docs/installers.md](docs/installers.md#installs-as-data)).
 - **The right version for each component.** For Python, Go, Rust, Node.js and
   Java, a pinned default, or the version a component asks for in its
   ecosystem's own file (`.python-version`, `go.mod`, `rust-toolchain.toml`,

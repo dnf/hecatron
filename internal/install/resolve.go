@@ -16,6 +16,9 @@ type Platform struct {
 	Arch string
 }
 
+// Key is the platform as definitions name it: "linux-x86_64".
+func (p Platform) Key() string { return p.OS + "-" + p.Arch }
+
 // Platforms is every platform hecatron releases for.
 var Platforms = []Platform{
 	{"linux", "x86_64"}, {"linux", "aarch64"},
@@ -30,8 +33,8 @@ var managers = map[string][]string{
 	"windows": {"winget", "scoop"},
 }
 
-// Step is one thing an install does.
-type Step struct {
+// Resolved is one thing a prototype install does.
+type Resolved struct {
 	Tool     string            // the tool this step installs; "" for the language
 	Download string            // a URL to download
 	Checksum string            // the SHA-256 (hex), or a URL that serves it
@@ -45,24 +48,36 @@ type Step struct {
 	Requires []string          // languages installed first
 }
 
-// Resolve says how to install version on platform. Resolvers that need the
+// Resolve says how to install version of a definition's toolchain on
+// platform (the prototype's resolution, #72). Resolvers that need the
 // network (a release's checksum from an API) run only when online is set;
 // otherwise their steps name the resolver instead of a URL.
-func Resolve(spec *Spec, version string, platform Platform, online bool) ([]Step, error) {
+func Resolve(def *Definition, version string, platform Platform, online bool) ([]Resolved, error) {
+	var steps []Resolved
+	if len(def.Requires) > 0 {
+		steps = append(steps, Resolved{Requires: def.Requires})
+	}
+	resolved, err := resolveSpec(def, &def.Toolchain.Spec, version, platform, online)
+	return append(steps, resolved...), err
+}
+
+func resolveSpec(def *Definition, spec *Spec, version string, platform Platform, online bool) ([]Resolved, error) {
 	version = strings.TrimPrefix(version, "=")
 	if override, ok := spec.Platforms[platform.OS+"-"+platform.Arch]; ok {
-		return Resolve(&override, version, platform, online)
+		return resolveSpec(def, &override, version, platform, online)
 	}
-	var steps []Step
-	if len(spec.Requires) > 0 {
-		steps = append(steps, Step{Requires: spec.Requires})
-	}
+	var steps []Resolved
 	if spec.Via != nil {
-		tool, ok := spec.Tools[spec.Via.Tool]
-		if !ok {
+		var tool *Tool
+		for i := range def.Tools {
+			if def.Tools[i].Name == spec.Via.Tool {
+				tool = &def.Tools[i]
+			}
+		}
+		if tool == nil {
 			return nil, fmt.Errorf("via %s: no such tool", spec.Via.Tool)
 		}
-		toolSteps, err := Resolve(&tool, tool.Version, platform, online)
+		toolSteps, err := resolveSpec(def, &Spec{Archive: tool.Archive, Packages: tool.Packages}, tool.Version, platform, online)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", spec.Via.Tool, err)
 		}
@@ -70,7 +85,7 @@ func Resolve(spec *Spec, version string, platform Platform, online bool) ([]Step
 			step.Tool = spec.Via.Tool
 			steps = append(steps, step)
 		}
-		return append(steps, Step{Run: fill(spec.Via.Run, map[string]string{"version": version})}), nil
+		return append(steps, Resolved{Run: fill(spec.Via.Run, map[string]string{"version": version})}), nil
 	}
 	switch {
 	case spec.Archive != nil:
@@ -88,7 +103,7 @@ func Resolve(spec *Spec, version string, platform Platform, online bool) ([]Step
 	case spec.Packages != nil:
 		for _, manager := range managers[platform.OS] {
 			if packages, ok := spec.Packages[manager]; ok {
-				return append(steps, Step{Manager: manager, Packages: packages}), nil
+				return append(steps, Resolved{Manager: manager, Packages: packages}), nil
 			}
 		}
 		return nil, fmt.Errorf("no package for %s", platform.OS)
@@ -96,8 +111,8 @@ func Resolve(spec *Spec, version string, platform Platform, online bool) ([]Step
 	return nil, fmt.Errorf("nothing to install")
 }
 
-func (a *Archive) resolve(version string, platform Platform, online bool) (Step, error) {
-	step := Step{Unpack: true, Strip: a.Strip, Bin: byOS(a.Bin, platform.OS)}
+func (a *Archive) resolve(version string, platform Platform, online bool) (Resolved, error) {
+	step := Resolved{Unpack: true, Strip: a.Strip, Bin: byOS(a.Bin, platform.OS)}
 	if a.Resolver != "" {
 		resolver, ok := resolvers[a.Resolver]
 		if !ok {
@@ -122,7 +137,7 @@ func (a *Archive) resolve(version string, platform Platform, online bool) (Step,
 	return step, nil
 }
 
-func (v *Vendor) resolve(version string, platform Platform) (Step, error) {
+func (v *Vendor) resolve(version string, platform Platform) (Resolved, error) {
 	family := "unix"
 	if platform.OS == "windows" {
 		family = "windows"
@@ -130,9 +145,9 @@ func (v *Vendor) resolve(version string, platform Platform) (Step, error) {
 	values := map[string]string{"version": version, "arch": v.Arch[platform.Arch]}
 	url, ok := v.URL[family]
 	if !ok {
-		return Step{}, fmt.Errorf("no installer for %s", platform.OS)
+		return Resolved{}, fmt.Errorf("no installer for %s", platform.OS)
 	}
-	return Step{Download: fillOne(url, values), Run: fill(v.Run[family], values), Env: v.Env, Bin: v.Bin}, nil
+	return Resolved{Download: fillOne(url, values), Run: fill(v.Run[family], values), Env: v.Env, Bin: v.Bin}, nil
 }
 
 func byOS(values map[string]string, osName string) string {

@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "toolchain": {
+    "versions": "single",
+    "archive": {
+      "url": "https://github.com/gleam-lang/gleam/releases/download/v{version}/gleam-v{version}-{arch}-{os}.tar.gz",
+      "os": {
+        "linux": "unknown-linux-musl",
+        "macos": "apple-darwin"
+      },
+      "arch": {
+        "x86_64": "x86_64",
+        "aarch64": "aarch64"
+      },
+      "checksum": "{url}.sha256",
+      "check": {
+        "run": [
+          "{bin}/gleam",
+          "--version"
+        ]
+      }
+    }
+  },
+  "packages": [
+    {
+      "apt": [
+        "erlang-dev",
+        "erlang-tools",
+        "rebar3"
+      ],
+      "brew": [
+        "erlang",
+        "rebar3"
+      ],
+      "unless": {
+        "command": "erl"
+      },
+      "problem": "Erlang/OTP not installed (gleam build, run and test need erl)"
+    }
+  ],
+  "links": [
+    "gleam"
+  ]
+}
