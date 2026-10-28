@@ -376,6 +376,8 @@ _cmake_package() {
             libuv) echo libuv ;;
             FLEX) echo flex ;;
             BISON) echo bison ;;
+            PCRE2 | libpcre2-8) echo pcre2 ;;
+            cJSON | libcjson) echo cjson ;;
         esac
     else
         case "${_name}" in
@@ -406,6 +408,8 @@ _cmake_package() {
             CyrusSASL) echo libsasl2-dev ;;
             FLEX) echo flex ;;
             BISON) echo bison ;;
+            PCRE2 | libpcre2-8) echo libpcre2-dev ;;
+            cJSON | libcjson) echo libcjson-dev ;;
             Threads) ;;
             liblzma | LibLZMA) echo liblzma-dev ;;
             lib*) if [ "$1" != "${_name}" ]; then echo "${_name}-dev"; fi ;;
@@ -496,6 +500,15 @@ cmake_dependencies() {
     log "Installing the libraries the CMake builds look for: ${_packages}"
     # shellcheck disable=SC2086 # one word per package
     if [ "${OS}" = "macos" ]; then brew_install ${_packages}; else apt_install ${_packages}; fi
+}
+
+# For the native languages' installers and doctors (C, C++, Objective-C):
+# Meson, and the Ninja it builds with, where a component builds with Meson
+# (the hooks run it for a meson.build) and it isn't installed.
+meson_missing() { ! has meson && impl_configures "$1" meson.build; }
+meson_install() {
+    log "Installing Meson..."
+    if [ "${OS}" = "macos" ]; then brew_install meson; else apt_install meson ninja-build; fi
 }
 
 # For the JVM languages' installers: Maven where a component builds with a
