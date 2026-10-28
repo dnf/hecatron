@@ -5,9 +5,9 @@
 #   . ~/.hecatron/install.sh       # from a clone: also sets up this shell
 #
 # Installs into ~/.hecatron (HECATRON_INSTALL_DIR), at the latest release
-# (HECATRON_VERSION=v0.2.1 or main for another). Writes ~/.hecatron/env, and
-# adds a line sourcing it to the shell startup files, as rustup and uv do:
-# ~/.profile always; ~/.bashrc, ~/.bash_profile, ~/.bash_login, ~/.zshrc and
+# (HECATRON_VERSION=v0.2.1 for another, v0.6 for that series' latest, or
+# main). Writes ~/.hecatron/env, and adds a line sourcing it to the shell
+# startup files, as rustup and uv do: ~/.profile always; ~/.bashrc, ~/.bash_profile, ~/.bash_login, ~/.zshrc and
 # ~/.zshenv where they exist; and fish's conf.d. Run again to update; it
 # never adds a line twice. At a release, it also downloads that release's Go
 # binary for this machine, which bin/hecatron then runs (checksum-verified;
@@ -116,16 +116,38 @@ _hecatron_retry() {
     done
 }
 
+# The latest release, or with a series (v0.6) the series' latest (v0.6.x).
+_hecatron_latest() {
+    _hecatron_retry git ls-remote --tags --refs "${_hecatron_repo}" 'v*' 2>/dev/null |
+        sed 's|.*refs/tags/||' |
+        while read -r _hecatron_release; do
+            [ -z "$1" ] || case "${_hecatron_release}" in
+                "$1" | "$1".*) ;;
+                *) continue ;;
+            esac
+            printf '%s\n' "${_hecatron_release}"
+        done | sort -t. -k1,1 -k2,2n -k3,3n | tail -1
+}
+
 # Clone, or bring an existing install to the requested version.
 _hecatron_fetch() {
     _hecatron_dir="$1"
     _hecatron_repo="${HECATRON_REPO:-https://github.com/dnf/hecatron}"
     _hecatron_version="${HECATRON_VERSION:-}"
-    if [ -z "${_hecatron_version}" ]; then
-        _hecatron_version="$(_hecatron_retry git ls-remote --tags --refs "${_hecatron_repo}" 'v*' 2>/dev/null |
-            sed 's|.*refs/tags/||' | sort -t. -k1,1 -k2,2n -k3,3n | tail -1)"
-        [ -n "${_hecatron_version}" ] || _hecatron_version="main"
-    fi
+    case "${_hecatron_version}" in
+        "")
+            _hecatron_version="$(_hecatron_latest "")"
+            [ -n "${_hecatron_version}" ] || _hecatron_version="main"
+            ;;
+        v[0-9]*.*.*) ;;
+        v[0-9]*)
+            _hecatron_version="$(_hecatron_latest "${HECATRON_VERSION}")"
+            [ -n "${_hecatron_version}" ] || {
+                _hecatron_fail "no release of hecatron matches ${HECATRON_VERSION}"
+                return 1
+            }
+            ;;
+    esac
     if [ -d "${_hecatron_dir}/.git" ]; then
         _hecatron_say "Updating ${_hecatron_dir} to ${_hecatron_version}..."
     elif [ -e "${_hecatron_dir}" ]; then
@@ -290,11 +312,11 @@ fi
 _hecatron_install
 _hecatron_status=$?
 unset -f _hecatron_say _hecatron_fail _hecatron_retry _hecatron_sudo _hecatron_python_ok _hecatron_macos_clt \
-    _hecatron_linux_packages _hecatron_prerequisites _hecatron_script_dir _hecatron_fetch _hecatron_binary _hecatron_write_env \
-    _hecatron_add_line _hecatron_modify_path _hecatron_install
+    _hecatron_linux_packages _hecatron_prerequisites _hecatron_script_dir _hecatron_latest _hecatron_fetch _hecatron_binary \
+    _hecatron_write_env _hecatron_add_line _hecatron_modify_path _hecatron_install
 unset _hecatron_src _hecatron_dir _hecatron_repo _hecatron_version _hecatron_bin _hecatron_links _hecatron_file \
     _hecatron_line _hecatron_env_line _hecatron_rc _hecatron_here _hecatron_target _hecatron_sourced \
     _hecatron_flag _hecatron_label _hecatron_missing _hecatron_try _hecatron_go _hecatron_tag _hecatron_os \
-    _hecatron_arch _hecatron_asset _hecatron_url _hecatron_tmp _hecatron_want _hecatron_got
+    _hecatron_arch _hecatron_asset _hecatron_url _hecatron_tmp _hecatron_want _hecatron_got _hecatron_release
 # Sourced: hand back the status without leaving the user's shell; run: exit with it.
 return "${_hecatron_status}" 2>/dev/null || exit "${_hecatron_status}"

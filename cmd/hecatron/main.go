@@ -151,20 +151,18 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 // findProject finds the project (like git). A git repository with no
 // config of its own is read as detected, which only project.py does: the
 // root then comes from it, and the Go model reads what it detected from
-// its cache (or the command is delegated).
+// its cache (or the command is delegated). A hecatron the project doesn't
+// pin is warned about.
 func (c *cli) findProject() int {
-	if c.locateProject(false) {
-		return 0
+	if !c.locateProject(false) && !c.detectProject() {
+		if !c.rootFromPython(true) {
+			return 1
+		}
+		if p, err := project.LoadDetected(c.root, c.home); err == nil {
+			c.project = p
+		}
 	}
-	if c.detectProject() {
-		return 0
-	}
-	if !c.rootFromPython(true) {
-		return 1
-	}
-	if p, err := project.LoadDetected(c.root, c.home); err == nil {
-		c.project = p
-	}
+	c.warnPin()
 	return 0
 }
 
