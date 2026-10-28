@@ -45,7 +45,9 @@ except (ValueError, AttributeError):
 # The package manager's name, into node_pm_name, and the command that runs
 # it, into node_pm: Corepack for pnpm and Yarn, which runs the version
 # packageManager names (or its own default) without installing it globally;
-# else the tool itself.
+# else the tool itself. The package's scripts often call the package manager
+# by name (`pnpm -r test`), so without it on PATH, Corepack's shim for it is
+# put there (in hecatron's cache, not globally).
 # shellcheck disable=SC2034 # node_pm is read by the hooks and installers that source this
 node_pm_name=npm
 node_pm=(npm)
@@ -56,11 +58,24 @@ node_pm_command() {
         pnpm | yarn)
             if command -v corepack >/dev/null 2>&1; then
                 node_pm=(corepack "${node_pm_name}")
+                command -v "${node_pm_name}" >/dev/null 2>&1 || node_corepack_shim "${node_pm_name}"
             else
                 node_pm=("${node_pm_name}")
             fi ;;
         *) node_pm=("${node_pm_name}") ;;
     esac
+}
+
+# Corepack's shim for a package manager, on PATH for this hook and the
+# scripts it runs. The directory is a static "path" entry of JavaScript's and
+# TypeScript's definitions, so other languages' hooks have it too (a Rust
+# test that runs pnpm).
+node_corepack_shims="${HOME}/.cache/hecatron/corepack-shims"
+node_corepack_shim() {
+    local _shims="${node_corepack_shims}"
+    if mkdir -p "${_shims}" && corepack enable --install-directory "${_shims}" "$1" >/dev/null 2>&1; then
+        export PATH="${_shims}:${PATH}"
+    fi
 }
 
 # The arguments that install the package's dependencies, frozen to its lock
@@ -106,7 +121,8 @@ node_package_manager_ensure() {
     node_pm_command
     case "${node_pm_name}" in
         pnpm | yarn)
-            has corepack || has "${node_pm_name}" || _node_global_install corepack corepack ;;
+            has corepack || has "${node_pm_name}" || _node_global_install corepack corepack
+            has "${node_pm_name}" || ! has corepack || node_corepack_shim "${node_pm_name}" ;;
         bun)
             has bun || _node_global_install bun oven-sh/bun/bun ;;
     esac

@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "toolchain": {
+    "versions": "system",
+    "packages": {
+      "apt": [
+        "ldc",
+        "dub"
+      ],
+      "brew": [
+        "ldc",
+        "dub"
+      ]
+    }
+  },
+  "packages": [
+    {
+      "apt": [
+        "build-essential"
+      ],
+      "unless": {
+        "command": "cc"
+      }
+    }
+  ],
+  "uninstall": {
+    "keep": [
+      "build-essential"
+    ],
+    "because": "other languages compile with it"
+  }
+}

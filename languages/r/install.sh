@@ -12,6 +12,7 @@ deps() {
         _r_package lintr r-cran-lintr
     fi
     if air_missing; then _install_air; fi
+    impl_deps r
 }
 # Air (hecatron format's R formatter), its release binary.
 _install_air() {

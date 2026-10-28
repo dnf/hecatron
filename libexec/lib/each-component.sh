@@ -29,7 +29,7 @@ fi
 # {"format": false}) or the lint hook checked it itself (checks_format in
 # languages/_hooks.sh, which writes to HECATRON_FORMAT_CHECKED).
 _format_hook=""
-if [ "${_action}" = lint ] && printf '%s\n' ${_LINT_FORMAT_LANGS} | grep -qx "${_lang}"; then
+if [ "${_action}" = lint ] && _in_list "${_lang}" ${_LINT_FORMAT_LANGS}; then
     _format_hook="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" resolve "${_lang}" format.sh)"
 fi
 _format_checked="$(mktemp)"

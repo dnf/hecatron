@@ -75,8 +75,13 @@ func TestLicensesCommand(t *testing.T) {
 		t.Errorf("help: %+v", help)
 	}
 	noScanner := append(append([]string{}, env...), "PATH=/usr/bin:/bin")
-	if got := runIn(t, root, noScanner, binary, "licenses", "python"); got.status != 3 || !strings.Contains(got.stderr, "OSV-Scanner isn't installed") {
+	if got := runIn(t, root, noScanner, binary, "licenses", "python"); got.status != 3 ||
+		!strings.Contains(got.stderr, "OSV-Scanner isn't installed; hecatron install python installs it with the toolchain, or see ") {
 		t.Errorf("without osv-scanner: %+v", got)
+	}
+	if got := runIn(t, root, noScanner, binary, "licenses", "ts", "dart", "python"); got.status != 3 ||
+		!strings.Contains(got.stderr, "hecatron install typescript installs it with the toolchain (as does installing python), or see ") {
+		t.Errorf("without osv-scanner, several languages: %+v", got)
 	}
 	if got := runIn(t, root, noScanner, binary, "licenses", "dart", "zig"); got.status != 0 {
 		t.Errorf("nothing covered needs no osv-scanner: %+v", got)

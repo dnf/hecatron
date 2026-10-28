@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # Default test hook: Bats, on the .bats files under test/ or tests/, else
-# those in the directory itself.
+# those in the directory itself. Files under a fixtures/ directory are test
+# data (bats-core's own deliberately broken suites), not tests.
 source "$(dirname "$0")/../../_hooks.sh"
-_suites=()
+_tests=()
 for _dir in test tests; do
-    if [ -d "${_dir}" ] && [ -n "$(find "${_dir}" -name '*.bats' -print -quit)" ]; then
-        _suites+=("${_dir}")
-    fi
+    [ -d "${_dir}" ] || continue
+    while IFS= read -r -d '' _file; do
+        _tests+=("${_file#./}")
+    done < <(find "${_dir}" -name fixtures -prune -o -name '*.bats' -type f -print0 | sort -z)
 done
-if [ "${#_suites[@]}" -gt 0 ]; then
-    run bats -r "${_suites[@]}"
+if [ "${#_tests[@]}" -gt 0 ]; then
+    run bats "${_tests[@]}"
 elif exists '*.bats'; then
     run bats .
 else

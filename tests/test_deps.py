@@ -117,9 +117,9 @@ class FetchTest(Fixture):
 
     def test_python_syncs_locked_with_a_uv_lock(self):
         write(self.path("pyproject.toml"), "")
-        self.assertEqual(self.ran(self.shell("deps_python")), ["uv sync --all-extras"])
+        self.assertEqual(self.ran(self.shell("deps_python")), ["uv sync --all-extras --all-groups"])
         write(self.path("uv.lock"), "")
-        self.assertEqual(self.ran(self.shell("deps_python")), ["uv sync --locked --all-extras"])
+        self.assertEqual(self.ran(self.shell("deps_python")), ["uv sync --locked --all-extras --all-groups"])
 
     def test_python_requirements_go_into_a_venv(self):
         write(self.path("requirements.txt"), "requests==2.0\n")
@@ -164,6 +164,83 @@ class FetchTest(Fixture):
         result = self.shell("deps_go")
         self.assertEqual(result.returncode, 0)
         self.assertIn("no go.mod (skipping)", result.stdout)
+
+
+class DefaultHookTest(Fixture):
+    """Which command a default hook picks for a layout, through fake tools
+    that print how they were called."""
+
+    TOOLS = ("composer", "dart", "flutter", "Rscript", "npx", "elm-test", "raco", "bundle")
+
+    def setUp(self):
+        super().setUp()
+        self.bin = self.path(".fakebin")
+        for tool in self.TOOLS:
+            write(os.path.join(self.bin, tool),
+                  '#!/bin/sh\ncase "$*" in "exec rake -P") printf "rake compile\\nrake test\\n"; exit 0 ;; check) exit 0 ;; esac\n'
+                  f'echo "ran {tool} $*"\n', 0o755)
+
+    def hook(self, lang: str, cwd: str = ".", action: str = "test") -> list[str]:
+        environ = {**os.environ, "PATH": f"{self.bin}:{os.environ['PATH']}", "HECATRON_ROOT": self.root,
+                   "HECATRON_LANG": lang}
+        result = subprocess.run(["bash", os.path.join(HOME, "languages", lang, "hooks", f"{action}.sh")],
+                                cwd=self.path(cwd), env=environ, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        return [line[len("ran "):] for line in result.stdout.splitlines() if line.startswith("ran ")]
+
+    def files(self, *names: str, content: str = "") -> None:
+        for name in names:
+            write(self.path(name), content)
+
+    def test_php_runs_the_phpunit_of_the_composer_json_above(self):
+        self.files("composer.json", "lang/php/phpunit.xml", "lang/php/test/ATest.php")
+        write(self.path("vendor", "bin", "phpunit"), '#!/bin/sh\necho "ran phpunit in $(pwd)"\n', 0o755)
+        self.assertEqual(self.hook("php", "lang/php"), [f"phpunit in {self.path('lang', 'php')}"])
+
+    def test_php_fetches_from_the_composer_json_above(self):
+        self.files("composer.json", "lang/php/phpunit.xml")
+        environ = {**os.environ, "PATH": f"{self.bin}:{os.environ['PATH']}", "HECATRON_ROOT": self.root,
+                   "HECATRON_LANG": "php"}
+        result = subprocess.run(["bash", "-c", f"source {HOOKS}\nsource {DEPS}\ndeps_php\npwd"],
+                                cwd=self.path("lang", "php"), env=environ, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("ran composer install --no-interaction", result.stdout)
+        self.assertEqual(result.stdout.splitlines()[-1], self.root)
+
+    def test_dart_tests_the_packages_below_that_have_tests(self):
+        self.files("pubspec.yaml", "pkgs/a/pubspec.yaml", "pkgs/a/test/a_test.dart", "pkgs/b/pubspec.yaml",
+                   content="name: x\n")
+        self.assertEqual(self.hook("dart"), ["dart pub get", "dart test"])
+
+    def test_dart_without_a_package_here_looks_below(self):
+        self.files("runtime/Dart/pubspec.yaml", "runtime/Dart/test/t_test.dart", content="name: x\n")
+        self.assertEqual(self.hook("dart"), ["dart pub get", "dart test"])
+
+    def test_r_tests_the_packages_below(self):
+        self.files("R-package/DESCRIPTION", "R-package/tests/testthat/test-a.R", "python/setup.py")
+        self.assertEqual(self.hook("r"), ["Rscript -e testthat::test_local(stop_on_failure = TRUE)"])
+
+    def test_elm_test_1_runs_on_the_last_elm_test_supporting_it(self):
+        write(self.path("elm.json"), json.dumps({"test-dependencies": {"elm-explorations/test": "1.2.2 <= v < 2.0.0"}}))
+        self.assertEqual(self.hook("elm"), ["npx --yes -p elm@0.19.1-6 -p elm-test@0.19.1-revision9 elm-test"])
+        write(self.path("elm.json"), json.dumps({"test-dependencies": {"direct": {"elm-explorations/test": "2.2.0"}}}))
+        self.assertEqual(self.hook("elm"), ["elm-test "])
+
+    def test_elm_0_19_1_runs_on_that_compiler_when_another_is_installed(self):
+        write(os.path.join(self.bin, "elm"), '#!/bin/sh\necho 0.19.3\n', 0o755)
+        write(self.path("elm.json"), json.dumps({"elm-version": "0.19.1"}))
+        self.assertEqual(self.hook("elm"), ["npx --yes -p elm@0.19.1-6 -p elm-test elm-test"])
+        write(os.path.join(self.bin, "elm"), '#!/bin/sh\necho 0.19.1\n', 0o755)
+        self.assertEqual(self.hook("elm"), ["elm-test "])
+
+    def test_ruby_compiles_a_native_extension_before_testing(self):
+        self.files("Gemfile", "Rakefile", "ext/x/extconf.rb")
+        self.assertEqual(self.hook("ruby"), ["bundle exec rake compile", "bundle exec rake test"])
+
+    def test_racket_links_sibling_packages_before_testing(self):
+        self.files("app/info.rkt", "app/main.rkt", "lib/info.rkt", "lib/x.rkt")
+        self.assertEqual(self.hook("racket"),
+                         ["raco pkg install --auto --batch --skip-installed --link app lib", "raco test ."])
 
 
 class HooksTest(unittest.TestCase):

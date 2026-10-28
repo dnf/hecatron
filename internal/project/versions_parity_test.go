@@ -46,6 +46,7 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 	"net/config.json": `{"version": "=10.0.403", "track": "lts", "releaseLine": 3,
 		"pinFiles": [{"file": "global.json", "format": "global-json"}],
 		"supportFiles": [{"file": ".github/workflows/*.y*ml", "format": "github-setup", "key": "dotnet-version", "selects": false}],
+		"floorFiles": [{"file": "*.csproj", "format": "target-framework"}],
 		"oldestInstallable": "6.0", "path": ["{home}"], "env": {"DOTNET_ROOT": "{home}"}}`,
 	"net/releases.json": `{"releases": [["5.0.400", "2021-08-10"], ["6.0.100", "2021-11-08", "lts"],
 		["8.0.100", "2023-11-14", "lts"], ["9.0.100", "2024-11-12"], ["10.0.403", "2026-10-14", "lts"]]}`,
@@ -68,6 +69,11 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 	"rb/config.json":   `{"version": "=4.0.9", "pinFiles": [{"file": ".ruby-version", "format": "ruby-version"}]}`,
 	"sw/config.json":   `{"version": "=6.2", "pinFiles": [{"file": ".swift-version", "format": "swift-version"}]}`,
 
+	"ex/config.json": `{"version": "=1.20.4",
+		"pinFiles": [{"file": ".tool-versions", "format": "tool-versions", "key": "elixir", "strip": "-otp-[0-9]+$"},
+			{"file": "mise.toml", "format": "mise", "key": "elixir", "strip": "-otp-[0-9]+$"}]}`,
+	"exall/config.json":    `{"version": "=1.0", "pinFiles": [{"file": "pin", "format": "python-version", "strip": "[0-9.]+"}]}`,
+	"badstrip/config.json": `{"version": "=1.0", "pinFiles": [{"file": "pin", "format": "python-version", "strip": "("}]}`,
 	"inexact/config.json":  `{"version": "3.1"}`,
 	"numeric/config.json":  `{"version": 3.1}`,
 	"badfmt/config.json":   `{"version": "=1.0", "pinFiles": [{"file": "pin", "format": "nope"}]}`,
@@ -79,12 +85,15 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 	"failing/installed.sh": `printf '1.0\t/opt/x\n'; exit 3`,
 	"oddpath/config.json":  `{"version": "=1.0", "path": ["{home}/{nope}"]}`,
 	"rel/config.json":      `{"path": ["static*/bin", "toolchains"]}`,
+	"dup/config.json":      `{"path": ["/usr/bin", "{home}/bin"]}`,
+	"also/config.json":     `{"path": ["/usr/bin", "/bin"]}`,
+	"off/config.json":      `{"path": ["/usr/sbin"]}`,
 	"oddpath/installed.sh": `printf '1.0\t/opt/x\n'`,
 }
 
 // versionLangs are the fixture languages compared.
-var versionLangs = []string{"py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw",
-	"inexact", "numeric", "badfmt", "badspec", "noline", "neg", "failing", "oddpath", "rel", "unknown"}
+var versionLangs = []string{"py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw", "ex", "exall", "badstrip",
+	"inexact", "numeric", "badfmt", "badspec", "noline", "neg", "failing", "oddpath", "rel", "dup", "also", "off", "unknown"}
 
 // pinned projects: one component per pin file format.
 var pinnedFiles = map[string]string{
@@ -166,6 +175,14 @@ var pinnedFiles = map[string]string{
 	"i/fs/global.json":                             `{"sdk": {"version": "8.0.100", "rollForward": ["x"]}}`,
 	"i/jv/.sdkmanrc":                               "java=21.0.2-tem.x_1\nmaven=3\n",
 	"i/python/.tool-versions":                      "python\npython  3.8.10  3.9\n",
+	"a/ex/.tool-versions":                          "erlang 27.1\nelixir 1.17.3-otp-27\n",
+	"b/ex/mise.toml":                               "[tools]\nelixir = \"1.18-otp-26\"\n",
+	"c/ex/.tool-versions":                          "elixir 1.19.1\n",
+	"d/ex/.tool-versions":                          "elixir 1.16.0-rc.1\n",
+	"e/ex/.tool-versions":                          "elixir ref:main-otp-27\n",
+	"f/ex/.tool-versions":                          "elixir v1.15.8-otp-26\n",
+	"a/exall/pin":                                  "1.2.3\n",
+	"a/badstrip/pin":                               "1.2.3\n",
 	"i/rs/rust-toolchain.toml":                     "[toolchain]\nchannel = [\"1.70\"]\n",
 	"i/ph/composer.json":                           `{"config": {"platform": {"php": "v8.2.1"}}}`,
 	"i/gol/go.mod":                                 "go 1.21\ntoolchain local\n",
@@ -201,7 +218,7 @@ var pinnedFiles = map[string]string{
 
 func versionConfig(components ...string) string {
 	return `{"schema": 1, "components": ["` + strings.Join(components, `", "`) + `"],
-		"languages": ["py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw", "badfmt", "projectonly"]}`
+		"languages": ["py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw", "ex", "exall", "badstrip", "badfmt", "projectonly"]}`
 }
 
 var pinnedComponents = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p"}
@@ -266,7 +283,32 @@ func versionCases() []parityCase {
 	for _, date := range []string{"2021-02-30", "0000-01-01", "20210101", "yesterday", "2021-W01"} {
 		add("versions: HECATRON_AS_OF="+date, supportFiles, map[string]string{"HECATRON_AS_OF": date})
 	}
+	add("versions: global.json floors", map[string]string{
+		".hecatron/config.json":  `{"schema": 1, "components": ["a", "b", "c", "d", "e", "f"], "languages": ["net", "fs"]}`,
+		"a/net/global.json":      `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
+		"b/net/global.json":      `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
+		"b/net/src/A/A.csproj":   "<TargetFrameworks>netstandard2.0;net8.0;net11.0</TargetFrameworks>",
+		"b/net/src/B/B.csproj":   "<TargetFramework>net9.0</TargetFramework><TargetFramework>net472</TargetFramework>",
+		"c/net/global.json":      `{"sdk": {"version": "11.0.100", "rollForward": "latestMajor"}}`,
+		"d/net/global.json":      `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
+		"d/net/bin/x.csproj":     "<TargetFramework>net12.0</TargetFramework>",
+		"d/net/a/b/c/d/x.csproj": "<TargetFramework>net12.0</TargetFramework>",
+		"d/net/a/b/c/x.csproj":   "<TargetFramework>net9.0</TargetFramework>",
+		"e/net/global.json":      `{"sdk": {"version": "8.0.100", "rollForward": "latestMinor"}}`,
+		"e/net/x.csproj":         "<TargetFramework>net10.0</TargetFramework>",
+		"f/net/global.json":      `{"sdk": {"version": "9.0.100", "rollForward": "latestMajor"}}`,
+		"f/net/x.csproj":         "<TargetFramework>net10.0</TargetFramework>",
+		"a/fs/global.json":       `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
+		"a/fs/x.csproj":          "<TargetFramework>net12.0</TargetFramework>",
+	}, nil)
+	add("versions: global.json floors as of 2024", map[string]string{
+		".hecatron/config.json": `{"schema": 1, "components": ["a"], "languages": ["net"]}`,
+		"a/net/global.json":     `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
+	}, map[string]string{"HECATRON_AS_OF": "2024-06-01"})
 	add("versions: no HOME", pinned, map[string]string{"HOME": ""})
+	add("versions: other languages' static paths", with(pinnedFiles, map[string]string{
+		".hecatron/config.json": `{"schema": 1, "languages": ["py", "off", "dup", "also", "gol"]}`,
+		".hecatron/local.json":  `{"disabled": ["off"]}`}), nil)
 	add("versions: implPath outside the root", with(pinnedFiles, map[string]string{
 		".hecatron/config.json": `{"schema": 1, "components": ["a", "b"], "implPath": "../{component}/{lang}", "languages": ["py"]}`}), nil)
 	add("versions: project versions", with(config(`, "languages": ["py", "jv", "rs"]`), map[string]string{

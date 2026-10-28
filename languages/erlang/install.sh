@@ -2,6 +2,11 @@
 # Install Erlang/OTP + rebar3
 source "$(dirname "$0")/../_common.sh"
 
+# Installed from install.json by hecatron's binary; this script is what runs
+# without it, and what Elixir's and Gleam's installers run, so it hands over
+# to the binary when there is one.
+install_from_data erlang
+
 install_macos() { brew_install erlang rebar3; }
 install_linux() { apt_install erlang-dev erlang-tools rebar3; }
 

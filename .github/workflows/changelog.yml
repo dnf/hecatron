@@ -1,0 +1,47 @@
+name: Changelog
+
+# Each pull request adds its entry as changelog.d/<branch>.md
+# (changelog.d/README.md), or is labelled "no changelog". Reruns when a label
+# changes, which is why it's its own workflow.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  fragment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: A changelog.d fragment, or the "no changelog" label
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          NO_CHANGELOG: ${{ contains(github.event.pull_request.labels.*.name, 'no changelog') }}
+        run: |
+          # Releases gather the fragments; the bots' pull requests carry results.
+          case "${HEAD_REF}" in release-*) exit 0 ;; esac
+          [ "${AUTHOR}" = "github-actions[bot]" ] && exit 0
+          [ "${NO_CHANGELOG}" = true ] && exit 0
+          # Captured, not piped into grep -q: under pipefail, grep exiting
+          # early can kill the writer and fail the pipeline (#197).
+          if [ -n "$(git diff --name-only "${BASE}" HEAD -- CHANGELOG.md)" ]; then
+            echo "::error file=CHANGELOG.md::Add the entry as changelog.d/${HEAD_REF//\//-}.md instead of editing CHANGELOG.md (changelog.d/README.md)."
+            exit 1
+          fi
+          fragments="$(git diff --name-only --diff-filter=AM "${BASE}" HEAD -- changelog.d)"
+          if grep -v '^changelog.d/README.md$' <<<"${fragments}" | grep '\.md$' >/dev/null; then
+            exit 0
+          fi
+          echo "::error::Add changelog.d/${HEAD_REF//\//-}.md (changelog.d/README.md), or label the pull request 'no changelog'."
+          exit 1

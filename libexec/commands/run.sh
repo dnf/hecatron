@@ -34,7 +34,7 @@ for _a in "$@"; do
     esac
 done
 for _component in ${_components[@]+"${_components[@]}"}; do
-    if ! printf '%s\n' ${HECATRON_COMPONENTS} | grep -qx "${_component}"; then
+    if ! _in_list "${_component}" ${HECATRON_COMPONENTS}; then
         echo "hecatron: unknown component '${_component}' (components: ${HECATRON_COMPONENTS})" >&2
         exit 2
     fi
@@ -110,6 +110,23 @@ _usage() {
             "  --check    Change nothing; fail, listing the files the formatter would change" \
             "             (hecatron lint runs this check too; docs/format.md)"
     fi
+    printf '%s\n' \
+        "" \
+        "With hecatron's binary (install.sh downloads it with a release; docs/runner.md):" \
+        "  --output FORMAT" \
+        "             human, agent, json, ci, junit or sarif (else HECATRON_OUTPUT;" \
+        "             agent output for AI agents)" \
+        "  --timeout DURATION" \
+        "             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);" \
+        "             by default 5x its usual time from history.log, at least 10 minutes"
+    case "${_action}" in
+        test|lint|build|format|deps|rebuild|retest)
+            printf '%s\n' \
+                "  --changed [REF]" \
+                "             Only the languages, components and project tasks the files changed" \
+                "             since REF touch (default: the pull request's base, else the default branch)"
+            ;;
+    esac
     printf '%s\n' \
         "" \
         "Examples:" \

@@ -1,1 +1,47 @@
-# apt: elixir
+# Elixir: each version the components use, from builds.hex.pm's precompiled
+# releases into /opt/elixir/<version> as install.sh installs it, each on an
+# OTP it supports, linked as <home>/erlang: the distribution's Erlang when it
+# is one, else builds.hex.pm's OTP build for this Ubuntu in
+# /opt/erlang/<version>. The default version (config.json), installed first,
+# gets wrappers in /usr/local/bin. Each has its own Hex in <home>/archives
+# (MIX_ARCHIVES). A prefix resolves to its newest release.
+# The distribution's Erlang with the applications Mix and Hex use, without
+# its GUI ones (erlang-wx).
+# apt: erlang-dev erlang-tools erlang-crypto erlang-ssl erlang-inets erlang-public-key erlang-parsetools erlang-syntax-tools erlang-eunit erlang-xmerl erlang-runtime-tools erlang-os-mon
+# each-version
+RUN V="{version}" B=https://builds.hex.pm/builds && . /etc/os-release && A="$(dpkg --print-architecture)" && \
+    L="$(curl -fsSL "${B}/elixir/builds.txt" | awk '$1 ~ /^v[0-9]+\.[0-9]+\.[0-9]+-otp-[0-9]+$/ {n = substr($1, 2); split(n, p, "-otp-"); print p[1], p[2], $4}')" && \
+    if [ -z "{exact}" ]; then V="$(echo "${L}" | awk -v s="${V}" '$1 == s || index($1, s ".") == 1 {print $1}' | sort -uV | tail -1)"; fi && \
+    H="/opt/elixir/${V}" && \
+    if [ ! -x "${H}/bin/elixir" ]; then \
+      MS="$(echo "${L}" | awk -v v="${V}" '$1 == v {print $2}' | sort -rn)" && \
+      S="$(erl -noshell -eval 'io:format("~s", [erlang:system_info(otp_release)]), halt().' 2>/dev/null || true)" && \
+      if [ -n "${S}" ] && echo "${MS}" | grep -qx "${S}"; then \
+        M="${S}" R="$(erl -noshell -eval 'io:format("~s", [code:root_dir()]), halt().')"; \
+      else \
+        OB="$(curl -fsSL "${B}/otp/${A}/ubuntu-${VERSION_ID}/builds.txt" 2>/dev/null || true)" O="" && \
+        for M in ${MS}; do \
+          O="$(echo "${OB}" | awk -v m="${M}" '$1 ~ ("^OTP-" m "(\\.[0-9]+)*$") {print substr($1, 5), $4}' | sort -rV | head -1)"; \
+          if [ -n "${O}" ]; then break; fi; \
+        done && \
+        if [ -z "${O}" ]; then echo "Elixir ${V} runs on OTP $(echo ${MS}), this image's Erlang is OTP ${S:-none}, and builds.hex.pm has no OTP build for ${ID} ${VERSION_ID}" >&2; exit 1; fi && \
+        R="/opt/erlang/${O%% *}" && \
+        if [ ! -x "${R}/bin/erl" ]; then \
+          curl -fsSL -o /tmp/otp.tar.gz "${B}/otp/${A}/ubuntu-${VERSION_ID}/OTP-${O%% *}.tar.gz" && \
+          echo "${O##* }  /tmp/otp.tar.gz" | sha256sum -c - >/dev/null && \
+          mkdir -p "${R}" && tar -C "${R}" --strip-components 1 -xzf /tmp/otp.tar.gz && rm /tmp/otp.tar.gz && \
+          (cd "${R}" && ./Install -minimal "${R}" >/dev/null); \
+        fi; \
+      fi && \
+      curl -fsSL -o /tmp/elixir.zip "${B}/elixir/v${V}-otp-${M}.zip" && \
+      echo "$(echo "${L}" | awk -v v="${V}" -v m="${M}" '$1 == v && $2 == m {print $3}')  /tmp/elixir.zip" | sha256sum -c - >/dev/null && \
+      python3 -m zipfile -e /tmp/elixir.zip "${H}" && rm /tmp/elixir.zip && chmod 0755 "${H}"/bin/* && ln -sfn "${R}" "${H}/erlang" && \
+      PATH="${H}/bin:${H}/erlang/bin:${PATH}" MIX_ARCHIVES="${H}/archives" MIX_HOME=/tmp/mix "${H}/bin/mix" local.hex --force </dev/null && rm -rf /tmp/mix; \
+    fi && \
+    if [ ! -e /usr/local/bin/elixir ]; then \
+      for T in elixir elixirc iex mix; do \
+        printf '#!/bin/sh\n# %s (%s), on the OTP it was installed for.\nPATH="%s/bin:%s/erlang/bin:${PATH}" MIX_ARCHIVES="%s/archives"\nexport PATH MIX_ARCHIVES\nexec %s/bin/%s "$@"\n' \
+          "hecatron's default Elixir" "${V}" "${H}" "${H}" "${H}" "${H}" "${T}" > "/usr/local/bin/${T}" && chmod 0755 "/usr/local/bin/${T}"; \
+      done; \
+    fi
+# end-each-version

@@ -8,10 +8,14 @@
 //
 // Ported: --version, help, the run commands (test, lint, build, clean,
 // rebuild, retest, audit, format, deps, outdated: run.go), doctor
-// (doctor.go; each language's doctor.sh stays bash), version's help, list,
-// env (with a language, its environment for a component), status, sync, advisor, and the
+// (doctor.go; each language's doctor.sh stays bash), version (version.go; each
+// language's version.sh stays bash), list,
+// env (with a language, its environment for a component), status, sync, advisor, the
 // project commands (init, add, remove, enable, disable, check, dockerfile,
-// workflows: manage.go, init.go). The prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
+// workflows: manage.go, init.go), banner (banner.go), and install and uninstall
+// (install.go; each language's install.sh and uninstall.sh stay bash),
+// and self update (selfupdate.go), which only the binary has. The
+// prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
 
 import (
@@ -38,6 +42,7 @@ type cli struct {
 
 	pythonChecked bool
 	ci            string // workflows --ci: the CI system to generate for
+	notice        string // a newer release's notice, shown when the command is done
 }
 
 func run(argv []string) int {
@@ -45,6 +50,13 @@ func run(argv []string) int {
 	if len(argv) > 0 {
 		c.command, c.args = argv[0], argv[1:]
 	}
+	c.prepareUpdateNotice()
+	status := c.dispatch()
+	c.showUpdateNotice()
+	return status
+}
+
+func (c *cli) dispatch() int {
 	switch c.command {
 	case "help", "-h", "--help":
 		if len(c.args) > 0 && c.args[0] == "agents" {
@@ -63,17 +75,25 @@ func run(argv []string) int {
 		return c.licenses()
 	case "skill":
 		return c.skill()
+	case "self":
+		return c.self()
+	case "_update-check":
+		return c.updateCheck()
+	case "_write-env":
+		return writeEnv(c.args)
 	case "advisor":
 		return c.advisor()
 	case "_audit":
 		return c.auditTool()
 	case "_outdated":
 		return c.outdatedTool()
+	case "_install":
+		return c.installHidden()
 	case "_gotest":
 		return c.goTestFilter()
-	case "self-test":
+	case "self-test": // self test's earlier name
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
-	case "self-build":
+	case "self-build": // self build's earlier name
 		return c.delegate(bashScript("libexec/commands/self-build.sh"))
 	}
 	implementation, known := delegated[c.command]
@@ -89,7 +109,7 @@ func run(argv []string) int {
 			return status
 		}
 	}
-	if handler, ok := nativeCommands[c.command]; ok && (c.project != nil || c.command == "init") {
+	if handler, ok := nativeCommands[c.command]; ok && (c.project != nil || c.command == "init" || c.command == "banner") {
 		if status, handled := handler(c); handled {
 			return status
 		}
@@ -122,7 +142,10 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"check":      (*cli).check,
 	"dockerfile": (*cli).dockerfile,
 	"workflows":  (*cli).workflows,
-	"version":    (*cli).versionHelp,
+	"version":    (*cli).versionCommand,
+	"banner":     (*cli).banner,
+	"install":    (*cli).install,
+	"uninstall":  (*cli).uninstall,
 }
 
 // findProject finds the project (like git). A git repository with no

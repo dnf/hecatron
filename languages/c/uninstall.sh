@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Uninstall C toolchain
+# Uninstall C. Nothing C's installer adds is C's alone: the compiler is the
+# system's (build-essential, Xcode's clang), and CMake is shared with the other
+# native languages, so it stays.
 source "$(dirname "$0")/../_common.sh"
 
-uninstall_macos() { brew uninstall cmake 2>/dev/null || true; }
-uninstall_linux() { $SUDO apt-get remove -y cmake 2>/dev/null || true; }
+uninstall_macos() { leave_cmake; }
+uninstall_linux() { leave_cmake; }
 
 log "Uninstalling C..."
 "uninstall_${OS}"

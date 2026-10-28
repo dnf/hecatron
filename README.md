@@ -102,6 +102,18 @@ options.
   which is idempotent and repairs the broken states the doctor finds (a
   linter built with an older compiler, a moved virtualenv, an unlinked
   Homebrew formula).
+- **Installs as data, ready for CI caches.** Languages are moving from
+  install scripts to a declarative `install.json` that hecatron's binary
+  carries out: every step checked, so a rerun does nothing and
+  `hct doctor --fix` repairs only what's broken; one `apt-get` or `brew`
+  call for every language's packages; `hct install --plan` to see what
+  would happen; and uninstall that removes only what hecatron installed.
+  Toolchains it downloads go to `~/.local/share/hecatron/toolchains`, with
+  no root, so `"ci": {"cache": true}` caches and restores them. Thirteen
+  languages use it so far: Gleam and Zig as checksummed release downloads,
+  the rest from apt, which isn't cached; caching gets better as more
+  languages move to downloaded toolchains
+  ([docs/installers.md](docs/installers.md#installs-as-data)).
 - **The right version for each component.** For Python, Go, Rust, Node.js and
   Java, a pinned default, or the version a component asks for in its
   ecosystem's own file (`.python-version`, `go.mod`, `rust-toolchain.toml`,
@@ -329,9 +341,28 @@ problem, see [SECURITY.md](SECURITY.md).
 
 ## Contributing
 
-Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has
-the checks to run (`hct self-test`), the conventions the code follows, and a
-map of the repository.
+Issues and pull requests are welcome.
+
+Especially for toolchains that are less well known.
+
+ESPECIALLY if you are a maintainer of such a toolchain.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## About the authors
+
+Hecatron was created by Don Neufeld and Claude Code.
+
+Don Neufeld was the CTO of [Medium](https://medium.com),
+developer of several massively multiplayer online games,
+VPE of multiple startups, and is currently an
+[Executive Coach](https://vpecoach.com) to engineering leaders.
+
+Don lives in the San Francisco Bay Area with his family,
+several thousand bees, and a quantity of fruit trees
+some might call excessive.
+
+Claude Code is a good bot.
 
 ## Acknowledgements
 
@@ -346,7 +377,7 @@ map of the repository.
 
 [MIT](LICENSE.md)
 
-## The name
+## Origin of the Name and Logo
 
 Hecatron comes from the [Hecatoncheires](https://en.wikipedia.org/wiki/Hecatoncheires),
 the "hundred-handed ones" of [Greek myth](https://en.wikipedia.org/wiki/Greek_mythology)

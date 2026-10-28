@@ -22,6 +22,19 @@ ROOT="${HECATRON_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
 log() { echo "==> $*"; }
 
+# True when the first argument is one of the others. Not `printf ... | grep -q`
+# (nor `command | grep -q`): under pipefail, grep exiting at its match can kill
+# the writer with SIGPIPE before it's done, failing the pipeline now and then
+# (#169). Search a command's output with `grep -q PATTERN <<<"$(command)"`.
+in_list() {
+    local _wanted="$1" _item
+    shift
+    for _item in "$@"; do
+        [ "${_item}" = "${_wanted}" ] && return 0
+    done
+    return 1
+}
+
 # Every download retries. Installing dozens of toolchains from dozens of hosts
 # makes a transient failure (a timeout, a refused or dropped connection, a 5xx
 # or 429) a matter of time, so curl tries up to five times, gives up on a
@@ -87,9 +100,11 @@ each_impl_versioned() {
 # every language, the language is only listed in the HECATRON_DEFER_DEPS
 # file: the dependencies are fetched once every toolchain is in.
 impl_deps() {
+    local _deps_langs
     [ -n "${HECATRON_HOME:-}" ] || return 0
-    (cd "${ROOT}" && eval "$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env </dev/null)" &&
-        printf '%s\n' "${_DEPS_LANGS}") | grep -qx "$1" || return 0
+    _deps_langs="$(cd "${ROOT}" && eval "$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env </dev/null)" &&
+        printf '%s\n' "${_DEPS_LANGS}")" || return 0
+    in_list "$1" ${_deps_langs} || return 0
     if [ -n "${HECATRON_DEFER_DEPS:-}" ]; then
         echo "$1" >>"${HECATRON_DEFER_DEPS}"
         return 0
@@ -119,6 +134,22 @@ note() { echo "note: $*"; }
 doctor_done() { exit "${_doctor_failed}"; }
 
 has() { command -v "$1" &>/dev/null; }
+
+# For uninstall.sh: a tool another language's installer also installs (CMake,
+# Node.js, the .NET SDK, a JDK...) stays when one of them is uninstalled
+# (docs/installers.md, "Shared toolchains"), and the uninstaller says so.
+left_shared() { echo "Left $1 installed: $2"; }
+leave_cmake() {
+    if has cmake; then left_shared CMake "C, C++, Objective-C, COBOL and Fortran share it."; fi
+}
+leave_node() {
+    if has node; then left_shared Node.js "TypeScript, JavaScript and Elm share it."; fi
+}
+leave_dotnet() {
+    if has dotnet || [ -d /opt/dotnet ] || [ -d "${HOME}/.local/share/hecatron/dotnet" ]; then
+        left_shared "the .NET SDK" "C#, F# and VB.NET share it."
+    fi
+}
 
 brew_install() { brew install "$@" || true; }
 
@@ -184,10 +215,14 @@ spec = Spec(sys.argv[1])
 print(newest([v.strip() for v in sys.stdin if spec.matches(v.strip())]) or "")
 ' "$1" "${HECATRON_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/libexec/lib"
 }
-# A definition's default version (its config.json's "version", without "=").
+# A definition's default version (its config.json's "version", without
+# "="): the running installer's, or the named language's (`default_version
+# zig`), the version the binary installs from install.json too.
 default_version() {
-    python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["version"].lstrip("="))' \
-        "$(dirname "$0")/config.json"
+    local _config
+    _config="$(dirname "$0")/config.json"
+    [ -z "${1:-}" ] || _config="$(dirname "${BASH_SOURCE[0]}")/$1/config.json"
+    python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["version"].lstrip("="))' "${_config}"
 }
 
 # For Ruby's installer and doctor: whether Bundler would install into a gem
@@ -307,7 +342,7 @@ dotnet_target_majors() {
         xargs -r grep -ho '<TargetFrameworks\?[^>]*>[^<]*' 2>/dev/null |
         sed 's/.*>//' | tr ';' '\n' | sed -n 's/^net\([0-9][0-9]*\)\.0.*$/\1/p' | sort -un
 }
-dotnet_has_runtime() { dotnet --list-runtimes 2>/dev/null | grep -q "^Microsoft.NETCore.App $1\."; }
+dotnet_has_runtime() { grep -q "^Microsoft.NETCore.App $1\." <<<"$(dotnet --list-runtimes 2>/dev/null)"; }
 dotnet_runtimes_missing() {
     local _major
     has dotnet || return 0
@@ -356,6 +391,8 @@ _cmake_package() {
             libuv) echo libuv ;;
             FLEX) echo flex ;;
             BISON) echo bison ;;
+            PCRE2 | libpcre2-8) echo pcre2 ;;
+            cJSON | libcjson) echo cjson ;;
         esac
     else
         case "${_name}" in
@@ -386,6 +423,8 @@ _cmake_package() {
             CyrusSASL) echo libsasl2-dev ;;
             FLEX) echo flex ;;
             BISON) echo bison ;;
+            PCRE2 | libpcre2-8) echo libpcre2-dev ;;
+            cJSON | libcjson) echo libcjson-dev ;;
             Threads) ;;
             liblzma | LibLZMA) echo liblzma-dev ;;
             lib*) if [ "$1" != "${_name}" ]; then echo "${_name}-dev"; fi ;;
@@ -478,6 +517,150 @@ cmake_dependencies() {
     if [ "${OS}" = "macos" ]; then brew_install ${_packages}; else apt_install ${_packages}; fi
 }
 
+# For the native languages' installers and doctors (C, C++, Objective-C):
+# Meson, and the Ninja it builds with, where a component builds with Meson
+# (the hooks run it for a meson.build) and it isn't installed, or is older
+# than a meson.build's project(meson_version: '>=X') asks for. The
+# distribution's Meson lags (Ubuntu 24.04's is 1.3; NumPy wants 1.8): where
+# a version is asked for, Linux gets the current release from PyPI as a uv
+# tool in ~/.local/bin, ahead of /usr/bin on PATH.
+meson_missing() {
+    local _need
+    impl_configures "$1" meson.build || return 1
+    has meson || return 0
+    _need="$(meson_required "$1")"
+    [ -n "${_need}" ] && version_older "$(meson --version 2>/dev/null)" "${_need}"
+}
+meson_install() {
+    log "Installing Meson..."
+    if [ "${OS}" = "macos" ]; then
+        brew_install meson
+    elif [ -n "$(meson_required "$1")" ]; then
+        apt_install ninja-build
+        uv_install
+        uv tool install --force meson
+    else
+        apt_install meson ninja-build
+    fi
+}
+# The newest Meson a language's meson.build files ask for, if any: theirs
+# in its components (three levels down, as the hooks look) and above them.
+meson_required() {
+    local _dir _file
+    while IFS= read -r _dir; do
+        find "${_dir}" -maxdepth 3 -name meson.build -type f -print 2>/dev/null
+        while [ "${_dir}" != "${ROOT}" ] && [ "${_dir}" != / ]; do
+            _dir="$(dirname "${_dir}")"
+            [ ! -f "${_dir}/meson.build" ] || echo "${_dir}/meson.build"
+        done
+    done < <(impl_dirs "$1") | sort -u | while IFS= read -r _file; do
+        sed -n "s/.*meson_version[[:space:]]*:[[:space:]]*['\"]>=[[:space:]]*\([0-9][0-9.]*\)['\"].*/\1/p" "${_file}"
+    done | awk -F. '{ printf "%05d%05d%05d %s\n", $1, $2, $3, $0 }' | sort | tail -n 1 | cut -d' ' -f2
+}
+# Whether dotted version $1 is older than $2 (1.3.2 < 1.10).
+version_older() {
+    awk -v a="$1" -v b="$2" 'BEGIN {
+        n = split(a, x, "."); m = split(b, y, ".")
+        for (i = 1; i <= (n > m ? n : m); i++) {
+            if (x[i] + 0 < y[i] + 0) exit 0
+            if (x[i] + 0 > y[i] + 0) exit 1
+        }
+        exit 1
+    }'
+}
+
+# For Rust's installer: the system software a component's crates build
+# against or run at build time, as distribution packages, for the common
+# ones. A -sys crate links a system library (openssl-sys, glib-sys); a build
+# dependency runs a tool (the cmake crate runs cmake, prost-build runs protoc,
+# bindgen loads libclang). The crates are the ones Cargo.lock lists: the
+# component's own, the workspace's above it, and those of crates below it.
+# A crate that vendors what it needs (protoc-bin-vendored) needs nothing.
+_cargo_package() {
+    if [ "${OS}" = "macos" ]; then
+        case "$1" in
+            openssl-sys) echo "openssl pkgconf" ;;
+            cmake) echo cmake ;;
+            prost-build) echo protobuf ;;
+            capnpc) echo capnp ;;
+            glib-sys) echo "glib pkgconf" ;;
+        esac
+    else
+        case "$1" in
+            openssl-sys) echo "libssl-dev pkg-config" ;;
+            cmake) echo cmake ;;
+            libz-sys) echo "zlib1g-dev pkg-config cmake" ;;
+            prost-build) echo protobuf-compiler ;;
+            capnpc) echo capnproto ;;
+            bindgen) echo libclang-dev ;;
+            pyo3-build-config) echo python3-dev ;;
+            glib-sys | gobject-sys | gio-sys) echo "libglib2.0-dev pkg-config" ;;
+            gdk-sys | gtk-sys) echo libgtk-3-dev ;;
+            webkit2gtk-sys) echo libwebkit2gtk-4.1-dev ;;
+            javascriptcore-rs-sys) echo libjavascriptcoregtk-4.1-dev ;;
+            soup3-sys) echo libsoup-3.0-dev ;;
+            libdbus-sys) echo "libdbus-1-dev pkg-config" ;;
+            alsa-sys) echo "libasound2-dev pkg-config" ;;
+            libudev-sys) echo "libudev-dev pkg-config" ;;
+            yeslogic-fontconfig-sys | servo-fontconfig-sys) echo "libfontconfig1-dev pkg-config" ;;
+            wayland-sys) echo "libwayland-dev pkg-config" ;;
+            xkbcommon-sys) echo libxkbcommon-dev ;;
+        esac
+    fi
+}
+# The crates the Cargo.lock files list, one per line: those in and above
+# the language's components, and every other one in the project outside the
+# trees detection skips (examples, tests, vendored code...), since another
+# language's build can build a crate too (a Java binding's Maven build runs
+# cargo, whose crates need protoc).
+cargo_lock_crates() {
+    local _dir _lock
+    {
+        while IFS= read -r _dir; do
+            while [ "${_dir}" != "${ROOT}" ] && [ "${_dir}" != / ]; do
+                _dir="$(dirname "${_dir}")"
+                if [ -f "${_dir}/Cargo.lock" ]; then
+                    echo "${_dir}/Cargo.lock"
+                    break
+                fi
+            done
+        done < <(impl_dirs "$1")
+        find "${ROOT}" -mindepth 1 -maxdepth 6 \( -name target -o -name '.*' ! -name . -o -iname android \
+            -o -iname benchmarks -o -iname buildsrc -o -iname demo -o -iname demos -o -iname doc -o -iname docs \
+            -o -iname example -o -iname examples -o -iname external -o -iname fixtures -o -iname hooks \
+            -o -iname node_modules -o -iname playground -o -iname sample -o -iname samples -o -iname templates \
+            -o -iname test -o -iname test-data -o -iname test_data -o -iname testdata -o -iname tests \
+            -o -iname tests_data -o -iname third_party -o -iname tools -o -iname tutorial -o -iname tutorials \
+            -o -iname vendor -o -iname vendored \) -prune -o -name Cargo.lock -type f -print 2>/dev/null
+    } | sort -u | while IFS= read -r _lock; do
+        sed -n 's/^name = "\([A-Za-z0-9_-]*\)"$/\1/p' "${_lock}"
+    done | sort -u
+}
+cargo_dependencies() {
+    local _crates _crate _packages="" _package _available=""
+    _crates="$(cargo_lock_crates "$1")"
+    for _crate in ${_crates}; do
+        case "${_crate}" in
+            prost-build) if grep -qx protoc-bin-vendored <<<"${_crates}"; then continue; fi ;;
+        esac
+        _packages="${_packages} $(_cargo_package "${_crate}")"
+    done
+    _packages="$(echo "${_packages}" | xargs -n1 2>/dev/null | sort -u | xargs 2>/dev/null)"
+    [ -n "${_packages}" ] || return 0
+    if [ "${OS}" = "linux" ]; then
+        for _package in ${_packages}; do
+            if ! dpkg -s "${_package}" >/dev/null 2>&1 && apt_has "${_package}"; then
+                _available="${_available} ${_package}"
+            fi
+        done
+        _packages="${_available# }"
+        [ -n "${_packages}" ] || return 0
+    fi
+    log "Installing what the crates build with: ${_packages}"
+    # shellcheck disable=SC2086 # one word per package
+    if [ "${OS}" = "macos" ]; then brew_install ${_packages}; else apt_install ${_packages}; fi
+}
+
 # For the JVM languages' installers: Maven where a component builds with a
 # pom.xml and ships no ./mvnw, Gradle where it builds with build.gradle(.kts)
 # and ships no ./gradlew (the default hooks run the wrapper when there is one),
@@ -494,11 +677,28 @@ jvm_build_tools_missing() {
         { { [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ]; } && [ ! -x "${_dir}/gradlew" ]; } && _gradle=1
         [ -f "${_dir}/build.sbt" ] && _sbt=1
         _gradle_project_above "${_dir}" && _gradle=1
-    done < <(impl_dirs "$1")
+    done < <(impl_dirs "$1" | _jvm_build_dirs)
     if [ "${_maven}" -eq 1 ] && ! _maven_current; then echo maven; fi
     if [ "${_gradle}" -eq 1 ] && ! has gradle; then echo gradle; fi
     if [ "${_sbt}" -eq 1 ] && ! has sbt; then echo sbt; fi
     return 0
+}
+# Each directory read, or, for one with no build file of its own, the
+# shallowest directories below it with one, at most three levels down, where
+# the hooks run the build (find_build in _hooks.sh).
+_jvm_build_dirs() {
+    local _dir _below
+    while IFS= read -r _dir; do
+        echo "${_dir}"
+        [ -f "${_dir}/pom.xml" ] || [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ] ||
+            [ -f "${_dir}/build.sbt" ] && continue
+        _below="$(find "${_dir}" -mindepth 2 -maxdepth 4 \( -type d \( -name '.*' -o -name node_modules -o -name build -o -name target \) -prune \) -o \
+            -type f \( -name pom.xml -o -name build.gradle -o -name build.gradle.kts -o -name build.sbt \) -print 2>/dev/null |
+            sed 's|/[^/]*$||' | sort -u)"
+        [ -n "${_below}" ] || continue
+        awk -F/ 'NR == 1 || NF < least { least = NF } { depth[NR] = NF; dir[NR] = $0 }
+            END { for (i = 1; i <= NR; i++) if (depth[i] == least) print dir[i] }' <<<"${_below}"
+    done
 }
 # Whether a directory with no build file of its own is a project of a Gradle
 # build above it, in the project, without a wrapper (the hooks run Gradle
@@ -686,8 +886,91 @@ release_binary_install() {
     rm -rf "${_work}"
 }
 
+# A release download, checked against its SHA-256, unpacked into hecatron's
+# toolchains directory as the binary's install.json installs it
+# (~/.local/share/hecatron/toolchains/<lang>/<version>; no root), and its
+# commands linked with toolchain_link. Unpacked in a temporary directory and
+# moved into place, so an interrupted install leaves nothing half done. Usage:
+#   toolchain_release_install LANG VERSION URL SHA256 STRIP
+toolchain_release_install() {
+    local _lang="$1" _version="$2" _url="$3" _sha256="$4" _strip="$5" _home _work _flag=-xzf
+    _home="$(toolchain_home "${_lang}" "${_version}")"
+    _work="$(mktemp -d)"
+    curl -fsSL -o "${_work}/download" "${_url}"
+    if [ "$(sha256_of "${_work}/download")" != "${_sha256}" ]; then
+        rm -rf "${_work}"
+        echo "error: the ${_lang} download doesn't match its checksum (${_url})" >&2
+        return 1
+    fi
+    case "${_url}" in
+        *.tar.xz) _flag=-xJf ;;
+    esac
+    mkdir -p "${_work}/home" "$(dirname "${_home}")"
+    tar -C "${_work}/home" --strip-components "${_strip}" "${_flag}" "${_work}/download"
+    rm -rf "${_home}"
+    mv "${_work}/home" "${_home}"
+    rm -rf "${_work}"
+}
+
+# hecatron's own data directory, and a version's directory in it.
+hecatron_data() { echo "${XDG_DATA_HOME:-${HOME}/.local/share}/hecatron"; }
+toolchain_home() { echo "$(hecatron_data)/toolchains/$1/$2"; }
+
+# Link commands from a toolchain directory into ~/.local/share/hecatron/bin.
+# Usage: toolchain_link HOME COMMAND...
+toolchain_link() {
+    local _home="$1" _command _bin
+    shift
+    _bin="$(hecatron_data)/bin"
+    mkdir -p "${_bin}"
+    for _command in "$@"; do
+        ln -sfn "${_home}/${_command}" "${_bin}/${_command}"
+    done
+}
+
+# Remove a language's toolchains directory and the links into it.
+toolchain_uninstall() {
+    local _dir _link
+    _dir="$(hecatron_data)/toolchains/$1"
+    for _link in "$(hecatron_data)"/bin/*; do
+        case "$(readlink "${_link}" 2>/dev/null)" in
+            "${_dir}"/*) rm -f "${_link}" ;;
+        esac
+    done
+    rm -rf "${_dir}"
+}
+
+# For installed.sh: "version<TAB>home" for each of a language's versions in
+# the toolchains directory whose COMMAND (relative to the home) is there.
+toolchain_installed() {
+    local _home
+    for _home in "$(hecatron_data)/toolchains/$1"/*; do
+        [ -x "${_home}/$2" ] && printf '%s\t%s\n' "${_home##*/}" "${_home}"
+    done
+    return 0
+}
+
+# For the install.sh of a language installed from its install.json
+# (docs/installers.md), which other installers still run directly (Elixir's
+# and Gleam's run Erlang's): install from the data through hecatron's binary,
+# as `hecatron install` would, and exit with its status. The script carries
+# on itself without the binary (HECATRON_BINARY, which the binary gives the
+# installers it runs), under HECATRON_INSTALLER=script, or when the binary
+# declines the language (status 125: a project's own install.sh, a platform
+# the data doesn't cover). `hecatron _install` never runs a script, so the
+# two can't call each other in a loop.
+install_from_data() {
+    local _status=0
+    [ "${HECATRON_INSTALLER:-}" != script ] || return 0
+    [ -n "${HECATRON_BINARY:-}" ] && [ -x "${HECATRON_BINARY}" ] || return 0
+    "${HECATRON_BINARY}" _install "$1" || _status=$?
+    [ "${_status}" -eq 125 ] && return 0
+    exit "${_status}"
+}
+
 # OSV-Scanner (Google's), the dependency auditor `hecatron audit` uses for
-# ecosystems without one of their own (docs/audit.md): its release binary,
+# ecosystems without one of their own (docs/audit.md), and what `hecatron
+# licenses` reads licenses with (docs/licenses.md): its release binary,
 # pinned and checked against its checksum, into /usr/local/bin.
 _OSV_SCANNER_VERSION="2.7.0"
 osv_scanner_install() {
@@ -700,9 +983,9 @@ osv_scanner_install() {
         linux-aarch64 | linux-arm64) _platform=linux_arm64 _sha256=4061ef4c021ed3c47f203b818f337e351336cc5cd67c0274fc36bd1dfc728dd7 ;;
         macos-x86_64) _platform=darwin_amd64 _sha256=e82c5df7ab0a42dff29a1cd0660711447b56b4c0483ff66ad8634df10fd81a45 ;;
         macos-arm64) _platform=darwin_arm64 _sha256=d4926ef8da134332543be276dff157e4c170f99ad91fc48e89448a8816bdf70b ;;
-        *) echo "WARNING: no OSV-Scanner release for $(uname -sm); hecatron audit can't check this language" >&2; return 0 ;;
+        *) echo "WARNING: no OSV-Scanner release for $(uname -sm); hecatron audit and licenses can't use it" >&2; return 0 ;;
     esac
-    log "Installing OSV-Scanner ${_OSV_SCANNER_VERSION} (for hecatron audit)..."
+    log "Installing OSV-Scanner ${_OSV_SCANNER_VERSION} (for hecatron audit and licenses)..."
     _binary="$(mktemp)"
     curl -fsSL -o "${_binary}" \
         "https://github.com/google/osv-scanner/releases/download/v${_OSV_SCANNER_VERSION}/osv-scanner_${_platform}"

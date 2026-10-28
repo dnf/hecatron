@@ -1,25 +1,25 @@
 #!/usr/bin/env bash
-# Install Gleam (requires Erlang/OTP — shared with Erlang and Elixir)
+# Install Gleam: the release for this machine at the version config.json
+# pins, checked against its published SHA-256, into hecatron's toolchains
+# directory (where the binary installs it from install.json), and Erlang/OTP,
+# which Gleam's compiled code runs on (shared with Erlang and Elixir).
 source "$(dirname "$0")/../_common.sh"
 
-install_macos() { brew_install gleam; }
-install_linux() {
-    local version="1.14.0"
-    local arch
-    arch="$(uname -m)"
-    case "$arch" in
-        x86_64)  arch="x86_64" ;;
-        aarch64) arch="aarch64" ;;
-        *)       echo "Unsupported architecture: $arch" >&2; exit 1 ;;
-    esac
-    local url="https://github.com/gleam-lang/gleam/releases/download/v${version}/gleam-v${version}-${arch}-unknown-linux-musl.tar.gz"
-    curl -fsSL "$url" | $SUDO tar xz -C /usr/local/bin gleam
-    # Gleam compiles to Erlang, and runs (and tests) on the BEAM.
-    has erl || bash "$(dirname "$0")/../erlang/install.sh"
-}
+_version="$(default_version gleam)"
+case "${OS}-$(uname -m)" in
+    linux-x86_64) _target="x86_64-unknown-linux-musl" ;;
+    linux-aarch64) _target="aarch64-unknown-linux-musl" ;;
+    macos-x86_64) _target="x86_64-apple-darwin" ;;
+    macos-arm64) _target="aarch64-apple-darwin" ;;
+    *) echo "No Gleam release for $(uname -sm)" >&2; exit 1 ;;
+esac
+_home="$(toolchain_home gleam "${_version}")"
 
-deps() { :; }
-
-log "Installing Gleam..."
-"install_${OS}"
-deps
+log "Installing Gleam ${_version}..."
+if ! "${_home}/gleam" --version >/dev/null 2>&1; then
+    _url="https://github.com/gleam-lang/gleam/releases/download/v${_version}/gleam-v${_version}-${_target}.tar.gz"
+    toolchain_release_install gleam "${_version}" "${_url}" "$(curl -fsSL "${_url}.sha256" | cut -d' ' -f1)" 0
+fi
+toolchain_link "${_home}" gleam
+# Gleam compiles to Erlang, and runs (and tests) on the BEAM.
+has erl || bash "$(dirname "$0")/../erlang/install.sh"

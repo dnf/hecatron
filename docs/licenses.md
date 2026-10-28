@@ -12,8 +12,8 @@ hct licenses --output json     # every package as JSON (also --json)
 ```
 
 It needs hecatron's binary (which `install.sh` downloads with a release),
-[OSV-Scanner](https://google.github.io/osv-scanner/) (`hct install rust`
-installs it, as do the other languages whose audit uses it) and the network.
+[OSV-Scanner](https://google.github.io/osv-scanner/) (`hct install` of any
+language it reads, or whose audit uses it, installs it) and the network.
 
 ## What it reports
 

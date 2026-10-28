@@ -138,7 +138,7 @@ jobs:
         self.assertEqual(read("latestPatch"), "8.0.100")
         self.assertEqual(read("latestFeature"), "8.0")
         self.assertEqual(read("latestMinor"), "8")
-        self.assertEqual(read("latestMajor"), "8")
+        self.assertEqual(read("latestMajor"), ">=8.0.100")
         self.assertEqual(
             self.read("global-json", '{"sdk": {"version": "11.0.100-rc.1.1", "rollForward": "latestMajor"}}'),
             "11.0.100-rc.1.1")
@@ -168,6 +168,17 @@ jobs:
         self.assertIs(self.read("mise", mise, "go"), versions.NOT_PINNED)
         self.assertEqual(self.read("sdkmanrc", "java=21.0.2-tem\ngradle=8.5\n"), "21.0.2")
         self.assertEqual(self.read("sdkmanrc", "java=21.0.2-tem\ngradle=8.5\n", "gradle"), "8.5")
+
+    def test_strip_removes_a_pattern_from_the_version(self):
+        otp = "-otp-[0-9]+$"
+        self.assertEqual(versions.strip_pin("1.17.3-otp-27", otp), "1.17.3")
+        self.assertEqual(versions.strip_pin("=1.17.3-otp-27", otp), "=1.17.3")
+        self.assertEqual(versions.strip_pin("1.19.1", otp), "1.19.1")
+        self.assertEqual(versions.strip_pin("1.16.0-rc.1", otp), "1.16.0-rc.1")
+        self.assertIsNone(versions.strip_pin(None, otp))
+        self.assertIs(versions.strip_pin(versions.NOT_PINNED, otp), versions.NOT_PINNED)
+        self.assertIsNone(versions.strip_pin("1.2.3", "[0-9.]+"))
+        self.assertEqual(versions.strip_pin("1.17.3-otp-27", None), "1.17.3-otp-27")
 
     def test_an_unknown_format_is_an_error(self):
         with self.assertRaises(ValueError):
@@ -222,6 +233,33 @@ class VersionFixture(Fixture):
 
 
 class ResolutionTest(VersionFixture):
+    def floors(self, version: str, policy: str = "latestMajor") -> None:
+        self.define(version="=10.0.403", pinFiles=[{"file": "global.json", "format": "global-json"}],
+                    floorFiles=[{"file": "*.csproj", "format": "target-framework"}])
+        write(self.path("a", "tool", "global.json"),
+              json.dumps({"sdk": {"version": version, "rollForward": policy}}))
+
+    def test_global_json_latest_major_is_a_floor_the_default_meets(self):
+        self.floors("8.0.100")
+        self.assertEqual(self.load().resolve_version("tool", "a"),
+                         {"spec": "=10.0.403", "source": "pin:a/tool/global.json", "exact": True})
+
+    def test_a_floor_above_the_default_takes_its_majors_newest(self):
+        self.floors("11.0.100")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "11")
+
+    def test_a_floor_rises_to_the_newest_target_framework(self):
+        self.floors("8.0.100")
+        write(self.path("a", "tool", "src", "Lib", "Lib.csproj"),
+              "<TargetFrameworks>netstandard2.0;net8.0;net11.0</TargetFrameworks>")
+        write(self.path("a", "tool", "src", "Lib", "bin", "x.csproj"), "<TargetFramework>net12.0</TargetFramework>")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "11")
+
+    def test_latest_minor_stays_on_its_major(self):
+        self.floors("8.0.100", "latestMinor")
+        write(self.path("a", "tool", "x.csproj"), "<TargetFramework>net10.0</TargetFramework>")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "8")
+
     def test_the_default_applies_without_a_pin_or_project_version(self):
         self.assertEqual(self.load().resolve_version("tool", "a"),
                          {"spec": "=2.0.0", "source": "default", "exact": True})
@@ -250,6 +288,19 @@ class ResolutionTest(VersionFixture):
         write(self.path("a", "tool", ".tool-version"), "system\n")
         self.assertEqual(self.load().resolve_version("tool", "a"),
                          {"spec": None, "source": "pin:a/tool/.tool-version", "exact": False})
+
+    def test_a_pin_file_entry_can_strip_a_suffix(self):
+        self.define(version="=2.0.0", pinFiles=[{"file": ".tool-versions", "format": "tool-versions",
+                                                  "key": "tool", "strip": "-otp-[0-9]+$"}])
+        write(self.path("a", "tool", ".tool-versions"), "erlang 27.1\ntool 1.17.3-otp-27\n")
+        self.assertEqual(self.load().resolve_version("tool", "a"),
+                         {"spec": "1.17.3", "source": "pin:a/tool/.tool-versions", "exact": False})
+
+    def test_a_strip_that_isnt_a_regular_expression_is_an_error(self):
+        self.define(version="=2.0.0", pinFiles=[{"file": ".tool-version", "format": "python-version", "strip": "("}])
+        write(self.path("a", "tool", ".tool-version"), "1.5\n")
+        with self.assertRaisesRegex(project.ProjectError, "is not a regular expression"):
+            self.load().resolve_version("tool", "a")
 
     def test_a_project_can_add_pin_files(self):
         self.override(pinFiles=[{"file": "tool.txt", "format": "python-version"}])
@@ -544,6 +595,17 @@ class EnvironmentTest(VersionFixture):
         self.define(version="=2.0.0", path=["{home}/bin", static], env={"TOOL_HOME": "{home}"})
         self.assertEqual(self.load().language_env("tool", "a"), {"path": [static], "vars": {}})
 
+    def test_other_languages_static_path_entries_follow_its_own(self):
+        own, shared, cargo, off = (self.path(name) for name in ("own", "shared", "cargo", "off"))
+        for directory in (own, shared, cargo, off):
+            os.makedirs(directory)
+        self.define(path=[own, shared])
+        for lang, path in (("rs", [cargo, shared, "{home}/bin"]), ("off", [off])):
+            write(os.path.join(self.builtin, lang, "config.json"), json.dumps({"path": path}))
+        self.configure(languages=["tool", "rs", "off"], components=["a", "b"], implPath="{component}/{lang}")
+        write(self.path(".hecatron", "local.json"), json.dumps({"disabled": ["off"]}))
+        self.assertEqual(self.load().language_env("tool", "a")["path"], [own, shared, cargo])
+
     def test_hooks_run_with_their_components_environment(self):
         for component, version in (("a", "1.0.0"), ("b", "2.0.0")):
             os.makedirs(self.path("opt", f"tool-{version}"))
@@ -697,6 +759,20 @@ class ShippedDefinitionsTest(unittest.TestCase):
                 version = json.load(f).get("version")
             if version is not None:
                 self.assertTrue(str(version).startswith("="), f"{lang}: default version {version!r} isn't exact")
+
+    def test_installers_read_their_own_default_version_or_a_named_one(self):
+        # Installers call default_version for their own definition (rust's
+        # install.sh) and for another's (default_version zig), under set -u.
+        languages = os.path.join(HOME, "languages")
+        with open(os.path.join(languages, "rust", "config.json"), encoding="utf-8") as f:
+            rust = json.load(f)["version"].lstrip("=")
+        with open(os.path.join(languages, "zig", "config.json"), encoding="utf-8") as f:
+            zig = json.load(f)["version"].lstrip("=")
+        script = os.path.join(languages, "rust", "probe.sh")
+        result = subprocess.run(["bash", "-c", 'source "$1"; default_version; default_version zig', script,
+                                 os.path.join(languages, "_common.sh")], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.split(), [rust, zig])
 
     def test_every_shipped_release_table_parses_and_has_its_default(self):
         languages = os.path.join(HOME, "languages")

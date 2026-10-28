@@ -15,13 +15,15 @@ import (
 // repository read without a config of its own.
 
 // skippedDirs hold code that isn't the project's own implementation:
-// vendored dependencies, samples, tests, docs and tooling (hooks/: git
-// hooks, build hooks). A language found only there isn't added, and no
-// language's directory is placed there.
-var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildSrc": true, "demo": true, "demos": true,
+// vendored dependencies, samples, tests and test data, docs, tooling (hooks/:
+// git hooks, build hooks) and a generator's templates, whatever their case
+// (Examples/), as do hidden directories (.jenkins/, .github/). A language
+// found only there isn't added, and no language's directory is placed there.
+var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildsrc": true, "demo": true, "demos": true,
 	"doc": true, "docs": true, "example": true, "examples": true, "external": true, "fixtures": true,
-	"hooks": true, "node_modules": true, "playground": true, "sample": true, "samples": true, "test": true,
-	"testdata": true, "tests": true, "third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true}
+	"hooks": true, "node_modules": true, "playground": true, "sample": true, "samples": true, "templates": true,
+	"test": true, "test-data": true, "test_data": true, "testdata": true, "tests": true, "tests_data": true,
+	"third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true, "vendored": true}
 
 // preferredParents are where projects keep per-language code; when layouts
 // disagree, one under these (or at the root) beats one covering more
@@ -31,9 +33,9 @@ var preferredParents = map[string]bool{"bindings": true, "ffi": true, "lang": tr
 
 // detection is what one built-in definition says about finding it.
 type detection struct {
-	lang                                   string
-	detect, sources, unless, shared, names []string
-	script                                 string
+	lang                                          string
+	detect, sources, unless, shared, names, tests []string
+	script                                        string
 }
 
 // detectionDefinitions are the built-in definitions' detection keys, in
@@ -61,7 +63,7 @@ func detectionDefinitions(home Home) ([]detection, error) {
 		}
 		d := detection{lang: lang}
 		for key, target := range map[string]*[]string{"detect": &d.detect, "detectSources": &d.sources,
-			"detectUnless": &d.unless, "sharedBuildFiles": &d.shared, "dirNames": &d.names} {
+			"detectUnless": &d.unless, "sharedBuildFiles": &d.shared, "dirNames": &d.names, "detectTests": &d.tests} {
 			if raw, present := object.Get(key); present {
 				if *target, err = toStrings(raw, lang+" "+key); err != nil {
 					return nil, err
@@ -102,7 +104,7 @@ func TrackedFiles(root string) ([]string, error) {
 
 func isSkipped(directory string) bool {
 	for _, part := range strings.Split(directory, "/") {
-		if skippedDirs[part] {
+		if skippedDirs[strings.ToLower(part)] || strings.HasPrefix(part, ".") && part != "." {
 			return true
 		}
 	}
@@ -155,6 +157,10 @@ func splitByDir(files []string) (byDir, skipped namesByDir) {
 // for a language without detectSources, which can't tell its sources, any
 // file when the directory sits at the root or under a preferredParents
 // directory (Thrift's lib/go, not a languages/go/ holding Go's definition).
+// A build file deeper than the hooks look for one (hookSearchDepth levels
+// below) doesn't count, and with only such build files the directory
+// doesn't hold the language: its hooks would find no build (antlr4's
+// runtime/Go/antlr/v4/go.mod under the root).
 func holdsLanguage(byDir namesByDir, defs []detection) func(lang, directory string) (bool, error) {
 	byLang := map[string]detection{}
 	for _, d := range defs {
@@ -162,19 +168,57 @@ func holdsLanguage(byDir namesByDir, defs []detection) func(lang, directory stri
 	}
 	return func(lang, directory string) (bool, error) {
 		d := byLang[lang]
-		patterns := append(append([]string(nil), d.detect...), d.sources...)
-		inside := false
+		inside, nearBuild, deepBuild := false, false, false
 		for sub, names := range byDir {
-			if !under(sub, directory) {
+			if under(sub, directory) {
+				inside = true
+				if matched, err := anyMatch(names, d.sources); err != nil || matched {
+					return matched, err
+				}
+			}
+			if directory != "." && !under(sub, directory) {
 				continue
 			}
-			inside = true
-			if matched, err := anyMatch(names, patterns); err != nil || matched {
-				return matched, err
+			matched, err := anyMatch(names, d.detect)
+			if err != nil {
+				return false, err
 			}
+			if matched && depthBelow(sub, directory) <= hookSearchDepth {
+				nearBuild = true
+			}
+			deepBuild = deepBuild || matched
 		}
-		return len(d.sources) == 0 && inside && preference(directory)[0] == 0, nil
+		if nearBuild {
+			return true, nil
+		}
+		return !deepBuild && len(d.sources) == 0 && inside && preference(directory)[0] == 0, nil
 	}
+}
+
+// hookSearchDepth is how many levels below a directory the default hooks
+// look for a build file (dirs_below_with in languages/_hooks.sh).
+const hookSearchDepth = 3
+
+// allDeeper is whether every directory is deeper below the root than the
+// hooks look.
+func allDeeper(dirs dirSet) bool {
+	for directory := range dirs {
+		if depthBelow(directory, ".") <= hookSearchDepth {
+			return false
+		}
+	}
+	return true
+}
+
+func depthBelow(sub, directory string) int {
+	depth := 0
+	if sub != "." {
+		depth = len(strings.Split(sub, "/"))
+	}
+	if directory != "." {
+		depth -= len(strings.Split(directory, "/"))
+	}
+	return depth
 }
 
 func anyMatch(names map[string]bool, patterns []string) (bool, error) {
@@ -192,9 +236,29 @@ func anyMatch(names map[string]bool, patterns []string) (bool, error) {
 // hits are the directories with a name matching patterns and none matching
 // unless.
 func hits(dirs namesByDir, patterns, unless []string) (dirSet, error) {
+	return hitsAmong(dirs, patterns, unless, false)
+}
+
+// sourceHits are hits for source files, leaving out dotfiles: a .nvim.lua
+// or .eslintrc.js configures an editor or a tool, it isn't the project's
+// code.
+func sourceHits(dirs namesByDir, sources, unless []string) (dirSet, error) {
+	return hitsAmong(dirs, sources, unless, true)
+}
+
+func hitsAmong(dirs namesByDir, patterns, unless []string, noDotfiles bool) (dirSet, error) {
 	found := dirSet{}
 	for directory, names := range dirs {
-		matched, err := anyMatch(names, patterns)
+		candidates := names
+		if noDotfiles {
+			candidates = map[string]bool{}
+			for name := range names {
+				if !strings.HasPrefix(name, ".") {
+					candidates[name] = true
+				}
+			}
+		}
+		matched, err := anyMatch(candidates, patterns)
 		if err != nil {
 			return nil, err
 		}
@@ -302,10 +366,21 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 			}
 		}
 		if len(directories) == 0 && len(d.sources) > 0 {
-			if directories, err = hits(byDir, d.sources, d.unless); err != nil {
+			if directories, err = sourceHits(byDir, d.sources, d.unless); err != nil {
 				return nil, err
 			}
 			fromSources[d.lang] = true
+		}
+		if len(directories) == 0 && len(d.tests) > 0 {
+			inTests, err := hits(skipped, d.tests, nil)
+			if err != nil {
+				return nil, err
+			}
+			for directory := range inTests {
+				if tested, ok := testedDirectory(directory); ok {
+					directories[tested] = true
+				}
+			}
 		}
 		if len(directories) > 0 {
 			result.Found[d.lang] = directories
@@ -375,6 +450,26 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 		}
 	}
 	return result, nil
+}
+
+// testedDirectory is the directory a test directory (test/ or tests/, in
+// any case) tests: its parent. Not ok when the test directory is itself in
+// skipped code (vendor/x/test/) or the directory isn't in one.
+func testedDirectory(directory string) (string, bool) {
+	parts := strings.Split(directory, "/")
+	for i, part := range parts {
+		lower := strings.ToLower(part)
+		if lower == "test" || lower == "tests" {
+			if i == 0 {
+				return ".", true
+			}
+			return strings.Join(parts[:i], "/"), true
+		}
+		if skippedDirs[lower] {
+			return "", false
+		}
+	}
+	return "", false
 }
 
 // sharedSources counts the language's source files in a directory and
@@ -554,7 +649,22 @@ func InferLayout(found map[string]dirSet, names map[string][]string,
 		}
 	}
 	if len(templates) == 0 {
-		return Layout{Components: []string{"."}, ImplPath: ".", ImplPaths: map[string]string{}}, nil
+		// Every language at the root, unless its hooks would find no build
+		// from there: one whose files are all deeper than they look.
+		overrides := map[string]string{}
+		for lang, dirs := range found {
+			if holds == nil || !allDeeper(dirs) {
+				continue
+			}
+			held, err := holds(lang, ".")
+			if err != nil {
+				return Layout{}, err
+			}
+			if !held {
+				overrides[lang] = ownDirectory(dirs)
+			}
+		}
+		return Layout{Components: []string{"."}, ImplPath: ".", ImplPaths: overrides}, nil
 	}
 	var split [][]string
 	lengths := map[int]bool{}
@@ -563,7 +673,7 @@ func InferLayout(found map[string]dirSet, names map[string][]string,
 		split = append(split, parts)
 		lengths[len(parts)] = true
 	}
-	if len(templates) > 1 && len(lengths) == 1 {
+	if len(templates) > 1 && len(lengths) == 1 && everyLanguageHasRoots(roots) {
 		var varying []int
 		for i := range split[0] {
 			values := map[string]bool{}
@@ -629,6 +739,17 @@ func InferLayout(found map[string]dirSet, names map[string][]string,
 		}
 	}
 	return Layout{Components: []string{"."}, ImplPath: template, ImplPaths: overrides}, nil
+}
+
+// everyLanguageHasRoots is whether each language has a directory named
+// after it: components inferred from the others would leave it none.
+func everyLanguageHasRoots(roots map[string]dirSet) bool {
+	for _, r := range roots {
+		if len(r) == 0 {
+			return false
+		}
+	}
+	return true
 }
 
 // betterTemplate orders templates as min(key=(preference, -languages, text)).

@@ -28,6 +28,7 @@ import fnmatch
 import glob
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -38,6 +39,9 @@ import versions
 SCHEMA = 1
 # How old a checkout's last commit is before its toolchains are the releases
 # current then (Project.as_of).
+# Build output and dependencies, which floorFiles aren't read from.
+FLOOR_FILES_SKIPPED = {"bin", "obj", "node_modules", "build", "target", "packages"}
+
 AS_OF_AFTER_DAYS = 365
 HECATRON_HOME = os.environ.get(
     "HECATRON_HOME", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -357,10 +361,16 @@ class Project:
         entry may name a pattern (".github/workflows/*.y*ml"): then the
         newest version any matching file gives, and that file."""
         found = []
+        strip = entry.get("strip")
+        if strip is not None:
+            try:
+                re.compile(strip)
+            except (re.error, TypeError):
+                raise ProjectError(f"pin file strip {strip!r} is not a regular expression") from None
         for path in sorted(glob.glob(os.path.join(directory, entry["file"]))):
             if os.path.isfile(path):
                 with open(path, encoding="utf-8", errors="replace") as f:
-                    spec = versions.read_pin(entry["format"], f.read(), entry.get("key"))
+                    spec = versions.strip_pin(versions.read_pin(entry["format"], f.read(), entry.get("key")), strip)
                 if spec is not versions.NOT_PINNED:
                     found.append((spec, path))
         if not found:
@@ -396,6 +406,8 @@ class Project:
         default = self.default_version(lang)
         selects = True
         spec, source = self._pin(lang, component)
+        if isinstance(spec, str) and spec.startswith(versions.FLOOR):
+            spec = self._above_floor(lang, component, spec[len(versions.FLOOR):], default)
         if spec is versions.NOT_PINNED:
             spec, source = self._project_version(lang), "project"
             if spec is None:
@@ -410,6 +422,36 @@ class Project:
             if source == "default" or not spec.startswith("="):
                 spec, source = self._as_of_version(lang, spec, source)
         return {"spec": spec, "source": source, "exact": spec is not None and spec.startswith("=")}, selects
+
+    def _above_floor(self, lang: str, component: str, floor: str, default: str | None) -> str:
+        """The version for a pin that is a floor (global.json's latestMajor:
+        8.0.100 or later): the default when it is that or later, else the
+        newest release of the floor's major; raised to the newest major the
+        component's floor files need (a project targeting net10.0)."""
+        least = versions.Spec(floor).numbers
+        spec = default if default is not None and versions.Spec(default).numbers >= least else str(least[0])
+        needed = self._floor_files_major(lang, component)
+        if needed is not None and needed > versions.Spec(spec).numbers[0]:
+            spec = str(needed)
+        return spec
+
+    def _floor_files_major(self, lang: str, component: str) -> int | None:
+        """The newest major the definition's floorFiles ask for, in the
+        component's directory and up to three levels below it."""
+        entries = list(self._layer(lang, True).get("floorFiles", [])) + list(self._layer(lang, False).get("floorFiles", []))
+        if not entries:
+            return None
+        top = self.impl_dir(component, lang)
+        majors = []
+        for current, dirs, _ in os.walk(top):
+            dirs[:] = sorted(d for d in dirs if not d.startswith(".") and d not in FLOOR_FILES_SKIPPED)
+            if os.path.relpath(current, top).count(os.sep) >= 2 and current != top:
+                dirs[:] = []
+            for entry in entries:
+                spec, _ = self._read_entry(current, entry)
+                if isinstance(spec, str) and spec.startswith(versions.FLOOR):
+                    majors.append(versions.Spec(spec[len(versions.FLOOR):]).numbers[0])
+        return max(majors) if majors else None
 
     def _older_line(self, lang: str, supported: str, default: str) -> bool:
         """Whether the line a component supports up to (3.14) is older than
@@ -630,6 +672,23 @@ class Project:
                 dirs += sorted(d for d in glob.glob(os.path.expanduser(pattern)) if os.path.isdir(d))
         return dirs
 
+    def _others_static_path(self, lang: str, have: list[str]) -> list[str]:
+        """The static "path" directories of the project's other added,
+        enabled languages, in config order, leaving out any already in
+        have: a build in one language often runs another's tool (a Ruby
+        gem's Rakefile or an OCaml dune rule calling cargo), which that
+        language's installer put in a directory only its own environment
+        has."""
+        seen, dirs, disabled = set(have), [], self.disabled
+        for other in self.languages:
+            if other == lang or other in disabled:
+                continue
+            for directory in self._static_path(other):
+                if directory not in seen:
+                    seen.add(directory)
+                    dirs.append(directory)
+        return dirs
+
     def language_env(self, lang: str, component: str | None = None) -> dict:
         """PATH entries (to prepend, in order) and variables for a language's
         work in a component. Entries and variables naming {home}, {version},
@@ -653,6 +712,7 @@ class Project:
             if "{" in pattern and not fields:
                 continue
             path += sorted(d for d in glob.glob(os.path.expanduser(expand(pattern))) if os.path.isdir(d))
+        path += self._others_static_path(lang, path)
         variables = {name: expand(value) for name, value in definition.get("env", {}).items()} if fields else {}
         if definition.get("sdkrootFromXcrun") and HOST_OS == "darwin" and "SDKROOT" not in os.environ:
             sdk = xcrun_sdk_path()

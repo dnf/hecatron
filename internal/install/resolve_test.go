@@ -10,7 +10,7 @@ import (
 
 var languages = []string{"go", "rust", "python", "java", "elixir"}
 
-func load(t *testing.T, lang string) (*Spec, string) {
+func load(t *testing.T, lang string) (*Definition, string) {
 	t.Helper()
 	spec, version, err := Load(filepath.Join("..", "..", "languages"), lang)
 	if err != nil {
@@ -99,4 +99,12 @@ func head(url string) int {
 	}
 	_ = response.Body.Close() // unread: only the status matters
 	return response.StatusCode
+}
+
+func TestTemurinVersion(t *testing.T) {
+	for name, want := range map[string]string{"jdk-25.0.5+8": "25.0.5", "jdk-17.0.2+8": "17.0.2", "jdk8u412-b08": "8.0.412"} {
+		if got := temurinVersion(name); got != want {
+			t.Errorf("temurinVersion(%q) = %q, want %q", name, got, want)
+		}
+	}
 }

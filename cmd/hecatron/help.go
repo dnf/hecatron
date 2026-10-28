@@ -20,7 +20,7 @@ Set up:
   advisor [--fix] [lang...]  Recommend each ecosystem's good practices for the project
   init [dir]                 Set up a repository for hecatron
   doctor [--fix] [lang...]   Check toolchains; --fix runs installers to repair them
-  install [lang...]          Install toolchains (all of the project's when none named)
+  install [lang...]          Install toolchains (all of the project's when none named; --plan: only show how)
   uninstall <lang...>        Uninstall toolchains
   get-started                Status table and install menu
   bootstrap                  Set up a fresh machine for the project (base packages + install)
@@ -59,14 +59,52 @@ Project:
   metadata                   Update package metadata through metadata.sh hooks
 
 Hecatron itself:
-  self-test                  Check hecatron's own code: shellcheck and the unit tests
-  self-build                 Build the Go binary from this checkout, for working on hecatron
+  self update [--check]      Update hecatron to the latest release (install.sh's installs)
+  self test                  Check hecatron's own code: shellcheck and the unit tests
+  self build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
 
 Run 'hecatron <command> help' for a command's options, and 'hecatron help agents'
 for a compact reference for AI coding agents.
 hecatron %s
 `
+
+// selfUsageText is `hecatron self help`, as bin/hecatron prints it.
+const selfUsageText = `Usage: hecatron self <command>     (or: hct self <command>)
+
+Manage hecatron itself:
+  update [--check]     Update hecatron to the latest release (install.sh's installs)
+  test                 Check hecatron's own code: shellcheck and the unit tests
+  build                Build the Go binary from this checkout, for working on hecatron
+
+Run 'hecatron self update help' for its options.
+`
+
+// self is `hecatron self <command>`: managing hecatron itself, as rustup
+// self and uv self do (docs/design.md §8). self-test and self-build, the
+// earlier names, still work.
+func (c *cli) self() int {
+	command := "help"
+	if len(c.args) > 0 {
+		command, c.args = c.args[0], c.args[1:]
+	}
+	switch command {
+	case "help", "-h", "--help":
+		fmt.Print(selfUsageText)
+		return 0
+	case "update":
+		return c.selfUpdate()
+	case "test":
+		return c.delegate(bashScript("libexec/commands/self-test.sh"))
+	case "build":
+		return c.delegate(bashScript("libexec/commands/self-build.sh"))
+	}
+	if status := c.requirePython(); status != 0 {
+		return status
+	}
+	fmt.Fprintf(os.Stderr, "hecatron: self: unknown command '%s' (try 'hecatron self help')\n", command)
+	return 2
+}
 
 func (c *cli) usage() int {
 	version, _ := c.readVersion()
@@ -182,6 +220,20 @@ func (c *cli) runHelpText() (text string, ok bool) {
 	if c.command == "format" {
 		out.WriteString("  --check    Change nothing; fail, listing the files the formatter would change\n" +
 			"             (hecatron lint runs this check too; docs/format.md)\n")
+	}
+	// The binary's own flags, listed by run.sh too (saying they need the
+	// binary), so the help is the same either way.
+	out.WriteString("\nWith hecatron's binary (install.sh downloads it with a release; docs/runner.md):\n" +
+		"  --output FORMAT\n" +
+		"             human, agent, json, ci, junit or sarif (else HECATRON_OUTPUT;\n" +
+		"             agent output for AI agents)\n" +
+		"  --timeout DURATION\n" +
+		"             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);\n" +
+		"             by default 5x its usual time from history.log, at least 10 minutes\n")
+	if changedActions[c.command] {
+		out.WriteString("  --changed [REF]\n" +
+			"             Only the languages, components and project tasks the files changed\n" +
+			"             since REF touch (default: the pull request's base, else the default branch)\n")
 	}
 	fmt.Fprintf(&out, "\nExamples:\n"+
 		"  hecatron %[1]s               Everything, in parallel\n"+

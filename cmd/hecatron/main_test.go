@@ -20,7 +20,7 @@ var binary string // the Go hecatron, built once for the tests
 
 func TestMain(m *testing.M) {
 	// bin/hecatron is the scripts these tests compare the binary with; a
-	// binary from hecatron self-build in the checkout mustn't stand in.
+	// binary from hecatron self build in the checkout mustn't stand in.
 	if err := os.Setenv("HECATRON_NO_GO", "1"); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -135,6 +135,7 @@ var cliArgs = [][]string{
 	{"nope"}, {"plan-not"},
 	{"check", "help"}, {"init", "help"}, {"add"}, {"enable"}, {"disable"},
 	{"get-started", "--help"}, {"parallel", "-h"},
+	{"self"}, {"self", "help"}, {"self", "--help"}, {"self", "bogus"}, {"self-update"},
 }
 
 func TestOutputMatchesBinHecatron(t *testing.T) {
@@ -208,7 +209,8 @@ func TestNativeCommandsNeedNoBashOrPython(t *testing.T) {
 		{[]string{"help"}, 0, []string{"Usage: hecatron <command> [arguments]", "hecatron " + strings.TrimSpace(string(version))}},
 		{[]string{"list"}, 0, []string{"  go", "  rust  (disabled)", "  typescript", "5 languages"}},
 		{[]string{"list", "--all"}, 0, []string{"  go           project", "  mine         project  (not added)", "  zig          built-in  (not added)"}},
-		{[]string{"test", "help"}, 0, []string{"Usage: hecatron test [flags] [target ...]", "Project tasks: zeta alpha ", "components: age date"}},
+		{[]string{"test", "help"}, 0, []string{"Usage: hecatron test [flags] [target ...]", "Project tasks: zeta alpha ", "components: age date", "  --timeout DURATION", "  --changed [REF]"}},
+		{[]string{"audit", "help"}, 0, []string{"  --output FORMAT", "  --timeout DURATION"}},
 		{[]string{"deps", "help"}, 0, []string{"Fetch each language's dependencies for every component, held to its lock file."}},
 		{[]string{"build", "help"}, 0, []string{"Languages (5):", "csharp (cs)     go "}},
 		{[]string{"version"}, 2, []string{"Usage: hecatron version <version>"}},

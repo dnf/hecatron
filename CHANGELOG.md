@@ -6,6 +6,88 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Node.js packages built before their tests:** `hct test typescript`
+  and `hct test javascript` first build a package whose tests need it
+  built: a native addon (napi-rs, node-gyp) not built yet, or an entry
+  point (`main`, `exports`) the build writes that isn't there. Through
+  the package's build script, else `napi build --platform` or `node-gyp
+  rebuild`, instead of failing with "Failed to load native binding" or
+  "Cannot find module dist/...". A configured test runner that fails now
+  fails as itself, and npm's placeholder test script counts as none.
+
+- **Node.js tests in more layouts:** `hct test typescript` and `hct test
+  javascript` now test a workspace root without a `test` script through its
+  packages' scripts, a package with a configured Vitest, Jest or Mocha but
+  no script through that runner, and a directory without a `package.json`
+  (or a root `package.json` holding only tooling) through the language's
+  packages below it, where they failed with "no test command". Scripts
+  that call pnpm or Yarn by name find Corepack's shim on PATH, and tests
+  run with `CI=true` (unless it's set), so runners that would otherwise
+  watch for changes (Create React App's, Vitest's) run once.
+
+- **Detection:** `hct init` no longer proposes components from directories
+  like `src/<service>/src/main/<lang>` when another language's directory
+  isn't named for it (TypeScript in `src/frontend`), which left that
+  language, and every other one outside the pattern, with no directory.
+
+- **Other languages' tools on PATH:** a language's hooks (and
+  `hct env LANG`) now also have the project's other added, enabled
+  languages' static `path` directories on PATH, after the language's own,
+  so a Ruby, OCaml or D build that runs `cargo` finds the Rust that
+  `hct install` put in `~/.cargo/bin`.
+
+- **Release downloads as data (#77, stage 2):** `install.json` can name a
+  release download, always checked against a SHA-256 (inline, a published
+  checksum file, or the publisher's index). Gleam and Zig install that way,
+  at the version `config.json` pins (Zig installed whatever was latest),
+  into `~/.local/share/hecatron/toolchains` without root, on macOS too
+  instead of Homebrew, with their commands linked into
+  `~/.local/share/hecatron/bin`, which `~/.hecatron/env` now puts on PATH.
+  Downloads are cached in `~/.cache/hecatron/downloads`; a toolchain that
+  doesn't work is replaced whole. With `"ci": {"cache": true}` both are
+  cached in CI.
+
+- **Installs as data (#77, stage 1):** with the binary, Bash, COBOL, D,
+  Erlang, Common Lisp, Octave, Pascal, Prolog, Racket, Raku and Tcl install
+  from a `languages/<lang>/install.json` instead of `install.sh`: every
+  step has a check, so a rerun does nothing and `doctor --fix` runs only
+  what fails; the doctor's checks come from the same data; installing
+  several languages makes one `apt-get install` (or `brew install`) for all
+  their packages; receipts record what hecatron installed, and uninstall
+  removes only that, keeping what another language needs. `hct install
+  --plan` shows what would happen. A project's own `install.sh` still
+  wins, and `HECATRON_INSTALLER=script` forces the scripts.
+  `tests/docker/parity.sh` checks the two ways agree. The prototype's
+  `"install"` key moved from `config.json` to `install.json`. Toolchains
+  the engine downloads go to `~/.local/share/hecatron/toolchains` (no
+  root), and `"ci": {"cache": true}` caches that directory, keyed on what
+  the engine would install; the eleven languages converted so far come
+  from apt, which isn't cached, so this grows with the languages moved to
+  downloads.
+- **Uninstalling a language leaves shared and system software:** an
+  `uninstall.sh` removes only what is the language's own and hecatron
+  installed. A toolchain another language's installer also installs stays,
+  with a line saying so (`Left CMake installed: C, C++, Objective-C, COBOL
+  and Fortran share it.`): CMake (C, C++, Fortran), Node.js (TypeScript,
+  JavaScript), the .NET SDK (C#, F#, VB.NET), Erlang/OTP (Erlang, which now
+  removes only rebar3), uv (Python) and Homebrew's gcc (Fortran). Python no
+  longer removes the distribution's `python3` (`apt-get remove python3`
+  could take much of a Debian or Ubuntu system with it); it removes uv's
+  Python builds, unless Mojo runs on one. PHP removes only the `-cli`,
+  `-xml` and `-mbstring` packages its installer installs, instead of
+  `php*` followed by `apt-get autoremove`. D also removes dub.
+- **Elixir versions:** Elixir installs side by side from builds.hex.pm's
+  precompiled releases, with a default of 1.20.4 (it was Ubuntu's apt 1.14,
+  which current libraries warn about), a `.tool-versions` or `mise.toml`
+  pin (`1.17.3-otp-27` reads as 1.17.3) or the `elixir-version` a CI
+  workflow tests choosing another. Each version runs on an OTP it supports,
+  linked as `<home>/erlang`: the Erlang on PATH when it is one, else
+  builds.hex.pm's OTP build on Ubuntu or Homebrew's `erlang@N` on macOS. On
+  Debian, which has no builds there, an Elixir its own Erlang can't run
+  fails with the reason. Each version has its own Hex (`MIX_ARCHIVES`), so
+  one built on a newer OTP doesn't break an older Elixir's. `hct doctor
+  elixir` notes which OTP each component's Elixir runs on.
+
 - **Doctor notes:** a `doctor.sh` line starting `note: ` (`note` in
   `_common.sh`) is shown under the language, like the version notes, without
   counting as a problem, for what's worth knowing about a healthy toolchain.
@@ -31,6 +113,31 @@ minor version can change behaviour. Numbers are
   command appends a table of languages and components with status and
   time, then each failure's error lines, log and rerun command; `audit`,
   `licenses` and `advisor` add their findings (#101).
+- **`hct install` and `hct uninstall` run in the binary:** choosing the
+  languages, running their installers and fetching the deferred
+  dependencies no longer goes through manage.py (76 ms to 12 ms around a stub
+  installer); the installers stay scripts.
+- **`hct version <version>` runs in the binary** (90 ms to 11 ms around a
+  stub hook); each language's `version.sh` stays a script.
+- **`hct banner` runs in the binary,** without Python: 3 ms instead of
+  51 ms, for generators that call it for every file they write.
+- **The run commands' help lists `--output`, `--timeout` and `--changed`**
+  (`hct test help`), noting that they need hecatron's binary.
+- **OSV-Scanner for `hct licenses`:** every language `hct licenses` reads
+  (TypeScript, JavaScript, Python, Go, Ruby, PHP, C#, F#, VB.NET and
+  Clojure, besides those whose audit already used it) installs OSV-Scanner
+  2.7.0 with its toolchain, so a project of only those languages no longer
+  stops at "OSV-Scanner isn't installed".
+- **Pin files can drop a suffix:** a `pinFiles` or `supportFiles` entry's
+  `"strip"`, a regular expression, is removed from the version the file
+  gives, for ecosystems that write more than the version in it (asdf's and
+  mise's Elixir `1.17.3-otp-27`).
+
+- **Detection skips more code that isn't the project's:** `hct init`
+  leaves out directories it skips in any case (`Examples/`), hidden
+  directories (`.jenkins/`), `templates/` and test data
+  (`tests_data/`, `test-data/`), so a Jenkinsfile, a code generator's
+  templates or an example no longer adds a language.
 
 ## 0.5.0 (2026-10-28)
 

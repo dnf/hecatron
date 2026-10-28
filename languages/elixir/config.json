@@ -12,6 +12,42 @@
     "elixir",
     "ex"
   ],
+  "path": [
+    "{home}/bin",
+    "{home}/erlang/bin"
+  ],
+  "env": {
+    "MIX_ARCHIVES": "{home}/archives"
+  },
+  "version": "=1.20.4",
+  "track": "stable",
+  "pinFiles": [
+    {
+      "file": ".tool-versions",
+      "format": "tool-versions",
+      "key": "elixir",
+      "strip": "-otp-[0-9]+$"
+    },
+    {
+      "file": "mise.toml",
+      "format": "mise",
+      "key": "elixir",
+      "strip": "-otp-[0-9]+$"
+    },
+    {
+      "file": ".mise.toml",
+      "format": "mise",
+      "key": "elixir",
+      "strip": "-otp-[0-9]+$"
+    }
+  ],
+  "supportFiles": [
+    {
+      "file": ".github/workflows/*.y*ml",
+      "format": "github-setup",
+      "key": "elixir-version"
+    }
+  ],
   "buildSystems": [
     "Mix"
   ],

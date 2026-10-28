@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Uninstall Gleam
+# Uninstall Gleam: hecatron's downloads, and where older installers put it.
+# Erlang/OTP stays: Erlang and Elixir use it too.
 source "$(dirname "$0")/../_common.sh"
 
-uninstall_macos() { brew uninstall gleam 2>/dev/null || true; }
-uninstall_linux() { $SUDO rm -f /usr/local/bin/gleam; }
-
 log "Uninstalling Gleam..."
-"uninstall_${OS}"
+toolchain_uninstall gleam
+if [ "${OS}" = "macos" ]; then
+    brew uninstall gleam 2>/dev/null || true
+else
+    $SUDO rm -f /usr/local/bin/gleam
+fi

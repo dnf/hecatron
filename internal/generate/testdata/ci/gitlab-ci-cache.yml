@@ -38,6 +38,9 @@ elixir:
         files:
           - .hecatron/config.json
           - .hecatron/languages/elixir/config.json
+          - '**/.tool-versions'
+          - '**/mise.toml'
+          - '**/.mise.toml'
         prefix: elixir-toolchain-v0.4.0
       paths:
         - .hecatron-cache/elixir/mix

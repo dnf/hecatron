@@ -33,7 +33,7 @@ internal/                # Go packages: project (the model and version resolutio
                          # versions.py, and detection), generate (Dockerfile, workflows), runner (jobs, output),
                          # status (hct status), deps (audit and outdated reports), licenses and spdx
                          # (hct licenses), advisor (hct advisor), reports (JUnit, SARIF, job summary),
-                         # actions, install
+                         # actions, install, selfupdate (hct self update and the update notice)
 ```
 
 Every command finds the project by walking up from the working directory
@@ -43,7 +43,7 @@ project path from its own location.
 ## Checks
 
 ```bash
-bin/hecatron self-test    # shellcheck (zero warnings), then the unit tests
+bin/hecatron self test    # shellcheck (zero warnings), then the unit tests
 ```
 
 ## Conventions
@@ -64,6 +64,11 @@ bin/hecatron self-test    # shellcheck (zero warnings), then the unit tests
   every place to update. `tests/test_language_count.py` fails on a marked
   line with another count and on an unmarked line stating it. CHANGELOG.md
   is history and is exempt.
+- **Changelog fragments.** A user-visible change adds
+  `changelog.d/<branch>.md` (entries as they'll read in CHANGELOG.md); never
+  edit CHANGELOG.md's Unreleased section, which conflicts with every other
+  open pull request. `release.sh` gathers the fragments. A change users can't
+  see adds none and gets the `no changelog` label.
 - **Name over comment.** Extract a named function or variable instead of a
   comment explaining what a line does; comments explain why.
 

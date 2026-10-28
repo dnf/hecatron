@@ -21,9 +21,9 @@ deps_node() {
 }
 
 # Python: uv sync (--locked with a uv.lock, which then must match
-# pyproject.toml), every extra, as the test hook runs; a requirements-only
-# directory gets a .venv with them. A .venv moved from another checkout,
-# whose scripts can't start, is made again.
+# pyproject.toml), every extra and dependency group, as the test hook runs;
+# a requirements-only directory gets a .venv with them. A .venv moved from
+# another checkout, whose scripts can't start, is made again.
 deps_python() {
     has uv || { echo "error: python: uv isn't installed (hecatron install python installs it)" >&2; exit 1; }
     if [ -f .venv/bin/pytest ] && ! head -1 .venv/bin/pytest | grep -qF "${PWD}/.venv/"; then
@@ -31,7 +31,7 @@ deps_python() {
         rm -rf .venv
     fi
     if [ -f pyproject.toml ]; then
-        if nearest_with uv.lock >/dev/null; then run uv sync --locked --all-extras; else run uv sync --all-extras; fi
+        if nearest_with uv.lock >/dev/null; then run uv sync --locked --all-extras --all-groups; else run uv sync --all-extras --all-groups; fi
     elif exists 'requirements*.txt'; then
         local _args=() _file
         for _file in requirements*.txt; do _args+=(-r "${_file}"); done
@@ -49,9 +49,12 @@ deps_ruby() {
     bundle_fetch
 }
 
-# PHP: composer install, from composer.lock.
+# PHP: composer install, from composer.lock: the composer.json here, else
+# the nearest above (a root composer.json covering lang/php), else each below.
 deps_php() {
-    [ -f composer.json ] || skip "no composer.json"
+    find_build --above-first composer.json || skip "no composer.json"
+    note_build_dir
+    cd "${build_dir}"
     composer_fetch
 }
 
@@ -171,6 +174,9 @@ deps_zig() {
 # dependencies install, and unpinned after.
 deps_ocaml() {
     exists '*.opam' || skip "no .opam file"
+    # The system packages the dependencies need (libgmp-dev, pkg-config...),
+    # through apt or Homebrew: --yes alone answers no to installing them.
+    export OPAMCONFIRMLEVEL=unsafe-yes
     local opams=(*.opam) names=() name status=0
     if [ "${#opams[@]}" -eq 1 ]; then
         run opam install . --deps-only --with-test --yes
@@ -203,10 +209,33 @@ deps_janet() {
     jpm_ deps
 }
 
-# R: renv's restore, from renv.lock.
+# R: renv's restore, from renv.lock; else a package's DESCRIPTION
+# dependencies (Depends, Imports, LinkingTo and Suggests, which the tests
+# use) that aren't installed, from CRAN into the user's library. Here, else
+# each package below.
 deps_r() {
-    [ -f renv.lock ] || skip "no renv.lock"
-    run Rscript -e 'renv::restore(prompt = FALSE)'
+    find_build renv.lock DESCRIPTION || skip "no renv.lock or DESCRIPTION"
+    note_build_dir
+    cd "${build_dir}"
+    if [ -f renv.lock ]; then
+        run Rscript -e 'renv::restore(prompt = FALSE)'
+        return
+    fi
+    echo "+ Rscript: install DESCRIPTION's missing dependencies from CRAN"
+    Rscript -e '
+fields <- read.dcf("DESCRIPTION", fields = c("Depends", "Imports", "LinkingTo", "Suggests"))
+named <- unlist(strsplit(fields[!is.na(fields)], ","))
+named <- trimws(sub("[(].*", "", named))
+installed <- rownames(installed.packages())
+missing <- setdiff(unique(named[nzchar(named)]), c("R", installed))
+if (length(missing) > 0) {
+    lib <- Sys.getenv("R_LIBS_USER")
+    dir.create(lib, recursive = TRUE, showWarnings = FALSE)
+    install.packages(missing, lib = lib, repos = "https://cloud.r-project.org",
+                     Ncpus = max(1L, parallel::detectCores()))
+    still <- setdiff(missing, rownames(installed.packages(lib.loc = c(lib, .libPaths()))))
+    if (length(still) > 0) message("r: deps: not on CRAN or failed to install: ", paste(still, collapse = ", "))
+}'
 }
 
 # Perl: Carton's deployment install from cpanfile.snapshot, into local/

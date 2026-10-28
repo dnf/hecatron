@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -83,6 +84,7 @@ type fileEntry struct {
 	file, format string
 	key          pinKey
 	selects      bool
+	strip        *regexp.Regexp // removed from the version the file gives
 }
 
 // fileEntries are a definition's pin or support file entries (key
@@ -122,6 +124,19 @@ func (p *Project) fileEntries(lang, key string) ([]fileEntry, error) {
 			}
 			if selects, present := object.Get("selects"); present {
 				entry.selects = truthy(selects)
+			}
+			if strip, present := object.Get("strip"); present && strip != nil {
+				// Python's re and Go's regexp differ beyond the common
+				// syntax, so project.py judges a pattern Go can't compile.
+				text, ok := strip.(string)
+				if !ok {
+					return nil, unsupported("%s %s strip is not a string", lang, key)
+				}
+				pattern, err := regexp.Compile(text)
+				if err != nil {
+					return nil, unsupported("%s %s strip %q: %v", lang, key, text, err)
+				}
+				entry.strip = pattern
 			}
 			entries = append(entries, entry)
 		}
@@ -247,6 +262,7 @@ func readEntry(directory string, entry fileEntry) (pinned, string, error) {
 		if err != nil {
 			return notPinned, "", err
 		}
+		value = stripPin(value, entry.strip)
 		if value.pins {
 			all = append(all, found{value, path})
 			if value.spec != "" {
@@ -295,6 +311,11 @@ func (p *Project) ResolveVersion(lang, component string) (Resolved, error) {
 	if err != nil {
 		return Resolved{}, err
 	}
+	if value.pins && strings.HasPrefix(value.spec, floorPrefix) {
+		if value.spec, err = p.aboveFloor(lang, component, strings.TrimPrefix(value.spec, floorPrefix), defaultVersion); err != nil {
+			return Resolved{}, err
+		}
+	}
 	resolved := Resolved{Spec: value.spec, Source: source, Selects: true}
 	if !value.pins {
 		version, set, err := p.projectVersion(lang)
@@ -327,6 +348,94 @@ func (p *Project) ResolveVersion(lang, component string) (Resolved, error) {
 		}
 	}
 	return resolved, nil
+}
+
+// aboveFloor is project.py's _above_floor: for a pin that is a floor
+// (global.json's latestMajor), the default when it is that or later, else
+// the newest release of the floor's major; raised to the newest major the
+// component's floorFiles need.
+func (p *Project) aboveFloor(lang, component, floor, defaultVersion string) (string, error) {
+	least, err := parseSpec(floor)
+	if err != nil {
+		return "", err
+	}
+	spec := least.numbers[0]
+	if defaultVersion != "" {
+		parsed, err := parseSpec(defaultVersion)
+		if err != nil {
+			return "", err
+		}
+		if compareNumbers(parsed.numbers, least.numbers) >= 0 {
+			spec = defaultVersion
+		}
+	}
+	needed, err := p.floorFilesMajor(lang, component)
+	if err != nil {
+		return "", err
+	}
+	current, err := parseSpec(spec)
+	if err != nil {
+		return "", err
+	}
+	if needed >= 0 && compareInts(strconv.Itoa(needed), current.numbers[0]) > 0 {
+		spec = strconv.Itoa(needed)
+	}
+	return spec, nil
+}
+
+// floorFilesSkipped are build output and dependencies, which floorFiles
+// aren't read from (project.py's FLOOR_FILES_SKIPPED).
+var floorFilesSkipped = map[string]bool{"bin": true, "obj": true, "node_modules": true, "build": true,
+	"target": true, "packages": true}
+
+// floorFilesMajor is project.py's _floor_files_major: the newest major the
+// definition's floorFiles ask for, in the component's directory and up to
+// three levels below it; -1 for none.
+func (p *Project) floorFilesMajor(lang, component string) (int, error) {
+	entries, err := p.fileEntries(lang, "floorFiles")
+	if err != nil || len(entries) == 0 {
+		return -1, err
+	}
+	top, err := p.ImplDir(component, lang)
+	if err != nil {
+		return -1, err
+	}
+	newest := -1
+	var walk func(directory string, depth int) error
+	walk = func(directory string, depth int) error {
+		for _, entry := range entries {
+			value, _, err := readEntry(directory, entry)
+			if err != nil {
+				return err
+			}
+			if value.pins && strings.HasPrefix(value.spec, floorPrefix) {
+				parsed, err := parseSpec(strings.TrimPrefix(value.spec, floorPrefix))
+				if err != nil {
+					return err
+				}
+				if major, err := strconv.Atoi(parsed.numbers[0]); err == nil {
+					newest = max(newest, major)
+				}
+			}
+		}
+		if depth >= 3 {
+			return nil
+		}
+		children, err := os.ReadDir(directory)
+		if err != nil {
+			return nil
+		}
+		for _, child := range children {
+			name := child.Name()
+			if child.IsDir() && !strings.HasPrefix(name, ".") && !floorFilesSkipped[name] {
+				if err := walk(filepath.Join(directory, name), depth+1); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+	return newest, walk(top, 0)
 }
 
 // supportedVersion holds a component on the default back to the newest
