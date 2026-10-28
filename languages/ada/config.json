@@ -27,5 +27,8 @@
     "lockFiles": [
       "alire.toml"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

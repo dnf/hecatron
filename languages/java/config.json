@@ -164,5 +164,8 @@
     "gradle",
     "gradle-wrapper",
     "sbt"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

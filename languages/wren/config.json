@@ -13,5 +13,8 @@
     "wren_cli"
   ],
   "testing": "test scripts",
-  "linting": null
+  "linting": null,
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

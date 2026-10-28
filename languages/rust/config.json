@@ -160,5 +160,8 @@
   "dependabot": "cargo",
   "renovate": [
     "cargo"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

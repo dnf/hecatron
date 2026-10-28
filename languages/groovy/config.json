@@ -58,5 +58,8 @@
     "maven-wrapper",
     "gradle",
     "gradle-wrapper"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

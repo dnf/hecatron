@@ -10,5 +10,8 @@
     "Octave packages"
   ],
   "testing": "%!test blocks",
-  "linting": null
+  "linting": null,
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

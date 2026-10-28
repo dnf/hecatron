@@ -17,5 +17,8 @@
     "ASDF"
   ],
   "testing": "ASDF test-op",
-  "linting": null
+  "linting": null,
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

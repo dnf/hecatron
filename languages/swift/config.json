@@ -25,5 +25,8 @@
   "dependabot": "swift",
   "renovate": [
     "swift"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

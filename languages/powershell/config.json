@@ -24,5 +24,8 @@
     "toolchain": [
       "~/.local/share/powershell/Modules"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

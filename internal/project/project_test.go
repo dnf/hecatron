@@ -248,6 +248,40 @@ func TestLanguageEnvAddsOtherLanguagesStaticPaths(t *testing.T) {
 	}
 }
 
+// An install.sh may need root where its definition's "installNeedsRoot"
+// says, and anywhere when the definition doesn't say or the script is the
+// project's own.
+func TestScriptNeedsRoot(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, map[string]string{
+		".hecatron/config.json":                `{"schema": 1, "languages": ["lua", "perl", "go", "mine"]}`,
+		".hecatron/languages/go/install.sh":    "",
+		".hecatron/languages/mine/config.json": `{"abbreviation": "mi"}`,
+		".hecatron/languages/mine/install.sh":  "",
+	})
+	home := testHome(t)
+	write(t, filepath.Dir(home.Languages), map[string]string{
+		"languages/lua/config.json":  `{"installNeedsRoot": ["linux"]}`,
+		"languages/perl/config.json": `{"installNeedsRoot": ["linux", "macos"]}`,
+		"languages/go/config.json":   `{"installNeedsRoot": ["linux"]}`,
+	})
+	p, err := Load(root, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range []struct {
+		lang, os string
+		want     bool
+	}{
+		{"lua", "linux", true}, {"lua", "macos", false}, {"perl", "macos", true},
+		{"go", "macos", true}, {"mine", "macos", true},
+	} {
+		if got, err := p.ScriptNeedsRoot(c.lang, c.os); got != c.want || err != nil {
+			t.Errorf("%s on %s: %v %v", c.lang, c.os, got, err)
+		}
+	}
+}
+
 func TestHecatronPin(t *testing.T) {
 	home := testHome(t) // hecatron 0.3.0
 	for setting, want := range map[string][2]string{

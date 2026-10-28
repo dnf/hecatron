@@ -12,5 +12,8 @@
     "SWI-Prolog packs"
   ],
   "testing": "plunit",
-  "linting": null
+  "linting": null,
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

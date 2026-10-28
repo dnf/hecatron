@@ -145,5 +145,8 @@
   "dependabot": "gomod",
   "renovate": [
     "gomod"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

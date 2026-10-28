@@ -26,5 +26,8 @@
     "lockFiles": [
       "shard.lock"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

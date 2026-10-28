@@ -24,5 +24,8 @@
     "make"
   ],
   "testing": "test programs, make check",
-  "linting": null
+  "linting": null,
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

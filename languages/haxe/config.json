@@ -24,5 +24,8 @@
     "lockFiles": [
       "*.hxml"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

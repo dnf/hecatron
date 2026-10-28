@@ -65,5 +65,8 @@
   "dependabot": "nuget",
   "renovate": [
     "nuget"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

@@ -21,5 +21,8 @@
       "project.janet",
       "lockfile.jdn"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

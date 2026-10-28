@@ -123,7 +123,7 @@ _bundler_audit() {
         log "Installing bundler-audit ${_BUNDLER_AUDIT_VERSION} (for hecatron audit)..."
         ${_sudo} "${default_bin}/gem" install --no-document bundler-audit -v "${_BUNDLER_AUDIT_VERSION}"
     fi
-    has bundle-audit || $SUDO ln -sfn "${default_bin}/bundle-audit" /usr/local/bin/bundle-audit
+    has bundle-audit || { mkdir -p "$(hecatron_bin)" && ln -sfn "${default_bin}/bundle-audit" "$(hecatron_bin)/bundle-audit"; }
 }
 
 log "Installing Ruby..."
