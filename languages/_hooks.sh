@@ -514,7 +514,13 @@ dart_deps() {
 # each, and exits. Returns when there are none.
 node_below() {
     local _dir _dirs=()
-    while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(python3 - "$1" "${HECATRON_LANG:-}" <<'PY'
+    while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(node_below_dirs "$1" "${HECATRON_LANG:-}")
+    [ "${#_dirs[@]}" -eq 0 ] || run_hook_in "${_dirs[@]}"
+}
+# node_below's packages, one per line (a function, not a here-document
+# inside the process substitution, which Bash 3.2 can't parse).
+node_below_dirs() {
+    python3 - "$1" "$2" <<'PY'
 import json, os, sys
 
 action, lang = sys.argv[1], sys.argv[2]
@@ -538,8 +544,6 @@ for top, dirs, files in os.walk("."):
 for directory in found:
     print(directory)
 PY
-)
-    [ "${#_dirs[@]}" -eq 0 ] || run_hook_in "${_dirs[@]}"
 }
 # A workspace root's packages (package.json "workspaces", or
 # pnpm-workspace.yaml's "packages") that define an npm script, one per line,
