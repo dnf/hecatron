@@ -253,7 +253,6 @@
     "go",
     "groovy",
     "java",
-    "javascript",
     "kotlin",
     "python",
     "typescript"
@@ -746,7 +745,6 @@
    "languages": [
     "go",
     "java",
-    "javascript",
     "python",
     "ruby",
     "typescript"
@@ -918,7 +916,6 @@
    "category": "polyglot",
    "languages": [
     "java",
-    "javascript",
     "ruby",
     "typescript"
    ],
@@ -967,7 +964,6 @@
     "elixir",
     "go",
     "java",
-    "javascript",
     "perl",
     "php",
     "python",
@@ -1023,7 +1019,6 @@
    "category": "polyglot",
    "languages": [
     "java",
-    "javascript",
     "typescript"
    ],
    "why": "Cucumber message queries in Java and JavaScript/TypeScript",
@@ -1442,7 +1437,6 @@
    "category": "polyglot",
    "languages": [
     "go",
-    "javascript",
     "python",
     "rust",
     "typescript"
@@ -5727,8 +5721,7 @@
    "category": "stress",
    "languages": [
     "javascript",
-    "ruby",
-    "typescript"
+    "ruby"
    ],
    "why": "Ruby monorepo of gems with JavaScript packages",
    "github": {
