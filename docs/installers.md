@@ -37,7 +37,7 @@ Remove one of these by hand once no language needs it.
 | cmake           | C, C++, Objective-C, COBOL, Fortran    | Leaves cmake                                     |
 | JDK             | Java, Kotlin, Scala, Groovy, Clojure   | Leaves the JDKs; `hecatron uninstall java` only prints where they are |
 | Node.js         | TypeScript, JavaScript, Elm            | Leaves Node.js (JavaScript's installer is TypeScript's; Elm's installs Node if missing) |
-| Erlang/OTP      | Erlang, Elixir, Gleam                  | Leaves Erlang/OTP; Erlang's removes rebar3       |
+| Erlang/OTP      | Erlang, Elixir, Gleam                  | Leaves Erlang/OTP; Erlang's removes rebar3 (Elixir's removes the OTPs it installed for itself, see below) |
 | uv              | Python, C, C++, Objective-C, Mojo      | Leaves uv; Python's removes uv's Python builds, unless Mojo runs on one |
 | gcc (Homebrew)  | Fortran                                | Leaves Homebrew's gcc, which other formulae use  |
 
@@ -72,11 +72,25 @@ Languages install via a mix of apt packages and direct downloads:
 
 | Method           | Languages                                                                         |
 | ---------------- | --------------------------------------------------------------------------------- |
-| apt packages     | Ada, C/C++ (cmake), Elixir, Erlang, Fortran, Lua, Perl, PHP (Ondřej Surý's packages) |
-| Direct download  | Dart, Gleam, Go, Java/Kotlin/Scala/Groovy (Temurin), Node.js, Swift, Zig          |
+| apt packages     | Ada, C/C++ (cmake), Erlang, Fortran, Lua, Perl, PHP (Ondřej Surý's packages) |
+| Direct download  | Dart, Elixir (builds.hex.pm), Gleam, Go, Java/Kotlin/Scala/Groovy (Temurin), Node.js, Swift, Zig |
 | Installer script | Clojure, Haskell (ghcup), Rust (rustup), Python (uv), .NET (dotnet-install.sh)    |
 | Built from source | Ruby (ruby-build)                                                                |
 | npm global       | Elm                                                                               |
+
+**Elixir** comes from builds.hex.pm's precompiled releases, one directory
+per version (`/opt/elixir/<version>`, `~/.local/share/hecatron/elixir/<version>`
+on macOS). Each release is built for a few OTP majors (1.20 for 27 to 29),
+so each version runs on an OTP it supports, linked as `<home>/erlang`: the
+Erlang on PATH when it is one, else one installed beside it, builds.hex.pm's
+OTP build in `/opt/erlang/<version>` on Ubuntu (24.04's apt Erlang is OTP 25)
+or Homebrew's `erlang@N` on macOS. Debian has no builds there, so a Debian
+machine runs the Elixirs its own Erlang supports (Debian 13's OTP 27 runs
+1.17 to 1.20), and the installer says so for one it can't. Each version
+has its own Hex in `<home>/archives` (`MIX_ARCHIVES`), since an archive
+built on one OTP doesn't load on an older one, so only these Elixirs count
+as installed, not the distribution's or Homebrew's. `hecatron doctor
+elixir` notes each pairing it finds ("a: Elixir 1.20.4 on OTP 27.3.4.3").
 
 ### Uninstall caveats
 

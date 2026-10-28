@@ -617,7 +617,7 @@ Settled on 2026-10-26:
 ## 18. Toolchain versions
 
 Status: **accepted**; implemented for Python, Go, Rust, Node.js, Java,
-Ruby, PHP and .NET. Other installers install one version per language, some
+Ruby, PHP, .NET and Elixir. Other installers install one version per language, some
 the latest at install time (Swift, Julia, PowerShell, Odin, Crystal).
 
 A project can need an older or newer version of a language than the
@@ -694,8 +694,8 @@ The dates come from tables shipped with each definition
 release), so resolution stays offline and two machines agree.
 `libexec/maintenance/release_dates.py` writes them from each language's
 release source: nodejs.org, python.org, go.dev's release history, Rust's
-`RELEASES.md`, Adoptium, ruby-lang.org, php.net and Microsoft's .NET release
-metadata. A weekly workflow (`.github/workflows/release-dates.yml`) reruns
+`RELEASES.md`, Adoptium, ruby-lang.org, php.net, Microsoft's .NET release
+metadata and Elixir's GitHub releases. A weekly workflow (`.github/workflows/release-dates.yml`) reruns
 it and opens a pull request when there are new releases. A language sharing
 another's toolchain names it in `releasesOf` (JavaScript's Node.js is
 TypeScript's, F#'s and VB.NET's SDK C#'s), and shares its version settings.
@@ -1049,6 +1049,20 @@ entry points' output byte for byte. Decided with the first port
   signal (`Terminated` on stderr) isn't repeated; the status is
   the same. `metadata` stays a script: it is interactive and edits the
   metadata file through Python string literals.
+
+- **`install` and `uninstall`** ported next (#73, #76): `manage.py`'s
+  orchestration (every added language, or the added ones named; each
+  language's `install.sh` or `uninstall.sh`, still scripts, from the root
+  with the project's variables and the language's version environment,
+  `installed.sh` asked again once an earlier installer ran), the deferred
+  dependencies (`HECATRON_DEFER_DEPS`, #107: installing everything fetches
+  the dependencies the installers listed with `hct deps` once every
+  toolchain is in, this binary's own), the messages and exit statuses (a
+  script killed by a signal exits as Python's `sys.exit` makes it). The
+  languages' environments are worked out before any script runs, so a
+  project the model declines goes to `manage.py`; so do argparse's other
+  forms (`help`, an option). Parity tests run both with stub scripts on
+  fixture definitions.
 
 - **Audit and outdated parsing** (#75; `internal/deps`) ported next:
   every report `audit.py` and `outdated.py` read (npm, pnpm, Yarn 1 and
