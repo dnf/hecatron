@@ -744,7 +744,6 @@
    "repo": "cucumber/ci-environment",
    "category": "polyglot",
    "languages": [
-    "csharp",
     "go",
     "java",
     "javascript",
@@ -1758,7 +1757,6 @@
    "repo": "microsoft/TypeChat",
    "category": "polyglot",
    "languages": [
-    "csharp",
     "python",
     "typescript"
    ],

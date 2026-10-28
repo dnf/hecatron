@@ -1460,19 +1460,6 @@
   {
    "repo": "cucumber/ci-environment",
    "category": "polyglot",
-   "language": "csharp",
-   "expected": true,
-   "detected": false,
-   "result": "not-detected",
-   "seconds": null,
-   "failureCategory": null,
-   "commit": "48107da00c1dec427f9a722f874401fec1d933c6",
-   "date": "2026-10-28",
-   "hecatronVersion": "0.5.0"
-  },
-  {
-   "repo": "cucumber/ci-environment",
-   "category": "polyglot",
    "language": "go",
    "expected": true,
    "detected": true,
@@ -3300,19 +3287,6 @@
    "seconds": 182,
    "failureCategory": "other",
    "commit": "51415518c7566c938ba14fe29bcb357b8adf2123",
-   "date": "2026-10-28",
-   "hecatronVersion": "0.5.0"
-  },
-  {
-   "repo": "microsoft/TypeChat",
-   "category": "polyglot",
-   "language": "csharp",
-   "expected": true,
-   "detected": false,
-   "result": "not-detected",
-   "seconds": null,
-   "failureCategory": null,
-   "commit": "3a4907ea54aca5068a715f6e040cb6c8a5b9ef9e",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
   },
