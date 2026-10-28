@@ -2,14 +2,17 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/dnf/hecatron/internal/install"
 	"github.com/dnf/hecatron/internal/project"
+	"github.com/dnf/hecatron/internal/runner"
 )
 
 // doctor is `hecatron doctor [--fix] [lang ...]`, doctor.sh's driver in Go:
@@ -112,13 +115,22 @@ func (d *doctorRun) project() *project.Project { return d.cli.project }
 
 func (d *doctorRun) run(langs []string, fix bool) int {
 	var unhealthy []string
-	for _, lang := range langs {
-		found, notes := splitNotes(d.problems(lang))
+	checks := d.checkAll(langs)
+	repaired := false
+	for i, lang := range langs {
+		check := checks[i]
+		if fix && repaired && check.output != "" {
+			// An earlier repair can have fixed this one too (Java's, Kotlin).
+			check = d.check(lang)
+		}
+		_, _ = os.Stderr.Write(check.stderr)
+		found, notes := splitNotes(check.output)
 		if choice := d.fromData(lang); found != "" && fix && choice.def != nil {
 			fmt.Printf("%s: repairing with %s\n", lang, choice.path)
 			applyData(d.project(), []installerChoice{choice}, d.env, d.manager)
 			d.project().ForgetInstalled()
-			found = d.problems(lang)
+			repaired = true
+			found = d.problems(lang, os.Stderr)
 		} else if found != "" && fix {
 			installer := d.project().Resolve(lang, "install.sh")
 			if installer == "" {
@@ -127,7 +139,8 @@ func (d *doctorRun) run(langs []string, fix bool) int {
 			fmt.Printf("%s: repairing with %s\n", lang, installer)
 			d.runInstaller(installer)
 			d.project().ForgetInstalled()
-			found, notes = splitNotes(d.problems(lang))
+			repaired = true
+			found, notes = splitNotes(d.problems(lang, os.Stderr))
 		}
 		if found == "" {
 			fmt.Printf("  ok    %s\n", lang)
@@ -169,16 +182,75 @@ func (d *doctorRun) run(langs []string, fix bool) int {
 	return 1
 }
 
+// languageCheck is one language's check: its problems and notes (as
+// problems returns them) and what it wrote to stderr.
+type languageCheck struct {
+	output string
+	stderr []byte
+}
+
+func (d *doctorRun) check(lang string) languageCheck {
+	var stderr bytes.Buffer
+	output := d.problems(lang, &stderr)
+	return languageCheck{output, stderr.Bytes()}
+}
+
+// checkAll checks the languages at once, as hct test runs them, with the
+// live display on a terminal, which is erased after: the report that
+// follows is the same as from one at a time, each language's stderr with
+// it. The checks only look (commands, versions, doctor.sh); the repairs
+// that follow run one at a time, as package managers allow.
+func (d *doctorRun) checkAll(langs []string) []languageCheck {
+	checks := make([]languageCheck, len(langs))
+	if len(langs) == 1 {
+		checks[0] = d.check(langs[0])
+		return checks
+	}
+	logs, err := os.MkdirTemp("", "hecatron-doctor-")
+	if err != nil {
+		for i, lang := range langs {
+			checks[i] = d.check(lang)
+		}
+		return checks
+	}
+	defer func() { _ = os.RemoveAll(logs) }()
+	jobs := make([]runner.Job, len(langs))
+	for i, lang := range langs {
+		i, lang := i, lang
+		jobs[i] = runner.Job{Label: lang, Lang: lang, Exec: func(context.Context, io.Writer) runner.Outcome {
+			checks[i] = d.check(lang)
+			if problems, _ := splitNotes(checks[i].output); problems != "" {
+				return runner.Outcome{ExitCode: 1}
+			}
+			return runner.Outcome{}
+		}}
+	}
+	slots, _ := runner.ParseSlots("")
+	options := runner.Options{Slots: slots, LogDir: logs}
+	var live *runner.Live
+	if runner.IsTerminal(os.Stdout) {
+		live = runner.NewLive(os.Stdout, jobs)
+		options.Observer = live
+		live.Start()
+	}
+	runner.Run(context.Background(), jobs, options)
+	if live != nil {
+		live.Stop()
+		live.Erase()
+	}
+	return checks
+}
+
 // problems are a language's problems, one per line, as doctor.sh's
 // _problems prints them into a command substitution: trailing newlines
 // and NUL bytes dropped. What the scripts write to stderr goes to stderr.
-func (d *doctorRun) problems(lang string) string {
+func (d *doctorRun) problems(lang string, stderr io.Writer) string {
 	var out bytes.Buffer
 	env := d.env
 	if languageEnv, err := d.project().LanguageEnv(lang, ""); err == nil {
 		env = languageEnv.Apply(d.env)
 	} else {
-		reportModelError(err) // project.py env's message; the environment stays as it was
+		reportModelErrorTo(stderr, err) // project.py env's message; the environment stays as it was
 	}
 	path := getenv(env, "PATH")
 	dependency, _ := d.project().Dependency(lang)
@@ -191,7 +263,7 @@ func (d *doctorRun) problems(lang string) string {
 	}
 	missing, err := d.project().MissingVersions(lang)
 	if err != nil {
-		reportModelError(err)
+		reportModelErrorTo(stderr, err)
 	}
 	for _, m := range missing {
 		fmt.Fprintf(&out, "%s: %s %s not installed (from %s)\n", m.Component, lang, m.Spec, m.Source)
@@ -203,7 +275,7 @@ func (d *doctorRun) problems(lang string) string {
 	} else if script := d.project().Resolve(lang, "doctor.sh"); script != "" {
 		cmd := exec.Command("bash", script)
 		cmd.Dir, cmd.Env = d.root, env
-		cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, &out, os.Stderr
+		cmd.Stdout, cmd.Stderr = &out, stderr
 		_ = cmd.Run() // a doctor.sh exits non-zero when it finds problems; it printed them
 	}
 	return commandSubstitution(out.Bytes())
@@ -219,10 +291,12 @@ func (d *doctorRun) runInstaller(installer string) {
 	_ = cmd.Run()
 }
 
-func reportModelError(err error) {
+func reportModelError(err error) { reportModelErrorTo(os.Stderr, err) }
+
+func reportModelErrorTo(w io.Writer, err error) {
 	var e *project.Error
 	if errors.As(err, &e) {
-		fmt.Fprintln(os.Stderr, "hecatron:", e.Message)
+		_, _ = fmt.Fprintln(w, "hecatron:", e.Message)
 	}
 }
 

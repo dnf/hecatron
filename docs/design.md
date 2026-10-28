@@ -1173,7 +1173,13 @@ entry points' output byte for byte. Decided with the first port
   project whose versions the model declines are left to `doctor.sh`. Output
   is `doctor.sh`'s byte for byte, but for bash's warning when a doctor
   script prints a NUL byte (dropped, as bash drops it, without the
-  warning).
+  warning). The binary checks the languages at once through the runner,
+  with `hct test`'s live display on a terminal (erased before the report,
+  which stays the same); each check's stderr is held and shown with its
+  language. Repairs stay one at a time: Homebrew and apt allow one install
+  at a time, languages share toolchains (Node, the JDK), and an installer
+  may prompt. A language checked before an earlier repair is checked again
+  before its own, which that repair may have made unnecessary.
 
 - **`banner`** (`hecatron banner --generator PATH ...`, for a project's own
   generators) ported next, with `internal/generate`'s banner. It needs no
