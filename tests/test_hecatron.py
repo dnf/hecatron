@@ -196,6 +196,15 @@ class InitTest(Fixture):
                                              holding({"javascript": {"javascript", "jsonschema"}})),
                          (["."], "{lang}", {"javascript": "jsonschema", "typescript": "javascript"}))
 
+    def test_components_only_when_every_language_has_a_directory_named_for_it(self):
+        # OpenTelemetry's demo: Java, Kotlin and Python under src/<service>/src/main/<lang>,
+        # Ruby in src/email/ with no directory named for it.
+        found = {"java": {"src/ad/src/main/java"}, "kotlin": {"src/fraud-detection/src/main/kotlin"},
+                 "ruby": {"src/email"}}
+        components, impl_path, overrides = manage.infer_layout(found, {})
+        self.assertEqual(components, ["."])
+        self.assertEqual(overrides["ruby"], "src/email")
+
     def detect(self, files: dict[str, str], defs: dict[str, dict]):
         for path, content in files.items():
             write(self.path(path), content)
@@ -209,6 +218,24 @@ class InitTest(Fixture):
                                       "c": {"detect": ["*.c"]}})
         self.assertEqual(found, {"go": {"go"}})
         self.assertEqual(set(skipped), {"lua", "c"})
+
+    def test_skipped_directories_match_in_any_case_and_include_test_data(self):
+        found, skipped = self.detect({"go/go.mod": "", "Examples/lua/x.lua": "", "tests_data/basic/c/x.c": ""},
+                                     {"go": {"detect": ["go.mod"]}, "lua": {"detect": ["*.lua"]},
+                                      "c": {"detect": ["*.c"]}})
+        self.assertEqual(found, {"go": {"go"}})
+        self.assertEqual(set(skipped), {"lua", "c"})
+
+    def test_dotfiles_arent_sources(self):
+        # ripgrep's .nvim.lua configures an editor.
+        found, _ = self.detect({"Cargo.toml": "", ".nvim.lua": "", "lua/x.lua": ""},
+                               {"rust": {"detect": ["Cargo.toml"]}, "lua": {"detect": [], "detectSources": ["*.lua"]}})
+        self.assertEqual(found, {"rust": {"."}, "lua": {"lua"}})
+
+    def test_only_a_dotfile_adds_no_language(self):
+        found, _ = self.detect({"Cargo.toml": "", ".nvim.lua": ""},
+                               {"rust": {"detect": ["Cargo.toml"]}, "lua": {"detect": [], "detectSources": ["*.lua"]}})
+        self.assertEqual(found, {"rust": {"."}})
 
     def test_build_files_outrank_sources(self):
         found, _ = self.detect({"java/pom.xml": "", "java/src/main/A.java": "", "tools/B.java": "",

@@ -6,6 +6,14 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Detection:** skipped directories match in any case (SWIG's
+  `Examples/`) and include test data (`test_data/`, `tests_data/`,
+  `test-data/`); dotfiles aren't sources (a `.nvim.lua` no longer adds
+  Lua); components are proposed only when every language has a directory
+  named for it, so a language beside them (Ruby in `src/email/`) gets its
+  own `implPaths` instead of no directory at all. Lua isn't detected from
+  premake build scripts, nor R from an Octave package's `DESCRIPTION`.
+
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
   checksum file, or the publisher's index). Gleam and Zig install that way,

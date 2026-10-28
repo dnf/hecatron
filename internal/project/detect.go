@@ -16,12 +16,13 @@ import (
 
 // skippedDirs hold code that isn't the project's own implementation:
 // vendored dependencies, samples, tests, docs and tooling (hooks/: git
-// hooks, build hooks). A language found only there isn't added, and no
-// language's directory is placed there.
-var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildSrc": true, "demo": true, "demos": true,
+// hooks, build hooks), in any case (SWIG's Examples/). A language found
+// only there isn't added, and no language's directory is placed there.
+var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildsrc": true, "demo": true, "demos": true,
 	"doc": true, "docs": true, "example": true, "examples": true, "external": true, "fixtures": true,
 	"hooks": true, "node_modules": true, "playground": true, "sample": true, "samples": true, "test": true,
-	"testdata": true, "tests": true, "third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true}
+	"test-data": true, "test_data": true, "testdata": true, "tests": true, "tests_data": true, "third_party": true,
+	"tools": true, "tutorial": true, "tutorials": true, "vendor": true}
 
 // preferredParents are where projects keep per-language code; when layouts
 // disagree, one under these (or at the root) beats one covering more
@@ -102,7 +103,7 @@ func TrackedFiles(root string) ([]string, error) {
 
 func isSkipped(directory string) bool {
 	for _, part := range strings.Split(directory, "/") {
-		if skippedDirs[part] {
+		if skippedDirs[strings.ToLower(part)] {
 			return true
 		}
 	}
@@ -192,9 +193,29 @@ func anyMatch(names map[string]bool, patterns []string) (bool, error) {
 // hits are the directories with a name matching patterns and none matching
 // unless.
 func hits(dirs namesByDir, patterns, unless []string) (dirSet, error) {
+	return hitsAmong(dirs, patterns, unless, false)
+}
+
+// sourceHits are hits for source files, leaving out dotfiles: a .nvim.lua
+// or .eslintrc.js configures an editor or a tool, it isn't the project's
+// code.
+func sourceHits(dirs namesByDir, sources, unless []string) (dirSet, error) {
+	return hitsAmong(dirs, sources, unless, true)
+}
+
+func hitsAmong(dirs namesByDir, patterns, unless []string, noDotfiles bool) (dirSet, error) {
 	found := dirSet{}
 	for directory, names := range dirs {
-		matched, err := anyMatch(names, patterns)
+		candidates := names
+		if noDotfiles {
+			candidates = map[string]bool{}
+			for name := range names {
+				if !strings.HasPrefix(name, ".") {
+					candidates[name] = true
+				}
+			}
+		}
+		matched, err := anyMatch(candidates, patterns)
 		if err != nil {
 			return nil, err
 		}
@@ -302,7 +323,7 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 			}
 		}
 		if len(directories) == 0 && len(d.sources) > 0 {
-			if directories, err = hits(byDir, d.sources, d.unless); err != nil {
+			if directories, err = sourceHits(byDir, d.sources, d.unless); err != nil {
 				return nil, err
 			}
 			fromSources[d.lang] = true
@@ -563,7 +584,11 @@ func InferLayout(found map[string]dirSet, names map[string][]string,
 		split = append(split, parts)
 		lengths[len(parts)] = true
 	}
-	if len(templates) > 1 && len(lengths) == 1 {
+	everyRooted := true
+	for _, r := range roots {
+		everyRooted = everyRooted && len(r) > 0
+	}
+	if len(templates) > 1 && len(lengths) == 1 && everyRooted {
 		var varying []int
 		for i := range split[0] {
 			values := map[string]bool{}

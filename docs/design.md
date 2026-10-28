@@ -381,14 +381,17 @@ saves it, as init would. Init itself:
    JavaScript unless a `tsconfig.json` makes it TypeScript), and a
    `package.json` without the definition's `detectScript` npm script doesn't
    count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
-   Examples, tests, docs, tools, hooks and vendored code (`examples/`,
-   `tests/`, `tools/`, `hooks/`, `fixtures/`, `android/`, `third_party/`,
-   `vendor/`, `node_modules/` and the like) are skipped. A language left out
-   is listed with the reason.
+   Dotfiles aren't sources (a `.nvim.lua` configures an editor).
+   Examples, tests, test data, docs, tools, hooks and vendored code
+   (`examples/`, `tests/`, `test_data/`, `tools/`, `hooks/`, `fixtures/`,
+   `android/`, `third_party/`, `vendor/`, `node_modules/` and the like, in
+   any case: SWIG's `Examples/`) are skipped. A language left out is listed
+   with the reason.
 3. Detects the layout. A language's directory may carry any of its
    definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If
    the directories share a pattern with one part varying (`age/impl/go`,
-   `date/impl/go`), it proposes `components` and `implPath`; otherwise one
+   `date/impl/go`), and every language has a directory named for it, it
+   proposes `components` and `implPath`; otherwise one
    component, at the pattern under `sdks/`, `sdk/`, `lib/`, `lang/`,
    `bindings/`, `ffi/`, `packages/` or the root if there is one, else the
    pattern covering most languages. A language whose directory doesn't fit
