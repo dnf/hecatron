@@ -8,10 +8,10 @@ name: Real projects
 
 on:
   # Retesting fixes before this workflow is on main: a push to a
-  # real-projects-run/* branch tests the projects listed in
+  # real-projects-retest/* branch tests the projects listed in
   # tests/real-projects/retest.txt (every project when it's absent).
   push:
-    branches: ["real-projects-run/**"]
+    branches: ["real-projects-retest/**"]
   schedule:
     - cron: "0 4 3 * *"
   workflow_dispatch:
