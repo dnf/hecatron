@@ -19,6 +19,10 @@ check ".bashrc sources env" 'grep -qF ".hecatron/env" ~/.bashrc'
 check "new login bash finds hct" 'bash -lc "command -v hct" | grep -q .hecatron/bin'
 check "new interactive bash finds hct" 'bash -ic "command -v hct" 2>/dev/null | grep -q .hecatron/bin'
 check "fish finds hct" 'fish -c "command -v hct" | grep -q .hecatron/bin'
+echo "== 1b. curl | sh where sh is bash (macOS)"
+out="$(bash < /hecatron/install.sh 2>&1)"
+check "says how to use it in this shell" 'echo "$out" | grep -q "New shells have it"'
+check "doesn't claim it's ready" '! echo "$out" | grep -q "Ready:"'
 echo "== 2. rerun"
 sh < /hecatron/install.sh >/dev/null 2>&1
 check "one line in ~/.profile" '[ "$(grep -cF ".hecatron/env" ~/.profile)" = 1 ]'

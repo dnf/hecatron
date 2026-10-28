@@ -282,8 +282,9 @@ _hecatron_sourced=0
 if [ -n "${ZSH_VERSION:-}" ]; then
     case "${ZSH_EVAL_CONTEXT:-}" in *:file*) _hecatron_sourced=1 ;; esac
 elif [ -n "${BASH_VERSION:-}" ]; then
+    # Piped (curl | sh, where sh is bash, as on macOS), BASH_SOURCE is empty.
     # shellcheck disable=SC3028,SC3054 # bash only, guarded
-    [ "${BASH_SOURCE[0]}" != "$0" ] && _hecatron_sourced=1
+    [ -n "${BASH_SOURCE[0]:-}" ] && [ "${BASH_SOURCE[0]}" != "$0" ] && _hecatron_sourced=1
 fi
 
 _hecatron_install
