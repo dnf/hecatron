@@ -17,23 +17,23 @@ import (
 // script (which may run apt-get, or write to /usr/local or /opt), and from
 // data, every one when the plan runs a command with sudo.
 func needRoot(p *project.Project, choices []installerChoice, env []string, manager *install.Manager) []string {
-	var langs, data []string
-	var dataChoices []installerChoice
+	var data []installerChoice
 	for _, choice := range choices {
-		if choice.def == nil {
-			langs = append(langs, choice.lang)
-		} else {
-			data = append(data, choice.lang)
-			dataChoices = append(dataChoices, choice)
+		if choice.def != nil {
+			data = append(data, choice)
 		}
 	}
-	if len(dataChoices) > 0 {
-		plan, _ := planData(p, dataChoices, env, manager)
+	dataNeedsRoot := false
+	if len(data) > 0 {
+		plan, _ := planData(p, data, env, manager)
 		for _, command := range plan.Commands() {
-			if strings.HasPrefix(command, "sudo ") {
-				langs = append(data, langs...)
-				break
-			}
+			dataNeedsRoot = dataNeedsRoot || strings.HasPrefix(command, "sudo ")
+		}
+	}
+	var langs []string
+	for _, choice := range choices {
+		if choice.def == nil || dataNeedsRoot {
+			langs = append(langs, choice.lang)
 		}
 	}
 	return langs
