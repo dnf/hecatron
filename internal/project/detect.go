@@ -364,15 +364,29 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 			return nil, err
 		}
 		for directory := range directories {
-			var names []string
+			var paths []string
 			for sub, inside := range byDir {
-				if directory == "." || under(sub, directory) {
-					for name := range inside {
-						names = append(names, name)
+				rel, ok := relativeTo(sub, directory)
+				if !ok {
+					continue
+				}
+				for name := range inside {
+					if rel == "" {
+						paths = append(paths, name)
+					} else {
+						paths = append(paths, rel+"/"+name)
 					}
 				}
 			}
-			holds, err := d.yields.holds(names)
+			var listing []string
+			for name := range byDir[directory] {
+				listing = append(listing, name)
+			}
+			buildFile, err := buildFileIn(pyJoin(root, directory), listing, d.detect)
+			if err != nil {
+				return nil, err
+			}
+			holds, err := d.yields.holds(paths, buildFile)
 			if err != nil {
 				return nil, err
 			}

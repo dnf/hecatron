@@ -29,6 +29,7 @@ import functools
 import glob
 import json
 import os
+import posixpath
 import re
 import shlex
 import subprocess
@@ -97,30 +98,125 @@ SKIPPED_DIRS = {"android", "benchmarks", "buildsrc", "demo", "demos", "doc", "do
                 "tutorials", "vendor", "vendored"}
 
 
-def yields(rule: dict, names) -> bool:
+def yields(rule: dict, paths, build_file: str | None = None) -> bool:
     """Whether a definition's "detectYields" rule holds for a directory, from
-    the names of the files in it and below: more match its "where" than its
-    "outnumber" (less those matching its "except"), dotfiles left out. A
-    tsconfig.json beside mostly JavaScript (antlr4's runtime/JavaScript,
-    with type declarations) is a JavaScript package's."""
-    def matching(patterns: list[str], but: list[str]) -> int:
-        return sum(1 for name in names if not name.startswith(".")
-                   and any(fnmatch.fnmatch(name, p) for p in patterns)
-                   and not any(fnmatch.fnmatch(name, p) for p in but))
-    return matching(rule.get("where", []), []) > matching(rule.get("outnumber", []), rule.get("except", []))
+    the paths of the files in it and below (relative to it): more match its
+    "where" than its "outnumber" (less those matching its "except"), by file
+    name, dotfiles left out. A tsconfig.json beside mostly JavaScript
+    (antlr4's runtime/JavaScript, with type declarations) is a JavaScript
+    package's. Build output doesn't count, so a TypeScript package that
+    commits its compiled JavaScript stays TypeScript's: the directories
+    directly below named in "skipDirs" (dist/, lib/), the one the build
+    file names at "outputDir" (tsconfig.json's compilerOptions.outDir), and,
+    with "twins", a "where" file whose stem an "outnumber" file shares (the
+    compiled index.js of index.ts)."""
+    output = _output_dir(build_file, rule.get("outputDir")) if build_file else None
+    skipped = set(rule.get("skipDirs", []))
+    names = []
+    for path in paths:
+        parts = path.split("/")
+        if len(parts) > 1 and parts[0] in skipped or output and (path == output or path.startswith(output + "/")):
+            continue
+        if not parts[-1].startswith("."):
+            names.append(parts[-1])
+
+    def matches(name: str, patterns: list[str]) -> bool:
+        return any(fnmatch.fnmatch(name, p) for p in patterns)
+    own = [name for name in names if matches(name, rule.get("outnumber", [])) and not matches(name, rule.get("except", []))]
+    stems = {os.path.splitext(name)[0] for name in own} if rule.get("twins") else set()
+    others = [name for name in names if matches(name, rule.get("where", [])) and os.path.splitext(name)[0] not in stems]
+    return len(others) > len(own)
+
+
+def _output_dir(build_file: str, keys) -> str | None:
+    """The directory a build file names at a key path (["compilerOptions",
+    "outDir"]), relative to the build file's directory and normalized; None
+    when it names none inside it, or the file can't be read."""
+    if not isinstance(keys, list) or not keys:
+        return None
+    try:
+        with open(build_file, encoding="utf-8") as f:
+            value = json.loads(loose_json(f.read()))
+    except (OSError, UnicodeDecodeError, ValueError):
+        return None
+    for key in keys:
+        if not isinstance(value, dict) or not isinstance(key, str):
+            return None
+        value = value.get(key)
+    if not isinstance(value, str):
+        return None
+    directory = posixpath.normpath(value)
+    if directory in (".", "..") or directory.startswith(("/", "../")):
+        return None
+    return directory
+
+
+def loose_json(text: str) -> str:
+    """JSON with comments (// and /* */) and trailing commas, as tsconfig.json
+    allows, made strict JSON; strings are kept as written."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        c = text[i]
+        if c == '"':
+            j = i + 1
+            while j < n and text[j] != '"':
+                j += 2 if text[j] == "\\" else 1
+            out.append(text[i:j + 1])
+            i = j + 1
+        elif text.startswith("//", i):
+            j = text.find("\n", i)
+            i = n if j < 0 else j
+        elif text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            i = n if j < 0 else j + 2
+        else:
+            out.append(c)
+            i += 1
+    strict, i, text = [], 0, "".join(out)
+    n = len(text)
+    while i < n:
+        c = text[i]
+        if c == '"':
+            j = i + 1
+            while j < n and text[j] != '"':
+                j += 2 if text[j] == "\\" else 1
+            strict.append(text[i:j + 1])
+            i = j + 1
+            continue
+        if c == ",":
+            j = i + 1
+            while j < n and text[j] in " \t\r\n":
+                j += 1
+            if j < n and text[j] in "}]":
+                i += 1
+                continue
+        strict.append(c)
+        i += 1
+    return "".join(strict)
+
+
+def build_file_in(directory: str, names, patterns: list[str]) -> str | None:
+    """The first file, by pattern and then by name, of the names in a
+    directory matching the patterns: the build file a hit was found by."""
+    for pattern in patterns:
+        for name in sorted(names):
+            if fnmatch.fnmatch(name, pattern):
+                return os.path.join(directory, name)
+    return None
 
 
 @functools.lru_cache(maxsize=None)
-def tracked_names_below(directory: str) -> tuple[str, ...]:
-    """The names of the files git tracks in a directory and below it, outside
-    SKIPPED_DIRS and hidden directories, as detection counts them."""
+def tracked_paths_below(directory: str) -> tuple[str, ...]:
+    """The paths, relative to it, of the files git tracks in a directory and
+    below it, outside SKIPPED_DIRS and hidden directories, as detection
+    counts them."""
     listing = _git(directory, "ls-files")
-    names = []
+    paths = []
     for path in (listing or "").splitlines():
         parts = path.split("/")
         if not any(part.lower() in SKIPPED_DIRS or part.startswith(".") for part in parts[:-1]):
-            names.append(parts[-1])
-    return tuple(names)
+            paths.append(path)
+    return tuple(paths)
 
 
 def _git(directory: str, *args: str) -> str | None:
@@ -281,8 +377,10 @@ class Project:
         directory is the other language's."""
         d = self.definitions.get(lang, {})
         rule = d.get("detectYields")
-        return bool(rule) and any(fnmatch.fnmatch(name, pattern) for name in listing
-                                  for pattern in d.get("detect", [])) and yields(rule, tracked_names_below(directory))
+        if not rule:
+            return False
+        build_file = build_file_in(directory, listing, d.get("detect", []))
+        return build_file is not None and yields(rule, tracked_paths_below(directory), build_file)
 
     def impl_dir(self, component: str, lang: str) -> str:
         """Where a component's code in a language lives: the template filled

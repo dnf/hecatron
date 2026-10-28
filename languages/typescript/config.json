@@ -26,7 +26,18 @@
       "*.d.ts",
       "*.d.mts",
       "*.d.cts"
-    ]
+    ],
+    "skipDirs": [
+      "dist",
+      "build",
+      "out",
+      "lib"
+    ],
+    "outputDir": [
+      "compilerOptions",
+      "outDir"
+    ],
+    "twins": true
   },
   "dirNames": [
     "typescript",

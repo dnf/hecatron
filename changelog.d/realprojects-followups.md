@@ -15,7 +15,10 @@
   (antlr4's `runtime/JavaScript`, with its type declarations), in detection
   and in finding a language's directory: a definition's new `detectYields`
   rule gives a hit to another language where its files outnumber the
-  language's own (#206).
+  language's own. Committed build output doesn't count (`dist/`, `build/`,
+  `out/`, `lib/`, the `outDir` in `tsconfig.json`, a `.js` beside its
+  `.ts`), so a TypeScript package that tracks its compiled JavaScript
+  stays TypeScript (#206).
 - **Libraries a Makefile build includes:** the C, C++ and Objective-C
   installers install the common libraries the sources of a build without
   CMake `#include` (`<zlib.h>`, `<openssl/ssl.h>`, `<sqlite3.h>`...), as they

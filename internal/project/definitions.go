@@ -234,23 +234,15 @@ func (p *Project) yieldsIn(lang, directory string, listing []string) (bool, erro
 	if err != nil {
 		return false, err
 	}
-	beside := false
-	for _, name := range listing {
-		if beside, err = matchesAny(name, detect); err != nil {
-			return false, err
-		}
-		if beside {
-			break
-		}
+	buildFile, err := buildFileIn(directory, listing, detect)
+	if err != nil || buildFile == "" {
+		return false, err
 	}
-	if !beside {
-		return false, nil
-	}
-	names, err := p.trackedNamesBelow(directory)
+	paths, err := p.trackedPathsBelow(directory)
 	if err != nil {
 		return false, err
 	}
-	return rule.holds(names)
+	return rule.holds(paths, buildFile)
 }
 
 // ImplDir is where a component's code in a language lives: the template

@@ -15,6 +15,7 @@ import argparse
 import fnmatch
 import json
 import os
+import posixpath
 import subprocess
 import sys
 import tempfile
@@ -616,9 +617,11 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
         if not rule:
             continue
         for directory in hits(by_dir, d.get("detect", []), d.get("detectUnless", [])):
-            names = [name for sub, inside in by_dir.items() if directory == "." or _under(sub, directory)
+            paths = [posixpath.join(posixpath.relpath(sub, directory), name)
+                     for sub, inside in by_dir.items() if directory == "." or _under(sub, directory)
                      for name in inside]
-            if projectlib.yields(rule, names):
+            build_file = projectlib.build_file_in(os.path.join(root, directory), by_dir[directory], d.get("detect", []))
+            if projectlib.yields(rule, [posixpath.normpath(path) for path in paths], build_file):
                 yielded.setdefault(lang, set()).add(directory)
                 granted.setdefault(rule["to"], set()).add(directory)
 

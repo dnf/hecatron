@@ -442,7 +442,12 @@ saves it, as init would. Init itself:
    `tsconfig.json` beside more JavaScript than TypeScript files (`.d.ts`
    declarations aside; tracked files in the directory and below, as
    detection counts them) is a JavaScript package's, as antlr4's
-   `runtime/JavaScript` with its type declarations is. A
+   `runtime/JavaScript` with its type declarations is. Committed build
+   output doesn't count, so a TypeScript package that tracks its compiled
+   JavaScript stays TypeScript: `dist/`, `build/`, `out/` and `lib/`
+   directly below, the `compilerOptions.outDir` its `tsconfig.json` names
+   (read with comments and trailing commas), and a `.js` beside a `.ts` of
+   the same name. A
    `package.json` without the definition's `detectScript` npm script doesn't
    count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
    Dotfiles aren't sources (a `.nvim.lua` configures an editor).
