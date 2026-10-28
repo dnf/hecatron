@@ -22,6 +22,19 @@ ROOT="${HECATRON_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
 log() { echo "==> $*"; }
 
+# True when the first argument is one of the others. Not `printf ... | grep -q`
+# (nor `command | grep -q`): under pipefail, grep exiting at its match can kill
+# the writer with SIGPIPE before it's done, failing the pipeline now and then
+# (#169). Search a command's output with `grep -q PATTERN <<<"$(command)"`.
+in_list() {
+    local _wanted="$1" _item
+    shift
+    for _item in "$@"; do
+        [ "${_item}" = "${_wanted}" ] && return 0
+    done
+    return 1
+}
+
 # Every download retries. Installing dozens of toolchains from dozens of hosts
 # makes a transient failure (a timeout, a refused or dropped connection, a 5xx
 # or 429) a matter of time, so curl tries up to five times, gives up on a
@@ -87,9 +100,11 @@ each_impl_versioned() {
 # every language, the language is only listed in the HECATRON_DEFER_DEPS
 # file: the dependencies are fetched once every toolchain is in.
 impl_deps() {
+    local _deps_langs
     [ -n "${HECATRON_HOME:-}" ] || return 0
-    (cd "${ROOT}" && eval "$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env </dev/null)" &&
-        printf '%s\n' "${_DEPS_LANGS}") | grep -qx "$1" || return 0
+    _deps_langs="$(cd "${ROOT}" && eval "$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env </dev/null)" &&
+        printf '%s\n' "${_DEPS_LANGS}")" || return 0
+    in_list "$1" ${_deps_langs} || return 0
     if [ -n "${HECATRON_DEFER_DEPS:-}" ]; then
         echo "$1" >>"${HECATRON_DEFER_DEPS}"
         return 0
@@ -327,7 +342,7 @@ dotnet_target_majors() {
         xargs -r grep -ho '<TargetFrameworks\?[^>]*>[^<]*' 2>/dev/null |
         sed 's/.*>//' | tr ';' '\n' | sed -n 's/^net\([0-9][0-9]*\)\.0.*$/\1/p' | sort -un
 }
-dotnet_has_runtime() { dotnet --list-runtimes 2>/dev/null | grep -q "^Microsoft.NETCore.App $1\."; }
+dotnet_has_runtime() { grep -q "^Microsoft.NETCore.App $1\." <<<"$(dotnet --list-runtimes 2>/dev/null)"; }
 dotnet_runtimes_missing() {
     local _major
     has dotnet || return 0
@@ -376,6 +391,8 @@ _cmake_package() {
             libuv) echo libuv ;;
             FLEX) echo flex ;;
             BISON) echo bison ;;
+            PCRE2 | libpcre2-8) echo pcre2 ;;
+            cJSON | libcjson) echo cjson ;;
         esac
     else
         case "${_name}" in
@@ -406,6 +423,8 @@ _cmake_package() {
             CyrusSASL) echo libsasl2-dev ;;
             FLEX) echo flex ;;
             BISON) echo bison ;;
+            PCRE2 | libpcre2-8) echo libpcre2-dev ;;
+            cJSON | libcjson) echo libcjson-dev ;;
             Threads) ;;
             liblzma | LibLZMA) echo liblzma-dev ;;
             lib*) if [ "$1" != "${_name}" ]; then echo "${_name}-dev"; fi ;;
@@ -496,6 +515,15 @@ cmake_dependencies() {
     log "Installing the libraries the CMake builds look for: ${_packages}"
     # shellcheck disable=SC2086 # one word per package
     if [ "${OS}" = "macos" ]; then brew_install ${_packages}; else apt_install ${_packages}; fi
+}
+
+# For the native languages' installers and doctors (C, C++, Objective-C):
+# Meson, and the Ninja it builds with, where a component builds with Meson
+# (the hooks run it for a meson.build) and it isn't installed.
+meson_missing() { ! has meson && impl_configures "$1" meson.build; }
+meson_install() {
+    log "Installing Meson..."
+    if [ "${OS}" = "macos" ]; then brew_install meson; else apt_install meson ninja-build; fi
 }
 
 # For Rust's installer: the system software a component's crates build
@@ -595,11 +623,28 @@ jvm_build_tools_missing() {
         { { [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ]; } && [ ! -x "${_dir}/gradlew" ]; } && _gradle=1
         [ -f "${_dir}/build.sbt" ] && _sbt=1
         _gradle_project_above "${_dir}" && _gradle=1
-    done < <(impl_dirs "$1")
+    done < <(impl_dirs "$1" | _jvm_build_dirs)
     if [ "${_maven}" -eq 1 ] && ! _maven_current; then echo maven; fi
     if [ "${_gradle}" -eq 1 ] && ! has gradle; then echo gradle; fi
     if [ "${_sbt}" -eq 1 ] && ! has sbt; then echo sbt; fi
     return 0
+}
+# Each directory read, or, for one with no build file of its own, the
+# shallowest directories below it with one, at most three levels down, where
+# the hooks run the build (find_build in _hooks.sh).
+_jvm_build_dirs() {
+    local _dir _below
+    while IFS= read -r _dir; do
+        echo "${_dir}"
+        [ -f "${_dir}/pom.xml" ] || [ -f "${_dir}/build.gradle" ] || [ -f "${_dir}/build.gradle.kts" ] ||
+            [ -f "${_dir}/build.sbt" ] && continue
+        _below="$(find "${_dir}" -mindepth 2 -maxdepth 4 \( -type d \( -name '.*' -o -name node_modules -o -name build -o -name target \) -prune \) -o \
+            -type f \( -name pom.xml -o -name build.gradle -o -name build.gradle.kts -o -name build.sbt \) -print 2>/dev/null |
+            sed 's|/[^/]*$||' | sort -u)"
+        [ -n "${_below}" ] || continue
+        awk -F/ 'NR == 1 || NF < least { least = NF } { depth[NR] = NF; dir[NR] = $0 }
+            END { for (i = 1; i <= NR; i++) if (depth[i] == least) print dir[i] }' <<<"${_below}"
+    done
 }
 # Whether a directory with no build file of its own is a project of a Gradle
 # build above it, in the project, without a wrapper (the hooks run Gradle

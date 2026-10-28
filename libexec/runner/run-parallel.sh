@@ -131,7 +131,7 @@ fi
 lockdir="$logdir/.lock"
 if ! mkdir "$lockdir" 2>/dev/null; then
     # Clean up stale locks older than 2 minutes
-    if find "$lockdir" -maxdepth 0 -mmin +2 2>/dev/null | grep -q .; then
+    if [ -n "$(find "$lockdir" -maxdepth 0 -mmin +2 2>/dev/null)" ]; then
         rmdir "$lockdir" 2>/dev/null
     fi
     if ! mkdir "$lockdir" 2>/dev/null; then

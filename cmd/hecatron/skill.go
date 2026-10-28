@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/dnf/hecatron/internal/selfupdate"
 )
 
 const skillUsage = `Usage: hecatron skill install [--user | --project | --dir DIR]
@@ -19,7 +21,8 @@ use hct, where the agent finds it:
   --dir DIR   DIR/hecatron: another agent that reads Agent Skills (its
               documentation says where it looks)
 Installing again replaces the copy, so it matches this hecatron. A folder
-there that isn't hecatron's skill is left alone.
+there that isn't hecatron's skill is left alone. hct self update refreshes
+the --user and --dir copies; a --project copy is the repository's to update.
 
 hecatron skill path prints where the skill is inside hecatron. In Claude
 Code, /plugin install hecatron --marketplace dnf/hecatron installs it as a
@@ -52,6 +55,9 @@ func (c *cli) skill() int {
 		if err := installSkill(source, destination); err != nil {
 			fmt.Fprintln(os.Stderr, "hecatron: skill:", err)
 			return 1
+		}
+		if len(c.args) < 2 || c.args[1] != "--project" {
+			c.recordSkill(destination)
 		}
 		version, _ := c.readVersion()
 		fmt.Printf("Installed hecatron's skill (%s) in %s\n", strings.TrimSpace(string(version)), destination)
@@ -122,4 +128,67 @@ func installSkill(source, destination string) error {
 func isHecatronSkill(dir string) bool {
 	data, err := os.ReadFile(filepath.Join(dir, "SKILL.md"))
 	return err == nil && strings.Contains(string(data), "\nname: hecatron\n")
+}
+
+// skillRecord lists, in a release installation, where hct skill install
+// put the skill (--user, --dir), for hct self update to refresh.
+const skillRecord = ".skill-installs"
+
+// recordSkill adds destination to the record, in a release installation
+// only (a checkout updates its skill copies itself). Best effort: a
+// record that can't be written only means no refresh.
+func (c *cli) recordSkill(destination string) {
+	exe, err := executable()
+	if err != nil || !selfupdate.IsReleaseBinary(c.home.Dir, exe) {
+		return
+	}
+	for _, recorded := range recordedSkills(c.home.Dir) {
+		if recorded == destination {
+			return
+		}
+	}
+	file, err := os.OpenFile(filepath.Join(c.home.Dir, skillRecord), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return
+	}
+	_, _ = fmt.Fprintln(file, destination)
+	_ = file.Close()
+}
+
+func recordedSkills(home string) []string {
+	data, err := os.ReadFile(filepath.Join(home, skillRecord))
+	if err != nil {
+		return nil
+	}
+	var dirs []string
+	for _, line := range strings.Split(string(data), "\n") {
+		if line = strings.TrimSpace(line); line != "" {
+			dirs = append(dirs, line)
+		}
+	}
+	return dirs
+}
+
+// refreshSkills replaces each copy of the skill hct skill install made
+// (the recorded ones and ~/.claude/skills/hecatron) that is still
+// hecatron's with the skill in home, and says what it did.
+func refreshSkills(home string) []string {
+	candidates := recordedSkills(home)
+	if user, err := os.UserHomeDir(); err == nil {
+		candidates = append(candidates, filepath.Join(user, ".claude", "skills", "hecatron"))
+	}
+	var lines []string
+	seen := map[string]bool{}
+	for _, destination := range candidates {
+		if seen[destination] || !isHecatronSkill(destination) {
+			continue
+		}
+		seen[destination] = true
+		if err := installSkill(filepath.Join(home, filepath.FromSlash(skillSource)), destination); err != nil {
+			lines = append(lines, fmt.Sprintf("Couldn't refresh hecatron's skill in %s: %v (hct skill install --dir %s)", destination, err, filepath.Dir(destination)))
+			continue
+		}
+		lines = append(lines, "Refreshed hecatron's skill in "+destination)
+	}
+	return lines
 }

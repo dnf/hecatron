@@ -14,6 +14,7 @@ HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(HOME, "tests"))
 
 from test_hecatron import Fixture, write  # noqa: E402
+import project  # noqa: E402
 
 
 def package(**scripts: str) -> str:
@@ -42,7 +43,7 @@ class NodeTestHookTest(Fixture):
                 os.symlink(os.path.join(self.bin, tool), target)
         path = ":".join([fakes] + [d for d in os.environ["PATH"].split(":") if not self.real_node(d)])
         environ = {**os.environ, "PATH": path, "HECATRON_ROOT": self.root, "HECATRON_LANG": lang,
-                   "XDG_CACHE_HOME": self.path(".cache"), **env}
+                   "HOME": self.path("home"), **env}
         hook = os.path.join(HOME, "languages", lang, "hooks", "test.sh")
         return subprocess.run(["bash", hook], cwd=self.path(cwd), env=environ, capture_output=True, text=True)
 
@@ -117,6 +118,27 @@ class NodeTestHookTest(Fixture):
         self.assertEqual(result.returncode, 1)
         self.assertIn("package.json has no test script", result.stderr)
 
+    def test_a_workspace_package_its_tests_use_is_built_first(self):
+        # Prometheus: mantine-ui's tests import codemirror-promql, whose dist/
+        # the workspace's build writes.
+        self.files({"pnpm-workspace.yaml": "packages:\n  - mantine-ui\n  - module/*\n", "pnpm-lock.yaml": "",
+                    "package.json": "{}", "mantine-ui/package.json": package(test="vitest"),
+                    "mantine-ui/node_modules/.keep": "",
+                    "module/promql/package.json": json.dumps({"main": "dist/index.cjs", "scripts": {"build": "x"}})})
+        self.assertEqual(self.ran(self.test(cwd="mantine-ui")),
+                         ["corepack pnpm -r --if-present run build in " + os.path.basename(self.root),
+                          "corepack pnpm run test in mantine-ui"])
+
+    def test_a_workspace_root_with_a_test_script_builds_its_native_packages(self):
+        self.files({"package.json": json.dumps({"workspaces": ["packages/*"], "scripts": {"test": "x"}}),
+                    "package-lock.json": "{}", "node_modules/.keep": "",
+                    "packages/core/package.json": json.dumps({"napi": {}, "scripts": {"build": "napi build"}})})
+        name = os.path.basename(self.root)
+        self.assertEqual(self.ran(self.test()), [f"npm run build --workspaces --if-present in {name}",
+                                                  f"npm run test in {name}"])
+        write(self.path("packages", "core", "core.linux-x64-gnu.node"), "")
+        self.assertEqual(self.ran(self.test()), [f"npm run test in {name}"])
+
     def test_a_package_without_a_native_addon_isnt_built(self):
         self.files({"package.json": package(build="tsc", test="jest"), "node_modules/.keep": ""})
         self.assertEqual(self.ran(self.test()), ["npm run test in " + os.path.basename(self.root)])
@@ -175,6 +197,21 @@ class NodeTestHookTest(Fixture):
         with open(self.path(".calls")) as calls:
             first = calls.readline()
         self.assertEqual(first.split(" --install-directory ")[0], "ran corepack enable")
+        self.assertEqual(first.split(" --install-directory ")[1].split()[0],
+                         self.path("home", ".cache", "hecatron", "corepack-shims"))
+
+    def test_other_languages_hooks_have_the_shims_on_path(self):
+        # swc's Rust tests run pnpm: the shim directory is a static "path"
+        # entry of the Node.js languages, which other languages' hooks get.
+        os.makedirs(self.path("home", ".cache", "hecatron", "corepack-shims"))
+        self.configure(languages=["rust", "typescript"])
+        saved = os.environ.get("HOME")
+        os.environ["HOME"] = self.path("home")
+        try:
+            path = project.load(self.root).language_env("rust")["path"]
+        finally:
+            os.environ["HOME"] = saved
+        self.assertIn(self.path("home", ".cache", "hecatron", "corepack-shims"), path)
 
 if __name__ == "__main__":
     unittest.main()

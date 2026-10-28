@@ -6,7 +6,7 @@ GOOSE_VERSION="v2026.3"
 
 # Other tools are also called goose (a database migrator, an AI agent);
 # only the language prints "goose runtime" from `goose version`.
-has_goose_language() { goose version 2>/dev/null | grep -q '^goose runtime'; }
+has_goose_language() { grep -q '^goose runtime' <<<"$(goose version 2>/dev/null)"; }
 
 install_release() {
     local platform="$1"

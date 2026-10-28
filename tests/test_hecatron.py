@@ -227,6 +227,24 @@ class InitTest(Fixture):
         self.assertEqual(found, {"go": {"go"}})
         self.assertEqual(set(skipped), {"java", "groovy"})
 
+    def test_dotfiles_arent_sources(self):
+        # ripgrep's .nvim.lua configures an editor.
+        found, _ = self.detect({"Cargo.toml": "", ".nvim.lua": "", "lua/x.lua": ""},
+                               {"rust": {"detect": ["Cargo.toml"]}, "lua": {"detect": [], "detectSources": ["*.lua"]}})
+        self.assertEqual(found, {"rust": {"."}, "lua": {"lua"}})
+
+    def test_only_a_dotfile_adds_no_language(self):
+        found, _ = self.detect({"Cargo.toml": "", ".nvim.lua": ""},
+                               {"rust": {"detect": ["Cargo.toml"]}, "lua": {"detect": [], "detectSources": ["*.lua"]}})
+        self.assertEqual(found, {"rust": {"."}})
+
+    def test_a_test_suite_names_the_language_of_the_directory_it_tests(self):
+        # bats-core and Bash-it: Bash, found only by their Bats suites.
+        defs = {"bash": {"detect": [], "detectTests": ["*.bats"]}, "go": {"detect": ["go.mod"]}}
+        found, _ = self.detect({"test/a.bats": "", "cli/Tests/b.bats": "", "vendor/y/test/c.bats": "",
+                                "go.mod": ""}, defs)
+        self.assertEqual(found, {"bash": {".", "cli"}, "go": {"."}})
+
     def test_build_files_outrank_sources(self):
         found, _ = self.detect({"java/pom.xml": "", "java/src/main/A.java": "", "tools/B.java": "",
                                 "kt/x.kt": ""},
@@ -330,6 +348,17 @@ class InitTest(Fixture):
         self.assertEqual((config["languages"], config["implPath"], config.get("implPaths")),
                          (["go", "rust"], "{lang}", None))
 
+    def test_a_build_file_deeper_than_the_hooks_look_gets_its_own_path(self):
+        # antlr4: languages at the root, and Go's module four levels down,
+        # deeper than the Go hook looks below the root.
+        config = self.detected({"CMakeLists.txt": "", "src/a.cpp": "", "runtime/Go/antlr/v4/go.mod": "module x\n",
+                                "runtime/Go/antlr/v4/a.go": "", "pyproject.toml": ""})
+        self.assertEqual((config["implPath"], config.get("implPaths")), (".", {"go": "runtime/Go/antlr/v4"}))
+
+    def test_templates_are_not_the_project(self):
+        config = self.detected({"Cargo.toml": "", "crates/cli/src/templates/go.mod": "module x\n"})
+        self.assertEqual(config["languages"], ["rust"])
+
     def test_init_writes_a_path_for_a_language_outside_the_layout(self):
         write(self.path("go", "go.mod"), "module x\n")
         write(self.path("java", "pom.xml"), "<project/>\n")
@@ -406,7 +435,7 @@ class InitTest(Fixture):
         with open(BIN, encoding="utf-8") as f:
             arms = re.findall(r"^    ([a-z|-]+)\)$", f.read(), re.M)
         dispatched = {name for arm in arms for name in arm.split("|")}
-        self.assertEqual(commands - dispatched - {"self-test", "self-build"}, set())  # they run outside any project
+        self.assertEqual(commands - dispatched - {"self"}, set())  # it runs outside any project
 
     def test_a_per_language_command_runs_in_a_project(self):
         self.configure()
@@ -567,6 +596,19 @@ class InstallTest(Fixture):
         self.assertIn("Failed to fetch dependencies: a", result.stderr)
 
 
+class BashTestHookTest(Fixture):
+    def test_bats_runs_the_suites_but_not_their_fixtures(self):
+        for name in ("test/a.bats", "test/sub/b.bats", "test/fixtures/bad.bats", "tests/c.bats"):
+            write(self.path(name), "")
+        fake = self.path(".fakebin", "bats")
+        write(fake, '#!/bin/sh\necho "ran bats $*"\n', 0o755)
+        env = {**os.environ, "PATH": f"{os.path.dirname(fake)}:{os.environ['PATH']}", "HECATRON_LANG": "bash"}
+        result = subprocess.run(["bash", os.path.join(HOME, "languages", "bash", "hooks", "test.sh")],
+                                cwd=self.root, env=env, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("ran bats test/a.bats test/sub/b.bats tests/c.bats", result.stdout)
+
+
 class LanguageCommandsTest(Fixture):
     def test_add_remove_enable_disable(self):
         self.configure()
@@ -682,6 +724,20 @@ class GeneratedFilesTest(Fixture):
         with open(self.path("Dockerfile"), encoding="utf-8") as f:
             content = f.read()
         self.assertIn("ENV LANG=C.UTF-8", content)
+
+    def test_dockerfile_curl_retries_before_any_download(self):
+        # Snippets' curl calls carry no retry options; a curlrc found through
+        # CURL_HOME (so whatever the user) gives them the installers' policy,
+        # set up before the first RUN that downloads anything.
+        self.assertEqual(self.hecatron("dockerfile").returncode, 0)
+        with open(self.path("Dockerfile"), encoding="utf-8") as f:
+            content = f.read()
+        self.assertIn("ENV CURL_HOME=/etc/hecatron-curl\n", content)
+        self.assertIn('> "${CURL_HOME}/.curlrc"', content)
+        for option in ("'retry = 4'", "'retry-delay = 3'", "'retry-connrefused'", "'retry-all-errors'",
+                       "'connect-timeout = 30'", "'speed-limit = 1024'", "'speed-time = 60'"):
+            self.assertIn(option, content)
+        self.assertLess(content.index("ENV CURL_HOME="), content.index("RUN apt-get"))
 
 
 class RunTest(Fixture):

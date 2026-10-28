@@ -7,7 +7,7 @@
 # 1. Checks: on main, clean and up to date with origin; gh signed in; the
 #    version is X.Y.Z, newer than VERSION, and not tagged yet; there are
 #    changes to release (changelog.d/ fragments, or entries under CHANGELOG.md's
-#    "## Unreleased"); `hecatron self-test` passes.
+#    "## Unreleased"); `hecatron self test` passes.
 # 2. On a release-X.Y.Z branch: VERSION; the Unreleased heading becomes
 #    "## X.Y.Z (date)" under a new empty Unreleased, with the changelog.d/
 #    fragments added to it in the order they were merged and removed; and the
@@ -74,7 +74,7 @@ check() {
         [ -n "$(unreleased_entries | tr -d '[:space:]')" ] || [ -n "$(fragments)" ] ||
             fail "nothing to release: no changelog.d/ fragments and CHANGELOG.md's Unreleased section is empty"
     fi
-    bin/hecatron self-test >/dev/null 2>&1 || fail "hecatron self-test fails; run it to see why"
+    bin/hecatron self test >/dev/null 2>&1 || fail "hecatron self test fails; run it to see why"
 }
 
 # The fragments, oldest merge first: the order the changes landed.

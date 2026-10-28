@@ -67,9 +67,12 @@ node_pm_command() {
 }
 
 # Corepack's shim for a package manager, on PATH for this hook and the
-# scripts it runs.
+# scripts it runs. The directory is a static "path" entry of JavaScript's and
+# TypeScript's definitions, so other languages' hooks have it too (a Rust
+# test that runs pnpm).
+node_corepack_shims="${HOME}/.cache/hecatron/corepack-shims"
 node_corepack_shim() {
-    local _shims="${XDG_CACHE_HOME:-${HOME}/.cache}/hecatron/corepack-shims"
+    local _shims="${node_corepack_shims}"
     if mkdir -p "${_shims}" && corepack enable --install-directory "${_shims}" "$1" >/dev/null 2>&1; then
         export PATH="${_shims}:${PATH}"
     fi
@@ -118,7 +121,8 @@ node_package_manager_ensure() {
     node_pm_command
     case "${node_pm_name}" in
         pnpm | yarn)
-            has corepack || has "${node_pm_name}" || _node_global_install corepack corepack ;;
+            has corepack || has "${node_pm_name}" || _node_global_install corepack corepack
+            has "${node_pm_name}" || ! has corepack || node_corepack_shim "${node_pm_name}" ;;
         bun)
             has bun || _node_global_install bun oven-sh/bun/bun ;;
     esac
