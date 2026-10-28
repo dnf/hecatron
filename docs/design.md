@@ -336,7 +336,10 @@ runners run once. A package its tests need built (a native addon, from a `napi`
 key, a `binding.gyp` or a build script running napi or node-gyp, whose
 `*.node` isn't built; or a `main` or `exports` entry point that isn't
 there) is built first: its build script, else `napi build --platform` or
-`node-gyp rebuild`.
+`node-gyp rebuild`. So is its workspace, when any workspace package needs
+it (one the tests import may): `pnpm -r run build`, `npm run build
+--workspaces`, `yarn workspaces foreach --topological run build`, else
+each package in turn.
 
 **Dependencies.** A `deps` hook fetches a component's dependencies with its
 ecosystem's tool, held to the lock file when there is one (it fails rather

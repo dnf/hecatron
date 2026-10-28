@@ -554,8 +554,16 @@ PY
 # build writes and that isn't there (dist/index.js). Built through the build
 # script when there is one, else napi's or node-gyp's own build.
 node_build_first() {
-    local _kind
-    _kind="$(python3 - <<'PY'
+    case "$(node_build_kind)" in
+        script) run "${node_pm[@]}" run build ;;
+        napi) run node_modules/.bin/napi build --platform ;;
+        gyp) run npx --yes node-gyp rebuild ;;
+    esac
+}
+# How this package has to be built first (node_build_first): script, napi,
+# gyp, or nothing.
+node_build_kind() {
+    python3 - <<'PY'
 import glob, json, os, re
 
 def first_path(value):
@@ -588,17 +596,66 @@ if build and (native and not built or entry_missing):
 elif native and not built:
     print("napi" if napi else "gyp")
 PY
-)"
-    case "${_kind}" in
-        script) run "${node_pm[@]}" run build ;;
-        napi) run node_modules/.bin/napi build --platform ;;
-        gyp) run npx --yes node-gyp rebuild ;;
-    esac
+}
+
+# The workspace this package is in, at its root (here or above, within the
+# project: a pnpm-workspace.yaml, or a package.json with "workspaces"): when
+# any of its packages has to be built first (node_build_kind), as one this
+# package uses may, build the workspace, in dependency order where the
+# package manager gives one.
+node_workspace_build() {
+    local _root
+    _root="$(node_workspace_root)" || return 0
+    (
+        cd "${_root}"
+        node_workspace_needs_build || exit 0
+        echo "${HECATRON_LANG:-}: ${_hook_action}: building the workspace in ${_root} first"
+        case "${node_pm_name}" in
+            pnpm) run "${node_pm[@]}" -r --if-present run build ;;
+            npm) run npm run build --workspaces --if-present ;;
+            yarn)
+                if [ "$("${node_pm[@]}" --version 2>/dev/null | cut -d. -f1)" = 1 ]; then
+                    node_workspace_build_each
+                else
+                    run "${node_pm[@]}" workspaces foreach --all --topological run build
+                fi ;;
+            *) node_workspace_build_each ;;
+        esac
+    )
+}
+node_workspace_root() {
+    local _dir
+    while IFS= read -r _dir; do
+        if [ -f "${_dir}/pnpm-workspace.yaml" ] || python3 -c '
+import json, sys
+try:
+    sys.exit(0 if json.load(open(sys.argv[1])).get("workspaces") else 1)
+except (OSError, ValueError, AttributeError):
+    sys.exit(1)
+' "${_dir}/package.json"; then
+            echo "${_dir}"
+            return 0
+        fi
+    done < <(pwd; dirs_above)
+    return 1
+}
+node_workspace_needs_build() {
+    local _dir
+    while IFS= read -r _dir; do
+        [ -z "$(cd "${_dir}" && node_build_kind)" ] || return 0
+    done < <(node_workspaces_with "")
+    return 1
+}
+node_workspace_build_each() {
+    local _dir
+    while IFS= read -r _dir; do
+        (cd "${_dir}" && node_build_first)
+    done < <(node_workspaces_with "")
 }
 
 # A workspace root's packages (package.json "workspaces", or
 # pnpm-workspace.yaml's "packages") that define an npm script, one per line,
-# e.g. `node_workspaces_with test`.
+# e.g. `node_workspaces_with test`; every package for "".
 node_workspaces_with() {
     python3 - "$1" <<'PY'
 import glob, json, os, re, sys
@@ -634,7 +691,7 @@ for directory in sorted(included - excluded):
         scripts = json.load(open(os.path.join(directory, "package.json"))).get("scripts") or {}
     except (OSError, ValueError, AttributeError):
         continue
-    if sys.argv[1] in scripts:
+    if not sys.argv[1] or sys.argv[1] in scripts:
         print(directory)
 PY
 }
@@ -644,6 +701,7 @@ PY
 node_workspaces_run() {
     local _dir _dirs=() _failed_dirs=()
     while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(node_workspaces_with "$1")
+    node_workspace_build
     for _dir in "${_dirs[@]}"; do
         echo "--- ${HECATRON_LANG:-}: ${_hook_action} in ${_dir}"
         (cd "${_dir}" && node_build_first && run "${node_pm[@]}" run "$1") || _failed_dirs+=("${_dir}")
@@ -687,6 +745,7 @@ node_hook() {
             export CI="${CI:-true}"
             if npm_script test; then
                 npm_deps
+                node_workspace_build
                 node_build_first
                 run "${node_pm[@]}" run test
             elif [ -n "$(node_workspaces_with test)" ]; then
@@ -695,6 +754,7 @@ node_hook() {
             elif has_any 'vitest.config.*' 'jest.config.*' '.mocharc.*'; then
                 npm_deps
                 node_test_runner || unknown "package.json has no test script, and its test runner isn't installed"
+                node_workspace_build
                 node_build_first
                 run "${node_runner[@]}"
             else
