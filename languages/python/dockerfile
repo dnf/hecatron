@@ -7,3 +7,7 @@ ENV PATH="/root/.local/bin:${PATH}"
 # each-version
 RUN uv python install {version}
 # end-each-version
+# `python` for builds that call it, where only python3 is, in a directory of
+# Python's own that hecatron puts on every language's PATH (install.sh)
+RUN command -v python >/dev/null || { mkdir -p /root/.local/share/hecatron/python/bin && \
+      ln -s "$(command -v python3)" /root/.local/share/hecatron/python/bin/python; }

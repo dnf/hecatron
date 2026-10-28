@@ -16,7 +16,8 @@
   ],
   "path": [
     "{home}/bin",
-    "~/.local/bin"
+    "~/.local/bin",
+    "~/.local/share/hecatron/python/bin"
   ],
   "version": "=3.15.1",
   "track": "stable",

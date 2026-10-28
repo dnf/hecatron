@@ -367,7 +367,11 @@ there) is built first: its build script, else `napi build --platform` or
 `node-gyp rebuild`. So is its workspace, when any workspace package needs
 it (one the tests import may): `pnpm -r run build`, `npm run build
 --workspaces`, `yarn workspaces foreach --topological run build`, else
-each package in turn.
+each package in turn. Where there is no `python`, only `python3`, Python's
+installer links one to it in `~/.local/share/hecatron/python/bin`, a static
+`path` entry of Python's, so the builds of a project's other languages that
+call `python` (a Rust build script, a CMake project's) find it, and nothing
+outside hecatron's hooks does.
 
 **Dependencies.** A `deps` hook fetches a component's dependencies with its
 ecosystem's tool, held to the lock file when there is one (it fails rather

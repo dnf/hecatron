@@ -34,3 +34,5 @@ uninstall_linux() {
 
 log "Uninstalling Python..."
 "uninstall_${OS}"
+# install.sh's `python` link to python3, where there was no python.
+rm -rf "${HOME}/.local/share/hecatron/python"
