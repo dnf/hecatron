@@ -28,7 +28,7 @@ class NativeHookTest(Fixture):
     def setUp(self):
         super().setUp()
         self.bin = self.path(".fakebin")
-        for tool in ("cmake", "ctest", "make"):
+        for tool in ("cmake", "ctest", "make", "meson"):
             write(os.path.join(self.bin, tool), FAKE, 0o755)
 
     def run_hook(self, action: str, **env) -> subprocess.CompletedProcess:
@@ -77,6 +77,42 @@ class NativeHookTest(Fixture):
         write(self.path("tests", "CMakeLists.txt"), "add_test(NAME t COMMAND t)\n")
         result = self.run_hook("test")
         self.assertIn("ctest --test-dir build --output-on-failure --no-tests=error", result.stdout)
+
+    def test_tests_set_up_in_a_subdirectory_run_from_there(self):
+        # enable_testing() in sub/, not at the top (Zstandard's build/cmake/):
+        # CTest finds the tests only from that subdirectory's build tree.
+        write(self.path("CMakeLists.txt"), "project(x)\nadd_subdirectory(sub)\n")
+        write(self.path("sub", "CMakeLists.txt"), "enable_testing()\nadd_test(NAME t COMMAND t)\n")
+        write(self.path("build", "CMakeCache.txt"), "")
+        for below in ("sub", "sub/inner", "_deps/dep"):
+            write(self.path("build", *below.split("/"), "CTestTestfile.cmake"), "")
+        # ctest reports tests anywhere below the top.
+        fake = FAKE.replace('echo "Total Tests: ${FAKE_TESTS:-0}"',
+                            'case " $* " in *" build "*) echo "Total Tests: 0" ;; *) echo "Total Tests: 2" ;; esac')
+        write(os.path.join(self.bin, "ctest"), fake, 0o755)
+        result = self.run_hook("test")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("ctest --test-dir build/sub --output-on-failure", result.stdout)
+        self.assertNotIn("inner", result.stdout)
+        self.assertNotIn("_deps", result.stdout)
+        self.assertNotIn("--no-tests=error", result.stdout)
+
+    def test_a_makefile_builds_before_its_check(self):
+        write(self.path("Makefile"), "all:\ncheck:\n")
+        result = self.run_hook("test")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        lines = result.stdout.splitlines()
+        self.assertLess(lines.index("+ make"), lines.index("+ make check"), result.stdout)
+
+    def test_meson_starts_over_after_a_failed_setup(self):
+        write(self.path("meson.build"), "project('x', 'c')\n")
+        write(self.path("build", "meson-private", "x"), "")
+        result = self.run_hook("test")
+        self.assertIn("+ rm -rf build\n+ meson setup build", result.stdout)
+        write(self.path("build", "build.ninja"), "")
+        result = self.run_hook("test")
+        self.assertNotIn("meson setup", result.stdout)
+        self.assertIn("meson test -C build", result.stdout)
 
 
 if __name__ == "__main__":

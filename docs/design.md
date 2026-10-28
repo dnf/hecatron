@@ -325,7 +325,11 @@ and a root Makefile only through a target named for the directory or language
 when the project keeps files of its own in `build/` (Zstandard's CMake
 build); a CMake project whose files never set up a test (no `add_test`,
 `enable_testing` or CTest) has nothing to test, and its test hook skips
-after building, while one that does but registered none fails. Node.js hooks and installers use the package manager
+after building, while one that does but registered none fails. CTest runs
+from the build directory of the subdirectory that calls `enable_testing()`
+when the top level doesn't (Zstandard's `build/cmake/`). A Makefile's test
+hook builds the default target before `make check` or `make test`, which
+needn't depend on everything the tests run (Redis's). Node.js hooks and installers use the package manager
 the package declares (`packageManager`, else its lockfile, here or in the
 workspace above; pnpm and Yarn through Corepack, with Corepack's shim on
 PATH for scripts that call the package manager by name), installing Corepack

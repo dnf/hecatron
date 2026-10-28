@@ -918,6 +918,10 @@ native_hook() {
         [ -f Makefile ] || [ -f makefile ] || [ -f GNUmakefile ] || autotools_configure
         case "$1" in
             test)
+                # Build first: a check or test target needn't depend on
+                # everything its tests run (Redis's test runs redis-check-rdb,
+                # which only the default target builds).
+                if make_has check || make_has test; then run make; fi
                 if make_has check; then run make check
                 elif make_has test; then run make test
                 else unknown "the Makefile has no check or test target"; fi ;;
@@ -1015,7 +1019,13 @@ autotools_configure() {
     [ -f configure ] || run autoreconf -fi
     run ./configure
 }
-meson_setup() { [ -d "${native_build}" ] || run meson setup "${native_build}"; }
+# A build directory a failed setup left behind holds no build.ninja: start
+# it over.
+meson_setup() {
+    [ ! -f "${native_build}/build.ninja" ] || return 0
+    [ ! -d "${native_build}" ] || run rm -rf "${native_build}"
+    run meson setup "${native_build}"
+}
 
 # Many projects build their tests only when asked, through an option of their
 # own (FOO_BUILD_TESTS, ENABLE_TESTING...) that defaults to off: turn on the
@@ -1095,6 +1105,18 @@ cmake_test() {
     local _part _target
     _part="$(cmake_binary_dir)"
     if ! ctest --test-dir "${_part}" -N 2>/dev/null | grep -q '^Total Tests: [1-9]'; then
+        if [ ! -f "${_part}/CTestTestfile.cmake" ]; then
+            # enable_testing() in a subdirectory, not the top: ctest finds
+            # the tests only from that subdirectory's build directory.
+            local _dir _ran=""
+            while IFS= read -r _dir; do
+                if ctest --test-dir "${_dir}" -N 2>/dev/null | grep -q '^Total Tests: [1-9]'; then
+                    run ctest --test-dir "${_dir}" --output-on-failure
+                    _ran=1
+                fi
+            done < <(cmake_ctest_dirs "${_part}")
+            [ -z "${_ran}" ] || return 0
+        fi
         _target="$(cmake_test_target)"
         if [ -n "${_target}" ]; then
             run cmake --build "${native_build}" --parallel "$(build_jobs)" --target "${_target}"
@@ -1104,6 +1126,14 @@ cmake_test() {
             skip "the CMake project defines no tests (no add_test, enable_testing or CTest)"
     fi
     run ctest --test-dir "${_part}" --output-on-failure --no-tests=error
+}
+# The topmost directories below a build directory that CTest runs from
+# (enable_testing() in a subdirectory: Zstandard's build/cmake/), outside
+# fetched dependencies.
+cmake_ctest_dirs() {
+    find "$1" -name _deps -prune -o -name CTestTestfile.cmake -type f -print 2>/dev/null |
+        sed 's|/CTestTestfile\.cmake$||' | sort |
+        awk '{ for (i = 1; i <= n; i++) if (index($0, kept[i] "/") == 1) next; kept[++n] = $0; print }'
 }
 # Whether the project's own CMake files (outside its build trees and
 # fetched dependencies) set up any test.
