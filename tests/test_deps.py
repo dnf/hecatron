@@ -222,8 +222,15 @@ class DefaultHookTest(Fixture):
 
     def test_elm_test_1_runs_on_the_last_elm_test_supporting_it(self):
         write(self.path("elm.json"), json.dumps({"test-dependencies": {"elm-explorations/test": "1.2.2 <= v < 2.0.0"}}))
-        self.assertEqual(self.hook("elm"), ["npx --yes elm-test@0.19.1-revision9"])
+        self.assertEqual(self.hook("elm"), ["npx --yes -p elm-test@0.19.1-revision9 elm-test"])
         write(self.path("elm.json"), json.dumps({"test-dependencies": {"direct": {"elm-explorations/test": "2.2.0"}}}))
+        self.assertEqual(self.hook("elm"), ["elm-test "])
+
+    def test_elm_0_19_1_runs_on_that_compiler_when_another_is_installed(self):
+        write(os.path.join(self.bin, "elm"), '#!/bin/sh\necho 0.19.3\n', 0o755)
+        write(self.path("elm.json"), json.dumps({"elm-version": "0.19.1"}))
+        self.assertEqual(self.hook("elm"), ["npx --yes -p elm@0.19.1-6 -p elm-test elm-test"])
+        write(os.path.join(self.bin, "elm"), '#!/bin/sh\necho 0.19.1\n', 0o755)
         self.assertEqual(self.hook("elm"), ["elm-test "])
 
     def test_ruby_compiles_a_native_extension_before_testing(self):
