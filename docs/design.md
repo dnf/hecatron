@@ -367,7 +367,9 @@ there) is built first: its build script, else `napi build --platform` or
 `node-gyp rebuild`. So is its workspace, when any workspace package needs
 it (one the tests import may): `pnpm -r run build`, `npm run build
 --workspaces`, `yarn workspaces foreach --topological run build`, else
-each package in turn. Where there is no `python`, only `python3`, Python's
+each package in turn. pytest also collects `Test*.py` files where no test
+file has its default names (`test_*.py`, `*_test.py`) and the project sets
+no `python_files`. Where there is no `python`, only `python3`, Python's
 installer links one to it in `~/.local/share/hecatron/python/bin`, a static
 `path` entry of Python's, so the builds of a project's other languages that
 call `python` (a Rust build script, a CMake project's) find it, and nothing
@@ -1276,8 +1278,9 @@ express it.
    files (`remove` globs, `keep` directories; no `rm`, so it works on
    Windows), stops with a `skip` or `unknown` reason, or uses steps the
    definition shares between actions (`shared`, e.g. fetching
-   dependencies). Its `if` tests files: `file`, `missing`, `contains`, and
-   `all`, `any`, `not`.
+   dependencies). Its `if` tests files: `file`, `missing`, `contains`,
+   `glob` (a file named like it here or below), and `all`, `any`, `not`. A
+   run step's `args` add arguments where their own `if` holds.
 
 2. **Families in Go** for build systems several languages share, whose logic
    is more than a lookup: `jvm` (Maven, Gradle, sbt, wrappers, choosing a JDK

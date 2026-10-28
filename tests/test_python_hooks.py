@@ -19,6 +19,47 @@ import project  # noqa: E402
 LINK_PYTHON = os.path.join(HOME, "languages", "python", "link-python.sh")
 
 
+class PytestTest(Fixture):
+    """The test hook, with a fake uv: the pytest arguments it passes."""
+
+    def setUp(self):
+        super().setUp()
+        write(self.path(".fakes", "uv"), '#!/bin/sh\nprintf "%s\\n" "$@" >"$UV_ARGS"\n', 0o755)
+
+    def files(self, files: dict[str, str]) -> None:
+        for name, content in files.items():
+            write(self.path(name), content)
+
+    def pytest_args(self) -> list[str]:
+        environ = {**os.environ, "PATH": self.path(".fakes") + ":" + os.environ["PATH"],
+                   "HECATRON_ROOT": self.root, "HECATRON_LANG": "python", "UV_ARGS": self.path(".args")}
+        environ.pop("HECATRON_TEST_REPORTS", None)
+        hook = os.path.join(HOME, "languages", "python", "hooks", "test.sh")
+        result = subprocess.run(["bash", hook], cwd=self.root, env=environ, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        with open(self.path(".args")) as args:
+            argv = args.read().splitlines()
+        return argv[argv.index("pytest", argv.index("--with") + 2) + 1:]
+
+    def test_default_discovery(self):
+        self.files({"pyproject.toml": "", "tests/test_thing.py": ""})
+        self.assertEqual(self.pytest_args(), [])
+
+    def test_test_files_named_like_classes_are_collected(self):
+        # antlr4's Python runtime: tests/TestFileStream.py.
+        self.files({"pyproject.toml": "", "tests/TestFileStream.py": ""})
+        self.assertEqual(self.pytest_args(), ["-o", "python_files=test_*.py *_test.py Test*.py"])
+
+    def test_not_beside_default_names(self):
+        self.files({"pyproject.toml": "", "tests/TestHelpers.py": "", "tests/test_thing.py": ""})
+        self.assertEqual(self.pytest_args(), [])
+
+    def test_not_where_the_project_says_which_files(self):
+        self.files({"pyproject.toml": '[tool.pytest.ini_options]\npython_files = ["Test*.py"]\n',
+                    "tests/TestFileStream.py": ""})
+        self.assertEqual(self.pytest_args(), [])
+
+
 class PythonLinkTest(Fixture):
     """link-python.sh, with a PATH of only the tools it needs and fakes."""
 

@@ -40,6 +40,13 @@ func projects() []project {
 		{name: "python scripts only", lang: "python", files: map[string]string{"add.py": "", "test_add.py": ""}},
 		{name: "python projects below", lang: "python", files: map[string]string{
 			"py-polars/pyproject.toml": "", "sdk/python/setup.py": "", "sdk/python/x/pyproject.toml": "", "tests/conftest.py": ""}},
+		{name: "python TestThing.py files", lang: "python", files: map[string]string{
+			"pyproject.toml": "", "tests/TestThing.py": "", "tests/.venv/test_x.py": ""}},
+		{name: "python TestThing.py files, scripts only", lang: "python", files: map[string]string{"TestThing.py": ""}},
+		{name: "python TestThing.py beside test_thing.py", lang: "python", files: map[string]string{
+			"pyproject.toml": "", "tests/TestThing.py": "", "tests/unit/test_thing.py": ""}},
+		{name: "python TestThing.py, python_files set", lang: "python", files: map[string]string{
+			"setup.py": "", "setup.cfg": "[tool:pytest]\npython_files = Test*.py\n", "tests/TestThing.py": ""}},
 		{name: "elixir locked, deps not fetched, credo", lang: "elixir", files: map[string]string{
 			"mix.exs": "defp deps, do: [{:credo, \"~> 1.7\"}]", "mix.lock": ""}},
 		{name: "elixir nothing to lint", lang: "elixir", files: map[string]string{"mix.exs": "", "mix.lock": "", "deps/x": ""}},

@@ -104,7 +104,68 @@
                 "file": "setup.cfg"
               }
             ]
-          }
+          },
+          "args": [
+            {
+              "if": {
+                "all": [
+                  {
+                    "not": {
+                      "any": [
+                        {
+                          "contains": [
+                            "pytest.ini",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            ".pytest.ini",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "pyproject.toml",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "setup.cfg",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "tox.ini",
+                            "python_files"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "glob": "Test*.py"
+                  },
+                  {
+                    "not": {
+                      "glob": "test_*.py"
+                    }
+                  },
+                  {
+                    "not": {
+                      "glob": "*_test.py"
+                    }
+                  }
+                ]
+              },
+              "add": [
+                "-o",
+                "python_files=test_*.py *_test.py Test*.py"
+              ]
+            }
+          ]
         },
         {
           "run": [
@@ -128,7 +189,68 @@
                 }
               ]
             }
-          }
+          },
+          "args": [
+            {
+              "if": {
+                "all": [
+                  {
+                    "not": {
+                      "any": [
+                        {
+                          "contains": [
+                            "pytest.ini",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            ".pytest.ini",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "pyproject.toml",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "setup.cfg",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "tox.ini",
+                            "python_files"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "glob": "Test*.py"
+                  },
+                  {
+                    "not": {
+                      "glob": "test_*.py"
+                    }
+                  },
+                  {
+                    "not": {
+                      "glob": "*_test.py"
+                    }
+                  }
+                ]
+              },
+              "add": [
+                "-o",
+                "python_files=test_*.py *_test.py Test*.py"
+              ]
+            }
+          ]
         }
       ]
     },
