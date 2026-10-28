@@ -30,7 +30,7 @@ func header(s *Status) string {
 	if s.Config == "detected" {
 		config = "config detected, not saved (hct init saves it)"
 	}
-	return fmt.Sprintf("hecatron %s (%s) · %s · %s", s.Version, s.Runner, s.Root, config)
+	return fmt.Sprintf("hecatron %s (%s%s) · %s · %s", s.Version, s.Runner, updateText(s), s.Root, config)
 }
 
 // agent is one line per language, in columns, then what to run next.
@@ -68,7 +68,7 @@ func agent(s *Status) string {
 // human is the same, a block per language.
 func human(s *Status) string {
 	var out strings.Builder
-	fmt.Fprintf(&out, "hecatron %s (%s)\n", s.Version, s.Runner)
+	fmt.Fprintf(&out, "hecatron %s (%s%s)\n", s.Version, s.Runner, updateText(s))
 	config := "config saved in .hecatron/config.json"
 	if s.Config == "detected" {
 		config = "config detected, not saved: hct init saves it"
@@ -273,4 +273,12 @@ func columns(rows [][]string) string {
 		out.WriteString("\n")
 	}
 	return out.String()
+}
+
+// updateText is the newer release known, after the runner in the header.
+func updateText(s *Status) string {
+	if s.Update == nil {
+		return ""
+	}
+	return "; " + s.Update.Latest + " is available: " + s.Update.Command
 }
