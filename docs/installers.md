@@ -20,6 +20,15 @@ hecatron doctor --fix go lua    # run the installer of each unhealthy language, 
 broken states their `doctor.sh` detects (a linter built with an older Go,
 luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula...).
 
+**Administrator rights are asked for once.** Before `hct install` or
+`hct doctor --fix` runs anything that may need root (a language installed
+by its script, which may run apt-get or write to `/usr/local` or `/opt`,
+or from data with apt packages), it names those languages, says why, and
+runs `sudo -v`, so the password is asked for once, up front, never
+halfway through; it keeps sudo's credentials fresh until the installers
+finish. Nothing is asked as root, where sudo needs no password (CI), or
+off a terminal. Declining installs nothing. (Needs the binary.)
+
 Short aliases work everywhere: `hecatron install ad ts py rb rs kt gy lu ft c++ cs fs sw hs ex erl clj gm sc zg el pl dt ml`
 
 Misspelled names get a "did you mean?" prompt (e.g. `hecatron install elixer` suggests `elixir`).

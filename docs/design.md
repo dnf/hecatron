@@ -1180,6 +1180,13 @@ entry points' output byte for byte. Decided with the first port
   at a time, languages share toolchains (Node, the JDK), and an installer
   may prompt. A language checked before an earlier repair is checked again
   before its own, which that repair may have made unnecessary.
+- **Root is asked for once (decided 2026-10-28).** `hct install` and
+  `doctor --fix` name the languages whose install may need root, say why,
+  and run `sudo -v` before any installer, refreshing it every minute until
+  they finish (`cmd/hecatron/sudo.go`). An installer script may need root
+  wherever it runs; one from data, when its plan has a `sudo` command. The
+  aim beyond that is to need root less: tools hecatron downloads itself go
+  under `~/.local/share/hecatron` rather than `/usr/local/bin`.
 
 - **`banner`** (`hecatron banner --generator PATH ...`, for a project's own
   generators) ported next, with `internal/generate`'s banner. It needs no
