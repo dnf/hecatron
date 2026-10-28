@@ -74,7 +74,9 @@ func TestLicensesCommand(t *testing.T) {
 	if help := runIn(t, root, env, binary, "licenses", "help"); help.status != 0 || !strings.HasPrefix(help.stdout, "Usage: hecatron licenses") {
 		t.Errorf("help: %+v", help)
 	}
-	noScanner := append(append([]string{}, env...), "PATH=/usr/bin:/bin")
+	// hct puts hecatron's bin directory on PATH, where an installed
+	// osv-scanner would be: an empty one.
+	noScanner := append(append([]string{}, env...), "PATH=/usr/bin:/bin", "XDG_DATA_HOME="+t.TempDir())
 	if got := runIn(t, root, noScanner, binary, "licenses", "python"); got.status != 3 ||
 		!strings.Contains(got.stderr, "OSV-Scanner isn't installed; hecatron install python installs it with the toolchain, or see ") {
 		t.Errorf("without osv-scanner: %+v", got)
