@@ -247,3 +247,51 @@ func TestLanguageEnvAddsOtherLanguagesStaticPaths(t *testing.T) {
 		t.Errorf("rb's PATH entries: %v, want its own, then rs's not already there (not the disabled off's)", env.Path)
 	}
 }
+
+func TestHecatronPin(t *testing.T) {
+	home := testHome(t) // hecatron 0.3.0
+	for setting, want := range map[string][2]string{
+		``:                        {"", ""},
+		`, "hecatron": null`:      {"", ""},
+		`, "hecatron": ""`:        {"", ""},
+		`, "hecatron": ">=0.2"`:   {"", ""},
+		`, "hecatron": "0.3"`:     {"0.3", ""},
+		`, "hecatron": " 0.2.1"`:  {"0.2.1", ""},
+		`, "hecatron": "0"`:       {"0", ""},
+		`, "hecatron": "0.3-rc"`:  {"", PinProblem},
+		`, "hecatron": "0.2.0.1"`: {"", PinProblem},
+		`, "hecatron": "0.x"`:     {"", PinProblem},
+		`, "hecatron": 0.2`:       {"", PinProblem},
+	} {
+		root := t.TempDir()
+		write(t, root, map[string]string{".hecatron/config.json": `{"schema": 1` + setting + `}`})
+		p, err := Load(root, home)
+		if err != nil {
+			t.Fatalf("%s: %v", setting, err)
+		}
+		if pin, problem := p.HecatronPin(); pin != want[0] || problem != want[1] {
+			t.Errorf("%s: pin %q, problem %q; want %q", setting, pin, problem, want)
+		}
+	}
+}
+
+func TestPinMatches(t *testing.T) {
+	for _, tc := range []struct {
+		pin, version string
+		want         bool
+	}{
+		{"0.6", "0.6.0", true},
+		{"0.6", "0.6.12", true},
+		{"0.6", "0.6", true},
+		{"0", "0.6.1", true},
+		{"0.6.1", "0.6.1", true},
+		{"0.6", "0.60.0", false},
+		{"0.6", "0.7.0", false},
+		{"0.6.1", "0.6.10", false},
+		{"0.6.1", "0.6.2", false},
+	} {
+		if got := PinMatches(tc.pin, tc.version); got != tc.want {
+			t.Errorf("PinMatches(%q, %q) = %v", tc.pin, tc.version, got)
+		}
+	}
+}
