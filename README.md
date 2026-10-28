@@ -331,7 +331,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## About the authors
 
-Hecatron was created by Don Neufeld and Claude Code
+Hecatron was created by Don Neufeld and Claude Code.
 
 Don Neufeld was the CTO of [Medium](https://medium.com),
 developer of several massively multiplayer online games,
