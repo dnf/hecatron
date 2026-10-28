@@ -891,8 +891,10 @@ clj_kondo() {
 }
 
 # Native builds (C, C++, Objective-C): CMake, Meson, Autotools or a Makefile.
-# CMake and Meson build out of tree in build/, which clean removes.
+# CMake and Meson build out of tree in build/ (native_build), which clean
+# removes.
 native_hook() {
+    native_build="$(native_build_dir)"
     has_any CMakeLists.txt meson.build configure configure.ac Makefile makefile GNUmakefile ||
         native_elsewhere "$1"
     if [ -f CMakeLists.txt ]; then
@@ -902,14 +904,14 @@ native_hook() {
                 cmake_enable_tests
                 cmake_test ;;
             build) cmake_build ;;
-            clean) run rm -rf build ;;
+            clean) run rm -rf "${native_build}" ;;
             lint) skip "no standard linter for CMake builds" ;;
         esac
     elif [ -f meson.build ]; then
         case "$1" in
-            test) meson_setup; run meson test -C build --print-errorlogs ;;
-            build) meson_setup; run meson compile -C build ;;
-            clean) run rm -rf build ;;
+            test) meson_setup; run meson test -C "${native_build}" --print-errorlogs ;;
+            build) meson_setup; run meson compile -C "${native_build}" ;;
+            clean) run rm -rf "${native_build}" ;;
             lint) skip "no standard linter for Meson builds" ;;
         esac
     elif [ -f configure ] || [ -f configure.ac ] || [ -f Makefile ] || [ -f makefile ] || [ -f GNUmakefile ]; then
@@ -949,6 +951,19 @@ native_elsewhere() {
     done < <(dirs_above)
     make_target_above "$1"
     unknown "no CMakeLists.txt, meson.build, configure or Makefile here, no CMake or Meson project below or above it, and no Makefile above with a target for $(basename "$(pwd)")"
+}
+# Where CMake and Meson build: build/, unless the project keeps files of its
+# own there (Zstandard's CMake build is in build/cmake/), which configuring
+# into it would mix with build output and clean would delete: then _build/.
+native_build_dir() {
+    if [ -d build ] && build_dir_has_sources; then echo _build; else echo build; fi
+}
+build_dir_has_sources() {
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        [ -n "$(git ls-files -- build | head -n 1)" ]
+    else
+        [ ! -f build/CMakeCache.txt ] && [ ! -d build/meson-private ] && [ -n "$(ls -A build)" ]
+    fi
 }
 is_native_project() {
     grep -qsiE '^[[:space:]]*project[[:space:]]*\(' "$1/CMakeLists.txt" "$1/meson.build"
@@ -1000,7 +1015,7 @@ autotools_configure() {
     [ -f configure ] || run autoreconf -fi
     run ./configure
 }
-meson_setup() { [ -d build ] || run meson setup build; }
+meson_setup() { [ -d "${native_build}" ] || run meson setup "${native_build}"; }
 
 # Many projects build their tests only when asked, through an option of their
 # own (FOO_BUILD_TESTS, ENABLE_TESTING...) that defaults to off: turn on the
@@ -1016,21 +1031,21 @@ cmake_enable_tests() {
     _source="$(cmake_source_dir)"
     while IFS= read -r _option; do
         [ -n "${_option}" ] && _options+=("${_option}")
-    done < <(cmake -N -LA build 2>/dev/null |
+    done < <(cmake -N -LA "${native_build}" 2>/dev/null |
         sed -n 's/^\([A-Za-z0-9_]*\(TEST\|TESTS\|TESTING\)[A-Za-z0-9_]*\):BOOL=OFF$/\1/p' |
         grep -Eiv 'COVERAGE|FUZZ|BENCH|INSTALL|DISABLE|SKIP|(^|_)NO_|MEMCHECK|VALGRIND|LARGE_MEMORY' |
         cmake_own_options "${_source}" || true)
     [ "${#_options[@]}" -gt 0 ] || return 0
-    if ! run cmake -S "${_source}" -B build "${_options[@]/%/=ON}"; then
+    if ! run cmake -S "${_source}" -B "${native_build}" "${_options[@]/%/=ON}"; then
         echo "Configuring with ${_options[*]} failed: leaving them off."
-        run cmake -S "${_source}" -B build "${_options[@]/%/=OFF}"
+        run cmake -S "${_source}" -B "${native_build}" "${_options[@]/%/=OFF}"
         if [ "${#_options[@]}" -gt 1 ]; then
             echo "Trying each alone."
             for _option in "${_options[@]}"; do
-                if run cmake -S "${_source}" -B build ${_kept[@]+"${_kept[@]/%/=ON}"} "${_option}=ON"; then
+                if run cmake -S "${_source}" -B "${native_build}" ${_kept[@]+"${_kept[@]/%/=ON}"} "${_option}=ON"; then
                     _kept+=("${_option}")
                 else
-                    run cmake -S "${_source}" -B build ${_kept[@]+"${_kept[@]/%/=ON}"} "${_option}=OFF"
+                    run cmake -S "${_source}" -B "${native_build}" ${_kept[@]+"${_kept[@]/%/=ON}"} "${_option}=OFF"
                 fi
             done
         fi
@@ -1056,34 +1071,47 @@ cmake_own_options() {
 # directory in the build tree, whose targets and tests are the ones defined
 # here and below), not the rest of the project's languages.
 cmake_build() {
-    run cmake -S "$(cmake_source_dir)" -B build -DCMAKE_BUILD_TYPE=Release
+    run cmake -S "$(cmake_source_dir)" -B "${native_build}" -DCMAKE_BUILD_TYPE=Release
     cmake_compile
 }
 cmake_compile() {
     local _part
     _part="$(cmake_binary_dir)"
-    if [ "${_part}" = build ]; then
-        run cmake --build build --parallel "$(build_jobs)"
-    elif grep -q '^CMAKE_GENERATOR:INTERNAL=Ninja' build/CMakeCache.txt; then
-        run cmake --build build --parallel "$(build_jobs)" --target "${_part#build/}/all"
+    if [ "${_part}" = "${native_build}" ]; then
+        run cmake --build "${native_build}" --parallel "$(build_jobs)"
+    elif grep -q '^CMAKE_GENERATOR:INTERNAL=Ninja' "${native_build}/CMakeCache.txt"; then
+        run cmake --build "${native_build}" --parallel "$(build_jobs)" --target "${_part#"${native_build}"/}/all"
     else
         run make -C "${_part}" -j "$(build_jobs)"
     fi
 }
 # CTest's tests; or, for a project that registers none and runs its tests
 # from a custom target instead (add_custom_target(check ...) or tests), that
-# target.
+# target. A project whose CMake files never mention a test has none to run
+# (a tree-sitter grammar's C library, tested by the grammar's own tooling):
+# it built, and that is all there is. One that does, but registered none,
+# still fails: its tests were left out.
 cmake_test() {
     local _part _target
     _part="$(cmake_binary_dir)"
     if ! ctest --test-dir "${_part}" -N 2>/dev/null | grep -q '^Total Tests: [1-9]'; then
         _target="$(cmake_test_target)"
         if [ -n "${_target}" ]; then
-            run cmake --build build --parallel "$(build_jobs)" --target "${_target}"
+            run cmake --build "${native_build}" --parallel "$(build_jobs)" --target "${_target}"
             return
         fi
+        cmake_mentions_tests "$(cmake_source_dir)" ||
+            skip "the CMake project defines no tests (no add_test, enable_testing or CTest)"
     fi
     run ctest --test-dir "${_part}" --output-on-failure --no-tests=error
+}
+# Whether the project's own CMake files (outside its build trees and
+# fetched dependencies) set up any test.
+cmake_mentions_tests() {
+    [ -n "$(find "$1" \( -name _deps -o -name CMakeFiles -o -type d -exec test -f '{}/CMakeCache.txt' \; \) -prune -o \
+        \( -name CMakeLists.txt -o -name '*.cmake' \) -type f -print0 2>/dev/null |
+        xargs -0 grep -lsiE 'add_test|enable_testing|include[[:space:]]*\([[:space:]]*CTest|_discover_tests|_add_tests' 2>/dev/null |
+        head -n 1)" ]
 }
 cmake_test_target() {
     local _target
@@ -1111,7 +1139,7 @@ cmake_binary_dir() {
     local _source _here
     _source="$(cmake_source_dir)"
     _here="$(pwd)"
-    echo "build${_here#"${_source}"}"
+    echo "${native_build}${_here#"${_source}"}"
 }
 
 # How many compile jobs to run at once: one per CPU the machine (or the
