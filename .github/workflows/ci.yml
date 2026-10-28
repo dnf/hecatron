@@ -68,6 +68,28 @@ jobs:
             done
           done
 
+  # Native Windows (docs/design.md §19, #78): the Go tests, and the binary's
+  # native commands on a fixture project with no bash or Python on PATH.
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: go vet and the tests
+        run: |
+          go vet ./...
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          go test ./...
+      - name: Build the binary
+        run: go build -o dist/hct.exe ./cmd/hecatron
+      - name: Native commands without bash or Python
+        run: tests/windows/smoke.ps1 -Binary dist/hct.exe
+
   # Hecatron runs on the bash macOS ships (3.2); the runners' bash is newer,
   # so run the tests under 3.2 itself.
   bash-3-2:
