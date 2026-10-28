@@ -336,8 +336,8 @@ map of the repository.
 
 ## About the author
 
-Don Neufeld is the creator of [Medium](https://medium.com), a developer of
-several massively multiplayer online games, and the CEO of
+Don Neufeld was the CTO of [Medium](https://medium.com), is a developer of
+several massively multiplayer online games, and is the CEO of
 [VPE Coach](https://vpecoach.com). Don lives in the San Francisco Bay Area
 with family and far too many fruit trees.
 
