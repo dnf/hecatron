@@ -7,6 +7,11 @@ name: Real projects
 # request with the results (docs/real-projects.md and the data files).
 
 on:
+  # Retesting fixes before this workflow is on main: a push to a
+  # real-projects-run/* branch tests the projects listed in
+  # tests/real-projects/retest.txt (every project when it's absent).
+  push:
+    branches: ["real-projects-run/**"]
   schedule:
     - cron: "0 4 3 * *"
   workflow_dispatch:
@@ -30,6 +35,9 @@ jobs:
         env:
           REQUESTED: ${{ inputs.repos }}
         run: |
+          if [ -z "${REQUESTED}" ] && [ "${GITHUB_EVENT_NAME}" = push ] && [ -f tests/real-projects/retest.txt ]; then
+            REQUESTED="$(grep -v '^#' tests/real-projects/retest.txt | tr '\n' ' ')"
+          fi
           if [ -n "${REQUESTED}" ]; then
             list="$(printf '%s\n' ${REQUESTED} | python3 -c 'import json, sys; print(json.dumps(sys.stdin.read().split()))')"
           else
