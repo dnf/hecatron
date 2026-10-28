@@ -153,6 +153,14 @@ run_hook_in() {
     exit 0
 }
 
+# Run this hook in each directory below with a file matching the globs
+# (dirs_below_with), and exit; return when there are none.
+run_below_with() {
+    local _dir _dirs=()
+    while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(dirs_below_with "$@")
+    [ "${#_dirs[@]}" -eq 0 ] || run_hook_in "${_dirs[@]}"
+}
+
 # Where the build files matching the globs are: here (build_dir is .), or the
 # nearest directory above (build_dir is its path); when only directories
 # below have them, the hook runs in each and exits. Fails when none has.
@@ -169,8 +177,7 @@ find_build() {
     build_dir=.
     has_any "$@" && return 0
     if [ "${_above_first}" -eq 1 ] && build_dir="$(dir_above_with "$@")"; then return 0; fi
-    while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(dirs_below_with "$@")
-    [ "${#_dirs[@]}" -eq 0 ] || run_hook_in "${_dirs[@]}"
+    run_below_with "$@"
     if [ "${_above_first}" -eq 0 ] && build_dir="$(dir_above_with "$@")"; then return 0; fi
     build_dir=""
     return 1
