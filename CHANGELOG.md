@@ -13,6 +13,21 @@ minor version can change behaviour. Numbers are
   11). Before, it read as SDK 8, which can't build a project targeting
   `net10.0`. Definitions name such files in the new `floorFiles` key.
 
+- **Node.js tests in more layouts:** `hct test typescript` and `hct test
+  javascript` now test a workspace root without a `test` script through its
+  packages' scripts, a package with a configured Vitest, Jest or Mocha but
+  no script through that runner, and a directory without a `package.json`
+  (or a root `package.json` holding only tooling) through the language's
+  packages below it, where they failed with "no test command". Scripts
+  that call pnpm or Yarn by name find Corepack's shim on PATH, and tests
+  run with `CI=true` (unless it's set), so runners that would otherwise
+  watch for changes (Create React App's, Vitest's) run once.
+
+- **Detection:** `hct init` no longer proposes components from directories
+  like `src/<service>/src/main/<lang>` when another language's directory
+  isn't named for it (TypeScript in `src/frontend`), which left that
+  language, and every other one outside the pattern, with no directory.
+
 - **Other languages' tools on PATH:** a language's hooks (and
   `hct env LANG`) now also have the project's other added, enabled
   languages' static `path` directories on PATH, after the language's own,

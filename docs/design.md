@@ -323,8 +323,16 @@ where the build file is (`swift --package-path`, the CMake project's
 and a root Makefile only through a target named for the directory or language
 (`check_cxx` for `cxx/`). Node.js hooks and installers use the package manager
 the package declares (`packageManager`, else its lockfile, here or in the
-workspace above; pnpm and Yarn through Corepack), installing Corepack or Bun
-only when a component needs them.
+workspace above; pnpm and Yarn through Corepack, with Corepack's shim on
+PATH for scripts that call the package manager by name), installing Corepack
+or Bun only when a component needs them. The Node.js test hook runs the
+package's `test` script; a workspace root without one runs its packages'
+(`workspaces`, `pnpm-workspace.yaml`); a package without one runs its
+configured runner (`vitest.config.*`, `jest.config.*`, `.mocharc.*`); else,
+and in a directory without a `package.json`, it tests the language's
+packages below (TypeScript's have a `tsconfig.json`, JavaScript's don't, as
+detection decides). It sets `CI=true` (unless it's set) so watching test
+runners run once.
 
 **Dependencies.** A `deps` hook fetches a component's dependencies with its
 ecosystem's tool, held to the lock file when there is one (it fails rather
@@ -388,7 +396,8 @@ saves it, as init would. Init itself:
 3. Detects the layout. A language's directory may carry any of its
    definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If
    the directories share a pattern with one part varying (`age/impl/go`,
-   `date/impl/go`), it proposes `components` and `implPath`; otherwise one
+   `date/impl/go`) and every language has a directory named for it, it
+   proposes `components` and `implPath`; otherwise one
    component, at the pattern under `sdks/`, `sdk/`, `lib/`, `lang/`,
    `bindings/`, `ffi/`, `packages/` or the root if there is one, else the
    pattern covering most languages. A language whose directory doesn't fit
