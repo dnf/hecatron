@@ -27,7 +27,6 @@ minor version can change behaviour. Numbers are
   command appends a table of languages and components with status and
   time, then each failure's error lines, log and rerun command; `audit`,
   `licenses` and `advisor` add their findings (#101).
-
 - **Native Windows, first steps (#78):** `install.ps1` installs the
   release's Windows binary (checksum-verified) with its definitions into
   `%LOCALAPPDATA%\hecatron\home` and puts it on the user's PATH.
