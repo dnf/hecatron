@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import shlex
+import shutil
 import stat
 import subprocess
 import tempfile
@@ -21,7 +22,7 @@ HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LANGUAGES = os.path.join(HOME, "languages")
 
 # Logs "<name> <args>" and succeeds; some answer the questions the scripts ask.
-STUB = """#!/bin/bash
+STUB = """#!/usr/bin/env bash
 echo "$(basename "$0") $*" >>"${STUB_LOG}"
 case "$(basename "$0") $1" in
     "id -u") echo 1000 ;;
@@ -70,7 +71,9 @@ class UninstallTest(unittest.TestCase):
         """The commands an uninstall.sh ran (as argument lists) and its output."""
         log = os.path.join(self.tmp.name, "log")
         open(log, "w").close()
-        run_env = {"PATH": f"{self.bin}:/usr/bin:/bin", "HOME": self.home, "HECATRON_ROOT": self.tmp.name,
+        # bash's own directory too: /usr/local/bin in CI's bash:3.2 image.
+        bash_dir = os.path.dirname(shutil.which("bash") or "/bin/bash")
+        run_env = {"PATH": f"{self.bin}:{bash_dir}:/usr/bin:/bin", "HOME": self.home, "HECATRON_ROOT": self.tmp.name,
                    "STUB_LOG": log, "STUB_UNAME": {"macos": "Darwin", "linux": "Linux"}[os_name], **env}
         result = subprocess.run(["bash", os.path.join(LANGUAGES, lang, "uninstall.sh")], env=run_env,
                                 capture_output=True, text=True, timeout=60)
