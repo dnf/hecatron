@@ -209,3 +209,41 @@ func TestConfigProblems(t *testing.T) {
 		t.Errorf("problems:\n%s\n(%v)", strings.Join(problems, "\n"), err)
 	}
 }
+
+func TestLanguageEnvAddsOtherLanguagesStaticPaths(t *testing.T) {
+	home := testHome(t)
+	root := t.TempDir()
+	tools := t.TempDir()
+	for _, dir := range []string{"own", "shared", "cargo", "off"} {
+		if err := os.MkdirAll(filepath.Join(tools, dir), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	path := func(dirs ...string) string {
+		quoted := make([]string, len(dirs))
+		for i, dir := range dirs {
+			quoted[i] = `"` + filepath.Join(tools, dir) + `"`
+		}
+		return `{"path": [` + strings.Join(quoted, ", ") + `]}`
+	}
+	write(t, root, map[string]string{
+		".hecatron/config.json":               `{"schema": 1, "languages": ["rb", "rs", "zz", "off"]}`,
+		".hecatron/local.json":                `{"disabled": ["off"]}`,
+		".hecatron/languages/rb/config.json":  path("own", "shared"),
+		".hecatron/languages/rs/config.json":  path("cargo", "shared"),
+		".hecatron/languages/zz/config.json":  `{"path": ["{home}/bin"]}`,
+		".hecatron/languages/off/config.json": path("off"),
+	})
+	p, err := Load(root, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	env, err := p.LanguageEnv("rb", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{filepath.Join(tools, "own"), filepath.Join(tools, "shared"), filepath.Join(tools, "cargo")}
+	if strings.Join(env.Path, ":") != strings.Join(want, ":") {
+		t.Errorf("rb's PATH entries: %v, want its own, then rs's not already there (not the disabled off's)", env.Path)
+	}
+}
