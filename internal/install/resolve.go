@@ -181,6 +181,15 @@ var resolvers = map[string]resolver{"adoptium": adoptium}
 
 var client = &http.Client{Timeout: 60 * time.Second}
 
+// temurinVersion is a Temurin release's version: jdk-25.0.5+8 is 25.0.5, and
+// JDK 8's jdk8u412-b08 is 8.0.412.
+func temurinVersion(releaseName string) string {
+	if update, ok := strings.CutPrefix(releaseName, "jdk8u"); ok {
+		return "8.0." + strings.SplitN(update, "-", 2)[0]
+	}
+	return strings.SplitN(strings.TrimPrefix(releaseName, "jdk-"), "+", 2)[0]
+}
+
 // adoptium finds a Temurin JDK release: the API names releases with their
 // build number (jdk-25.0.5+8), which a version doesn't have.
 func adoptium(version string, platform Platform) (string, string, error) {
@@ -215,8 +224,7 @@ func adoptium(version string, platform Platform) (string, string, error) {
 			return "", "", fmt.Errorf("adoptium: %w", err)
 		}
 		for _, release := range releases {
-			name := strings.SplitN(strings.TrimPrefix(release.ReleaseName, "jdk-"), "+", 2)[0]
-			if name == version && len(release.Binaries) > 0 {
+			if temurinVersion(release.ReleaseName) == version && len(release.Binaries) > 0 {
 				return release.Binaries[0].Package.Link, release.Binaries[0].Package.Checksum, nil
 			}
 		}

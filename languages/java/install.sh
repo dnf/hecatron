@@ -51,10 +51,13 @@ _releases() {
 }
 _release_lines() {
     python3 -c '
-import json, sys
+import json, re, sys
 for release in json.load(sys.stdin):
     package = release["binaries"][0]["package"]
-    version = release["release_name"].removeprefix("jdk-").split("+")[0]
+    name = release["release_name"]
+    # JDK 8 is named jdk8u412-b08, the rest jdk-25.0.5+8.
+    old = re.match(r"jdk8u(\d+)", name)
+    version = f"8.0.{old.group(1)}" if old else name.removeprefix("jdk-").split("+")[0]
     print(version + "\t" + package["link"] + "\t" + package["checksum"])
 '
 }

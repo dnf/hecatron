@@ -55,6 +55,17 @@ class JvmTest(unittest.TestCase):
         self.assertEqual(jvm.toolchains(sources, self.root), [17, 21])
         self.assertEqual(jvm.ceiling(sources, self.root), (21, "it compiles with Kotlin 2.1.0"))
 
+    def test_a_kotlin_jvm_target_without_a_java_one_runs_on_that_jdk(self):
+        write(os.path.join(self.component, "build.gradle.kts"),
+              "kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }\n")
+        self.assertEqual(jvm.ceiling(self.component),
+                         (17, "its Kotlin targets JVM 17 and nothing sets Java's target to match"))
+        write(os.path.join(self.component, "build.gradle.kts"),
+              'kotlin { jvmTarget = "17" }\njava { targetCompatibility = JavaVersion.VERSION_17 }\n')
+        self.assertIsNone(jvm.ceiling(self.component))
+        write(os.path.join(self.component, "build.gradle.kts"), "kotlin { jvmTarget.set(JvmTarget.JVM_1_8) }\n")
+        self.assertIsNone(jvm.ceiling(self.component))
+
     def test_maven_toolchains_in_a_parent_pom(self):
         write(os.path.join(self.component, "pom.xml"), "<project/>\n")
         write(os.path.join(self.root, "pom.xml"), """<project><build><plugins><plugin>
