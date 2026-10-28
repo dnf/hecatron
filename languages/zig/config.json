@@ -21,5 +21,10 @@
     "lockFiles": [
       "build.zig.zon"
     ]
-  }
+  },
+  "version": "=0.17.0",
+  "track": "stable",
+  "path": [
+    "{home}"
+  ]
 }

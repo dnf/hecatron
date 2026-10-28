@@ -22,6 +22,7 @@ type Condition struct {
 	Command  string      `json:"command,omitempty"`  // on the language's PATH
 	Run      []string    `json:"run,omitempty"`      // exits 0 (output discarded, stdin closed)
 	Platform string      `json:"platform,omitempty"` // "linux", "macos", "linux-aarch64"...
+	Path     string      `json:"path,omitempty"`     // this file exists (absolute, ~ or {home})
 	All      []Condition `json:"all,omitempty"`
 	Any      []Condition `json:"any,omitempty"`
 	Not      *Condition  `json:"not,omitempty"`
@@ -35,12 +36,13 @@ type Context struct {
 	Env      []string // the language's environment (its PATH)
 	Platform Platform
 	System   System
+	Vars     map[string]string // {home}, {bin}: the toolchain's, in run and path
 }
 
 func (c *Condition) tests() int {
 	n := 0
 	for _, set := range []bool{c.File != "", c.Missing != "", c.Glob != "", c.Command != "", len(c.Run) > 0,
-		c.Platform != "", c.All != nil, c.Any != nil, c.Not != nil} {
+		c.Platform != "", c.Path != "", c.All != nil, c.Any != nil, c.Not != nil} {
 		if set {
 			n++
 		}
@@ -84,7 +86,10 @@ func (c *Condition) Holds(ctx *Context) bool {
 		_, found := LookPath(c.Command, getenv(ctx.Env, "PATH"))
 		return found
 	case len(c.Run) > 0:
-		return ctx.System.Succeeds(c.Run, ctx.Root, ctx.Env)
+		return ctx.System.Succeeds(fill(c.Run, ctx.Vars), ctx.Root, ctx.Env)
+	case c.Path != "":
+		_, err := os.Stat(expandHome(fillOne(c.Path, ctx.Vars), ctx.Env))
+		return err == nil
 	case c.Platform != "":
 		key := ctx.Platform.OS + "-" + ctx.Platform.Arch
 		return c.Platform == ctx.Platform.OS || c.Platform == key
@@ -129,6 +134,8 @@ func (c *Condition) String() string {
 		return "`" + strings.Join(c.Run, " ") + "` succeeds"
 	case c.Platform != "":
 		return "on " + c.Platform
+	case c.Path != "":
+		return c.Path + " exists"
 	case c.Not != nil:
 		return "not (" + c.Not.String() + ")"
 	}
@@ -195,6 +202,14 @@ func LookPath(name, path string) (string, bool) {
 func isExecutable(path string) bool {
 	info, err := os.Stat(path)
 	return err == nil && !info.IsDir() && info.Mode()&0o111 != 0
+}
+
+// expandHome expands a leading ~/ to HOME.
+func expandHome(path string, env []string) string {
+	if rest, ok := strings.CutPrefix(path, "~/"); ok {
+		return filepath.Join(getenv(env, "HOME"), rest)
+	}
+	return path
 }
 
 func getenv(env []string, name string) string {

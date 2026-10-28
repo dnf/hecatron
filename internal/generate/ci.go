@@ -112,10 +112,6 @@ func projectCache(p *project.Project, lang string) (languageCache, error) {
 	return result, nil
 }
 
-// engineInstalls says whether the executor carries out a definition on a
-// Linux runner (apt); tests replace it.
-var engineInstalls = func(def *install.Definition) bool { return def.Unsupported("apt") == "" }
-
 // engineToolchain is the directory CI caches for a language whose
 // toolchain hecatron's executor installs from its install.json on a Linux
 // runner into its own toolchains directory (no root, so a restore works),
@@ -132,7 +128,7 @@ func engineToolchain(p *project.Project, lang string) (dir, data string, err err
 	if err != nil {
 		return "", "", &project.Error{Message: err.Error()}
 	}
-	if !engineInstalls(def) || !def.InstallsIntoToolchainsHome() {
+	if def.Unsupported("apt", install.Platform{OS: "linux", Arch: "x86_64"}) != "" || !def.InstallsIntoToolchainsHome() {
 		return "", "", nil
 	}
 	version, err := p.DefaultVersion(lang)

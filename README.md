@@ -109,9 +109,10 @@ options.
   call for every language's packages; `hct install --plan` to see what
   would happen; and uninstall that removes only what hecatron installed.
   Toolchains it downloads go to `~/.local/share/hecatron/toolchains`, with
-  no root, so `"ci": {"cache": true}` caches and restores them. Eleven
-  languages use it so far, all from apt, which isn't cached; caching gets
-  better as more languages move to downloaded toolchains
+  no root, so `"ci": {"cache": true}` caches and restores them. Thirteen
+  languages use it so far: Gleam and Zig as checksummed release downloads,
+  the rest from apt, which isn't cached; caching gets better as more
+  languages move to downloaded toolchains
   ([docs/installers.md](docs/installers.md#installs-as-data)).
 - **The right version for each component.** For Python, Go, Rust, Node.js and
   Java, a pinned default, or the version a component asks for in its

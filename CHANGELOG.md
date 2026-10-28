@@ -6,6 +6,17 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Release downloads as data (#77, stage 2):** `install.json` can name a
+  release download, always checked against a SHA-256 (inline, a published
+  checksum file, or the publisher's index). Gleam and Zig install that way,
+  at the version `config.json` pins (Zig installed whatever was latest),
+  into `~/.local/share/hecatron/toolchains` without root, on macOS too
+  instead of Homebrew, with their commands linked into
+  `~/.local/share/hecatron/bin`, which `~/.hecatron/env` now puts on PATH.
+  Downloads are cached in `~/.cache/hecatron/downloads`; a toolchain that
+  doesn't work is replaced whole. With `"ci": {"cache": true}` both are
+  cached in CI.
+
 - **Installs as data (#77, stage 1):** with the binary, Bash, COBOL, D,
   Erlang, Common Lisp, Octave, Pascal, Prolog, Racket, Raku and Tcl install
   from a `languages/<lang>/install.json` instead of `install.sh`: every

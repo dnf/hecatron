@@ -23,6 +23,8 @@ type System interface {
 	Output(argv []string, env []string) (string, error)
 	// IsRoot says whether commands run as root (no sudo needed).
 	IsRoot() bool
+	// Fetch is a URL's body (downloads, checksums).
+	Fetch(url string) (io.ReadCloser, error)
 	// AptListsAge is how old apt's package lists are, ok false when there
 	// are none (apt_refresh's test in _common.sh).
 	AptListsAge() (age time.Duration, ok bool)
@@ -97,8 +99,9 @@ type Manager struct {
 }
 
 // ManagerFor is the package manager the executor uses on platform: apt on
-// Linux where there is apt-get, Homebrew on macOS; nil elsewhere (the
-// scripts then run, as they do on any other Linux).
+// Linux where there is apt-get, Homebrew on macOS; one named "" elsewhere,
+// which installs nothing (a definition needing packages then runs its
+// script, as it does on any other Linux).
 func ManagerFor(platform Platform, system System, env []string) *Manager {
 	path := getenv(env, "PATH")
 	switch platform.OS {
@@ -111,7 +114,7 @@ func ManagerFor(platform Platform, system System, env []string) *Manager {
 			return &Manager{"brew", system, env}
 		}
 	}
-	return nil
+	return &Manager{"", system, env}
 }
 
 // Installed says which of the packages are installed.
