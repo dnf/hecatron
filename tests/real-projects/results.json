@@ -1738,10 +1738,10 @@
   {
    "repo": "apache/arrow-adbc",
    "date": "2026-10-28",
-   "commit": "b4fc35660a17a199ebef31ea4d6024d69445c91c",
+   "commit": "c22f6b3f820375abce41473da30ecdff3ce8d436",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -1749,13 +1749,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 840,
+   "wallSeconds": 722,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 4
+    "seconds": 5
    },
    "init": {
     "rc": 0,
@@ -1822,11 +1822,11 @@
    },
    "install": {
     "rc": 1,
-    "seconds": 459
+    "seconds": 403
    },
    "doctor": {
     "rc": 1,
-    "seconds": 3
+    "seconds": 2
    },
    "status": {
     "version": "0.5.0",
@@ -2157,7 +2157,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 30,
+       "seconds": 24,
        "counts": {
         "tool": "ctest",
         "failed": 0,
@@ -2195,7 +2195,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 0,
+       "seconds": 1,
        "counts": {
         "tool": "ctest",
         "failed": 0,
@@ -2234,7 +2234,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 36,
+       "seconds": 31,
        "counts": {
         "tool": "dotnet",
         "passed": 1053,
@@ -2282,7 +2282,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 66,
+       "seconds": 58,
        "counts": {
         "tool": "go (packages)",
         "passed": 4,
@@ -2330,7 +2330,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 33,
+       "seconds": 34,
        "counts": {
         "tool": "maven",
         "failed": 0,
@@ -2370,7 +2370,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 36,
+       "seconds": 27,
        "counts": {
         "tool": "pytest",
         "passed": 28,
@@ -2381,10 +2381,10 @@
         "category": "tests",
         "excerpt": [
          "File \"<string>\", line 14, in <module>",
-         "File \"/home/dev/.cache/uv/builds-v0/.tmpg2Ktfa/lib/python3.15/site-packages/setuptools/build_meta.py\", line 481, in get_requires_for_build_editable",
-         "File \"/home/dev/.cache/uv/builds-v0/.tmpg2Ktfa/lib/python3.15/site-packages/setuptools/build_meta.py\", line 333, in get_requires_for_build_wheel",
-         "File \"/home/dev/.cache/uv/builds-v0/.tmpg2Ktfa/lib/python3.15/site-packages/setuptools/build_meta.py\", line 301, in _get_build_requires",
-         "File \"/home/dev/.cache/uv/builds-v0/.tmpg2Ktfa/lib/python3.15/site-packages/setuptools/build_meta.py\", line 317, in run_setup",
+         "File \"/home/dev/.cache/uv/builds-v0/.tmp7keZCC/lib/python3.15/site-packages/setuptools/build_meta.py\", line 481, in get_requires_for_build_editable",
+         "File \"/home/dev/.cache/uv/builds-v0/.tmp7keZCC/lib/python3.15/site-packages/setuptools/build_meta.py\", line 333, in get_requires_for_build_wheel",
+         "File \"/home/dev/.cache/uv/builds-v0/.tmp7keZCC/lib/python3.15/site-packages/setuptools/build_meta.py\", line 301, in _get_build_requires",
+         "File \"/home/dev/.cache/uv/builds-v0/.tmp7keZCC/lib/python3.15/site-packages/setuptools/build_meta.py\", line 317, in run_setup",
          "File \"<string>\", line 42, in <module>",
          "E   adbc_driver_manager.ProgrammingError: NOT_FOUND: [Driver Manager] Could not load `adbc_driver_sqlite`: dlopen() failed: adbc_driver_sqlite: cannot open shared object file: No such file or directory",
          "E   dlopen() failed: libadbc_driver_sqlite.so: cannot open shared object file: No such file or directory",
@@ -2421,7 +2421,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 92,
+       "seconds": 74,
        "counts": {
         "tool": "testthat",
         "passed": 212,
@@ -2460,7 +2460,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 4,
+       "seconds": 3,
        "counts": null,
        "failure": {
         "category": "other",
@@ -2508,7 +2508,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 20,
+       "seconds": 16,
        "counts": {
         "tool": "cargo",
         "passed": 38,
@@ -2518,10 +2518,10 @@
        "failure": {
         "category": "tests",
         "excerpt": [
-         "test test_connection_cancel ... FAILED",
          "test test_connection ... FAILED",
          "test test_connection_commit_rollback ... FAILED",
          "test test_connection_get_info ... FAILED",
+         "test test_connection_cancel ... FAILED",
          "test test_connection_get_objects ... FAILED",
          "test test_connection_get_option ... FAILED",
          "test test_connection_get_statistic_names ... FAILED",
@@ -2561,7 +2561,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 55,
+       "seconds": 44,
        "counts": {
         "tool": "node:test",
         "passed": 3,
@@ -3905,7 +3905,7 @@
    "commit": "8e936331b6fa5c4b28ba356a10a518ea72b20ba4",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -3913,13 +3913,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 1096,
+   "wallSeconds": 1180,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 2
+    "seconds": 4
    },
    "init": {
     "rc": 0,
@@ -3986,7 +3986,7 @@
    },
    "install": {
     "rc": 1,
-    "seconds": 185
+    "seconds": 193
    },
    "doctor": {
     "rc": 0,
@@ -4348,7 +4348,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 226,
+       "seconds": 239,
        "counts": {
         "tool": "ctest",
         "failed": 0,
@@ -4387,7 +4387,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 33,
+       "seconds": 38,
        "counts": {
         "tool": "dotnet",
         "passed": 383,
@@ -4425,7 +4425,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 6,
+       "seconds": 7,
        "counts": {
         "tool": "dart",
         "passed": 1,
@@ -4463,7 +4463,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 8,
+       "seconds": 10,
        "counts": {
         "tool": "go (packages)",
         "passed": 7,
@@ -4501,7 +4501,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 236,
+       "seconds": 254,
        "counts": {
         "tool": "maven",
         "failed": 0,
@@ -4541,7 +4541,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 29,
+       "seconds": 33,
        "counts": {
         "tool": "jest",
         "passed": 387,
@@ -4587,13 +4587,13 @@
         "category": "other",
         "excerpt": [
          "File \"<string>\", line 14, in <module>",
-         "File \"/home/dev/.cache/uv/builds-v0/.tmpBN94Xj/lib/python3.14/site-packages/setuptools/build_meta.py\", line 481, in get_requires_for_build_editable",
-         "File \"/home/dev/.cache/uv/builds-v0/.tmpBN94Xj/lib/python3.14/site-packages/setuptools/build_meta.py\", line 333, in get_requires_for_build_wheel",
-         "File \"/home/dev/.cache/uv/builds-v0/.tmpBN94Xj/lib/python3.14/site-packages/setuptools/build_meta.py\", line 301, in _get_build_requires",
-         "File \"/home/dev/.cache/uv/builds-v0/.tmpBN94Xj/lib/python3.14/site-packages/setuptools/build_meta.py\", line 317, in run_setup",
+         "File \"/home/dev/.cache/uv/builds-v0/.tmpp04CMH/lib/python3.14/site-packages/setuptools/build_meta.py\", line 481, in get_requires_for_build_editable",
+         "File \"/home/dev/.cache/uv/builds-v0/.tmpp04CMH/lib/python3.14/site-packages/setuptools/build_meta.py\", line 333, in get_requires_for_build_wheel",
+         "File \"/home/dev/.cache/uv/builds-v0/.tmpp04CMH/lib/python3.14/site-packages/setuptools/build_meta.py\", line 301, in _get_build_requires",
+         "File \"/home/dev/.cache/uv/builds-v0/.tmpp04CMH/lib/python3.14/site-packages/setuptools/build_meta.py\", line 317, in run_setup",
          "File \"<string>\", line 148, in <module>",
-         "File \"/home/dev/.cache/uv/builds-v0/.tmpBN94Xj/lib/python3.14/site-packages/setuptools/__init__.py\", line 117, in setup",
-         "File \"/home/dev/.cache/uv/builds-v0/.tmpBN94Xj/lib/python3.14/site-packages/setuptools/_distutils/core.py\", line 130, in setup",
+         "File \"/home/dev/.cache/uv/builds-v0/.tmpp04CMH/lib/python3.14/site-packages/setuptools/__init__.py\", line 117, in setup",
+         "File \"/home/dev/.cache/uv/builds-v0/.tmpp04CMH/lib/python3.14/site-packages/setuptools/_distutils/core.py\", line 130, in setup",
          "File \"<string>\", line 141, in __init__",
          "File \"<string>\", line 85, in _run_with_retry"
         ]
@@ -4629,12 +4629,12 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 115,
+       "seconds": 132,
        "counts": {
         "tool": "cargo",
-        "passed": 812,
+        "passed": 869,
         "failed": 0,
-        "skipped": 54
+        "skipped": 71
        },
        "failure": null
       }
@@ -4666,7 +4666,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 56,
+       "seconds": 61,
        "counts": null,
        "failure": null
       }
@@ -4698,7 +4698,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 177,
+       "seconds": 184,
        "counts": {
         "tool": "xctest",
         "failed": 0,
@@ -4737,7 +4737,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 22,
+       "seconds": 24,
        "counts": {
         "tool": "jest",
         "passed": 387,
@@ -4960,20 +4960,20 @@
   {
    "repo": "apache/opendal",
    "date": "2026-10-28",
-   "commit": "69f600b082a79d2de7e97be6cdec15a6e9fb9e0c",
+   "commit": "451bc73c1f53b421b9e04685fc77f11e444a00a6",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 2392,
+   "wallSeconds": 2094,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -5066,7 +5066,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 1186
+    "seconds": 990
    },
    "doctor": {
     "rc": 0,
@@ -5596,7 +5596,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 106,
+       "seconds": 98,
        "counts": {
         "tool": "ctest",
         "failed": 0,
@@ -5635,7 +5635,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 16,
+       "seconds": 17,
        "counts": {
         "tool": "dotnet",
         "passed": 170,
@@ -5646,16 +5646,16 @@
        "failure": {
         "category": "tests",
         "excerpt": [
-         "Failed OpenDAL.Tests.OperatorInfoTest.OperatorInfo_MemoryConfig_AbsentSizeLimitsAreNull [18 ms]",
+         "Failed OpenDAL.Tests.LayerTest.WithMimeGuess_UnknownExtension_LeavesContentTypeUnset [44 ms]",
          "at OpenDAL.NativeMethods.operator_construct(String scheme, IntPtr options, IntPtr executor) in /home/dev/apache_opendal/bindings/dotnet/OpenDAL/obj/Debug/net10.0/Microsoft.Interop.LibraryImportGenerator/Microsoft.Interop.LibraryImportGener…",
          "at OpenDAL.Operator.Construct(String scheme, IReadOnlyDictionary`2 options, Executor executor) in /home/dev/apache_opendal/bindings/dotnet/OpenDAL/Operator.cs:line 121",
-         "at OpenDAL.Operator..ctor(IServiceConfig config, Executor executor) in /home/dev/apache_opendal/bindings/dotnet/OpenDAL/Operator.cs:line 107",
-         "at OpenDAL.Tests.OperatorInfoTest.OperatorInfo_MemoryConfig_AbsentSizeLimitsAreNull() in /home/dev/apache_opendal/bindings/dotnet/OpenDAL.Tests/OperatorInfoTest.cs:line 45",
-         "Failed OpenDAL.Tests.LayerTest.WithMimeGuess_UnknownExtension_LeavesContentTypeUnset [24 ms]",
          "at OpenDAL.Operator..ctor(String scheme, IReadOnlyDictionary`2 options, Executor executor) in /home/dev/apache_opendal/bindings/dotnet/OpenDAL/Operator.cs:line 90",
          "at OpenDAL.Tests.LayerTest.WithMimeGuess_UnknownExtension_LeavesContentTypeUnset() in /home/dev/apache_opendal/bindings/dotnet/OpenDAL.Tests/LayerTest.cs:line 208",
-         "Failed OpenDAL.Tests.OperatorInfoTest.OperatorInfo_FsConfig_ReturnsExpectedSchemeAndCapabilities [14 ms]",
-         "at OpenDAL.NativeMethods.constructor_option_build(String[] keys, String[] values, UIntPtr len) in /home/dev/apache_opendal/bindings/dotnet/OpenDAL/obj/Debug/net10.0/Microsoft.Interop.LibraryImportGenerator/Microsoft.Interop.LibraryImportGe…"
+         "Failed OpenDAL.Tests.ExecutorTest.ReadWrite_WithDedicatedExecutor_RoundTripsSuccessfully [32 ms]",
+         "at OpenDAL.Executor.CreateExecutor(Int32 threads) in /home/dev/apache_opendal/bindings/dotnet/OpenDAL/Executor.cs:line 63",
+         "at OpenDAL.Executor..ctor(Int32 threads) in /home/dev/apache_opendal/bindings/dotnet/OpenDAL/Executor.cs:line 48",
+         "at OpenDAL.Tests.ExecutorTest.ReadWrite_WithDedicatedExecutor_RoundTripsSuccessfully() in /home/dev/apache_opendal/bindings/dotnet/OpenDAL.Tests/ExecutorTest.cs:line 35",
+         "Failed OpenDAL.Tests.LayerTest.WithConcurrentLimit_ReturnsNewOperator [1 ms]"
         ]
        }
       }
@@ -5687,7 +5687,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 87,
+       "seconds": 78,
        "counts": null,
        "failure": null
       }
@@ -5792,7 +5792,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 4,
+       "seconds": 2,
        "counts": null,
        "failure": {
         "category": "dependencies",
@@ -5831,7 +5831,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 300,
+       "seconds": 267,
        "counts": {
         "tool": "maven",
         "failed": 0,
@@ -5871,7 +5871,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 3,
+       "seconds": 2,
        "counts": null,
        "failure": null
       }
@@ -5938,7 +5938,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 148,
+       "seconds": 137,
        "counts": null,
        "failure": null
       }
@@ -6020,7 +6020,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 2,
+       "seconds": 1,
        "counts": null,
        "failure": {
         "category": "build",
@@ -6059,7 +6059,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 172,
+       "seconds": 164,
        "counts": null,
        "failure": null
       }
@@ -6093,7 +6093,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 76,
+       "seconds": 67,
        "counts": {
         "tool": "cargo",
         "passed": 0,
@@ -6130,7 +6130,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 6,
+       "seconds": 5,
        "counts": null,
        "failure": {
         "category": "other",
@@ -6174,7 +6174,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 168,
+       "seconds": 154,
        "counts": null,
        "failure": {
         "category": "tests",
@@ -6213,7 +6213,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 109,
+       "seconds": 101,
        "counts": null,
        "failure": {
         "category": "other",
@@ -6595,21 +6595,21 @@
    "commit": "e69f8c08fa1581c41f7543a87938a98c2aca2206",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 1001,
+   "wallSeconds": 843,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 2
+    "seconds": 3
    },
    "init": {
     "rc": 0,
@@ -6704,11 +6704,11 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 559
+    "seconds": 450
    },
    "doctor": {
     "rc": 0,
-    "seconds": 2
+    "seconds": 1
    },
    "status": {
     "version": "0.5.0",
@@ -7282,7 +7282,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 107,
+       "seconds": 95,
        "counts": {
         "tool": "ctest",
         "failed": 3,
@@ -7292,7 +7292,7 @@
        "failure": {
         "category": "tests",
         "excerpt": [
-         "25/29 Test #25: testzlibtransport .................   Passed    2.06 sec",
+         "25/29 Test #25: testzlibtransport .................   Passed    2.04 sec",
          "Start 26: testzlibshortread",
          "26/29 Test #26: testzlibshortread .................   Passed    0.00 sec",
          "Start 27: testthrifttest",
@@ -7301,7 +7301,7 @@
          "28/29 Test #28: testthrifttestclient ..............   Passed    6.00 sec",
          "Start 29: testthrifttestzlibclient",
          "29/29 Test #29: testthrifttestzlibclient ..........   Passed    6.00 sec",
-         "Total Test time (real) =  41.43 sec"
+         "Total Test time (real) =  41.54 sec"
         ]
        }
       }
@@ -7335,7 +7335,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 236,
+       "seconds": 216,
        "counts": {
         "tool": "ctest",
         "failed": 1,
@@ -7347,13 +7347,13 @@
         "excerpt": [
          "26/31 Test #26: TNonblockingSSLServerTest .........   Passed    0.02 sec",
          "Start 27: TEvhttpServerRequestContextTest",
-         "27/31 Test #27: TEvhttpServerRequestContextTest ...   Passed    0.27 sec",
+         "27/31 Test #27: TEvhttpServerRequestContextTest ...   Passed    0.26 sec",
          "Start 28: OpenSSLManualInitTest",
-         "28/31 Test #28: OpenSSLManualInitTest .............   Passed    0.01 sec",
+         "28/31 Test #28: OpenSSLManualInitTest .............   Passed    0.00 sec",
          "Start 29: SecurityTest",
-         "29/31 Test #29: SecurityTest ......................   Passed    0.09 sec",
+         "29/31 Test #29: SecurityTest ......................   Passed    0.07 sec",
          "Start 30: TSSLSocketMatchNameTest",
-         "30/31 Test #30: TSSLSocketMatchNameTest ...........   Passed    0.73 sec",
+         "30/31 Test #30: TSSLSocketMatchNameTest ...........   Passed    0.56 sec",
          "Start 31: SecurityFromBufferTest"
         ]
        }
@@ -7388,7 +7388,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 3,
+       "seconds": 1,
        "counts": null,
        "failure": {
         "category": "other",
@@ -7469,7 +7469,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 5,
+       "seconds": 4,
        "counts": {
         "tool": "dart",
         "passed": 103,
@@ -7505,7 +7505,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 5,
+       "seconds": 4,
        "counts": null,
        "failure": {
         "category": "other",
@@ -7553,7 +7553,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 6,
+       "seconds": 5,
        "counts": {
         "tool": "go (packages)",
         "passed": 1,
@@ -7626,7 +7626,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 18,
+       "seconds": 17,
        "counts": null,
        "failure": {
         "category": "build",
@@ -7735,7 +7735,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1,
+       "seconds": 0,
        "counts": null,
        "failure": {
         "category": "other",
@@ -7861,7 +7861,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 44,
+       "seconds": 36,
        "counts": null,
        "failure": {
         "category": "tests",
@@ -8014,7 +8014,7 @@
        "seconds": 7,
        "counts": {
         "tool": "cargo",
-        "passed": 187,
+        "passed": 210,
         "failed": 0,
         "skipped": 0
        },
@@ -8048,7 +8048,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1,
+       "seconds": 0,
        "counts": null,
        "failure": {
         "category": "no-command",
@@ -8536,7 +8536,7 @@
    "commit": "461e7d35ae4d18cb09de63fe43ecc0215ae99c04",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -8544,13 +8544,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 552,
+   "wallSeconds": 469,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 2
    },
    "init": {
     "rc": 0,
@@ -8591,7 +8591,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 330
+    "seconds": 249
    },
    "doctor": {
     "rc": 0,
@@ -8764,7 +8764,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 4,
+       "seconds": 3,
        "counts": null,
        "failure": {
         "category": "other",
@@ -8804,7 +8804,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1,
+       "seconds": 2,
        "counts": {
         "tool": "pytest",
         "failed": 7
@@ -8853,12 +8853,12 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 119,
+       "seconds": 118,
        "counts": {
         "tool": "cargo",
-        "passed": 785,
+        "passed": 786,
         "failed": 0,
-        "skipped": 6
+        "skipped": 14
        },
        "failure": null
       }
@@ -8892,7 +8892,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 96,
+       "seconds": 93,
        "counts": null,
        "failure": null
       }
@@ -10439,7 +10439,7 @@
    "commit": "91f5d22ef48bde459d90a8c7dbeab416e97d0f2b",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -10447,9 +10447,9 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 42,
+   "wallSeconds": 39,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -10485,7 +10485,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 26
+    "seconds": 24
    },
    "doctor": {
     "rc": 0,
@@ -10571,7 +10571,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 15,
+       "seconds": 14,
        "counts": {
         "tool": "cargo",
         "passed": 446,
@@ -10587,10 +10587,10 @@
   {
    "repo": "bytecodealliance/wasmtime",
    "date": "2026-10-28",
-   "commit": "b1b352b41637deb576277de80b33a06e7b8acf54",
+   "commit": "b34fad65f3b74cb6d81decbebbe4c297590b8fef",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -10598,13 +10598,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 276,
+   "wallSeconds": 225,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 10
+    "seconds": 18
    },
    "init": {
     "rc": 0,
@@ -10652,7 +10652,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 41
+    "seconds": 38
    },
    "doctor": {
     "rc": 0,
@@ -10805,7 +10805,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 222,
+       "seconds": 167,
        "counts": null,
        "failure": {
         "category": "build",
@@ -10824,21 +10824,21 @@
    "commit": "9d4895e31d8df38137a583335c4fc96d6e12f216",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 53,
+   "wallSeconds": 58,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 9
+    "seconds": 8
    },
    "init": {
     "rc": 0,
@@ -10879,7 +10879,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 25
+    "seconds": 27
    },
    "doctor": {
     "rc": 0,
@@ -10960,7 +10960,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 18,
+       "seconds": 23,
        "counts": {
         "tool": "cargo",
         "passed": 2,
@@ -16407,7 +16407,7 @@
    "commit": "e7b39ebd55c85aaf6a29290c1f5a99e2e21e09dd",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -16415,13 +16415,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 1421,
+   "wallSeconds": 1193,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 39
+    "seconds": 55
    },
    "init": {
     "rc": 0,
@@ -16469,11 +16469,11 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 69
+    "seconds": 66
    },
    "doctor": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "status": {
     "version": "0.5.0",
@@ -16585,17 +16585,19 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1310,
+       "seconds": 1068,
        "counts": {
         "tool": "cargo",
-        "passed": 877,
-        "failed": 0,
-        "skipped": 0
+        "passed": 1965,
+        "failed": 1,
+        "skipped": 2
        },
        "failure": {
-        "category": "other",
+        "category": "tests",
         "excerpt": [
-         "error: test failed, to rerun pass `-p deno_bench_util --bench utf8`"
+         "test tests::test_rebuild_async_stubs ... FAILED",
+         "thread 'tests::test_rebuild_async_stubs' (65112) panicked at libs/core/lib.rs:319:8:",
+         "error: test failed, to rerun pass `-p deno_core --lib`"
         ]
        }
       }
@@ -17706,21 +17708,21 @@
    "commit": "a751e2d92abcd63b01d1400789789f5ea289a8b0",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 339,
+   "wallSeconds": 234,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 2
+    "seconds": 5
    },
    "init": {
     "rc": 0,
@@ -17790,11 +17792,11 @@
    },
    "install": {
     "rc": 1,
-    "seconds": 227
+    "seconds": 153
    },
    "doctor": {
     "rc": 0,
-    "seconds": 2
+    "seconds": 1
    },
    "status": {
     "version": "0.5.0",
@@ -18164,7 +18166,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 5,
+       "seconds": 3,
        "counts": null,
        "failure": {
         "category": "build",
@@ -18203,7 +18205,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 10,
+       "seconds": 6,
        "counts": {
         "tool": "dotnet",
         "passed": 0,
@@ -18214,16 +18216,16 @@
        "failure": {
         "category": "tests",
         "excerpt": [
-         "Failed TestBlobToKzgCommitment(CkzgLib.Test.ReferenceTests+BlobToKzgCommitmentTest) [14 ms]",
+         "Failed TestBlobToKzgCommitment(CkzgLib.Test.ReferenceTests+BlobToKzgCommitmentTest) [9 ms]",
          "at CkzgLib.Ckzg.LoadNativeLibrary(Assembly _, String path) in /home/dev/ethereum_c-kzg-4844/bindings/csharp/Ckzg.Bindings/Ckzg.Bindings.cs:line 33",
          "at CkzgLib.Ckzg.LoadTrustedSetup(String filepath, Int32 precompute) in /home/dev/ethereum_c-kzg-4844/bindings/csharp/Ckzg.Bindings/Ckzg.cs:line 26",
          "at CkzgLib.Test.ReferenceTests.Setup() in /home/dev/ethereum_c-kzg-4844/bindings/csharp/Ckzg.Test/ReferenceTests.cs:line 18",
-         "Failed TestComputeBlobKzgProof(CkzgLib.Test.ReferenceTests+ComputeBlobKzgProofTest) [14 ms]",
-         "Failed TestComputeCells(CkzgLib.Test.ReferenceTests+ComputeCellsTest) [14 ms]",
-         "Failed TestComputeCells(CkzgLib.Test.ReferenceTests+ComputeCellsTest) [15 ms]",
-         "Failed TestComputeCellsAndKzgProofs(CkzgLib.Test.ReferenceTests+ComputeCellsAndKzgProofsTest) [15 ms]",
-         "Failed TestComputeKzgProof(CkzgLib.Test.ReferenceTests+ComputeKzgProofTest) [15 ms]",
-         "Failed TestRecoverCellsAndKzgProofs(CkzgLib.Test.ReferenceTests+RecoverCellsAndKzgProofsTest) [15 ms]"
+         "Failed TestComputeBlobKzgProof(CkzgLib.Test.ReferenceTests+ComputeBlobKzgProofTest) [9 ms]",
+         "Failed TestComputeCells(CkzgLib.Test.ReferenceTests+ComputeCellsTest) [9 ms]",
+         "Failed TestComputeCellsAndKzgProofs(CkzgLib.Test.ReferenceTests+ComputeCellsAndKzgProofsTest) [9 ms]",
+         "Failed TestComputeKzgProof(CkzgLib.Test.ReferenceTests+ComputeKzgProofTest) [9 ms]",
+         "Failed TestRecoverCellsAndKzgProofs(CkzgLib.Test.ReferenceTests+RecoverCellsAndKzgProofsTest) [9 ms]",
+         "Failed TestSetupLoaded() [9 ms]"
         ]
        }
       }
@@ -18257,7 +18259,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 15,
+       "seconds": 10,
        "counts": null,
        "failure": {
         "category": "build",
@@ -18296,7 +18298,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 19,
+       "seconds": 12,
        "counts": {
         "tool": "go (packages)",
         "passed": 1,
@@ -18369,7 +18371,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 2,
+       "seconds": 1,
        "counts": null,
        "failure": {
         "category": "other",
@@ -18381,7 +18383,7 @@
          "platform linux -- Python 3.15.1, pytest-9.2.0, pluggy-1.7.0",
          "rootdir: /home/dev/ethereum_c-kzg-4844",
          "collected 0 items",
-         "============================ no tests ran in 0.40s ============================="
+         "============================ no tests ran in 0.22s ============================="
         ]
        }
       }
@@ -18415,7 +18417,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 54,
+       "seconds": 40,
        "counts": {
         "tool": "cargo",
         "passed": 13,
@@ -18454,7 +18456,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1,
+       "seconds": 0,
        "counts": null,
        "failure": {
         "category": "build",
@@ -18802,24 +18804,24 @@
   {
    "repo": "facebook/flow",
    "date": "2026-10-28",
-   "commit": "148cd0cd3bf55d8ac676d4ad3ad86b260fcf30a9",
+   "commit": "ec18e5aeb68f78ea261a271e0f0cf1124db9edf3",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 266,
+   "wallSeconds": 289,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 4
+    "seconds": 5
    },
    "init": {
     "rc": 0,
@@ -18860,11 +18862,11 @@
    },
    "install": {
     "rc": 1,
-    "seconds": 214
+    "seconds": 231
    },
    "doctor": {
     "rc": 0,
-    "seconds": 1
+    "seconds": 0
    },
    "status": {
     "version": "0.5.0",
@@ -19033,7 +19035,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 7,
+       "seconds": 8,
        "counts": null,
        "failure": null
       }
@@ -19106,7 +19108,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 32,
+       "seconds": 37,
        "counts": null,
        "failure": {
         "category": "build",
@@ -21315,7 +21317,7 @@
    "commit": "f58d5768f1fd0df9f71aa6ae5f63645e2637c31f",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -21323,9 +21325,9 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 598,
+   "wallSeconds": 454,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -21409,7 +21411,7 @@
    },
    "install": {
     "rc": 1,
-    "seconds": 191
+    "seconds": 145
    },
    "doctor": {
     "rc": 0,
@@ -21857,7 +21859,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 95,
+       "seconds": 59,
        "counts": {
         "tool": "ctest",
         "failed": 0,
@@ -21896,7 +21898,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 5,
+       "seconds": 4,
        "counts": null,
        "failure": null
       }
@@ -21928,7 +21930,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 6,
+       "seconds": 4,
        "counts": {
         "tool": "dart",
         "passed": 69,
@@ -21966,7 +21968,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 21,
+       "seconds": 27,
        "counts": {
         "tool": "maven",
         "failed": 0,
@@ -22043,13 +22045,13 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 76,
+       "seconds": 58,
        "counts": null,
        "failure": {
         "category": "build",
         "excerpt": [
-         "Execution failed for task ':benchmark:generateFBTestClassesJava'.",
-         "Execution failed for task ':flatbuffers-kotlin:generateFBTestClassesKt'."
+         "Execution failed for task ':flatbuffers-kotlin:generateFBTestClassesKt'.",
+         "Execution failed for task ':benchmark:generateFBTestClassesJava'."
         ]
        }
       }
@@ -22271,7 +22273,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 11,
+       "seconds": 7,
        "counts": {
         "tool": "cargo",
         "passed": 6,
@@ -22282,9 +22284,9 @@
         "category": "tests",
         "excerpt": [
          "test builder::tests::with_internal_capacity_preallocates_vecs ... FAILED",
-         "thread 'builder::tests::with_internal_capacity_preallocates_vecs' (23257) panicked at src/builder.rs:1299:9:",
-         "assertion `left == right` failed: expected 0 allocations after builder construction, got 2",
-         "left: 2",
+         "thread 'builder::tests::with_internal_capacity_preallocates_vecs' (23307) panicked at src/builder.rs:1299:9:",
+         "assertion `left == right` failed: expected 0 allocations after builder construction, got 7",
+         "left: 7",
          "right: 0",
          "error: test failed, to rerun pass `--lib`",
          "error: rust: test failed in flatbuffers"
@@ -22319,7 +22321,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 180,
+       "seconds": 140,
        "counts": {
         "tool": "xctest",
         "failed": 0,
@@ -22358,7 +22360,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 4,
+       "seconds": 2,
        "counts": null,
        "failure": {
         "category": "build",
@@ -23256,20 +23258,20 @@
   {
    "repo": "google/magika",
    "date": "2026-10-28",
-   "commit": "3627c158bcfb146bee4747b0589e80ac2faa4d7f",
+   "commit": "2e7f88f03e04f9885aa51d60a339488817fb788c",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 710,
+   "wallSeconds": 628,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -23335,7 +23337,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 274
+    "seconds": 246
    },
    "doctor": {
     "rc": 0,
@@ -23503,7 +23505,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 10,
+       "seconds": 7,
        "counts": {
         "tool": "go (packages)",
         "passed": 1,
@@ -23584,10 +23586,10 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 378,
+       "seconds": 336,
        "counts": {
         "tool": "cargo",
-        "passed": 170,
+        "passed": 172,
         "failed": 0,
         "skipped": 1
        },
@@ -23623,7 +23625,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 42,
+       "seconds": 33,
        "counts": {
         "tool": "jest",
         "passed": 9812,
@@ -25351,17 +25353,17 @@
    "commit": "d9a5e8af4b5898aff65981ab472d5466a43698bc",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 215,
+   "wallSeconds": 202,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -25412,11 +25414,11 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 122
+    "seconds": 123
    },
    "doctor": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "status": {
     "version": "0.5.0",
@@ -25551,7 +25553,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 3,
+       "seconds": 2,
        "counts": {
         "tool": "pytest",
         "passed": 18,
@@ -25604,7 +25606,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 24,
+       "seconds": 21,
        "counts": {
         "tool": "cargo",
         "passed": 0,
@@ -25643,21 +25645,21 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 65,
+       "seconds": 54,
        "counts": null,
        "failure": {
         "category": "other",
         "excerpt": [
-         "✖ fromFile reads a legacy tokenizer.json (1.1387ms)",
-         "✖ encode returns a Uint32Array of ids (0.177207ms)",
-         "✖ encodeBytesInto writes the same ids as encode (0.133753ms)",
-         "✖ encodeBytesInto rejects a buffer that is too small (0.130269ms)",
-         "✖ addSpecialTokens is honoured (0.121277ms)",
-         "✖ encodeSpecialTokens sends a special token through the model (0.2201ms)",
-         "✖ padding.length pads to a fixed length (0.145469ms)",
-         "✖ padding: false turns the configured padding off (0.172894ms)",
-         "✖ a padding override replaces the configured padding (0.176976ms)",
-         "✖ encodeBytesInto takes the same options (0.278178ms)"
+         "✖ fromFile reads a legacy tokenizer.json (0.943553ms)",
+         "✖ encode returns a Uint32Array of ids (0.120568ms)",
+         "✖ encodeBytesInto writes the same ids as encode (0.133046ms)",
+         "✖ encodeBytesInto rejects a buffer that is too small (0.112366ms)",
+         "✖ addSpecialTokens is honoured (0.105375ms)",
+         "✖ encodeSpecialTokens sends a special token through the model (0.1284ms)",
+         "✖ padding.length pads to a fixed length (0.105666ms)",
+         "✖ padding: false turns the configured padding off (0.156461ms)",
+         "✖ a padding override replaces the configured padding (0.167918ms)",
+         "✖ encodeBytesInto takes the same options (0.281005ms)"
         ]
        }
       }
@@ -27156,24 +27158,24 @@
   {
    "repo": "lance-format/lance",
    "date": "2026-10-28",
-   "commit": "9cfecdc5b68741cac05abf5f66b1e57dff80d811",
+   "commit": "54bed1982f63a82f7834988b95b2043ee050b489",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
    "wallSeconds": 3302,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 3
+    "seconds": 5
    },
    "init": {
     "rc": 0,
@@ -27220,7 +27222,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 2380
+    "seconds": 2002
    },
    "doctor": {
     "rc": 0,
@@ -27359,7 +27361,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 22,
+       "seconds": 33,
        "counts": null,
        "failure": {
         "category": "other",
@@ -27437,7 +27439,7 @@
      "steps": {
       "test": {
        "rc": 124,
-       "seconds": 866,
+       "seconds": 1231,
        "counts": null,
        "failure": {
         "category": "timeout",
@@ -27454,21 +27456,21 @@
    "commit": "fac113fbd828aad3d71479a534b5de4358b6a07b",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 83,
+   "wallSeconds": 73,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 5
+    "seconds": 6
    },
    "init": {
     "rc": 0,
@@ -27509,7 +27511,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 52
+    "seconds": 47
    },
    "doctor": {
     "rc": 0,
@@ -27678,7 +27680,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 25,
+       "seconds": 18,
        "counts": null,
        "failure": {
         "category": "build",
@@ -30233,20 +30235,20 @@
   {
    "repo": "mozilla/uniffi-rs",
    "date": "2026-10-28",
-   "commit": "acb8f197c25a0e10fd411a6ee1af453b5f556456",
+   "commit": "19fff7c12f76225dd25434fee1bd8d561f2a673c",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 432,
+   "wallSeconds": 493,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -30291,11 +30293,11 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 41
+    "seconds": 43
    },
    "doctor": {
     "rc": 0,
-    "seconds": 1
+    "seconds": 0
    },
    "status": {
     "version": "0.5.0",
@@ -30377,7 +30379,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 388,
+       "seconds": 448,
        "counts": {
         "tool": "cargo",
         "passed": 2,
@@ -30402,17 +30404,17 @@
    "commit": "e9de9024337af056b79010d3f9024fdc88965572",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 553,
+   "wallSeconds": 444,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -30459,11 +30461,11 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 53
+    "seconds": 43
    },
    "doctor": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "status": {
     "version": "0.5.0",
@@ -30604,7 +30606,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 239,
+       "seconds": 190,
        "counts": null,
        "failure": null
       }
@@ -30638,12 +30640,12 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 92,
+       "seconds": 68,
        "counts": {
         "tool": "cargo",
         "passed": 488,
         "failed": 0,
-        "skipped": 1
+        "skipped": 4
        },
        "failure": null
       }
@@ -30677,7 +30679,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 168,
+       "seconds": 141,
        "counts": null,
        "failure": null
       }
@@ -31427,7 +31429,7 @@
    "commit": "841adc0194e98804798248632bfe8711284e62ac",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -31435,13 +31437,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 706,
+   "wallSeconds": 659,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 1
+    "seconds": 3
    },
    "init": {
     "rc": 0,
@@ -31516,11 +31518,11 @@
    },
    "install": {
     "rc": 1,
-    "seconds": 433
+    "seconds": 444
    },
    "doctor": {
     "rc": 0,
-    "seconds": 3
+    "seconds": 2
    },
    "status": {
     "version": "0.5.0",
@@ -31857,7 +31859,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 17,
+       "seconds": 12,
        "counts": null,
        "failure": {
         "category": "build",
@@ -31930,7 +31932,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 64,
+       "seconds": 48,
        "counts": null,
        "failure": null
       }
@@ -31964,7 +31966,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 34,
+       "seconds": 25,
        "counts": {
         "tool": "go (packages)",
         "passed": 3,
@@ -32002,7 +32004,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 30,
+       "seconds": 27,
        "counts": null,
        "failure": null
       }
@@ -32034,7 +32036,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 45,
+       "seconds": 40,
        "counts": null,
        "failure": {
         "category": "build",
@@ -32152,7 +32154,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 73,
+       "seconds": 53,
        "counts": {
         "tool": "cargo",
         "passed": 7,
@@ -32208,7 +32210,7 @@
    "commit": "f0474775543516a837ce336ef90ff6ab5cb00ff7",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -32216,9 +32218,9 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 442,
+   "wallSeconds": 504,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -32262,11 +32264,11 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 50
+    "seconds": 52
    },
    "doctor": {
     "rc": 0,
-    "seconds": 1
+    "seconds": 0
    },
    "status": {
     "version": "0.5.0",
@@ -32369,7 +32371,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 2,
+       "seconds": 3,
        "counts": null,
        "failure": {
         "category": "build",
@@ -32409,10 +32411,10 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 388,
+       "seconds": 448,
        "counts": {
         "tool": "cargo",
-        "passed": 2407,
+        "passed": 2459,
         "failed": 0,
         "skipped": 8
        },
@@ -32590,10 +32592,10 @@
   {
    "repo": "pola-rs/polars",
    "date": "2026-10-28",
-   "commit": "528ba79ed4268ebf6fc4f3b8f9dff33749cdb11f",
+   "commit": "6f12f77432f1378406114e7fb0ec5474e41c8b22",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -32601,13 +32603,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 594,
+   "wallSeconds": 624,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 3
+    "seconds": 4
    },
    "init": {
     "rc": 0,
@@ -32642,7 +32644,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 63
+    "seconds": 58
    },
    "doctor": {
     "rc": 0,
@@ -32756,7 +32758,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 2,
+       "seconds": 1,
        "counts": null,
        "failure": {
         "category": "dependencies",
@@ -32770,7 +32772,7 @@
     },
     {
      "language": "rust",
-     "result": "pass",
+     "result": "fail",
      "toolchain": {
       "versions": [
        {
@@ -32790,20 +32792,34 @@
       {
        "name": ".",
        "dir": ".",
-       "failed": false
+       "failed": true
       }
      ],
      "steps": {
       "test": {
-       "rc": 0,
-       "seconds": 525,
+       "rc": 1,
+       "seconds": 560,
        "counts": {
         "tool": "cargo",
-        "passed": 1832,
-        "failed": 0,
-        "skipped": 16
+        "passed": 1855,
+        "failed": 10,
+        "skipped": 19
        },
-       "failure": null
+       "failure": {
+        "category": "tests",
+        "excerpt": [
+         "error[E0599]: `&ChunkedArray<Float32Type>` is not an iterator --> crates/polars/src/docs/eager.rs:286:15",
+         "error[E0599]: `&ChunkedArray<Float32Type>` is not an iterator --> crates/polars/src/docs/eager.rs:287:24",
+         "error: aborting due to 2 previous errors",
+         "error[E0599]: `polars::prelude::GroupBy<'_>` is not an iterator --> crates/polars/src/docs/eager.rs:434:6",
+         "error: aborting due to 1 previous error",
+         "error[E0433]: cannot find module or crate `pivot` in this scope --> crates/polars/src/docs/eager.rs:454:16",
+         "error[E0308]: mismatched types --> crates/polars/src/docs/eager.rs:494:5",
+         "error[E0061]: this method takes 2 arguments but 1 argument was supplied --> crates/polars/src/docs/eager.rs:539:19",
+         "error[E0599]: `&ChunkedArray<StringType>` is not an iterator --> crates/polars/src/docs/eager.rs:724:40",
+         "error[E0599]: the method `into_no_null_iter` exists for reference `&ChunkedArray<StringType>`, but its trait bounds were not satisfied --> crates/polars/src/docs/eager.rs:725:43"
+        ]
+       }
       }
      }
     }
@@ -33104,24 +33120,24 @@
   {
    "repo": "protocolbuffers/protobuf",
    "date": "2026-10-28",
-   "commit": "38ade5ac7eb6d708c6b6a28db29e58f07edb23cb",
+   "commit": "a03560b0352b8574e03c9b9f045f3c0c2a596e33",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 1698,
+   "wallSeconds": 1977,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 1
+    "seconds": 5
    },
    "init": {
     "rc": 0,
@@ -33197,7 +33213,7 @@
    },
    "install": {
     "rc": 1,
-    "seconds": 326
+    "seconds": 356
    },
    "doctor": {
     "rc": 0,
@@ -33535,7 +33551,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 1092,
+       "seconds": 1220,
        "counts": {
         "tool": "ctest",
         "failed": 0,
@@ -33573,7 +33589,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 112,
+       "seconds": 167,
        "counts": {
         "tool": "ctest",
         "failed": 0,
@@ -33612,7 +33628,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 44,
+       "seconds": 58,
        "counts": null,
        "failure": {
         "category": "build",
@@ -33736,7 +33752,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 114,
+       "seconds": 160,
        "counts": {
         "tool": "ctest",
         "failed": 0,
@@ -33815,7 +33831,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1,
+       "seconds": 2,
        "counts": null,
        "failure": {
         "category": "other",
@@ -33854,7 +33870,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1,
+       "seconds": 3,
        "counts": null,
        "failure": {
         "category": "build",
@@ -34459,17 +34475,17 @@
    "commit": "b0bf19f2be812f7a348ded86ffe7dd4887d1f01a",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 111,
+   "wallSeconds": 105,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -34508,7 +34524,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 80
+    "seconds": 76
    },
    "doctor": {
     "rc": 0,
@@ -34636,7 +34652,7 @@
     },
     {
      "language": "rust",
-     "result": "fail",
+     "result": "pass",
      "toolchain": {
       "versions": [
        {
@@ -34656,22 +34672,20 @@
       {
        "name": ".",
        "dir": ".",
-       "failed": true
+       "failed": false
       }
      ],
      "steps": {
       "test": {
-       "rc": 1,
-       "seconds": 21,
-       "counts": null,
-       "failure": {
-        "category": "build",
-        "excerpt": [
-         "error[E0554]: `#![feature]` may not be used on the stable release channel --> benches/main.rs:1:1",
-         "error: could not compile `pydantic-core` (bench \"main\") due to 1 previous error",
-         "error: rust: test failed in pydantic-core"
-        ]
-       }
+       "rc": 0,
+       "seconds": 19,
+       "counts": {
+        "tool": "cargo",
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+       },
+       "failure": null
       }
      }
     }
@@ -34683,17 +34697,17 @@
    "commit": "26f9ec8be637d24d0dee18d51e129cc1a99f3a7c",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 121,
+   "wallSeconds": 143,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -34737,7 +34751,7 @@
    },
    "install": {
     "rc": 1,
-    "seconds": 47
+    "seconds": 46
    },
    "doctor": {
     "rc": 0,
@@ -34860,7 +34874,7 @@
          "error: Failed to build `test-results-parser==0.6.1`",
          "error: failed to run custom build command for `pyo3-ffi v0.27.1`",
          "error: the configured Python version (3.15) is newer than PyO3's maximum supported version (3.14)",
-         "Error: command ['maturin', 'pep517', 'build-wheel', '-i', '/home/dev/.cache/uv/builds-v0/.tmpciivQr/bin/python', '--compatibility', 'off'] returned non-zero exit status 1"
+         "Error: command ['maturin', 'pep517', 'build-wheel', '-i', '/home/dev/.cache/uv/builds-v0/.tmpwlWjWK/bin/python', '--compatibility', 'off'] returned non-zero exit status 1"
         ]
        }
       }
@@ -34894,12 +34908,12 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 70,
+       "seconds": 93,
        "counts": {
         "tool": "cargo",
-        "passed": 1228,
+        "passed": 1708,
         "failed": 0,
-        "skipped": 1
+        "skipped": 99
        },
        "failure": null
       }
@@ -35733,10 +35747,10 @@
   {
    "repo": "rerun-io/rerun",
    "date": "2026-10-28",
-   "commit": "64cb1bc6d738eabaa2d01fd143792c8da10c9a75",
+   "commit": "61f1c1862e985b5f449971383cc3be22e2688c84",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -35744,13 +35758,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 1560,
+   "wallSeconds": 829,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 4
+    "seconds": 7
    },
    "init": {
     "rc": 0,
@@ -35800,7 +35814,7 @@
    },
    "install": {
     "rc": 1,
-    "seconds": 252
+    "seconds": 199
    },
    "doctor": {
     "rc": 0,
@@ -35969,7 +35983,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 1154,
+       "seconds": 526,
        "counts": null,
        "failure": null
       }
@@ -36003,7 +36017,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 19,
+       "seconds": 12,
        "counts": null,
        "failure": {
         "category": "other",
@@ -36011,7 +36025,7 @@
          "error: Failed to build `rerun-sdk @ file:///home/dev/rerun-io_rerun/rerun_py`",
          "error: failed to run custom build command for `pyo3-build-config v0.28.3`",
          "error: failed to parse contents of PYO3_CONFIG_FILE",
-         "Error: command ['maturin', 'pep517', 'build-wheel', '-i', '/home/dev/.cache/uv/builds-v0/.tmpmiAIPe/bin/python', '--compatibility', 'off', '--editable'] returned non-zero exit status 1"
+         "Error: command ['maturin', 'pep517', 'build-wheel', '-i', '/home/dev/.cache/uv/builds-v0/.tmpGeY9SL/bin/python', '--compatibility', 'off', '--editable'] returned non-zero exit status 1"
         ]
        }
       }
@@ -36045,7 +36059,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 123,
+       "seconds": 81,
        "counts": null,
        "failure": {
         "category": "other",
@@ -36084,7 +36098,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 6,
+       "seconds": 3,
        "counts": null,
        "failure": {
         "category": "build",
@@ -36109,17 +36123,17 @@
    "commit": "e246a2560645b7525f5775669ed816eb57c5bcc8",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 59,
+   "wallSeconds": 68,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -36161,11 +36175,11 @@
    },
    "install": {
     "rc": 1,
-    "seconds": 39
+    "seconds": 40
    },
    "doctor": {
     "rc": 0,
-    "seconds": 1
+    "seconds": 0
    },
    "status": {
     "version": "0.5.0",
@@ -36310,10 +36324,10 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 18,
+       "seconds": 25,
        "counts": {
         "tool": "cargo",
-        "passed": 36,
+        "passed": 40,
         "failed": 0,
         "skipped": 0
        },
@@ -37366,17 +37380,17 @@
    "commit": "8c535a260ce561eaab4111aafc29038eb9f77ff3",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 48,
+   "wallSeconds": 43,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -37412,7 +37426,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 33
+    "seconds": 24
    },
    "doctor": {
     "rc": 0,
@@ -37498,10 +37512,10 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 13,
+       "seconds": 18,
        "counts": {
         "tool": "cargo",
-        "passed": 143,
+        "passed": 240,
         "failed": 0,
         "skipped": 1
        },
@@ -37517,25 +37531,25 @@
    "commit": "6389c79f91cd67ed2de3ebdcf84ec8c2d2d23c11",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 164,
+   "wallSeconds": 168,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "init": {
     "rc": 0,
-    "seconds": 1,
+    "seconds": 0,
     "languages": [
      "ada",
      "c",
@@ -37587,7 +37601,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 112
+    "seconds": 113
    },
    "doctor": {
     "rc": 0,
@@ -37940,7 +37954,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 10,
+       "seconds": 13,
        "counts": null,
        "failure": {
         "category": "build",
@@ -38015,7 +38029,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 26,
+       "seconds": 25,
        "counts": null,
        "failure": {
         "category": "build",
@@ -38059,7 +38073,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 0,
+       "seconds": 1,
        "counts": null,
        "failure": {
         "category": "no-command",
@@ -38981,7 +38995,7 @@
    "commit": "a7493a8cc61b603fb5100b1130b59f0348e4b080",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -38989,13 +39003,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 182,
+   "wallSeconds": 133,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "init": {
     "rc": 0,
@@ -39055,7 +39069,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 151
+    "seconds": 111
    },
    "doctor": {
     "rc": 0,
@@ -39410,7 +39424,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 2,
+       "seconds": 3,
        "counts": null,
        "failure": null
       }
@@ -39444,7 +39458,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 6,
+       "seconds": 4,
        "counts": {
         "tool": "go (packages)",
         "passed": 1,
@@ -39493,7 +39507,7 @@
     },
     {
      "language": "rust",
-     "result": "fail",
+     "result": "pass",
      "toolchain": {
       "versions": [
        {
@@ -39513,26 +39527,20 @@
       {
        "name": ".",
        "dir": "bindings/rust",
-       "failed": true
+       "failed": false
       }
      ],
      "steps": {
       "test": {
-       "rc": 1,
-       "seconds": 21,
+       "rc": 0,
+       "seconds": 13,
        "counts": {
         "tool": "cargo",
         "passed": 29,
         "failed": 0,
         "skipped": 0
        },
-       "failure": {
-        "category": "other",
-        "excerpt": [
-         "thread 'main' (13453) panicked at benches/blst_benches.rs:78:21:",
-         "error: test failed, to rerun pass `--bench blst_benches`"
-        ]
-       }
+       "failure": null
       }
      }
     },
@@ -39758,7 +39766,7 @@
    "commit": "ce4860f43ccf9b87096861903988c58f179ab8cf",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -39766,17 +39774,17 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 2718,
+   "wallSeconds": 2088,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 19
+    "seconds": 24
    },
    "init": {
     "rc": 0,
-    "seconds": 3,
+    "seconds": 1,
     "languages": [
      "javascript",
      "rust",
@@ -39810,7 +39818,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 120
+    "seconds": 68
    },
    "doctor": {
     "rc": 0,
@@ -39955,7 +39963,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 910,
+       "seconds": 772,
        "counts": null,
        "failure": {
         "category": "build",
@@ -39996,7 +40004,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1657,
+       "seconds": 1216,
        "counts": {
         "tool": "cargo",
         "passed": 997,
@@ -40007,7 +40015,7 @@
         "category": "tests",
         "excerpt": [
          "test flow_strip_projects ... FAILED",
-         "thread 'flow_strip_projects' (121359) panicked at crates/swc/tests/flow_strip/mod.rs:26:21:",
+         "thread 'flow_strip_projects' (119208) panicked at crates/swc/tests/flow_strip/mod.rs:26:21:",
          "error: test failed, to rerun pass `-p swc --test flow_strip_projects`"
         ]
        }
@@ -40042,7 +40050,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 8,
+       "seconds": 5,
        "counts": null,
        "failure": {
         "category": "build",
@@ -40298,24 +40306,24 @@
   {
    "repo": "tauri-apps/tauri",
    "date": "2026-10-28",
-   "commit": "7e39750cf6a4e05234a781088ff5fb8cb890370a",
+   "commit": "548a3692f59405aeb239c5b63fa589824eee51e8",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 448,
+   "wallSeconds": 385,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 1
+    "seconds": 6
    },
    "init": {
     "rc": 0,
@@ -40368,7 +40376,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 131
+    "seconds": 102
    },
    "doctor": {
     "rc": 0,
@@ -40539,7 +40547,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 3,
+       "seconds": 2,
        "counts": null,
        "failure": {
         "category": "other",
@@ -40578,12 +40586,12 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 303,
+       "seconds": 265,
        "counts": {
         "tool": "cargo",
-        "passed": 300,
+        "passed": 405,
         "failed": 0,
-        "skipped": 0
+        "skipped": 23
        },
        "failure": null
       }
@@ -40615,7 +40623,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 6,
+       "seconds": 5,
        "counts": null,
        "failure": {
         "category": "other",
@@ -40839,20 +40847,20 @@
   {
    "repo": "temporalio/features",
    "date": "2026-10-28",
-   "commit": "8eb38ab278e525c25c0881cf3a9b4e935dd6526a",
+   "commit": "42d78dc5e37523ffaf1abf2fac178923658b2fb5",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 648,
+   "wallSeconds": 656,
    "complete": true,
    "clone": {
     "rc": 0,
@@ -40914,7 +40922,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 483
+    "seconds": 474
    },
    "doctor": {
     "rc": 0,
@@ -41237,7 +41245,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 28,
+       "seconds": 31,
        "counts": {
         "tool": "go (packages)",
         "passed": 2,
@@ -41275,7 +41283,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 27,
+       "seconds": 31,
        "counts": null,
        "failure": null
       }
@@ -41357,7 +41365,7 @@
          "rootdir: /home/dev/temporalio_features",
          "configfile: pyproject.toml",
          "collected 0 items",
-         "============================ no tests ran in 1.09s ============================="
+         "============================ no tests ran in 1.11s ============================="
         ]
        }
       }
@@ -41389,7 +41397,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 0,
+       "seconds": 1,
        "counts": null,
        "failure": {
         "category": "no-command",
@@ -41428,7 +41436,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 98,
+       "seconds": 107,
        "counts": {
         "tool": "cargo",
         "passed": 7,
@@ -41465,7 +41473,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1,
+       "seconds": 0,
        "counts": null,
        "failure": {
         "category": "no-command",
@@ -41631,7 +41639,7 @@
    "commit": "ad067fddf76a32c3071f8f3a31e8719d348e2737",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -41639,13 +41647,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 160,
+   "wallSeconds": 199,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 1
+    "seconds": 0
    },
    "init": {
     "rc": 0,
@@ -41708,11 +41716,11 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 38
+    "seconds": 40
    },
    "doctor": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "status": {
     "version": "0.5.0",
@@ -41852,7 +41860,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 37,
+       "seconds": 47,
        "counts": {
         "tool": "cargo",
         "passed": 73,
@@ -41868,10 +41876,10 @@
          "test tests::async_boundary_test::test_node_across_async_boundaries ... FAILED",
          "test tests::async_boundary_test::test_node_and_cursor_together ... FAILED",
          "test tests::corpus_test::test_corpus_for_bash_language ... FAILED",
-         "test tests::corpus_test::test_corpus_for_cpp_language ... FAILED",
          "test tests::corpus_test::test_corpus_for_c_language ... FAILED",
+         "test tests::corpus_test::test_corpus_for_cpp_language ... FAILED",
          "test tests::corpus_test::test_corpus_for_embedded_template_language ... FAILED",
-         "test tests::corpus_test::test_corpus_for_go_language ... FAILED"
+         "test tests::corpus_test::test_corpus_for_html_language ... FAILED"
         ]
        }
       }
@@ -41905,7 +41913,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 26,
+       "seconds": 33,
        "counts": null,
        "failure": {
         "category": "other",
@@ -41944,7 +41952,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 58,
+       "seconds": 78,
        "counts": null,
        "failure": {
         "category": "other",
@@ -41963,7 +41971,7 @@
    "commit": "254c42a6476413b776221e03982ac8ae159eeb72",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -41971,13 +41979,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 215,
+   "wallSeconds": 220,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "init": {
     "rc": 0,
@@ -42027,11 +42035,11 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 177
+    "seconds": 181
    },
    "doctor": {
     "rc": 0,
-    "seconds": 1
+    "seconds": 0
    },
    "status": {
     "version": "0.5.0",
@@ -42279,7 +42287,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 0,
+       "seconds": 1,
        "counts": null,
        "failure": null
       }
@@ -42345,7 +42353,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 16,
+       "seconds": 15,
        "counts": {
         "tool": "go (packages)",
         "passed": 1,
@@ -42390,7 +42398,7 @@
         "excerpt": [
          "Error: Cannot find module 'tree-sitter'",
          "at Object.<anonymous> (/home/dev/tree-sitter_tree-sitter-json/bindings/node/binding_test.js:4:16)",
-         "✖ bindings/node/binding_test.js (31.024047ms)",
+         "✖ bindings/node/binding_test.js (33.023641ms)",
          "✖ failing tests:"
         ]
        }
@@ -42466,7 +42474,7 @@
        "seconds": 4,
        "counts": {
         "tool": "cargo",
-        "passed": 1,
+        "passed": 2,
         "failed": 0,
         "skipped": 0
        },
@@ -42500,7 +42508,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 14,
+       "seconds": 16,
        "counts": {
         "tool": "xctest",
         "failed": 0,
@@ -42519,7 +42527,7 @@
    "commit": "26855eabccb19c6abf499fbc5b8dc7cc9ab8bc64",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -42527,13 +42535,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 2438,
+   "wallSeconds": 272,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "init": {
     "rc": 0,
@@ -42582,12 +42590,12 @@
     }
    },
    "install": {
-    "rc": 124,
-    "seconds": 2400
+    "rc": 0,
+    "seconds": 191
    },
    "doctor": {
-    "rc": 1,
-    "seconds": 1
+    "rc": 0,
+    "seconds": 0
    },
    "status": {
     "version": "0.5.0",
@@ -42835,7 +42843,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 1,
+       "seconds": 2,
        "counts": null,
        "failure": null
       }
@@ -42867,7 +42875,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 0,
+       "seconds": 1,
        "counts": null,
        "failure": null
       }
@@ -42913,7 +42921,7 @@
     },
     {
      "language": "javascript",
-     "result": "fail",
+     "result": "pass",
      "toolchain": {
       "versions": [
        {
@@ -42933,29 +42941,25 @@
       {
        "name": ".",
        "dir": ".",
-       "failed": true
+       "failed": false
       }
      ],
      "steps": {
       "test": {
-       "rc": 1,
-       "seconds": 9,
-       "counts": null,
-       "failure": {
-        "category": "build",
-        "excerpt": [
-         "Error: Cannot find module 'tree-sitter'",
-         "at Object.<anonymous> (/home/dev/tree-sitter_tree-sitter-python/bindings/node/binding_test.js:4:16)",
-         "✖ bindings/node/binding_test.js (42.81603ms)",
-         "✖ failing tests:"
-        ]
-       }
+       "rc": 0,
+       "seconds": 0,
+       "counts": {
+        "tool": "node:test",
+        "passed": 1,
+        "failed": 0
+       },
+       "failure": null
       }
      }
     },
     {
      "language": "python",
-     "result": "fail",
+     "result": "pass",
      "toolchain": {
       "versions": [
        {
@@ -42975,26 +42979,25 @@
       {
        "name": ".",
        "dir": ".",
-       "failed": true
+       "failed": false
       }
      ],
      "steps": {
       "test": {
-       "rc": 3,
+       "rc": 0,
        "seconds": 0,
-       "counts": null,
-       "failure": {
-        "category": "other",
-        "excerpt": [
-         "/hecatron/languages/python/hooks/../../_hooks.sh: line 44: uv: command not found"
-        ]
-       }
+       "counts": {
+        "tool": "pytest",
+        "passed": 1,
+        "failed": 0
+       },
+       "failure": null
       }
      }
     },
     {
      "language": "rust",
-     "result": "fail",
+     "result": "pass",
      "toolchain": {
       "versions": [
        {
@@ -43014,26 +43017,26 @@
       {
        "name": ".",
        "dir": ".",
-       "failed": true
+       "failed": false
       }
      ],
      "steps": {
       "test": {
-       "rc": 3,
-       "seconds": 0,
-       "counts": null,
-       "failure": {
-        "category": "other",
-        "excerpt": [
-         "/hecatron/languages/rust/hooks/../../_hooks.sh: line 44: cargo: command not found"
-        ]
-       }
+       "rc": 0,
+       "seconds": 8,
+       "counts": {
+        "tool": "cargo",
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+       },
+       "failure": null
       }
      }
     },
     {
      "language": "swift",
-     "result": "fail",
+     "result": "pass",
      "toolchain": {
       "versions": [
        {
@@ -43051,20 +43054,20 @@
       {
        "name": ".",
        "dir": ".",
-       "failed": true
+       "failed": false
       }
      ],
      "steps": {
       "test": {
-       "rc": 3,
-       "seconds": 0,
-       "counts": null,
-       "failure": {
-        "category": "other",
-        "excerpt": [
-         "/hecatron/languages/swift/hooks/../../_hooks.sh: line 44: swift: command not found"
-        ]
-       }
+       "rc": 0,
+       "seconds": 41,
+       "counts": {
+        "tool": "xctest",
+        "failed": 0,
+        "total": 3,
+        "passed": 3
+       },
+       "failure": null
       }
      }
     }
@@ -43076,7 +43079,7 @@
    "commit": "77a3747266f4d621d0757825e6b11edcbf991ca5",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -43084,13 +43087,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 355,
+   "wallSeconds": 196,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "init": {
     "rc": 0,
@@ -43140,7 +43143,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 307
+    "seconds": 150
    },
    "doctor": {
     "rc": 0,
@@ -43458,7 +43461,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 18,
+       "seconds": 16,
        "counts": {
         "tool": "go (packages)",
         "passed": 1,
@@ -43496,14 +43499,14 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1,
+       "seconds": 0,
        "counts": null,
        "failure": {
         "category": "build",
         "excerpt": [
          "Error: Cannot find module 'tree-sitter'",
          "at Object.<anonymous> (/home/dev/tree-sitter_tree-sitter-rust/bindings/node/binding_test.js:4:16)",
-         "✖ bindings/node/binding_test.js (41.484823ms)",
+         "✖ bindings/node/binding_test.js (32.361575ms)",
          "✖ failing tests:"
         ]
        }
@@ -43579,7 +43582,7 @@
        "seconds": 6,
        "counts": {
         "tool": "cargo",
-        "passed": 1,
+        "passed": 2,
         "failed": 0,
         "skipped": 0
        },
@@ -43613,7 +43616,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 18,
+       "seconds": 19,
        "counts": {
         "tool": "xctest",
         "failed": 0,
@@ -43912,28 +43915,28 @@
   {
    "repo": "unicode-org/icu4x",
    "date": "2026-10-28",
-   "commit": "83cd8891a6705f24aa5a05f07390bdb6dc12dd5d",
+   "commit": "96296840c9234404c4c38888de63f92b4b3e7fa0",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
     "os": "Ubuntu 24.04.5 LTS",
     "arch": "x86_64",
     "image": "ubuntu:24.04",
-    "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 333,
+   "wallSeconds": 456,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 9
+    "seconds": 8
    },
    "init": {
     "rc": 0,
-    "seconds": 0,
+    "seconds": 1,
     "languages": [
      "cpp",
      "dart",
@@ -43992,11 +43995,11 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 148
+    "seconds": 184
    },
    "doctor": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "status": {
     "version": "0.5.0",
@@ -44223,7 +44226,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 66,
+       "seconds": 95,
        "counts": {
         "tool": "dart",
         "passed": 10,
@@ -44261,7 +44264,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 27,
+       "seconds": 43,
        "counts": null,
        "failure": {
         "category": "other",
@@ -44300,7 +44303,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 80,
+       "seconds": 121,
        "counts": null,
        "failure": {
         "category": "build",
@@ -44346,7 +44349,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 3,
+       "seconds": 2,
        "counts": null,
        "failure": null
       }
@@ -44357,10 +44360,10 @@
   {
    "repo": "valkey-io/valkey-glide",
    "date": "2026-10-28",
-   "commit": "3f4aefefee337d0ef36fc3da40bf16d31fe416ff",
+   "commit": "876916f2b3c277141f736317e52b26511dadaf13",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -44368,13 +44371,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261023.334.3)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 577,
+   "wallSeconds": 555,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 2
+    "seconds": 4
    },
    "init": {
     "rc": 0,
@@ -44439,11 +44442,11 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 139
+    "seconds": 124
    },
    "doctor": {
     "rc": 0,
-    "seconds": 0
+    "seconds": 1
    },
    "status": {
     "version": "0.5.0",
@@ -44642,7 +44645,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 1,
+       "seconds": 0,
        "counts": null,
        "failure": {
         "category": "other",
@@ -44682,7 +44685,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 146,
+       "seconds": 143,
        "counts": null,
        "failure": {
         "category": "build",
@@ -44763,7 +44766,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 146,
+       "seconds": 145,
        "counts": {
         "tool": "cargo",
         "passed": 315,
@@ -44773,14 +44776,14 @@
        "failure": {
         "category": "tests",
         "excerpt": [
-         "test no_credentials_fails_against_protected_server ... FAILED",
-         "test auth_failure_with_wrong_password ... FAILED",
          "test auth_with_username_default_user ... FAILED",
+         "test auth_failure_with_wrong_password ... FAILED",
          "test auth_success_with_correct_password ... FAILED",
-         "thread 'no_credentials_fails_against_protected_server' (31744) panicked at tests/common/server.rs:47:5:",
-         "thread 'auth_failure_with_wrong_password' (31741) panicked at tests/common/server.rs:47:5:",
-         "thread 'auth_with_username_default_user' (31743) panicked at tests/common/server.rs:47:5:",
-         "thread 'auth_success_with_correct_password' (31742) panicked at tests/common/server.rs:47:5:",
+         "test no_credentials_fails_against_protected_server ... FAILED",
+         "thread 'auth_with_username_default_user' (31726) panicked at tests/common/server.rs:47:5:",
+         "thread 'auth_failure_with_wrong_password' (31724) panicked at tests/common/server.rs:47:5:",
+         "thread 'auth_success_with_correct_password' (31725) panicked at tests/common/server.rs:47:5:",
+         "thread 'no_credentials_fails_against_protected_server' (31727) panicked at tests/common/server.rs:47:5:",
          "error: test failed, to rerun pass `--test it_auth`"
         ]
        }
@@ -44815,7 +44818,7 @@
      "steps": {
       "test": {
        "rc": 1,
-       "seconds": 142,
+       "seconds": 136,
        "counts": null,
        "failure": {
         "category": "other",
@@ -44835,7 +44838,7 @@
    "commit": "edace46216977186c109f26c9dd6137179d4a704",
    "hecatron": {
     "version": "0.5.0",
-    "commit": "5b35a42be4631595c8cec5905e47190ee5b48639",
+    "commit": "ae73d4a4e03b7a6b0e5fb1c3eb1b30ff6760812d",
     "runner": "binary"
    },
    "runner": {
@@ -44843,13 +44846,13 @@
     "arch": "x86_64",
     "image": "ubuntu:24.04",
     "host": "GitHub Actions ubuntu-24.04 (20261026.354.1)",
-    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40668832410"
+    "runUrl": "https://github.com/dnf/hecatron/actions/runs/40722304292"
    },
-   "wallSeconds": 193,
+   "wallSeconds": 226,
    "complete": true,
    "clone": {
     "rc": 0,
-    "seconds": 3
+    "seconds": 14
    },
    "init": {
     "rc": 0,
@@ -44896,7 +44899,7 @@
    },
    "install": {
     "rc": 0,
-    "seconds": 89
+    "seconds": 104
    },
    "doctor": {
     "rc": 0,
@@ -45072,7 +45075,7 @@
      "steps": {
       "test": {
        "rc": 0,
-       "seconds": 99,
+       "seconds": 107,
        "counts": {
         "tool": "cargo",
         "passed": 17,
