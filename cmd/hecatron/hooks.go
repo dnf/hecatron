@@ -7,10 +7,10 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/dnf/hecatron/internal/platform"
 	"github.com/dnf/hecatron/internal/project"
 	"github.com/dnf/hecatron/internal/runner"
 )
@@ -210,14 +210,7 @@ func shellWord(word, path string) (string, bool) {
 	return value.String(), true
 }
 
-func getenv(env []string, name string) string {
-	for i := len(env) - 1; i >= 0; i-- {
-		if value, ok := strings.CutPrefix(env[i], name+"="); ok {
-			return value
-		}
-	}
-	return ""
-}
+func getenv(env []string, name string) string { return platform.Getenv(env, name) }
 
 // runHook runs a hook with bash, as each-component.sh does; ok is its
 // success.
@@ -226,7 +219,7 @@ func runHook(ctx context.Context, out io.Writer, dir string, env []string, hook,
 	if exports := getenv(env, "HECATRON_EVAL_ENV"); exports != "" {
 		argv = append([]string{"-c", `eval "${HECATRON_EVAL_ENV}" && unset HECATRON_EVAL_ENV && exec bash "$@"`, "bash"}, argv...)
 	}
-	cmd := exec.CommandContext(ctx, "bash", argv...)
+	cmd := exec.CommandContext(ctx, bashProgram(), argv...)
 	cmd.Dir, cmd.Env = dir, env
 	return runCommand(cmd, out) == 0
 }
@@ -255,7 +248,7 @@ func runCommand(cmd *exec.Cmd, out io.Writer) int {
 // run.sh does.
 func (r *invocation) taskExec(command string) func(context.Context, io.Writer) runner.Outcome {
 	return func(ctx context.Context, out io.Writer) runner.Outcome {
-		cmd := exec.CommandContext(ctx, "bash", "-c", command)
+		cmd := exec.CommandContext(ctx, bashProgram(), "-c", command)
 		cmd.Dir, cmd.Env = r.root, r.environment()
 		return runner.Outcome{ExitCode: runCommand(cmd, out)}
 	}
@@ -264,7 +257,7 @@ func (r *invocation) taskExec(command string) func(context.Context, io.Writer) r
 // shellcheckExec is lint's shell tool: libexec/lint/shellcheck.sh.
 func (r *invocation) shellcheckExec() func(context.Context, io.Writer) runner.Outcome {
 	return func(ctx context.Context, out io.Writer) runner.Outcome {
-		cmd := exec.CommandContext(ctx, "bash", r.homePath("libexec/lint/shellcheck.sh"))
+		cmd := exec.CommandContext(ctx, bashProgram(), r.homePath("libexec/lint/shellcheck.sh"))
 		cmd.Dir, cmd.Env = r.root, r.environment()
 		return runner.Outcome{ExitCode: runCommand(cmd, out)}
 	}
@@ -288,23 +281,4 @@ func (r *invocation) dependencyAvailable(lang string) bool {
 }
 
 // lookPath finds an executable on a PATH value, as `command -v` does.
-func lookPath(name, path string) (string, bool) {
-	if strings.ContainsRune(name, '/') {
-		return name, isExecutable(name)
-	}
-	for _, dir := range filepath.SplitList(path) {
-		if dir == "" {
-			dir = "."
-		}
-		candidate := filepath.Join(dir, name)
-		if isExecutable(candidate) {
-			return candidate, true
-		}
-	}
-	return "", false
-}
-
-func isExecutable(path string) bool {
-	info, err := os.Stat(path)
-	return err == nil && !info.IsDir() && info.Mode()&0o111 != 0
-}
+func lookPath(name, path string) (string, bool) { return platform.LookPath(name, path) }

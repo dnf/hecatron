@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/dnf/hecatron/internal/platform"
 )
 
 // Toolchain versions (docs/design.md §18): which version of a language a
@@ -785,11 +787,5 @@ func (p *Project) environ() []string {
 }
 
 func (p *Project) lookupEnv(name string) (string, bool) {
-	env := p.environ()
-	for i := len(env) - 1; i >= 0; i-- {
-		if value, ok := strings.CutPrefix(env[i], name+"="); ok {
-			return value, true
-		}
-	}
-	return "", false
+	return platform.LookupEnv(p.environ(), name)
 }

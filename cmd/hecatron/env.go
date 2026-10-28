@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/dnf/hecatron/internal/project"
 )
 
-// env is `hecatron env`. With a language, that language's environment for
+// env is `hecatron env`. On Windows it prints PowerShell assignments
+// instead of POSIX shell. With a language, that language's environment for
 // a component (`env java -c age`), as project.py's env query prints it.
 // Without, shell code a project's own recipes eval to get HECATRON_HOME,
 // HECATRON_ROOT and the helpers: paths bash's printf %q would leave alone
@@ -17,6 +19,13 @@ import (
 func (c *cli) env() (int, bool) {
 	if len(c.args) > 0 {
 		return c.languageEnv()
+	}
+	if runtime.GOOS == "windows" {
+		// No bash to source the helpers into: the two variables, for
+		// PowerShell (`hct env | Invoke-Expression`).
+		fmt.Printf("$env:HECATRON_HOME = %s\n$env:HECATRON_ROOT = %s\n",
+			project.PowerShellQuote(c.home.Dir), project.PowerShellQuote(c.root))
+		return 0, true
 	}
 	helpers := c.homePath("libexec/lib/helpers.sh")
 	if !quoteFree(c.home.Dir) || !quoteFree(c.root) || !quoteFree(helpers) {
@@ -42,6 +51,10 @@ func (c *cli) languageEnv() (int, bool) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 1, true
+	}
+	if runtime.GOOS == "windows" {
+		fmt.Print(env.PowerShell())
+		return 0, true
 	}
 	fmt.Print(env.Exports())
 	return 0, true

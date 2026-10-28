@@ -12,7 +12,7 @@ import (
 func TestSkillInstall(t *testing.T) {
 	home := repoHome(t)
 	user := t.TempDir()
-	env := []string{"HECATRON_HOME=" + home, "HOME=" + user}
+	env := []string{"HECATRON_HOME=" + home, "HOME=" + user, "USERPROFILE=" + user}
 	installed := filepath.Join(user, ".claude", "skills", "hecatron", "SKILL.md")
 
 	got := runIn(t, t.TempDir(), env, binary, "skill", "install")
@@ -55,7 +55,8 @@ func TestSkillInstall(t *testing.T) {
 
 func TestSkillInstallProjectAndPath(t *testing.T) {
 	home := repoHome(t)
-	env := []string{"HECATRON_HOME=" + home, "HOME=" + t.TempDir()}
+	userHome := t.TempDir()
+	env := []string{"HECATRON_HOME=" + home, "HOME=" + userHome, "USERPROFILE=" + userHome}
 	repo := fixture(t, map[string]string{"README": ""})
 	runIn(t, repo, nil, "git", "init", "-q")
 	sub := filepath.Join(repo, "a")

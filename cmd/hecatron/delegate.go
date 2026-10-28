@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/dnf/hecatron/internal/platform"
 )
 
 // A target is how bin/hecatron runs a command: a program found on PATH
@@ -138,15 +140,7 @@ func (c *cli) environment(extra []string) []string {
 	return env
 }
 
-func setEnv(env []string, name, value string) []string {
-	result := make([]string, 0, len(env)+1)
-	for _, entry := range env {
-		if !strings.HasPrefix(entry, name+"=") {
-			result = append(result, entry)
-		}
-	}
-	return append(result, name+"="+value)
-}
+func setEnv(env []string, name, value string) []string { return platform.Setenv(env, name, value) }
 
 // delegate runs a target in place of this process, after the Python check
 // bin/hecatron makes before every command but help and --version.
@@ -156,6 +150,10 @@ func (c *cli) delegate(target func(*cli) target) int {
 	}
 	t := target(c)
 	program, err := exec.LookPath(t.argv[0])
+	if t.argv[0] == "bash" {
+		program = bashProgram()
+		program, err = exec.LookPath(program)
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "hecatron: %s not found on PATH (needed for '%s' until it is ported to Go)\n", t.argv[0], c.command)
 		return 127
@@ -190,6 +188,9 @@ func (c *cli) requirePython() int {
 	fmt.Fprintln(os.Stderr, "  macOS:          xcode-select --install   (or: brew install python)")
 	fmt.Fprintln(os.Stderr, "  Debian, Ubuntu: sudo apt-get install python3")
 	fmt.Fprintln(os.Stderr, "  Fedora:         sudo dnf install python3")
+	if runtime.GOOS == "windows" {
+		fmt.Fprintln(os.Stderr, "  Windows:        Python from the Microsoft Store, which provides python3")
+	}
 	return 1
 }
 

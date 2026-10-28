@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dnf/hecatron/internal/platform"
 	"github.com/dnf/hecatron/internal/project"
 	"github.com/dnf/hecatron/internal/runner"
 )
@@ -181,38 +182,16 @@ func toolchainFound(p *project.Project, lang, component, dependency string, env 
 	if languageEnv, err := p.LanguageEnv(lang, component); err == nil {
 		path = getenv(languageEnv.Apply(env), "PATH")
 	} else if static, err := p.StaticPath(lang); err == nil && len(static) > 0 {
-		path = strings.Join(static, ":") + ":" + path
+		path = platform.JoinPath(append(static, path)...)
 	}
 	return lookPath(dependency, path)
 }
 
-func getenv(env []string, name string) string {
-	for i := len(env) - 1; i >= 0; i-- {
-		if value, ok := strings.CutPrefix(env[i], name+"="); ok {
-			return value
-		}
-	}
-	return ""
-}
+func getenv(env []string, name string) string { return platform.Getenv(env, name) }
 
 func lookPath(name, path string) bool {
-	if strings.ContainsRune(name, '/') {
-		return isExecutable(name)
-	}
-	for _, dir := range filepath.SplitList(path) {
-		if dir == "" {
-			dir = "."
-		}
-		if isExecutable(filepath.Join(dir, name)) {
-			return true
-		}
-	}
-	return false
-}
-
-func isExecutable(path string) bool {
-	info, err := os.Stat(path)
-	return err == nil && !info.IsDir() && info.Mode()&0o111 != 0
+	_, found := platform.LookPath(name, path)
+	return found
 }
 
 // LastRun is an action's last run for a language, as status reports it.

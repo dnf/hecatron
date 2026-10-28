@@ -78,7 +78,7 @@ func (c *cli) init() (int, bool) {
 		dir = args.positionals[0]
 	}
 	root := dir
-	if !strings.HasPrefix(root, "/") {
+	if !filepath.IsAbs(root) {
 		cwd, err := workingDir()
 		if err != nil {
 			return 0, false

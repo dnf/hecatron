@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
+
+	"github.com/dnf/hecatron/internal/platform"
 )
 
 // Installed is one installed version of a language's toolchain, as its
@@ -65,9 +67,9 @@ func (p *Project) runInstalled(lang string) ([]Installed, error) {
 		return nil, err
 	}
 	path, _ := p.lookupEnv("PATH")
-	path = strings.Join(append(static, path), ":")
+	path = platform.JoinPath(append(static, path)...)
 	env := setEnviron(p.environ(), "PATH", path)
-	bash, found := findExecutable("bash", path)
+	bash, found := platform.Bash(path)
 	if !found {
 		return nil, unsupported("no bash on PATH to run %s", script)
 	}
@@ -84,7 +86,7 @@ func (p *Project) runInstalled(lang string) ([]Installed, error) {
 	if !utf8.Valid(out) {
 		return nil, unsupported("%s printed text that isn't UTF-8", script)
 	}
-	home, haveHome := p.lookupEnv("HOME")
+	home, haveHome := p.lookupEnv(homeVariable)
 	var installed []Installed
 	for _, line := range pySplitLines(pyText(out)) {
 		version, home2, _ := strings.Cut(line, "\t")
@@ -106,30 +108,7 @@ func (p *Project) runInstalled(lang string) ([]Installed, error) {
 	return installed, nil
 }
 
-// findExecutable is how Python's subprocess finds a program: on the PATH
-// the child gets.
-func findExecutable(name, path string) (string, bool) {
-	for _, dir := range strings.Split(path, ":") {
-		if dir == "" {
-			dir = "."
-		}
-		candidate := pyJoin(dir, name)
-		if isExecutableFile(candidate) {
-			return candidate, true
-		}
-	}
-	return "", false
-}
-
-func setEnviron(env []string, name, value string) []string {
-	result := make([]string, 0, len(env)+1)
-	for _, entry := range env {
-		if !strings.HasPrefix(entry, name+"=") {
-			result = append(result, entry)
-		}
-	}
-	return append(result, name+"="+value)
-}
+func setEnviron(env []string, name, value string) []string { return platform.Setenv(env, name, value) }
 
 // InstalledVersion is the newest installed version matching the component's
 // spec (project.py's installed_version), and false for none. A component on
@@ -346,7 +325,7 @@ func (p *Project) LanguageEnv(lang, component string) (LanguageEnv, error) {
 		}
 		fields = map[string]string{"home": match.Home, "version": match.Version, "major": numbers[0], "minor": minor}
 	}
-	home, haveHome := p.lookupEnv("HOME")
+	home, haveHome := p.lookupEnv(homeVariable)
 	var env LanguageEnv
 	for _, pattern := range patterns {
 		if strings.Contains(pattern, "{") && fields == nil {
@@ -466,6 +445,36 @@ func (e LanguageEnv) Exports() string {
 	return out.String()
 }
 
+// PowerShell is the environment as PowerShell assignments, what `hecatron
+// env LANG` prints on Windows, where there is no POSIX shell to eval
+// Exports: `hct env go | Invoke-Expression`.
+func (e LanguageEnv) PowerShell() string {
+	var out bytes.Buffer
+	for _, variable := range e.Vars {
+		fmt.Fprintf(&out, "$env:%s = %s\n", variable[0], PowerShellQuote(variable[1]))
+	}
+	if len(e.Path) > 0 {
+		fmt.Fprintf(&out, "$env:PATH = %s + $env:PATH\n", PowerShellQuote(platform.JoinPath(e.Path...)+platform.ListSeparator))
+	}
+	return out.String()
+}
+
+// PowerShellQuote is s as a PowerShell single-quoted string: each quote
+// doubled, the typographic single quotes PowerShell also ends strings at
+// included.
+func PowerShellQuote(s string) string {
+	var out strings.Builder
+	out.WriteByte('\'')
+	for _, r := range s {
+		if strings.ContainsRune("'\u2018\u2019\u201a\u201b", r) {
+			out.WriteRune(r)
+		}
+		out.WriteRune(r)
+	}
+	out.WriteByte('\'')
+	return out.String()
+}
+
 // Apply is env with the environment applied, as a shell evaluating
 // Exports would: the variables, then the directories before PATH.
 func (e LanguageEnv) Apply(env []string) []string {
@@ -474,14 +483,8 @@ func (e LanguageEnv) Apply(env []string) []string {
 		env = setEnviron(env, variable[0], variable[1])
 	}
 	if len(e.Path) > 0 {
-		path := ""
-		for i := len(env) - 1; i >= 0; i-- {
-			if value, ok := strings.CutPrefix(env[i], "PATH="); ok {
-				path = value
-				break
-			}
-		}
-		env = setEnviron(env, "PATH", strings.Join(e.Path, ":")+":"+path)
+		path := platform.Getenv(env, "PATH")
+		env = setEnviron(env, "PATH", platform.JoinPath(append(append([]string(nil), e.Path...), path)...))
 	}
 	return env
 }

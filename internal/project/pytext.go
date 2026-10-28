@@ -2,7 +2,9 @@ package project
 
 import (
 	"os"
+	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"unicode"
@@ -87,6 +89,13 @@ func checkDigits(text string) error {
 
 // pySplit is Python's os.path.split.
 func pySplit(path string) (head, tail string) {
+	if runtime.GOOS == "windows" {
+		head, tail = filepath.Split(path)
+		if trimmed := strings.TrimRight(head, `\/`); trimmed != "" && !strings.HasSuffix(trimmed, ":") {
+			head = trimmed
+		}
+		return head, tail
+	}
 	i := strings.LastIndex(path, "/") + 1
 	head, tail = path[:i], path[i:]
 	if head != "" && strings.Trim(head, "/") != "" {
@@ -103,6 +112,14 @@ func pyDirname(path string) string {
 
 // pyRelpath is Python's os.path.relpath for two absolute paths.
 func pyRelpath(path, start string) string {
+	if runtime.GOOS == "windows" {
+		// With slashes, as git names files: what it gives is a path within
+		// the project, written into generated files and compared with git's.
+		if rel, err := filepath.Rel(start, path); err == nil {
+			return filepath.ToSlash(rel)
+		}
+		return path
+	}
 	split := func(p string) []string {
 		var parts []string
 		for _, part := range strings.Split(pyNormpath(p), "/") {
@@ -131,6 +148,9 @@ func pyRelpath(path, start string) string {
 // pyNormpath is Python's os.path.normpath for an absolute POSIX path, which
 // keeps exactly two leading slashes.
 func pyNormpath(path string) string {
+	if runtime.GOOS == "windows" {
+		return filepath.Clean(path)
+	}
 	prefix := ""
 	if strings.HasPrefix(path, "//") && !strings.HasPrefix(path, "///") {
 		prefix = "/"
@@ -163,13 +183,21 @@ func cleanSlashPath(path string) string {
 	return joined
 }
 
+// pathSeparators are the characters that separate a path's parts: "/",
+// and on Windows "\\" too.
+var pathSeparators = map[bool]string{true: `/\`, false: "/"}[runtime.GOOS == "windows"]
+
+// homeVariable holds the user's home directory, as expanduser reads it:
+// HOME, or USERPROFILE on Windows.
+var homeVariable = map[bool]string{true: "USERPROFILE", false: "HOME"}[runtime.GOOS == "windows"]
+
 // pyExpandUser is Python's os.path.expanduser with home as $HOME. "~user"
 // is declined: Python looks it up in the password database.
 func pyExpandUser(path, home string, haveHome bool) (string, error) {
 	if !strings.HasPrefix(path, "~") {
 		return path, nil
 	}
-	end := strings.Index(path[1:], "/") + 1
+	end := strings.IndexAny(path[1:], pathSeparators) + 1
 	if end == 0 {
 		end = len(path)
 	}
@@ -179,7 +207,7 @@ func pyExpandUser(path, home string, haveHome bool) (string, error) {
 	if !haveHome {
 		return "", unsupported("no HOME to expand %q", path)
 	}
-	expanded := strings.TrimRight(home, "/") + path[1:]
+	expanded := strings.TrimRight(home, pathSeparators) + path[1:]
 	if expanded == "" {
 		return "/", nil
 	}
