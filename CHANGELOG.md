@@ -13,6 +13,11 @@ minor version can change behaviour. Numbers are
   named for it, so a language beside them (Ruby in `src/email/`) gets its
   own `implPaths` instead of no directory at all. Lua isn't detected from
   premake build scripts, nor R from an Octave package's `DESCRIPTION`.
+- **Other languages' tools on PATH:** a language's hooks (and
+  `hct env LANG`) now also have the project's other added, enabled
+  languages' static `path` directories on PATH, after the language's own,
+  so a Ruby, OCaml or D build that runs `cargo` finds the Rust that
+  `hct install` put in `~/.cargo/bin`.
 
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
