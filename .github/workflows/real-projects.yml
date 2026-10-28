@@ -55,6 +55,8 @@ jobs:
         with:
           name: hecatron-binary
           path: bin/.hecatron-go
+          include-hidden-files: true
+          if-no-files-found: error
 
   project:
     needs: [projects, binary]
@@ -67,6 +69,10 @@ jobs:
     # run.sh stops starting steps after 55 minutes.
     timeout-minutes: 65
     steps:
+      - id: name
+        env:
+          REPO: ${{ matrix.repo }}
+        run: echo "name=${REPO//\//_}" >> "${GITHUB_OUTPUT}"
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
@@ -82,10 +88,6 @@ jobs:
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift
           df -h /
-      - id: name
-        env:
-          REPO: ${{ matrix.repo }}
-        run: echo "name=${REPO//\//_}" >> "${GITHUB_OUTPUT}"
       - name: Test ${{ matrix.repo }}
         env:
           REPO: ${{ matrix.repo }}
