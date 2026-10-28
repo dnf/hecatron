@@ -6,10 +6,6 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
-- **Detection:** dotfiles aren't sources (a `.nvim.lua` no longer adds
-  Lua); Lua isn't detected from premake build scripts, nor R from an
-  Octave package's `DESCRIPTION`.
-
 - **Node.js packages built before their tests:** `hct test typescript`
   and `hct test javascript` first build a package whose tests need it
   built: a native addon (napi-rs, node-gyp) not built yet, or an entry
