@@ -217,9 +217,13 @@ dotnet_test_target() {
 # A directory's .NET project files, when it has no solution and several:
 # `dotnet` acts on one at a time there.
 dotnet_projects() {
-    [ -z "$(ls -- *.sln *.slnx 2>/dev/null || true)" ] || return 0
-    [ "$(ls -- *.csproj *.fsproj *.vbproj 2>/dev/null | grep -c .)" -gt 1 ] || return 0
-    ls -- *.csproj *.fsproj *.vbproj 2>/dev/null || true
+    local _projects=() _project
+    has_any '*.sln' '*.slnx' && return 0
+    for _project in *.csproj *.fsproj *.vbproj; do
+        if [ -f "${_project}" ]; then _projects+=("${_project}"); fi
+    done
+    [ "${#_projects[@]}" -gt 1 ] || return 0
+    printf '%s\n' "${_projects[@]}"
 }
 # Whether a project file is a test project: it references the test SDK or
 # says it is one.
