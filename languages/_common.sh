@@ -120,6 +120,22 @@ doctor_done() { exit "${_doctor_failed}"; }
 
 has() { command -v "$1" &>/dev/null; }
 
+# For uninstall.sh: a tool another language's installer also installs (CMake,
+# Node.js, the .NET SDK, a JDK...) stays when one of them is uninstalled
+# (docs/installers.md, "Shared toolchains"), and the uninstaller says so.
+left_shared() { echo "Left $1 installed: $2"; }
+leave_cmake() {
+    if has cmake; then left_shared CMake "C, C++, Objective-C, COBOL and Fortran share it."; fi
+}
+leave_node() {
+    if has node; then left_shared Node.js "TypeScript, JavaScript and Elm share it."; fi
+}
+leave_dotnet() {
+    if has dotnet || [ -d /opt/dotnet ] || [ -d "${HOME}/.local/share/hecatron/dotnet" ]; then
+        left_shared "the .NET SDK" "C#, F# and VB.NET share it."
+    fi
+}
+
 brew_install() { brew install "$@" || true; }
 
 # Homebrew sometimes installs a formula without linking it (e.g. when a stray

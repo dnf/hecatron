@@ -23,6 +23,18 @@ minor version can change behaviour. Numbers are
   the engine would install; the eleven languages converted so far come
   from apt, which isn't cached, so this grows with the languages moved to
   downloads.
+- **Uninstalling a language leaves shared and system software:** an
+  `uninstall.sh` removes only what is the language's own and hecatron
+  installed. A toolchain another language's installer also installs stays,
+  with a line saying so (`Left CMake installed: C, C++, Objective-C, COBOL
+  and Fortran share it.`): CMake (C, C++, Fortran), Node.js (TypeScript,
+  JavaScript), the .NET SDK (C#, F#, VB.NET), Erlang/OTP (Erlang, which now
+  removes only rebar3), uv (Python) and Homebrew's gcc (Fortran). Python no
+  longer removes the distribution's `python3` (`apt-get remove python3`
+  could take much of a Debian or Ubuntu system with it); it removes uv's
+  Python builds, unless Mojo runs on one. PHP removes only the `-cli`,
+  `-xml` and `-mbstring` packages its installer installs, instead of
+  `php*` followed by `apt-get autoremove`. D also removes dub.
 - **Elixir versions:** Elixir installs side by side from builds.hex.pm's
   precompiled releases, with a default of 1.20.4 (it was Ubuntu's apt 1.14,
   which current libraries warn about), a `.tool-versions` or `mise.toml`

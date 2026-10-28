@@ -1,17 +1,12 @@
 #!/usr/bin/env bash
-# Uninstall the .NET SDK (VB.NET): install.sh's SDKs and their link, and the
-# packages earlier versions installed.
+# Uninstall VB.NET. Its toolchain is the .NET SDK, which C#, F# and VB.NET share
+# (csharp/install.sh installs it for all three), so it stays: the SDKs and
+# their views in ~/.local/share/hecatron on macOS, in /opt/dotnet and
+# /opt/dotnet-views on Linux.
 source "$(dirname "$0")/../_common.sh"
 
-uninstall_macos() {
-    rm -rf "${HOME}/.local/share/hecatron/dotnet"
-    brew uninstall dotnet 2>/dev/null || true
-}
-uninstall_linux() {
-    [ "$(readlink /usr/local/bin/dotnet 2>/dev/null)" = /opt/dotnet/dotnet ] && $SUDO rm -f /usr/local/bin/dotnet
-    $SUDO rm -rf /opt/dotnet
-    $SUDO apt-get remove -y dotnet-sdk-10.0 2>/dev/null || true
-}
+uninstall_macos() { leave_dotnet; }
+uninstall_linux() { leave_dotnet; }
 
 log "Uninstalling VB.NET..."
 "uninstall_${OS}"

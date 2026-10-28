@@ -94,15 +94,24 @@ packages, commands and doctor report.
 
 ## Shared toolchains
 
-Some languages share a toolchain. Uninstalling one affects the others.
+Some languages share a toolchain. Uninstalling a language removes only what
+is its own and was installed by hecatron: a tool another language's
+installer also installs stays, and the uninstaller prints a line saying so
+(`Left CMake installed: C, C++, Objective-C, COBOL and Fortran share it.`).
+Remove one of these by hand once no language needs it.
 
-| Toolchain  | Languages             | Effect of uninstalling any one                                          |
-| ---------- | --------------------- | ----------------------------------------------------------------------- |
-| .NET SDK   | C#, F#, VB.NET        | All share the SDKs in one directory; uninstalling one removes them all  |
-| cmake      | C, C++, Fortran       | All three lose build capability until reinstalled                       |
-| JDK        | Java, Kt, Scala, Gy   | Protected: `hecatron uninstall java` is a no-op (prints a message)      |
-| Node.js    | TypeScript, JS, Elm   | JavaScript's installer is TypeScript's; Elm's installs Node if missing  |
-| Erlang/OTP | Erlang, Elixir, Gleam | Elixir and Gleam depend on Erlang runtime; uninstall Erlang breaks both (an Elixir on an OTP of its own, see below, keeps working) |
+| Toolchain       | Languages                              | Uninstalling any one of them                     |
+| --------------- | -------------------------------------- | ------------------------------------------------ |
+| .NET SDK        | C#, F#, VB.NET                         | Leaves the SDKs (`/opt/dotnet`, `~/.local/share/hecatron/dotnet`) and their views |
+| cmake           | C, C++, Objective-C, COBOL, Fortran    | Leaves cmake                                     |
+| JDK             | Java, Kotlin, Scala, Groovy, Clojure   | Leaves the JDKs; `hecatron uninstall java` only prints where they are |
+| Node.js         | TypeScript, JavaScript, Elm            | Leaves Node.js (JavaScript's installer is TypeScript's; Elm's installs Node if missing) |
+| Erlang/OTP      | Erlang, Elixir, Gleam                  | Leaves Erlang/OTP; Erlang's removes rebar3 (Elixir's removes the OTPs it installed for itself, see below) |
+| uv              | Python, C, C++, Objective-C, Mojo      | Leaves uv; Python's removes uv's Python builds, unless Mojo runs on one |
+| gcc (Homebrew)  | Fortran                                | Leaves Homebrew's gcc, which other formulae use  |
+
+Nothing an operating system depends on is removed: Python's uninstaller
+leaves the distribution's `python3`, and none runs `apt-get autoremove`.
 
 ## Architecture limitations
 
@@ -157,8 +166,10 @@ elixir` notes each pairing it finds ("a: Elixir 1.20.4 on OTP 27.3.4.3").
 | Language         | Caveat                                                                 |
 | ---------------- | ---------------------------------------------------------------------- |
 | Java/Kt/Scala/Gy | No-op — JDK is shared; prints message instead of removing              |
-| Perl             | No-op on macOS (system Perl); removed on Linux                         |
-| Swift (Linux)    | No-op — Swift installs many files in /usr/local; manual cleanup needed |
+| C, C++, C#, F#, VB.NET, JavaScript, TypeScript | No-op apart from the message — their toolchain is shared (above) |
+| PHP (Linux)      | Removes the `php*-cli`, `-xml` and `-mbstring` packages it installs; what apt pulled in with them stays for `apt-get autoremove` |
+| Perl             | No-op — the system's Perl                                              |
+| Swift (macOS)    | No-op — Xcode's Swift                                                  |
 
 ## Installer script structure
 
