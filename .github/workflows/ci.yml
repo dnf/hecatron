@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
 
+# A new push to a pull request cancels its run still going; every commit on
+# main keeps its own run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   test:
     strategy:
