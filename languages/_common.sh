@@ -608,20 +608,31 @@ _cargo_package() {
         esac
     fi
 }
-# The crates the Cargo.lock files of a language's components list, one per line.
+# The crates the Cargo.lock files list, one per line: those in and above
+# the language's components, and every other one in the project outside the
+# trees detection skips (examples, tests, vendored code...), since another
+# language's build can build a crate too (a Java binding's Maven build runs
+# cargo, whose crates need protoc).
 cargo_lock_crates() {
     local _dir _lock
-    while IFS= read -r _dir; do
-        find "${_dir}" -maxdepth 4 \( -name target -o -name node_modules -o -name '.*' ! -name . \) -prune -o \
-            -name Cargo.lock -type f -print 2>/dev/null
-        while [ "${_dir}" != "${ROOT}" ] && [ "${_dir}" != / ]; do
-            _dir="$(dirname "${_dir}")"
-            if [ -f "${_dir}/Cargo.lock" ]; then
-                echo "${_dir}/Cargo.lock"
-                break
-            fi
-        done
-    done < <(impl_dirs "$1") | sort -u | while IFS= read -r _lock; do
+    {
+        while IFS= read -r _dir; do
+            while [ "${_dir}" != "${ROOT}" ] && [ "${_dir}" != / ]; do
+                _dir="$(dirname "${_dir}")"
+                if [ -f "${_dir}/Cargo.lock" ]; then
+                    echo "${_dir}/Cargo.lock"
+                    break
+                fi
+            done
+        done < <(impl_dirs "$1")
+        find "${ROOT}" -mindepth 1 -maxdepth 6 \( -name target -o -name '.*' ! -name . -o -iname android \
+            -o -iname benchmarks -o -iname buildsrc -o -iname demo -o -iname demos -o -iname doc -o -iname docs \
+            -o -iname example -o -iname examples -o -iname external -o -iname fixtures -o -iname hooks \
+            -o -iname node_modules -o -iname playground -o -iname sample -o -iname samples -o -iname templates \
+            -o -iname test -o -iname test-data -o -iname test_data -o -iname testdata -o -iname tests \
+            -o -iname tests_data -o -iname third_party -o -iname tools -o -iname tutorial -o -iname tutorials \
+            -o -iname vendor -o -iname vendored \) -prune -o -name Cargo.lock -type f -print 2>/dev/null
+    } | sort -u | while IFS= read -r _lock; do
         sed -n 's/^name = "\([A-Za-z0-9_-]*\)"$/\1/p' "${_lock}"
     done | sort -u
 }
