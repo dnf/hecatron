@@ -443,11 +443,13 @@ haxe_clean() {
     run rm -rf "${_outputs[@]}"
 }
 
-# Whether package.json defines an npm script, e.g. `npm_script test`.
+# Whether package.json defines an npm script, e.g. `npm_script test`. The
+# test script `npm init` writes, which only fails, counts as none.
 npm_script() {
     [ -f package.json ] && python3 -c '
 import json, sys
-sys.exit(0 if sys.argv[1] in (json.load(open("package.json")).get("scripts") or {}) else 1)
+script = (json.load(open("package.json")).get("scripts") or {}).get(sys.argv[1])
+sys.exit(0 if script and "Error: no test specified" not in script else 1)
 ' "$1"
 }
 # Each ecosystem's dependencies come from one function, *_fetch, which
@@ -579,6 +581,55 @@ for directory in found:
     print(directory)
 PY
 }
+# A package that has to be built before its tests can load it: a native
+# addon (package.json's "napi" key, a binding.gyp, or a build script that
+# runs napi or node-gyp) whose binary (*.node here or in build/Release/)
+# isn't built yet, or an entry point ("main", or "exports"'s first path) the
+# build writes and that isn't there (dist/index.js). Built through the build
+# script when there is one, else napi's or node-gyp's own build.
+node_build_first() {
+    local _kind
+    _kind="$(python3 - <<'PY'
+import glob, json, os, re
+
+def first_path(value):
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        for key in (".", "require", "import", "node", "default"):
+            if key in value:
+                return first_path(value[key])
+        for item in value.values():
+            found = first_path(item)
+            if found:
+                return found
+    return None
+
+try:
+    package = json.load(open("package.json"))
+    build = (package.get("scripts") or {}).get("build") or ""
+except (OSError, ValueError, AttributeError):
+    package, build = {}, ""
+if not isinstance(package, dict):
+    package = {}
+napi, gyp = "napi" in package, os.path.isfile("binding.gyp")
+native = napi or gyp or re.search(r"\b(napi|node-gyp)\b", build)
+built = glob.glob("*.node") or glob.glob(os.path.join("build", "Release", "*.node"))
+entry = first_path(package.get("main")) or first_path(package.get("exports"))
+entry_missing = bool(entry) and "*" not in entry and not os.path.exists(entry)
+if build and (native and not built or entry_missing):
+    print("script")
+elif native and not built:
+    print("napi" if napi else "gyp")
+PY
+)"
+    case "${_kind}" in
+        script) run "${node_pm[@]}" run build ;;
+        napi) run node_modules/.bin/napi build --platform ;;
+        gyp) run npx --yes node-gyp rebuild ;;
+    esac
+}
+
 # A workspace root's packages (package.json "workspaces", or
 # pnpm-workspace.yaml's "packages") that define an npm script, one per line,
 # e.g. `node_workspaces_with test`.
@@ -629,7 +680,7 @@ node_workspaces_run() {
     while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(node_workspaces_with "$1")
     for _dir in "${_dirs[@]}"; do
         echo "--- ${HECATRON_LANG:-}: ${_hook_action} in ${_dir}"
-        (cd "${_dir}" && run "${node_pm[@]}" run "$1") || _failed_dirs+=("${_dir}")
+        (cd "${_dir}" && node_build_first && run "${node_pm[@]}" run "$1") || _failed_dirs+=("${_dir}")
     done
     if [ "${#_failed_dirs[@]}" -gt 0 ]; then
         echo "error: ${HECATRON_LANG:-}: ${_hook_action} failed in ${_failed_dirs[*]}" >&2
@@ -638,11 +689,13 @@ node_workspaces_run() {
     exit 0
 }
 # A package without a test script whose test runner is configured here
-# (vitest.config.*, jest.config.* or .mocharc.*) and installed: that runner.
+# (vitest.config.*, jest.config.* or .mocharc.*) and installed: that
+# runner's command, into node_runner.
+node_runner=()
 node_test_runner() {
-    if exists 'vitest.config.*' && [ -x node_modules/.bin/vitest ]; then run node_modules/.bin/vitest run
-    elif exists 'jest.config.*' && [ -x node_modules/.bin/jest ]; then run node_modules/.bin/jest
-    elif exists '.mocharc.*' && [ -x node_modules/.bin/mocha ]; then run node_modules/.bin/mocha
+    if exists 'vitest.config.*' && [ -x node_modules/.bin/vitest ]; then node_runner=(node_modules/.bin/vitest run)
+    elif exists 'jest.config.*' && [ -x node_modules/.bin/jest ]; then node_runner=(node_modules/.bin/jest)
+    elif exists '.mocharc.*' && [ -x node_modules/.bin/mocha ]; then node_runner=(node_modules/.bin/mocha)
     else return 1; fi
 }
 
@@ -668,6 +721,7 @@ node_hook() {
             export CI="${CI:-true}"
             if npm_script test; then
                 npm_deps
+                node_build_first
                 run "${node_pm[@]}" run test
             elif [ -n "$(node_workspaces_with test)" ]; then
                 npm_deps
@@ -675,6 +729,8 @@ node_hook() {
             elif has_any 'vitest.config.*' 'jest.config.*' '.mocharc.*'; then
                 npm_deps
                 node_test_runner || unknown "package.json has no test script, and its test runner isn't installed"
+                node_build_first
+                run "${node_runner[@]}"
             else
                 node_below test
                 unknown "package.json has no test script, nor do its workspace packages or the packages below"
