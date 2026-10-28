@@ -1292,7 +1292,7 @@ cmake_compile() {
 cmake_test() {
     local _part _target
     _part="$(cmake_binary_dir)"
-    if ! ctest --test-dir "${_part}" -N 2>/dev/null | grep -q '^Total Tests: [1-9]'; then
+    if ! grep -q '^Total Tests: [1-9]' <<<"$(ctest --test-dir "${_part}" -N 2>/dev/null)"; then
         _target="$(cmake_test_target)"
         if [ -n "${_target}" ]; then
             run cmake --build build --parallel "$(build_jobs)" --target "${_target}"

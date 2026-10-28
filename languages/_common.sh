@@ -22,6 +22,19 @@ ROOT="${HECATRON_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
 log() { echo "==> $*"; }
 
+# True when the first argument is one of the others. Not `printf ... | grep -q`
+# (nor `command | grep -q`): under pipefail, grep exiting at its match can kill
+# the writer with SIGPIPE before it's done, failing the pipeline now and then
+# (#169). Search a command's output with `grep -q PATTERN <<<"$(command)"`.
+in_list() {
+    local _wanted="$1" _item
+    shift
+    for _item in "$@"; do
+        [ "${_item}" = "${_wanted}" ] && return 0
+    done
+    return 1
+}
+
 # Every download retries. Installing dozens of toolchains from dozens of hosts
 # makes a transient failure (a timeout, a refused or dropped connection, a 5xx
 # or 429) a matter of time, so curl tries up to five times, gives up on a
@@ -87,9 +100,11 @@ each_impl_versioned() {
 # every language, the language is only listed in the HECATRON_DEFER_DEPS
 # file: the dependencies are fetched once every toolchain is in.
 impl_deps() {
+    local _deps_langs
     [ -n "${HECATRON_HOME:-}" ] || return 0
-    (cd "${ROOT}" && eval "$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env </dev/null)" &&
-        printf '%s\n' "${_DEPS_LANGS}") | grep -qx "$1" || return 0
+    _deps_langs="$(cd "${ROOT}" && eval "$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env </dev/null)" &&
+        printf '%s\n' "${_DEPS_LANGS}")" || return 0
+    in_list "$1" ${_deps_langs} || return 0
     if [ -n "${HECATRON_DEFER_DEPS:-}" ]; then
         echo "$1" >>"${HECATRON_DEFER_DEPS}"
         return 0
@@ -327,7 +342,7 @@ dotnet_target_majors() {
         xargs -r grep -ho '<TargetFrameworks\?[^>]*>[^<]*' 2>/dev/null |
         sed 's/.*>//' | tr ';' '\n' | sed -n 's/^net\([0-9][0-9]*\)\.0.*$/\1/p' | sort -un
 }
-dotnet_has_runtime() { dotnet --list-runtimes 2>/dev/null | grep -q "^Microsoft.NETCore.App $1\."; }
+dotnet_has_runtime() { grep -q "^Microsoft.NETCore.App $1\." <<<"$(dotnet --list-runtimes 2>/dev/null)"; }
 dotnet_runtimes_missing() {
     local _major
     has dotnet || return 0

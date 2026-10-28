@@ -14,21 +14,33 @@ eval "${_env}"
 unset _env
 _ROOT="${HECATRON_ROOT}"
 
+# True when the first argument is one of the others: `_in_list go ${_ADDED_LANGS}`.
+# Not `printf ... | grep -qx`: under pipefail, grep exiting at its match
+# can kill printf with SIGPIPE before it writes the rest, making the
+# pipeline fail now and then (#169).
+_in_list() {
+    local wanted="$1" item
+    shift
+    for item in "$@"; do
+        [ "${item}" = "${wanted}" ] && return 0
+    done
+    return 1
+}
+
 # True when a name is a language hecatron knows (built in or project-defined).
 _is_known() {
-    printf '%s\n' ${_ALL_LANGS} | grep -qx "$1"
+    _in_list "$1" ${_ALL_LANGS}
 }
 
 # True when a name is a project tool (config.json "tools"), e.g. shell.
 _is_tool() {
-    printf '%s\n' ${_TOOLS} | grep -qx "$1"
+    _in_list "$1" ${_TOOLS}
 }
 
 # A known language the project doesn't implement (not in config.json "languages").
 _is_removed() {
     _is_known "$1" || return 1
-    printf '%s\n' ${_ADDED_LANGS} | grep -qx "$1" && return 1
-    return 0
+    ! _in_list "$1" ${_ADDED_LANGS}
 }
 
 # ---------------------------------------------------------------------------
