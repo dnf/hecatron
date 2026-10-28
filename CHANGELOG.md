@@ -6,11 +6,20 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
-- **Detection skips more code that isn't the project's:** `hct init`
-  leaves out directories it skips in any case (`Examples/`), hidden
-  directories (`.jenkins/`), `templates/` and test data
-  (`tests_data/`, `test-data/`), so a Jenkinsfile, a code generator's
-  templates or an example no longer adds a language.
+- **Node.js tests in more layouts:** `hct test typescript` and `hct test
+  javascript` now test a workspace root without a `test` script through its
+  packages' scripts, a package with a configured Vitest, Jest or Mocha but
+  no script through that runner, and a directory without a `package.json`
+  (or a root `package.json` holding only tooling) through the language's
+  packages below it, where they failed with "no test command". Scripts
+  that call pnpm or Yarn by name find Corepack's shim on PATH, and tests
+  run with `CI=true` (unless it's set), so runners that would otherwise
+  watch for changes (Create React App's, Vitest's) run once.
+
+- **Detection:** `hct init` no longer proposes components from directories
+  like `src/<service>/src/main/<lang>` when another language's directory
+  isn't named for it (TypeScript in `src/frontend`), which left that
+  language, and every other one outside the pattern, with no directory.
 
 - **Other languages' tools on PATH:** a language's hooks (and
   `hct env LANG`) now also have the project's other added, enabled
@@ -114,6 +123,12 @@ minor version can change behaviour. Numbers are
   `"strip"`, a regular expression, is removed from the version the file
   gives, for ecosystems that write more than the version in it (asdf's and
   mise's Elixir `1.17.3-otp-27`).
+
+- **Detection skips more code that isn't the project's:** `hct init`
+  leaves out directories it skips in any case (`Examples/`), hidden
+  directories (`.jenkins/`), `templates/` and test data
+  (`tests_data/`, `test-data/`), so a Jenkinsfile, a code generator's
+  templates or an example no longer adds a language.
 
 ## 0.5.0 (2026-10-28)
 

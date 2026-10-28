@@ -86,6 +86,7 @@ var detectionRepos = map[string]map[string]string{
 	"own directory":               {"go/go.mod": "", "java/pom.xml": "", "clr-binding/Lib.csproj": "", "a/x.csproj": "", "b/y.csproj": ""},
 	"unicode names":               {"caf\u00e9/go.mod": "", "go/go.mod": "", "z\u00fcrich/Cargo.toml": ""},
 	"two varying parts":           {"a/x/go/go.mod": "", "b/y/go/go.mod": ""},
+	"components and another":      {"src/ad/main/java/pom.xml": "", "src/fraud/main/kotlin/build.gradle.kts": "", "src/frontend/package.json": "{}", "src/frontend/tsconfig.json": ""},
 	"root module, definitions":    {"go.mod": "", "cmd/x/main.go": "", "languages/go/config.json": "", "languages/go/install.sh": "", "languages/tcl/config.json": "", "languages/tcl/hooks/run.tcl": "", "languages/rust/Cargo.toml": ""},
 	"go directory module":         {"go/go.mod": "", "go/a.go": "", "rust/Cargo.toml": "", "go.work": ""},
 	"root module, code in lib":    {"go.mod": "", "lib/go/thrift/a.go": "", "lib/java/pom.xml": "", "lib/rb/x.gemspec": ""},

@@ -688,7 +688,7 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
     if not templates:
         return ["."], ".", {}
     split = [t.split("/") for t in templates]
-    if len(templates) > 1 and len({len(parts) for parts in split}) == 1:
+    if len(templates) > 1 and len({len(parts) for parts in split}) == 1 and all(roots.values()):
         varying = [i for i in range(len(split[0])) if len({parts[i] for parts in split}) > 1]
         if len(varying) == 1:
             i = varying[0]

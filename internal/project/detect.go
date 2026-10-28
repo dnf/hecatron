@@ -565,7 +565,7 @@ func InferLayout(found map[string]dirSet, names map[string][]string,
 		split = append(split, parts)
 		lengths[len(parts)] = true
 	}
-	if len(templates) > 1 && len(lengths) == 1 {
+	if len(templates) > 1 && len(lengths) == 1 && everyLanguageHasRoots(roots) {
 		var varying []int
 		for i := range split[0] {
 			values := map[string]bool{}
@@ -631,6 +631,17 @@ func InferLayout(found map[string]dirSet, names map[string][]string,
 		}
 	}
 	return Layout{Components: []string{"."}, ImplPath: template, ImplPaths: overrides}, nil
+}
+
+// everyLanguageHasRoots is whether each language has a directory named
+// after it: components inferred from the others would leave it none.
+func everyLanguageHasRoots(roots map[string]dirSet) bool {
+	for _, r := range roots {
+		if len(r) == 0 {
+			return false
+		}
+	}
+	return true
 }
 
 // betterTemplate orders templates as min(key=(preference, -languages, text)).

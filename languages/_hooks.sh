@@ -507,18 +507,144 @@ dart_deps() {
     if [ ! -f .dart_tool/package_config.json ]; then dart_fetch; fi
 }
 
+# Without a package.json here: the packages below that are this language's
+# (TypeScript's have a tsconfig.json, JavaScript's don't, as detection
+# decides) and, for test, have a test script, outside dependencies, tests,
+# examples and vendored code, the outermost of nested ones; the hook runs in
+# each, and exits. Returns when there are none.
+node_below() {
+    local _dir _dirs=()
+    while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(node_below_dirs "$1" "${HECATRON_LANG:-}")
+    [ "${#_dirs[@]}" -eq 0 ] || run_hook_in "${_dirs[@]}"
+}
+# node_below's packages, one per line (a function, not a here-document
+# inside the process substitution, which Bash 3.2 can't parse).
+node_below_dirs() {
+    python3 - "$1" "$2" <<'PY'
+import json, os, sys
+
+action, lang = sys.argv[1], sys.argv[2]
+skipped = {"node_modules", "benchmarks", "demo", "demos", "doc", "docs", "example", "examples", "external",
+           "fixtures", "playground", "sample", "samples", "test", "tests", "testdata", "third_party", "tools",
+           "tutorial", "tutorials", "vendor", "__tests__", "spec"}
+found = []
+for top, dirs, files in os.walk("."):
+    depth = top.count(os.sep)
+    dirs[:] = sorted(d for d in dirs if d not in skipped and not d.startswith(".") and depth < 4)
+    if top == "." or "package.json" not in files or any(top.startswith(f + os.sep) for f in found):
+        continue
+    if lang == "typescript" and "tsconfig.json" not in files or lang == "javascript" and "tsconfig.json" in files:
+        continue
+    try:
+        scripts = json.load(open(os.path.join(top, "package.json"))).get("scripts") or {}
+    except (ValueError, AttributeError):
+        continue
+    if action != "test" or "test" in scripts:
+        found.append(top)
+for directory in found:
+    print(directory)
+PY
+}
+# A workspace root's packages (package.json "workspaces", or
+# pnpm-workspace.yaml's "packages") that define an npm script, one per line,
+# e.g. `node_workspaces_with test`.
+node_workspaces_with() {
+    python3 - "$1" <<'PY'
+import glob, json, os, re, sys
+
+def patterns():
+    try:
+        declared = json.load(open("package.json")).get("workspaces") or []
+    except (ValueError, AttributeError):
+        declared = []
+    if isinstance(declared, dict):
+        declared = declared.get("packages") or []
+    found = [p for p in declared if isinstance(p, str)]
+    if os.path.isfile("pnpm-workspace.yaml"):
+        listing = False
+        for line in open("pnpm-workspace.yaml"):
+            if re.match(r"^packages:", line):
+                listing = True
+            elif listing and re.match(r"^\s+-\s", line):
+                found.append(line.split("-", 1)[1].split("#")[0].strip().strip("'\""))
+            elif listing and line.strip() and not line.startswith((" ", "#")):
+                listing = False
+    return found
+
+included, excluded = set(), set()
+for pattern in patterns():
+    target = excluded if pattern.startswith("!") else included
+    for directory in glob.glob(pattern.lstrip("!").rstrip("/"), recursive=True):
+        target.add(os.path.normpath(directory))
+for directory in sorted(included - excluded):
+    if "node_modules" in directory.split(os.sep) or directory == ".":
+        continue
+    try:
+        scripts = json.load(open(os.path.join(directory, "package.json"))).get("scripts") or {}
+    except (OSError, ValueError, AttributeError):
+        continue
+    if sys.argv[1] in scripts:
+        print(directory)
+PY
+}
+# A workspace root without the script itself: the script in each of its
+# packages that has it, run from there, with the workspace's dependencies
+# (installed at the root); and exit.
+node_workspaces_run() {
+    local _dir _dirs=() _failed_dirs=()
+    while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(node_workspaces_with "$1")
+    for _dir in "${_dirs[@]}"; do
+        echo "--- ${HECATRON_LANG:-}: ${_hook_action} in ${_dir}"
+        (cd "${_dir}" && run "${node_pm[@]}" run "$1") || _failed_dirs+=("${_dir}")
+    done
+    if [ "${#_failed_dirs[@]}" -gt 0 ]; then
+        echo "error: ${HECATRON_LANG:-}: ${_hook_action} failed in ${_failed_dirs[*]}" >&2
+        exit 1
+    fi
+    exit 0
+}
+# A package without a test script whose test runner is configured here
+# (vitest.config.*, jest.config.* or .mocharc.*) and installed: that runner.
+node_test_runner() {
+    if exists 'vitest.config.*' && [ -x node_modules/.bin/vitest ]; then run node_modules/.bin/vitest run
+    elif exists 'jest.config.*' && [ -x node_modules/.bin/jest ]; then run node_modules/.bin/jest
+    elif exists '.mocharc.*' && [ -x node_modules/.bin/mocha ]; then run node_modules/.bin/mocha
+    else return 1; fi
+}
+
 # Node.js packages (TypeScript, JavaScript): the package's own scripts, run
-# by the package manager it declares (typescript/package-manager.sh).
+# by the package manager it declares (typescript/package-manager.sh). A
+# workspace root without the script runs its packages'; a directory without
+# a package.json (or without a test script, testing), the packages below it,
+# else the one above.
 node_hook() {
-    [ -f package.json ] || unknown "no package.json"
+    if [ ! -f package.json ]; then
+        node_below "$1"
+        build_dir="$(dir_above_with package.json)" || unknown "no package.json here, below or above"
+        note_build_dir
+        cd "${build_dir}"
+    fi
     # shellcheck source=languages/typescript/package-manager.sh
     source "$(dirname "${BASH_SOURCE[0]}")/typescript/package-manager.sh"
     node_pm_command
     case "$1" in
         test)
-            npm_deps
-            npm_script test || unknown "package.json has no test script"
-            run "${node_pm[@]}" run test ;;
+            # Test runners that watch for changes when not in CI (Create React
+            # App's, Vitest's) would never finish.
+            export CI="${CI:-true}"
+            if npm_script test; then
+                npm_deps
+                run "${node_pm[@]}" run test
+            elif [ -n "$(node_workspaces_with test)" ]; then
+                npm_deps
+                node_workspaces_run test
+            elif has_any 'vitest.config.*' 'jest.config.*' '.mocharc.*'; then
+                npm_deps
+                node_test_runner || unknown "package.json has no test script, and its test runner isn't installed"
+            else
+                node_below test
+                unknown "package.json has no test script, nor do its workspace packages or the packages below"
+            fi ;;
         lint)
             npm_deps
             if npm_script lint; then run "${node_pm[@]}" run lint
