@@ -33,6 +33,22 @@ BASE_PACKAGES = [
 ]
 
 
+# curl's retry policy for every download in the build (and in the image),
+# the installers' curl() in languages/_common.sh plus --retry-all-errors, so a
+# dropped TLS connection (curl 35, 56) is retried too. A config file, rather
+# than options on each snippet's curl, also covers the curl calls inside the
+# scripts snippets pipe to a shell; CURL_HOME makes curl read it whatever the
+# user and HOME.
+CURL_RETRY = [
+    "# curl retries transient download failures (the installers' policy)",
+    "ENV CURL_HOME=/etc/hecatron-curl",
+    'RUN mkdir -p "${CURL_HOME}" && printf \'%s\\n\' \\',
+    "    'retry = 4' 'retry-delay = 3' 'retry-connrefused' 'retry-all-errors' \\",
+    "    'connect-timeout = 30' 'speed-limit = 1024' 'speed-time = 60' \\",
+    '    > "${CURL_HOME}/.curlrc"',
+]
+
+
 def parse_snippet(project, lang: str) -> tuple[list[str], list[str], str | None]:
     """Parse a language's dockerfile snippet (the project's, else the built-in one).
 
@@ -209,6 +225,8 @@ def generate(project) -> str:
     # The image ships the C.UTF-8 locale but doesn't select it, and tools
     # writing non-ASCII to stdout (GHC's runtime, R) fail under POSIX.
     lines.append('ENV LANG=C.UTF-8')
+    lines.append("")
+    lines.extend(CURL_RETRY)
     lines.append("")
 
     # Apt batch install

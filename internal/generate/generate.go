@@ -274,6 +274,21 @@ func topologicalSort(languages []string, after map[string]string, active map[str
 	return result
 }
 
+// curlRetry is dockerfile.py's CURL_RETRY: curl's retry policy for every
+// download in the build (and in the image), the installers' curl() in
+// languages/_common.sh plus --retry-all-errors, so a dropped TLS connection
+// (curl 35, 56) is retried too. A config file, rather than options on each
+// snippet's curl, also covers the curl calls inside the scripts snippets pipe
+// to a shell; CURL_HOME makes curl read it whatever the user and HOME.
+var curlRetry = []string{
+	"# curl retries transient download failures (the installers' policy)",
+	"ENV CURL_HOME=/etc/hecatron-curl",
+	`RUN mkdir -p "${CURL_HOME}" && printf '%s\n' \`,
+	`    'retry = 4' 'retry-delay = 3' 'retry-connrefused' 'retry-all-errors' \`,
+	`    'connect-timeout = 30' 'speed-limit = 1024' 'speed-time = 60' \`,
+	`    > "${CURL_HOME}/.curlrc"`,
+}
+
 // Dockerfile is dockerfile.py's generate: the project's Dockerfile.
 func Dockerfile(p *project.Project) (string, error) {
 	apt := append([]string(nil), basePackages...)
@@ -313,9 +328,10 @@ func Dockerfile(p *project.Project) (string, error) {
 		"Regenerated automatically by: hecatron add / remove",
 	}, "# ", "")
 	lines := []string{strings.TrimRight(banner, "\n"), "", "FROM ubuntu:24.04", "",
-		"ENV DEBIAN_FRONTEND=noninteractive", "ENV LANG=C.UTF-8", "",
+		"ENV DEBIAN_FRONTEND=noninteractive", "ENV LANG=C.UTF-8", ""}
+	lines = append(append(lines, curlRetry...), "",
 		"# System packages + language runtimes available from distro",
-		"RUN apt-get update && apt-get install -y --no-install-recommends \\"}
+		"RUN apt-get update && apt-get install -y --no-install-recommends \\")
 	for _, pkg := range packages {
 		lines = append(lines, "    "+pkg+" \\")
 	}
