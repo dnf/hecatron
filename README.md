@@ -78,6 +78,12 @@ shell you're in:
 git clone https://github.com/dnf/hecatron ~/.hecatron && . ~/.hecatron/install.sh
 ```
 
+`hct self update` updates it. `hct self uninstall` removes it, after
+asking: `~/.hecatron`, its lines in your startup files and its Agent Skill.
+The toolchains it installed stay, as your projects use them; `--all` also
+removes the ones it unpacked (`~/.local/share/hecatron`) and its download
+cache (`~/.cache/hecatron`), for a fresh start.
+
 ## Quick start
 
 ```bash

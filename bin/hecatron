@@ -84,6 +84,7 @@ Project:
 
 Hecatron itself:
   self update [--check]      Update hecatron to the latest release (install.sh's installs)
+  self uninstall [--all]     Remove hecatron (and with --all the toolchains it unpacked)
   self test                  Check hecatron's own code: shellcheck and the unit tests
   self build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
@@ -129,10 +130,11 @@ Usage: hecatron self <command>     (or: hct self <command>)
 
 Manage hecatron itself:
   update [--check]     Update hecatron to the latest release (install.sh's installs)
+  uninstall [--all]    Remove hecatron (and with --all the toolchains it unpacked)
   test                 Check hecatron's own code: shellcheck and the unit tests
   build                Build the Go binary from this checkout, for working on hecatron
 
-Run 'hecatron self update help' for its options.
+Run 'hecatron self update help' or 'hecatron self uninstall help' for their options.
 EOF
 }
 
@@ -147,6 +149,9 @@ if [ "${_command}" = "self" ]; then
         self-update)
             # Native in the Go core only (docs/design.md §19).
             echo "hecatron: self update needs hecatron's binary, which install.sh downloads with a release; a checkout updates with git pull" >&2
+            exit 1 ;;
+        self-uninstall)
+            echo "hecatron: self uninstall needs hecatron's binary, which install.sh downloads with a release; delete a checkout yourself, and the lines ending '# hecatron' in your shell's startup files" >&2
             exit 1 ;;
         *)
             echo "hecatron: self: unknown command '${_command#self-}' (try 'hecatron self help')" >&2
