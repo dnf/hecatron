@@ -46,6 +46,7 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 	"net/config.json": `{"version": "=10.0.403", "track": "lts", "releaseLine": 3,
 		"pinFiles": [{"file": "global.json", "format": "global-json"}],
 		"supportFiles": [{"file": ".github/workflows/*.y*ml", "format": "github-setup", "key": "dotnet-version", "selects": false}],
+		"floorFiles": [{"file": "*.csproj", "format": "target-framework"}],
 		"oldestInstallable": "6.0", "path": ["{home}"], "env": {"DOTNET_ROOT": "{home}"}}`,
 	"net/releases.json": `{"releases": [["5.0.400", "2021-08-10"], ["6.0.100", "2021-11-08", "lts"],
 		["8.0.100", "2023-11-14", "lts"], ["9.0.100", "2024-11-12"], ["10.0.403", "2026-10-14", "lts"]]}`,
@@ -282,6 +283,28 @@ func versionCases() []parityCase {
 	for _, date := range []string{"2021-02-30", "0000-01-01", "20210101", "yesterday", "2021-W01"} {
 		add("versions: HECATRON_AS_OF="+date, supportFiles, map[string]string{"HECATRON_AS_OF": date})
 	}
+	add("versions: global.json floors", map[string]string{
+		".hecatron/config.json":  `{"schema": 1, "components": ["a", "b", "c", "d", "e", "f"], "languages": ["net", "fs"]}`,
+		"a/net/global.json":      `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
+		"b/net/global.json":      `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
+		"b/net/src/A/A.csproj":   "<TargetFrameworks>netstandard2.0;net8.0;net11.0</TargetFrameworks>",
+		"b/net/src/B/B.csproj":   "<TargetFramework>net9.0</TargetFramework><TargetFramework>net472</TargetFramework>",
+		"c/net/global.json":      `{"sdk": {"version": "11.0.100", "rollForward": "latestMajor"}}`,
+		"d/net/global.json":      `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
+		"d/net/bin/x.csproj":     "<TargetFramework>net12.0</TargetFramework>",
+		"d/net/a/b/c/d/x.csproj": "<TargetFramework>net12.0</TargetFramework>",
+		"d/net/a/b/c/x.csproj":   "<TargetFramework>net9.0</TargetFramework>",
+		"e/net/global.json":      `{"sdk": {"version": "8.0.100", "rollForward": "latestMinor"}}`,
+		"e/net/x.csproj":         "<TargetFramework>net10.0</TargetFramework>",
+		"f/net/global.json":      `{"sdk": {"version": "9.0.100", "rollForward": "latestMajor"}}`,
+		"f/net/x.csproj":         "<TargetFramework>net10.0</TargetFramework>",
+		"a/fs/global.json":       `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
+		"a/fs/x.csproj":          "<TargetFramework>net12.0</TargetFramework>",
+	}, nil)
+	add("versions: global.json floors as of 2024", map[string]string{
+		".hecatron/config.json": `{"schema": 1, "components": ["a"], "languages": ["net"]}`,
+		"a/net/global.json":     `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
+	}, map[string]string{"HECATRON_AS_OF": "2024-06-01"})
 	add("versions: no HOME", pinned, map[string]string{"HOME": ""})
 	add("versions: other languages' static paths", with(pinnedFiles, map[string]string{
 		".hecatron/config.json": `{"schema": 1, "languages": ["py", "off", "dup", "also", "gol"]}`,

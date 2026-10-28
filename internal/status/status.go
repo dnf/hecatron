@@ -35,6 +35,26 @@ type Status struct {
 	OtherChanges []string `json:"otherChanges"`
 	Git          bool     `json:"git"` // false outside a git repository: no changes known
 	Next         []Next   `json:"next"`
+	// Update is a newer hecatron release the last check found, from its
+	// cache only (no network); nil when none is known.
+	Update *Update `json:"update"`
+}
+
+// Update is a newer release of hecatron than this one.
+type Update struct {
+	Latest  string    `json:"latest"`
+	Checked time.Time `json:"checked"` // when the check that found it ran
+	Command string    `json:"command"` // what installs it
+}
+
+// SetUpdate records a newer release, and suggests installing it (asking
+// the user first: a new version can change generated files).
+func (s *Status) SetUpdate(latest string, checked time.Time) {
+	if latest == "" {
+		return
+	}
+	s.Update = &Update{Latest: latest, Checked: checked.UTC(), Command: "hct self update"}
+	s.Next = append(s.Next, Next{"hct self update", "hecatron " + latest + " is available", true})
 }
 
 // Language is one of the project's languages.

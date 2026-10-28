@@ -35,6 +35,12 @@
       "selects": false
     }
   ],
+  "floorFiles": [
+    {
+      "file": "*.csproj",
+      "format": "target-framework"
+    }
+  ],
   "oldestInstallable": "6.0",
   "env": {
     "DOTNET_ROOT": "{home}"

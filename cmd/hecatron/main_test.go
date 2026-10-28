@@ -20,7 +20,7 @@ var binary string // the Go hecatron, built once for the tests
 
 func TestMain(m *testing.M) {
 	// bin/hecatron is the scripts these tests compare the binary with; a
-	// binary from hecatron self-build in the checkout mustn't stand in.
+	// binary from hecatron self build in the checkout mustn't stand in.
 	if err := os.Setenv("HECATRON_NO_GO", "1"); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -135,6 +135,7 @@ var cliArgs = [][]string{
 	{"nope"}, {"plan-not"},
 	{"check", "help"}, {"init", "help"}, {"add"}, {"enable"}, {"disable"},
 	{"get-started", "--help"}, {"parallel", "-h"},
+	{"self"}, {"self", "help"}, {"self", "--help"}, {"self", "bogus"}, {"self-update"},
 }
 
 func TestOutputMatchesBinHecatron(t *testing.T) {

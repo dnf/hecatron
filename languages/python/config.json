@@ -74,6 +74,12 @@
   "formatting": "Ruff, Black",
   "actions": {
     "test": {
+      "find": "below-else-here",
+      "files": [
+        "pyproject.toml",
+        "setup.py",
+        "setup.cfg"
+      ],
       "steps": [
         {
           "run": [

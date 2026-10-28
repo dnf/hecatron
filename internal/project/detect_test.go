@@ -77,6 +77,9 @@ var detectionRepos = map[string]map[string]string{
 	"preferred parent":            {"sdks/go/go.mod": "", "learning/katas/go/go.mod": "", "sdks/java/pom.xml": "", "learning/katas/java/pom.xml": "", "learning/katas/kotlin/build.gradle.kts": ""},
 	"outside the layout":          {"go/go.mod": "", "java/pom.xml": "", "javascript/package.json": "{\"scripts\": {\"test\": \"x\"}}", "javascript/tsconfig.json": "", "CMakeLists.txt": "", "src/a.cpp": ""},
 	"borrowed directory":          {"go.mod": "", "lib/java/pom.xml": "", "lib/rb/Gemfile": "", "lib/go/x.go": ""},
+	"dotfile sources":             {"Cargo.toml": "", "src/main.rs": "", ".nvim.lua": ""},
+	"premake scripts":             {"CMakeLists.txt": "", "lib/a.c": "", "contrib/premake/premake4.lua": "", "contrib/premake/zstd.lua": ""},
+	"octave package":              {"DESCRIPTION": "", "INDEX": "", "inst/x.m": ""},
 	"skipped trees":               {"go/go.mod": "", "examples/lua/x.lua": "", "third_party/zlib/x.c": "", "go/testdata/x.c": "", "docs/conf.py": "", "tests/x/pyproject.toml": ""},
 	"skipped by any case, hidden": {"go/go.mod": "", "Examples/java/A.java": "", ".jenkins/x.groovy": "", "cli/src/templates/pom.xml": "", "tests_data/groovy/x.groovy": ""},
 	"npm scripts":                 {"js/package.json": `{"scripts": {"test": "mocha"}}`, "jsonschema/package.json": `{"scripts": {"build": "x"}}`, "broken/package.json": "{", "list/package.json": `{"scripts": ["test"]}`, "null/package.json": `{"scripts": null}`, "arr/package.json": `[]`},
@@ -90,6 +93,9 @@ var detectionRepos = map[string]map[string]string{
 	"root module, definitions":    {"go.mod": "", "cmd/x/main.go": "", "languages/go/config.json": "", "languages/go/install.sh": "", "languages/tcl/config.json": "", "languages/tcl/hooks/run.tcl": "", "languages/rust/Cargo.toml": ""},
 	"go directory module":         {"go/go.mod": "", "go/a.go": "", "rust/Cargo.toml": "", "go.work": ""},
 	"root module, code in lib":    {"go.mod": "", "lib/go/thrift/a.go": "", "lib/java/pom.xml": "", "lib/rb/x.gemspec": ""},
+	"deep go module":              {"CMakeLists.txt": "", "src/a.cpp": "", "runtime/Go/antlr/v4/go.mod": "", "runtime/Go/antlr/v4/a.go": "", "pyproject.toml": ""},
+	"test data, vendored":         {"go.mod": "", "tests_data/basic/c/a.c": "", "src/vendored/xxhash/x.c": "", "src/a.go": ""},
+	"templates":                   {"Cargo.toml": "", "crates/cli/src/templates/go.mod": ""},
 	"tcl in hooks":                {"go.mod": "", "languages/tcl/hooks/run.tcl": "", ".githooks/hooks/x.tcl": ""},
 }
 

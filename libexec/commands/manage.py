@@ -459,7 +459,7 @@ def cmd_banner(args) -> int:
 SKIPPED_DIRS = {"android", "benchmarks", "buildsrc", "demo", "demos", "doc", "docs", "example", "examples",
                 "external", "fixtures", "hooks", "node_modules", "playground", "sample", "samples", "templates", "test",
                 "test-data", "test_data", "testdata", "tests", "tests_data", "third_party", "tools", "tutorial",
-                "tutorials", "vendor"}
+                "tutorials", "vendor", "vendored"}
 
 # Where projects keep per-language code; when layouts disagree, one under
 # these (or at the root) beats one covering more languages (Beam's sdks/{lang}
@@ -516,15 +516,33 @@ def holds_language(by_dir: dict[str, set[str]], defs: dict[str, dict]):
     under it, or, for a language without "detectSources", which can't tell
     its sources, any file when the directory sits at the root or under a
     PREFERRED_PARENTS directory (Thrift's lib/go, not a languages/go/
-    holding Go's definition)."""
+    holding Go's definition). A build file deeper than the hooks look for
+    one (HOOK_SEARCH_DEPTH levels below) doesn't count, and with only such
+    build files the directory doesn't hold the language: its hooks would
+    find no build (antlr4's runtime/Go/antlr/v4/go.mod under the root)."""
     def holds(lang: str, directory: str) -> bool:
         d = defs.get(lang, {})
-        patterns = d.get("detect", []) + d.get("detectSources", [])
-        inside = [names for sub, names in by_dir.items() if _under(sub, directory)]
-        if any(_matches(names, patterns) for names in inside):
+        inside = {sub: names for sub, names in by_dir.items() if _under(sub, directory)}
+        if any(_matches(names, d.get("detectSources", [])) for names in inside.values()):
             return True
+        builds = [sub for sub, names in by_dir.items()
+                  if (directory == "." or _under(sub, directory)) and _matches(names, d.get("detect", []))]
+        if any(_depth_below(sub, directory) <= HOOK_SEARCH_DEPTH for sub in builds):
+            return True
+        if builds:
+            return False
         return not d.get("detectSources") and bool(inside) and _preference(directory)[0] == 0
     return holds
+
+
+# How many levels below a directory the default hooks look for a build file
+# (dirs_below_with in languages/_hooks.sh).
+HOOK_SEARCH_DEPTH = 3
+
+
+def _depth_below(sub: str, directory: str) -> int:
+    parts = [] if sub == "." else sub.split("/")
+    return len(parts) - (0 if directory == "." else len(directory.split("/")))
 
 
 def _under(directory: str, parent: str) -> bool:
@@ -557,6 +575,14 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
     def hits(dirs: dict[str, set[str]], patterns: list[str], unless: list[str]) -> set[str]:
         return {directory for directory, names in dirs.items()
                 if _matches(names, patterns) and not _matches(names, unless)}
+
+    def source_hits(dirs: dict[str, set[str]], sources: list[str], unless: list[str]) -> set[str]:
+        """hits for source files, leaving out dotfiles: a .nvim.lua or
+        .eslintrc.js configures an editor or a tool, it isn't the project's
+        code."""
+        return {directory for directory, names in dirs.items()
+                if _matches({name for name in names if not name.startswith(".")}, sources)
+                and not _matches(names, unless)}
 
     def count(names: set[str], patterns: list[str]) -> int:
         return sum(1 for name in names if any(fnmatch.fnmatch(name, pattern) for pattern in patterns))
@@ -593,7 +619,7 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
                 not_added[lang] = f"no {script} script"
                 continue
         if not directories and sources:
-            directories = hits(by_dir, sources, unless)
+            directories = source_hits(by_dir, sources, unless)
             from_sources.add(lang)
         if directories:
             found[lang] = directories
@@ -686,7 +712,11 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
         for root in lang_roots:
             templates.setdefault(_as_template(root), set()).add(lang)
     if not templates:
-        return ["."], ".", {}
+        # Every language at the root, unless its hooks would find no build
+        # from there: one whose files are all deeper than they look.
+        return ["."], ".", {lang: _own_directory(dirs) for lang, dirs in sorted(found.items())
+                            if holds and not holds(lang, ".")
+                            and all(_depth_below(d, ".") > HOOK_SEARCH_DEPTH for d in dirs)}
     split = [t.split("/") for t in templates]
     if len(templates) > 1 and len({len(parts) for parts in split}) == 1 and all(roots.values()):
         varying = [i for i in range(len(split[0])) if len({parts[i] for parts in split}) > 1]

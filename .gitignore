@@ -4,3 +4,5 @@ __pycache__/
 /hct.exe
 /bin/.hecatron-go
 /bin/.hecatron-go.commit
+/.update-check.json
+/.skill-installs

@@ -138,7 +138,7 @@ jobs:
         self.assertEqual(read("latestPatch"), "8.0.100")
         self.assertEqual(read("latestFeature"), "8.0")
         self.assertEqual(read("latestMinor"), "8")
-        self.assertEqual(read("latestMajor"), "8")
+        self.assertEqual(read("latestMajor"), ">=8.0.100")
         self.assertEqual(
             self.read("global-json", '{"sdk": {"version": "11.0.100-rc.1.1", "rollForward": "latestMajor"}}'),
             "11.0.100-rc.1.1")
@@ -233,6 +233,33 @@ class VersionFixture(Fixture):
 
 
 class ResolutionTest(VersionFixture):
+    def floors(self, version: str, policy: str = "latestMajor") -> None:
+        self.define(version="=10.0.403", pinFiles=[{"file": "global.json", "format": "global-json"}],
+                    floorFiles=[{"file": "*.csproj", "format": "target-framework"}])
+        write(self.path("a", "tool", "global.json"),
+              json.dumps({"sdk": {"version": version, "rollForward": policy}}))
+
+    def test_global_json_latest_major_is_a_floor_the_default_meets(self):
+        self.floors("8.0.100")
+        self.assertEqual(self.load().resolve_version("tool", "a"),
+                         {"spec": "=10.0.403", "source": "pin:a/tool/global.json", "exact": True})
+
+    def test_a_floor_above_the_default_takes_its_majors_newest(self):
+        self.floors("11.0.100")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "11")
+
+    def test_a_floor_rises_to_the_newest_target_framework(self):
+        self.floors("8.0.100")
+        write(self.path("a", "tool", "src", "Lib", "Lib.csproj"),
+              "<TargetFrameworks>netstandard2.0;net8.0;net11.0</TargetFrameworks>")
+        write(self.path("a", "tool", "src", "Lib", "bin", "x.csproj"), "<TargetFramework>net12.0</TargetFramework>")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "11")
+
+    def test_latest_minor_stays_on_its_major(self):
+        self.floors("8.0.100", "latestMinor")
+        write(self.path("a", "tool", "x.csproj"), "<TargetFramework>net10.0</TargetFramework>")
+        self.assertEqual(self.load().resolve_version("tool", "a")["spec"], "8")
+
     def test_the_default_applies_without_a_pin_or_project_version(self):
         self.assertEqual(self.load().resolve_version("tool", "a"),
                          {"spec": "=2.0.0", "source": "default", "exact": True})

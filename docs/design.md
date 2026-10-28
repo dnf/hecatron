@@ -268,6 +268,7 @@ recipes do today. Output of single-language runs streams and is also saved to
 | `hecatron env` | Shell code for a project's own scripts: `eval "$(hecatron env)"` loads the language lists and helpers | `source helpers.sh` |
 | `hecatron parallel <name> "job"...` | Run a project's own job list (just recipes by default) with the parallel display and logs | `run-parallel.sh` |
 | `hecatron --version` | Hecatron's own version | new |
+| `hecatron self update\|test\|build` | Manage hecatron itself: update to a release (§13), its own checks, build its binary from a checkout | new |
 
 Flags shared by the run commands: `-j N|P%|unlimited` (concurrency) and
 `-s scroll|full|zoom` (display) for parallel runs, as today, and `-c
@@ -279,6 +280,12 @@ Which languages an action covers follows from their hooks: a language with a
 so on, so `config.json` needs no `compiled`/`hasLint` flags. `hecatron
 bootstrap` sets up a fresh machine for the project (base packages, then
 `hecatron install`).
+
+**Commands about hecatron itself go under `hct self` (decided
+2026-10-28),** with a space, as package managers do (`rustup self update`,
+`uv self update`): `self update`, `self test`, `self build`, and any later
+self-management command. `hct self` lists them. `self-test` and
+`self-build`, their earlier names, still work, unlisted.
 
 Exit status: 0 when everything run passed, 1 when anything failed, 2 for a
 usage error. A language whose toolchain is missing is reported as "not
@@ -321,7 +328,15 @@ directory, scoped to it as far as the tool allows; elsewhere the hook acts
 where the build file is (`swift --package-path`, the CMake project's
 `build/`). A CMake or Meson file counts only when it declares a `project()`,
 and a root Makefile only through a target named for the directory or language
-(`check_cxx` for `cxx/`). CMake and Meson build in `build/`, or `_build/`
+(`check_cxx` for `cxx/`). A directory inside a Gradle build that isn't
+one of its projects runs Gradle from the project it belongs to: the one
+whose sources it holds (`moshi` for `moshi/src/main/java`), or the root of a
+build of one project. JVM tests run Maven's package phase in a
+multi-module build (its modules can need each other's jars), Gradle's
+`jvmTest`, else `allTests`, in a Kotlin Multiplatform build (no `test`
+task), and Mill's `__.test` where the build is `build.mill`; .NET tests roll forward to the
+installed runtime, and a directory with several projects and no solution
+tests each test project. CMake and Meson build in `build/`, or `_build/`
 when the project keeps files of its own in `build/` (Zstandard's CMake
 build); a CMake project whose files never set up a test (no `add_test`,
 `enable_testing` or CTest) has nothing to test, and its test hook skips
@@ -340,7 +355,10 @@ runners run once. A package its tests need built (a native addon, from a `napi`
 key, a `binding.gyp` or a build script running napi or node-gyp, whose
 `*.node` isn't built; or a `main` or `exports` entry point that isn't
 there) is built first: its build script, else `napi build --platform` or
-`node-gyp rebuild`.
+`node-gyp rebuild`. So is its workspace, when any workspace package needs
+it (one the tests import may): `pnpm -r run build`, `npm run build
+--workspaces`, `yarn workspaces foreach --topological run build`, else
+each package in turn.
 
 **Dependencies.** A `deps` hook fetches a component's dependencies with its
 ecosystem's tool, held to the lock file when there is one (it fails rather
@@ -397,10 +415,11 @@ saves it, as init would. Init itself:
    JavaScript unless a `tsconfig.json` makes it TypeScript), and a
    `package.json` without the definition's `detectScript` npm script doesn't
    count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
+   Dotfiles aren't sources (a `.nvim.lua` configures an editor).
    Examples, tests and test data, docs, tools, hooks, a generator's
    templates and vendored code (`examples/`, `tests/`, `tests_data/`,
    `tools/`, `hooks/`, `templates/`, `fixtures/`, `android/`,
-   `third_party/`, `vendor/`, `node_modules/` and the like, in any case:
+   `third_party/`, `vendor/`, `vendored/`, `node_modules/` and the like, in any case:
    `Examples/`) and hidden directories (`.jenkins/`) are skipped. A language left out
    is listed with the reason.
 3. Detects the layout. A language's directory may carry any of its
@@ -417,7 +436,10 @@ saves it, as init would. Init itself:
    `detectSources`, any file when it sits at the root or under one of the
    parents above (`lib/`, `sdks/`...: Thrift's `lib/go`, whose `go.mod` is at
    the root). So a build file at the root keeps a language there beside a
-   `languages/go/` holding no Go. A directory another language was found in
+   `languages/go/` holding no Go. A build file more than three levels below
+   a directory doesn't count, since the hooks look no deeper: with only such
+   build files the directory doesn't fit, and the language gets the
+   directory holding them (antlr4's `runtime/Go/antlr/v4`, not the root). A directory another language was found in
    doesn't fit (Cucumber's `javascript/` is TypeScript's, so JavaScript found
    in `jsonschema/` gets `implPaths` `jsonschema`). `--components` and
    `--impl-path` set the layout explicitly.
@@ -449,7 +471,14 @@ DO NOT EDIT banner naming the generator and its source:
 - **Dockerfile** (`generated.dockerfile`): collected from each language's
   `dockerfile` snippet (`# apt:` lines deduplicated into one `apt-get
   install`, `# after:` ordering, literal `RUN`/`ENV` blocks, and a block
-  repeated per toolchain version; see §18).
+  repeated per toolchain version; see §18). Before any snippet it writes a
+  curlrc (`/etc/hecatron-curl/.curlrc`, found through `ENV CURL_HOME`, so it
+  applies whatever the user) with the installers' retry policy (`retry 4`,
+  `retry-delay 3`, `retry-connrefused`, `connect-timeout 30`, `speed-limit
+  1024` over `speed-time 60`) plus `retry-all-errors`, so every `curl` in the
+  build, including those inside piped install scripts, retries transient
+  failures such as a dropped TLS connection. It stays in the image; a `RUN`
+  that wants curl's defaults passes `-q` first. No snippet uses wget.
 - **CI workflows** (`generated.workflows`): each language's project
   `workflow.yml`, with a banner. `hecatron check` verifies that each workflow
   mentions every component, generalising sayable's
@@ -572,6 +601,46 @@ it on `PATH`; there is also an `install.sh` for curl-based installs.
 tarball; a release workflow updates the tap formula's URL and checksum. A
 project's `"hecatron": ">=x.y.z"` makes older installs fail with a clear
 message instead of misbehaving.
+
+**Updates: notify and self update, never auto-update (decided
+2026-10-28).** Hecatron generates CI workflows and a Dockerfile, so a
+silent version change would change a project's generated files under it.
+So it only says a release is out and updates when asked, as `gh` does:
+
+- `hct self update` (`internal/selfupdate`; binary only) updates an
+  installation install.sh made (a clone at a release tag, with
+  `bin/.hecatron-go` at that commit and `env`) to the latest release, or
+  `--version X.Y.Z`. It finds the release through GitHub's releases API
+  (`GITHUB_TOKEN` when set; `HECATRON_UPDATE_URL` replaces the API
+  address, for tests), downloads the machine's binary and `SHA256SUMS`
+  and refuses a mismatch or a short download, fetches the tag into the
+  installation's clone, clones that beside the installation with the
+  binary and the installation's untracked files (the cache, the skill
+  record), writes `env` and `env.fish` as the release's install.sh would
+  (a Go port of its writer, held to install.sh's output byte for byte by
+  a parity test, and the new binary's own `hct _write-env` when it has
+  one), so new PATH entries reach shells, and swaps the two directories
+  by renaming, undoing the first rename if the second fails. It refuses a dev build (`hct
+  self build`'s or `go build`'s), a checkout on a branch or with changes
+  ("update with git pull"), a directory install.sh didn't make, and one it
+  can't write. It then refreshes the skill copies `hct skill install`
+  made (`--user`, and each `--dir`, recorded in `.skill-installs`).
+  `--check` only reports: exit 0 up to date, 3 a newer release, 1 the
+  check failed.
+- **The notice.** A release binary (not a dev build) reads
+  `.update-check.json` in the installation (the latest version and when it
+  was checked) before each command. Once it is 24 hours old, it writes the
+  time and starts `hct _update-check` on its own, which asks the API with a
+  10-second timeout and caches the answer, so no command waits on the
+  network. A newer release than this one is said in one line on stderr
+  after the command (before a delegated one), only with stderr a terminal
+  and human output: never in CI (`CI` set), with `--output` or
+  `HECATRON_OUTPUT` naming another format, in an agent's session, in
+  GitHub Actions, or with `HECATRON_NO_UPDATE_CHECK=1`, which also stops
+  the check. `hct status` reports the cached newer release in every format
+  (`update` in JSON) and suggests `hct self update`, asking the user
+  first; it never checks itself.
+- A project pinning the hecatron version it needs is tracked separately.
 
 ## 14. Implementation and testing
 
@@ -773,9 +842,16 @@ component, and the doctor says so.
 Some files name a floor rather than a version, and a format keeps the part
 the ecosystem holds fixed: `global.json`'s `rollForward` decides how far the
 .NET SDK may move from `sdk.version`, so `latestFeature` from 8.0.100 reads as
-`8.0` and `latestMajor` as `8`, the newest release of which always qualifies;
+`8.0` and `latestMinor` as `8`, the newest release of which always qualifies;
 `disable` is exact, and `patch`, the default, keeps the version as written,
-since its scope, a feature band (8.0.1xx), isn't a prefix. In
+since its scope, a feature band (8.0.1xx), isn't a prefix. `latestMajor` is a
+floor and nothing more, as .NET treats it (decided): the default when it is
+that version or later, else the newest release of the floor's major, raised
+to the newest major the component's `floorFiles` need. Those are a
+definition's files read in the component's directory and up to three levels
+below it (not build output): for .NET, the projects' `TargetFramework(s)`, so
+a `global.json` asking for 8.0.100 or later in a repository whose projects
+target `net10.0` gets SDK 10. In
 `composer.json`, `config.platform.php` (the PHP Composer resolves for) is a
 pin on its line (`8.4.0` reads as `8.4`); the `require` constraint on `php`
 isn't, because it is the range a library supports, which the default
@@ -1131,6 +1207,9 @@ entry points' output byte for byte. Decided with the first port
   thousands of variants with one value replaced or removed, comparing
   output and status byte for byte; the one wording left out is which pair
   of values a failed sort names.
+- **`hct self update`** and the update notice (`internal/selfupdate`) are
+  native only (§13). `bin/hecatron self update` without the binary says
+  so.
 
 ### Language definitions: data, families, scripts
 
@@ -1140,8 +1219,9 @@ express it.
 1. **Rules in `config.json`** for what is a lookup: which build files mean
    which commands. An action names the build files to look for and where
    (`find`: here, `above-first` or `below-first`, as `find_build` does
-   today; found only in directories below, the action runs in each), then
-   its steps, in order:
+   today, or `below-else-here`, for a tool that also works without them:
+   Python's pytest; found only in directories below, the action runs in
+   each), then its steps, in order:
 
    ```json
    "lint": {"files": ["mix.exs"], "unknown": "no mix.exs", "steps": [

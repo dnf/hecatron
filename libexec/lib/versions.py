@@ -72,6 +72,10 @@ class Spec:
 # line, a .tool-versions without the language's key): resolution keeps looking.
 NOT_PINNED = object()
 
+# A spec with this prefix is a floor, not a pin: any version at least this
+# one will do (global.json's latestMajor, a project's target framework).
+FLOOR = ">="
+
 
 def _plain(value: str | None, exact: bool = False):
     """A version from an ecosystem file as a spec; None for a channel name
@@ -184,7 +188,18 @@ def _global_json(text, key):
     # release yet.
     if spec is None or "-" in spec:
         return spec
+    if policy == "latestMajor":
+        return FLOOR + spec
     return ".".join(spec.split(".")[:_ROLL_FORWARD_PARTS[policy]])
+
+
+def _target_framework(text, key):
+    # An MSBuild project's TargetFramework(s) (net8.0;net10.0): the newest
+    # .NET it builds for needs an SDK of that major or later. Older names
+    # (netstandard2.0, netcoreapp3.1, net472) don't raise one.
+    majors = [int(major) for value in re.findall(r"<TargetFrameworks?>([^<]*)<", text)
+              for major in re.findall(r"(?:^|[^A-Za-z0-9_.])net(\d+)\.\d+", value) if int(major) >= 5]
+    return FLOOR + str(max(majors)) if majors else NOT_PINNED
 
 
 def _composer_json(text, key):
@@ -337,6 +352,7 @@ FORMATS = {
     "python-classifiers": _python_classifiers,
     "github-setup": _github_setup,
     "maven-source-level": _maven_source_level,
+    "target-framework": _target_framework,
 }
 
 

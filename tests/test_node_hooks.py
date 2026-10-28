@@ -117,6 +117,27 @@ class NodeTestHookTest(Fixture):
         self.assertEqual(result.returncode, 1)
         self.assertIn("package.json has no test script", result.stderr)
 
+    def test_a_workspace_package_its_tests_use_is_built_first(self):
+        # Prometheus: mantine-ui's tests import codemirror-promql, whose dist/
+        # the workspace's build writes.
+        self.files({"pnpm-workspace.yaml": "packages:\n  - mantine-ui\n  - module/*\n", "pnpm-lock.yaml": "",
+                    "package.json": "{}", "mantine-ui/package.json": package(test="vitest"),
+                    "mantine-ui/node_modules/.keep": "",
+                    "module/promql/package.json": json.dumps({"main": "dist/index.cjs", "scripts": {"build": "x"}})})
+        self.assertEqual(self.ran(self.test(cwd="mantine-ui")),
+                         ["corepack pnpm -r --if-present run build in " + os.path.basename(self.root),
+                          "corepack pnpm run test in mantine-ui"])
+
+    def test_a_workspace_root_with_a_test_script_builds_its_native_packages(self):
+        self.files({"package.json": json.dumps({"workspaces": ["packages/*"], "scripts": {"test": "x"}}),
+                    "package-lock.json": "{}", "node_modules/.keep": "",
+                    "packages/core/package.json": json.dumps({"napi": {}, "scripts": {"build": "napi build"}})})
+        name = os.path.basename(self.root)
+        self.assertEqual(self.ran(self.test()), [f"npm run build --workspaces --if-present in {name}",
+                                                  f"npm run test in {name}"])
+        write(self.path("packages", "core", "core.linux-x64-gnu.node"), "")
+        self.assertEqual(self.ran(self.test()), [f"npm run test in {name}"])
+
     def test_a_package_without_a_native_addon_isnt_built(self):
         self.files({"package.json": package(build="tsc", test="jest"), "node_modules/.keep": ""})
         self.assertEqual(self.ran(self.test()), ["npm run test in " + os.path.basename(self.root)])

@@ -68,6 +68,9 @@ func planAction(def *Definition, action Action, ctx Context) ([]Op, error) {
 		case Below:
 			return inEach(dirs, ctx, func(sub Context) ([]Op, error) { return planAction(def, action, sub) })
 		case Nowhere:
+			if action.Find == "below-else-here" {
+				break
+			}
 			message := action.Unknown
 			if message == "" {
 				message = "no " + strings.Join(action.Files, ", ") + " " + searched(action.Find)
