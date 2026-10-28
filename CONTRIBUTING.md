@@ -13,6 +13,29 @@ hct self-test    # ShellCheck with zero warnings, then the unit tests
 CI runs the same checks on Ubuntu and macOS, and the unit tests again under
 bash 3.2, the version macOS ships.
 
+### What CI runs
+
+A pull request runs only the CI jobs its changes can affect: the first job,
+`changes`, lists the paths it changes against its base, and
+[`libexec/maintenance/ci-jobs.sh`](libexec/maintenance/ci-jobs.sh) maps
+them to jobs (documentation alone runs just the unit tests, a Go change the
+Go jobs, an installer change the installer tests; a workflow change or a
+path it doesn't know runs everything). Its tests,
+[`tests/test_ci_jobs.py`](tests/test_ci_jobs.py), show the mapping. A push
+to `main` runs every job.
+
+The last job, `ci-ok`, always runs: it fails if any job failed or was
+cancelled and passes when the rest succeeded or were skipped. It's the one
+CI check to require (with the Changelog workflow's `fragment`), so a pull
+request can merge itself once they pass:
+
+```bash
+gh pr merge --auto --squash
+```
+
+A new job goes in `ci-ok`'s `needs`, gets an `if:` on the `changes` job's
+output, and gets its paths in `ci-jobs.sh` and its tests.
+
 A change to a language's installer, doctor or hooks should also pass that
 language's Docker tests. They install the toolchain in a throwaway container
 and never change your machine:
