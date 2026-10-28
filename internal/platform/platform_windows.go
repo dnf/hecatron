@@ -73,14 +73,12 @@ func Bash(path string) (string, bool) {
 	}
 	// <Git>\cmd\git.exe or <Git>\bin\git.exe or <Git>\mingw64\bin\git.exe:
 	// bash is <Git>\bin\bash.exe.
-	for dir := filepath.Dir(git); dir != filepath.Dir(dir); dir = filepath.Dir(dir) {
-		candidate := filepath.Join(dir, "bin", "bash.exe")
-		if isFile(candidate) {
+	dir := filepath.Dir(git)
+	for range 3 {
+		if candidate := filepath.Join(dir, "bin", "bash.exe"); isFile(candidate) {
 			return candidate, true
 		}
-		if _, err := os.Stat(filepath.Join(dir, "git-bash.exe")); err == nil {
-			break
-		}
+		dir = filepath.Dir(dir)
 	}
 	return "", false
 }
