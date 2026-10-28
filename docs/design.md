@@ -1031,7 +1031,7 @@ entry points' output byte for byte. Decided with the first port
   still a script) with the version, from the root, with the project's
   exported variables, then the count; a hook that fails stops it with the
   hook's status, as `set -e` does. Bash's own report of a hook killed by a
-  signal (`Terminated  bash ...` on stderr) isn't repeated; the status is
+  signal (`Terminated` on stderr) isn't repeated; the status is
   the same. `metadata` stays a script: it is interactive and edits the
   metadata file through Python string literals.
 

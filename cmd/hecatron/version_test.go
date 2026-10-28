@@ -87,12 +87,13 @@ func TestVersionMatchesBinHecatron(t *testing.T) {
 }
 
 // withoutJobReport drops what bash says on stderr when version.sh's hook is
-// killed by a signal ("Terminated   bash "${_hook}" ..."), which the Go
-// port doesn't say (its wording follows bash's version and the C library).
+// killed by a signal ("Terminated", with the command after it in some bash
+// versions), which the Go port doesn't say (its wording follows bash's
+// version and the C library).
 func withoutJobReport(stderr string) string {
 	var kept []string
 	for _, line := range strings.SplitAfter(stderr, "\n") {
-		if !strings.HasSuffix(line, `bash "${_hook}" "${_version}"`+"\n") {
+		if !strings.HasPrefix(line, "Terminated") {
 			kept = append(kept, line)
 		}
 	}
