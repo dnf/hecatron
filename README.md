@@ -335,7 +335,7 @@ Hecatron was created by Don Neufeld and Claude Code
 
 Don Neufeld was the CTO of [Medium](https://medium.com),
 developer of several massively multiplayer online games,
-VPE of multiple startuos, and is currently an
+VPE of multiple startups, and is currently an
 [Executive Coach](https://vpecoach.com) to engineering leaders.
 
 Don lives in the San Francisco Bay Area with his family,
