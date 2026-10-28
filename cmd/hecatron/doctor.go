@@ -98,7 +98,7 @@ func (d *doctorRun) project() *project.Project { return d.cli.project }
 func (d *doctorRun) run(langs []string, fix bool) int {
 	var unhealthy []string
 	for _, lang := range langs {
-		found := d.problems(lang)
+		found, notes := splitNotes(d.problems(lang))
 		if found != "" && fix {
 			installer := d.project().Resolve(lang, "install.sh")
 			if installer == "" {
@@ -107,7 +107,7 @@ func (d *doctorRun) run(langs []string, fix bool) int {
 			fmt.Printf("%s: repairing with %s\n", lang, installer)
 			d.runInstaller(installer)
 			d.project().ForgetInstalled()
-			found = d.problems(lang)
+			found, notes = splitNotes(d.problems(lang))
 		}
 		if found == "" {
 			fmt.Printf("  ok    %s\n", lang)
@@ -118,7 +118,12 @@ func (d *doctorRun) run(langs []string, fix bool) int {
 			}
 			unhealthy = append(unhealthy, lang)
 		}
-		notes, err := d.project().VersionNotes(lang)
+		if notes != "" {
+			for _, line := range strings.Split(notes, "\n") {
+				fmt.Printf("          %s\n", line)
+			}
+		}
+		versionNotes, err := d.project().VersionNotes(lang)
 		if err != nil {
 			// doctor.sh's version-notes pipeline fails under set -e.
 			if e, ok := err.(*project.Error); ok {
@@ -128,7 +133,7 @@ func (d *doctorRun) run(langs []string, fix bool) int {
 			}
 			return 1
 		}
-		for _, note := range notes {
+		for _, note := range versionNotes {
 			fmt.Printf("          %s: %s %s\n", note.Component, lang, note.Note)
 		}
 	}
@@ -195,6 +200,21 @@ func reportModelError(err error) {
 	if errors.As(err, &e) {
 		fmt.Fprintln(os.Stderr, "hecatron:", e.Message)
 	}
+}
+
+// splitNotes separates what a doctor.sh says that isn't a problem (its lines
+// starting "note: ", without the prefix) from its problems, as doctor.sh's
+// _notes_of and _problems_of do.
+func splitNotes(output string) (problems, notes string) {
+	var problemLines, noteLines []string
+	for _, line := range strings.Split(output, "\n") {
+		if note, ok := strings.CutPrefix(line, "note: "); ok {
+			noteLines = append(noteLines, note)
+		} else {
+			problemLines = append(problemLines, line)
+		}
+	}
+	return strings.TrimRight(strings.Join(problemLines, "\n"), "\n"), strings.TrimRight(strings.Join(noteLines, "\n"), "\n")
 }
 
 // commandSubstitution is what bash's $(...) keeps of output.

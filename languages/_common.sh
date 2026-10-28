@@ -113,6 +113,9 @@ impl_has() {
 # exits non-zero when any were reported.
 _doctor_failed=0
 problem() { echo "$*"; _doctor_failed=1; }
+# Something worth saying that isn't a problem (which toolchain a component
+# pairs with which): shown under the language, without failing it.
+note() { echo "note: $*"; }
 doctor_done() { exit "${_doctor_failed}"; }
 
 has() { command -v "$1" &>/dev/null; }
