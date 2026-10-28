@@ -117,9 +117,9 @@ class FetchTest(Fixture):
 
     def test_python_syncs_locked_with_a_uv_lock(self):
         write(self.path("pyproject.toml"), "")
-        self.assertEqual(self.ran(self.shell("deps_python")), ["uv sync --all-extras"])
+        self.assertEqual(self.ran(self.shell("deps_python")), ["uv sync --all-extras --all-groups"])
         write(self.path("uv.lock"), "")
-        self.assertEqual(self.ran(self.shell("deps_python")), ["uv sync --locked --all-extras"])
+        self.assertEqual(self.ran(self.shell("deps_python")), ["uv sync --locked --all-extras --all-groups"])
 
     def test_python_requirements_go_into_a_venv(self):
         write(self.path("requirements.txt"), "requests==2.0\n")

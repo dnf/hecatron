@@ -21,9 +21,9 @@ deps_node() {
 }
 
 # Python: uv sync (--locked with a uv.lock, which then must match
-# pyproject.toml), every extra, as the test hook runs; a requirements-only
-# directory gets a .venv with them. A .venv moved from another checkout,
-# whose scripts can't start, is made again.
+# pyproject.toml), every extra and dependency group, as the test hook runs;
+# a requirements-only directory gets a .venv with them. A .venv moved from
+# another checkout, whose scripts can't start, is made again.
 deps_python() {
     has uv || { echo "error: python: uv isn't installed (hecatron install python installs it)" >&2; exit 1; }
     if [ -f .venv/bin/pytest ] && ! head -1 .venv/bin/pytest | grep -qF "${PWD}/.venv/"; then
@@ -31,7 +31,7 @@ deps_python() {
         rm -rf .venv
     fi
     if [ -f pyproject.toml ]; then
-        if nearest_with uv.lock >/dev/null; then run uv sync --locked --all-extras; else run uv sync --all-extras; fi
+        if nearest_with uv.lock >/dev/null; then run uv sync --locked --all-extras --all-groups; else run uv sync --all-extras --all-groups; fi
     elif exists 'requirements*.txt'; then
         local _args=() _file
         for _file in requirements*.txt; do _args+=(-r "${_file}"); done
