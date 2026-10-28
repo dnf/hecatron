@@ -678,17 +678,17 @@ maven_test() {
 }
 
 # Gradle's tests: the test task, or, in a Kotlin Multiplatform build, which
-# has none, allTests (every target's tests).
+# has none, its JVM target's (jvmTest), else every target's (allTests: a JS
+# target's browser tests need a browser installed).
 gradle_test() {
-    local _log _status=0
+    local _log _status _task
     _log="$(mktemp)"
-    gradle_ test 2>&1 | tee "${_log}" || _status=$?
-    if [ "${_status}" -ne 0 ] && grep -q "Task 'test' not found" "${_log}"; then
-        rm -f "${_log}"
-        echo "${HECATRON_LANG:-}: ${_hook_action}: no test task (a Kotlin Multiplatform build): running allTests"
-        gradle_ allTests
-        return
-    fi
+    for _task in test jvmTest allTests; do
+        _status=0
+        gradle_ "${_task}" 2>&1 | tee "${_log}" || _status=$?
+        if [ "${_status}" -eq 0 ] || ! grep -q "Task '${_task}' not found" "${_log}"; then break; fi
+        echo "${HECATRON_LANG:-}: ${_hook_action}: no ${_task} task (a Kotlin Multiplatform build)"
+    done
     rm -f "${_log}"
     return "${_status}"
 }

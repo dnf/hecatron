@@ -35,13 +35,21 @@ class BuildHookTest(Fixture):
 
 
 class GradleTest(BuildHookTest):
-    def test_a_multiplatform_build_without_a_test_task_runs_all_tests(self):
+    def test_a_multiplatform_build_without_a_test_task_runs_jvm_tests(self):
         write(self.path("settings.gradle.kts"), 'include(":lib")\n')
         write(self.path("lib", "build.gradle.kts"), "")
         self.fake("gradle", "case \"$1\" in test) echo \"Task 'test' not found in root project 'x'.\"; exit 1 ;; esac")
         result = self.hook("kotlin", "test", "lib")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("running allTests", result.stdout)
+        self.assertIn("no test task (a Kotlin Multiplatform build)", result.stdout)
+        self.assertIn("gradle jvmTest", result.stdout)
+        self.assertNotIn("allTests", result.stdout)
+
+    def test_a_multiplatform_build_without_a_jvm_target_runs_all_tests(self):
+        write(self.path("build.gradle.kts"), "")
+        self.fake("gradle", "case \"$1\" in test|jvmTest) echo \"Task '$1' not found in root project 'x'.\"; exit 1 ;; esac")
+        result = self.hook("kotlin", "test", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("gradle allTests", result.stdout)
 
     def test_another_failure_is_not_retried(self):

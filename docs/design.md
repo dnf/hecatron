@@ -326,8 +326,8 @@ one of its projects runs Gradle from the project it belongs to: the one
 whose sources it holds (`moshi` for `moshi/src/main/java`), or the root of a
 build of one project. JVM tests run Maven's package phase in a
 multi-module build (its modules can need each other's jars), Gradle's
-`allTests` in a Kotlin Multiplatform build (no `test` task), and Mill's
-`__.test` where the build is `build.mill`; .NET tests roll forward to the
+`jvmTest`, else `allTests`, in a Kotlin Multiplatform build (no `test`
+task), and Mill's `__.test` where the build is `build.mill`; .NET tests roll forward to the
 installed runtime, and a directory with several projects and no solution
 tests each test project. Node.js hooks and installers use the package manager
 the package declares (`packageManager`, else its lockfile, here or in the

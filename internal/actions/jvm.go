@@ -19,7 +19,7 @@ var jvmBuilds = []string{"pom.xml", "build.gradle", "build.gradle.kts", "build.s
 //
 // Not yet ported from jvm_hook: a Makefile above with a target for this
 // directory, choosing a JDK the build can run on (jvm_select_jdk), a UTF-8
-// locale (jvm_utf8_locale), and running allTests when a Kotlin
+// locale (jvm_utf8_locale), and running jvmTest or allTests when a Kotlin
 // Multiplatform build has no test task (gradle_test).
 func jvm(def *Definition, ctx Context) ([]Op, error) {
 	var ops []Op
