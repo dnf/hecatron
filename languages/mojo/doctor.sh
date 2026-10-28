@@ -3,7 +3,7 @@
 source "$(dirname "$0")/../_common.sh"
 
 _pinned="$(sed -n 's/^MOJO_VERSION="\(.*\)"$/\1/p' "$(dirname "$0")/install.sh")"
-if has mojo && ! mojo --version 2>/dev/null | grep -qF "Mojo ${_pinned} "; then
+if has mojo && ! grep -qF "Mojo ${_pinned} " <<<"$(mojo --version 2>/dev/null)"; then
     problem "mojo is $(mojo --version 2>/dev/null | head -1), not the pinned ${_pinned}"
 fi
 doctor_done

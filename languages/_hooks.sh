@@ -1320,13 +1320,13 @@ cmake_compile() {
 cmake_test() {
     local _part _target
     _part="$(cmake_binary_dir)"
-    if ! ctest --test-dir "${_part}" -N 2>/dev/null | grep -q '^Total Tests: [1-9]'; then
+    if ! grep -q '^Total Tests: [1-9]' <<<"$(ctest --test-dir "${_part}" -N 2>/dev/null)"; then
         if [ ! -f "${_part}/CTestTestfile.cmake" ]; then
             # enable_testing() in a subdirectory, not the top: ctest finds
             # the tests only from that subdirectory's build directory.
             local _dir _ran=""
             while IFS= read -r _dir; do
-                if ctest --test-dir "${_dir}" -N 2>/dev/null | grep -q '^Total Tests: [1-9]'; then
+                if grep -q '^Total Tests: [1-9]' <<<"$(ctest --test-dir "${_dir}" -N 2>/dev/null)"; then
                     run ctest --test-dir "${_dir}" --output-on-failure
                     _ran=1
                 fi

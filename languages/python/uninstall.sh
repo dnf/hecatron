@@ -13,7 +13,7 @@ _has_uv() { has uv || [ -x "${HOME}/.local/bin/uv" ]; }
 # Mojo is a uv tool, whose environment runs on one of uv's Python builds.
 _remove_uv_pythons() {
     _has_uv || return 0
-    if _uv tool list 2>/dev/null | grep -q '^mojo '; then
+    if grep -q '^mojo ' <<<"$(_uv tool list 2>/dev/null)"; then
         left_shared "uv's Python builds" "Mojo runs on one."
     else
         _uv python uninstall --all 2>/dev/null || true

@@ -347,7 +347,9 @@ hook builds the default target before `make check` or `make test`, which
 needn't depend on everything the tests run (Redis's). Node.js hooks and installers use the package manager
 the package declares (`packageManager`, else its lockfile, here or in the
 workspace above; pnpm and Yarn through Corepack, with Corepack's shim on
-PATH for scripts that call the package manager by name), installing Corepack
+PATH for scripts that call the package manager by name: in
+`~/.cache/hecatron/corepack-shims`, a static `path` entry of both Node.js
+languages, so other languages' hooks have it too), installing Corepack
 or Bun only when a component needs them. The Node.js test hook runs the
 package's `test` script; a workspace root without one runs its packages'
 (`workspaces`, `pnpm-workspace.yaml`); a package without one runs its

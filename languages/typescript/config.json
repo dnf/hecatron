@@ -17,7 +17,8 @@
     "nodejs"
   ],
   "path": [
-    "{home}/bin"
+    "{home}/bin",
+    "~/.cache/hecatron/corepack-shims"
   ],
   "version": "=24.22.1",
   "track": "lts",
