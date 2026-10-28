@@ -135,7 +135,8 @@ class ClojureTest(BuildHookTest):
 class JvmBuildToolsTest(BuildHookTest):
     def missing(self, lang: str) -> str:
         script = f"source {COMMON}\nimpl_dirs() {{ echo \"{self.path(lang)}\"; }}\njvm_build_tools_missing {lang}"
-        env = {**os.environ, "PATH": self.bin + os.pathsep + "/usr/bin:/bin", "HECATRON_HOME": "", "ROOT": self.root}
+        self.fake("mvn", "exit 1")  # no Maven of 3.9 or later, whatever this machine has
+        env = {**os.environ, "PATH": self.bin + os.pathsep + os.environ["PATH"], "HECATRON_HOME": "", "ROOT": self.root}
         result = subprocess.run(["bash", "-c", script], cwd=self.root, env=env, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         return result.stdout
