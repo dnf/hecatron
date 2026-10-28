@@ -133,6 +133,12 @@ minor version can change behaviour. Numbers are
   gives, for ecosystems that write more than the version in it (asdf's and
   mise's Elixir `1.17.3-otp-27`).
 
+- **Detection skips more code that isn't the project's:** `hct init`
+  leaves out directories it skips in any case (`Examples/`), hidden
+  directories (`.jenkins/`), `templates/` and test data
+  (`tests_data/`, `test-data/`), so a Jenkinsfile, a code generator's
+  templates or an example no longer adds a language.
+
 ## 0.5.0 (2026-10-28)
 
 - **Leave files out of formatting:** `"format": {"exclude": [...]}` lists
