@@ -1,25 +1,14 @@
 name: CI
 
-# Documentation-only changes skip this workflow; docs.yml checks them.
+# Every pull request runs the jobs its changes can affect
+# (libexec/maintenance/ci-jobs.sh decides which; documentation alone runs
+# only the docs job), and ci-ok, the one check to require, passes when every
+# job that ran did. A push to main runs everything.
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-      - "changelog.d/**"
-      - "assets/**"
-      - "LICENSE.md"
-      - "llms.txt"
   pull_request:
     branches: [main]
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-      - "changelog.d/**"
-      - "assets/**"
-      - "LICENSE.md"
-      - "llms.txt"
 
 # A new push to a pull request cancels its run still going; every commit on
 # main keeps its own run.
@@ -27,12 +16,60 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
+  # The jobs this change can affect, from the paths it changes against the
+  # pull request's base (the merge commit's first parent).
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs: ${{ steps.select.outputs.docs }}
+      test_os: ${{ steps.select.outputs.test_os }}
+      self_hosted: ${{ steps.select.outputs.self_hosted }}
+      go: ${{ steps.select.outputs.go }}
+      bash_3_2: ${{ steps.select.outputs.bash_3_2 }}
+      installer_linux: ${{ steps.select.outputs.installer_linux }}
+      installer_macos: ${{ steps.select.outputs.installer_macos }}
+      install_parity: ${{ steps.select.outputs.install_parity }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Select the jobs
+        id: select
+        env:
+          EVENT: ${{ github.event_name }}
+        # Anything but a pull request, or a diff that fails, runs everything.
+        run: |
+          if [ "${EVENT}" = pull_request ] && changed="$(git diff --name-only --no-renames HEAD^1 HEAD)"; then
+            echo "${changed}"
+            echo "${changed}" | libexec/maintenance/ci-jobs.sh | tee -a "${GITHUB_OUTPUT}"
+          else
+            libexec/maintenance/ci-jobs.sh --all | tee -a "${GITHUB_OUTPUT}"
+          fi
+
+  # The unit tests, which include every check that reads the docs (the
+  # language count, the languages table, the generated skill reference).
+  docs:
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: The unit tests
+        env:
+          HECATRON_NO_GO: "1"
+        run: python3 -m unittest discover -s tests
+
   test:
+    needs: changes
+    if: needs.changes.outputs.test_os != '[]'
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: ${{ fromJSON(needs.changes.outputs.test_os) }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +85,8 @@ jobs:
   # hct install, the binary from hct self build, then hct lint and hct test,
   # as a user's project would run them, with annotations on the change.
   self-hosted:
+    needs: changes
+    if: needs.changes.outputs.self_hosted == 'true'
     runs-on: ubuntu-latest
     env:
       HECATRON_OUTPUT: ci
@@ -67,6 +106,8 @@ jobs:
 
   # The Go core (docs/design.md §19): formatted, vetted and tested.
   go:
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -95,6 +136,8 @@ jobs:
   # for some project files, Racket runs guarded steps, Zig is a release
   # download.
   install-parity:
+    needs: changes
+    if: needs.changes.outputs.install_parity == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -107,6 +150,8 @@ jobs:
   # Hecatron runs on the bash macOS ships (3.2); the runners' bash is newer,
   # so run the tests under 3.2 itself.
   bash-3-2:
+    needs: changes
+    if: needs.changes.outputs.bash_3_2 == 'true'
     runs-on: ubuntu-latest
     container: bash:3.2
     steps:
@@ -125,6 +170,8 @@ jobs:
   # where it may edit the user's startup files, and on macOS, where the login
   # shell is zsh and sh is bash 3.2, in a temporary HOME.
   installer-linux:
+    needs: changes
+    if: needs.changes.outputs.installer_linux == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -141,6 +188,8 @@ jobs:
           done
 
   installer-macos:
+    needs: changes
+    if: needs.changes.outputs.installer_macos == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -155,3 +204,31 @@ jobs:
           zsh -ic 'command -v hct' | grep -F "$HOME/.hecatron/bin/hct"
           bash -lc 'command -v hct' | grep -F "$HOME/.hecatron/bin/hct"
           zsh -ic 'hct --version'
+
+  # The one check to require: fails if any job failed or was cancelled, and
+  # passes when the rest succeeded or weren't needed (skipped).
+  ci-ok:
+    if: always()
+    needs:
+      - changes
+      - docs
+      - test
+      - self-hosted
+      - go
+      - install-parity
+      - bash-3-2
+      - installer-linux
+      - installer-macos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every selected job passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: ${RESULTS}"
+          for result in ${RESULTS}; do
+            case "${result}" in
+              success | skipped) ;;
+              *) echo "::error::A job ended ${result}"; exit 1 ;;
+            esac
+          done
