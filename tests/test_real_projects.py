@@ -94,6 +94,8 @@ class CountsTest(unittest.TestCase):
                          {"tool": "maven", "passed": 35, "failed": 2, "skipped": 3, "total": 40})
         self.assertEqual(report.counts("12 examples, 0 failures\n"), {"tool": "rspec", "passed": 12, "failed": 0, "total": 12})
         self.assertEqual(report.counts("00:02 +41 ~1: All tests passed!"), {"tool": "dart", "passed": 41, "failed": 0, "skipped": 1})
+        self.assertEqual(report.counts("Test run summary: Passed!\n  total: 222\n  failed: 0\n  succeeded: 222\n  skipped: 0\n"),
+                         {"tool": "dotnet", "passed": 222, "failed": 0, "skipped": 0, "total": 222})
         self.assertIsNone(report.counts("nothing to see"))
 
 

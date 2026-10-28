@@ -60,6 +60,7 @@ COUNT_PATTERNS = [
     ("jest", re.compile(r"^Tests:\s+(?P<summary>.*?), (?P<total>\d+) total", re.M)),
     ("vitest", re.compile(r"^\s*Tests\s+(?P<summary>(?:\d+ \w+(?: \| )?)+) \((?P<total>\d+)\)", re.M)),
     ("dotnet", re.compile(r"(?:Passed|Failed)!\s+-\s+Failed:\s+(?P<failed>\d+), Passed:\s+(?P<passed>\d+), Skipped:\s+(?P<skipped>\d+), Total:\s+(?P<total>\d+)")),
+    ("dotnet", re.compile(r"^\s*total: (?P<total>\d+)\n\s*failed: (?P<failed>\d+)\n\s*succeeded: (?P<passed>\d+)\n\s*skipped: (?P<skipped>\d+)", re.M)),
     ("maven", re.compile(r"^\[(?:INFO|WARNING|ERROR)\] Tests run: (?P<total>\d+), Failures: (?P<failed>\d+), Errors: (?P<errors>\d+), Skipped: (?P<skipped>\d+)$", re.M)),
     ("phpunit", re.compile(r"^OK \((?P<total>\d+) tests?,", re.M)),
     ("phpunit", re.compile(r"^Tests: (?P<total>\d+), Assertions: \d+(?:, (?:Errors: (?P<errors>\d+)|Failures: (?P<failed>\d+)|Skipped: (?P<skipped>\d+)|\w+: \d+))*\.", re.M)),
