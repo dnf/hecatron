@@ -83,6 +83,7 @@ type fileEntry struct {
 	file, format string
 	key          pinKey
 	selects      bool
+	strip        *regexp.Regexp // removed from the version the file gives
 }
 
 // fileEntries are a definition's pin or support file entries (key
@@ -122,6 +123,19 @@ func (p *Project) fileEntries(lang, key string) ([]fileEntry, error) {
 			}
 			if selects, present := object.Get("selects"); present {
 				entry.selects = truthy(selects)
+			}
+			if strip, present := object.Get("strip"); present && strip != nil {
+				// Python's re and Go's regexp differ beyond the common
+				// syntax, so project.py judges a pattern Go can't compile.
+				text, ok := strip.(string)
+				if !ok {
+					return nil, unsupported("%s %s strip is not a string", lang, key)
+				}
+				pattern, err := regexp.Compile(text)
+				if err != nil {
+					return nil, unsupported("%s %s strip %q: %v", lang, key, text, err)
+				}
+				entry.strip = pattern
 			}
 			entries = append(entries, entry)
 		}
@@ -247,6 +261,7 @@ func readEntry(directory string, entry fileEntry) (pinned, string, error) {
 		if err != nil {
 			return notPinned, "", err
 		}
+		value = stripPin(value, entry.strip)
 		if value.pins {
 			all = append(all, found{value, path})
 			if value.spec != "" {
