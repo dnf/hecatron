@@ -20,6 +20,11 @@ minor version can change behaviour. Numbers are
   (`ext-curl`, `ext-mongodb`...) where its packages exist; opam installs
   the system packages dependencies need; Tcl installs `make` for TEA
   extensions' tests.
+- **Other languages' tools on PATH:** a language's hooks (and
+  `hct env LANG`) now also have the project's other added, enabled
+  languages' static `path` directories on PATH, after the language's own,
+  so a Ruby, OCaml or D build that runs `cargo` finds the Rust that
+  `hct install` put in `~/.cargo/bin`.
 
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
