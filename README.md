@@ -321,9 +321,28 @@ problem, see [SECURITY.md](SECURITY.md).
 
 ## Contributing
 
-Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has
-the checks to run (`hct self-test`), the conventions the code follows, and a
-map of the repository.
+Issues and pull requests are welcome.
+
+Especially for toolchains that are less well known.
+
+ESPECIALLY if you are a maintainer of such a toolchain.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## About the authors
+
+Hecatron was created by Don Neufeld and Claude Code
+
+Don Neufeld was the CTO of [Medium](https://medium.com),
+developer of several massively multiplayer online games,
+VPE of multiple startuos, and is currently an
+[Executive Coach](https://vpecoach.com) to engineering leaders.
+
+Don lives in the San Francisco Bay Area with his family,
+several thousand bees, and a quantity of fruit trees
+some might call excessive.
+
+Claude Code is a good bot.
 
 ## Acknowledgements
 
@@ -334,18 +353,11 @@ map of the repository.
 - The wordmark is set in [Space Grotesk](https://github.com/floriankarsten/space-grotesk)
   by Florian Karsten.
 
-## About the author
-
-Don Neufeld was the CTO of [Medium](https://medium.com), is a developer of
-several massively multiplayer online games, and is the CEO of
-[VPE Coach](https://vpecoach.com). Don lives in the San Francisco Bay Area
-with family and far too many fruit trees.
-
 ## License
 
 [MIT](LICENSE.md)
 
-## The name
+## Origin of the Name and Logo
 
 Hecatron comes from the [Hecatoncheires](https://en.wikipedia.org/wiki/Hecatoncheires),
 the "hundred-handed ones" of [Greek myth](https://en.wikipedia.org/wiki/Greek_mythology)
