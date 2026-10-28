@@ -1,23 +1,12 @@
 #!/usr/bin/env bash
-# Uninstall TypeScript (Node.js)
+# Uninstall TypeScript. Its toolchain is Node.js (TypeScript's compiler is
+# each package's own dependency), which JavaScript and Elm share, so it
+# stays: Homebrew's node and the builds in ~/.local/share/hecatron/node on
+# macOS, the builds in /opt/node and their links in /usr/local/bin on Linux.
 source "$(dirname "$0")/../_common.sh"
 
-uninstall_macos() {
-    brew uninstall node 2>/dev/null || true
-    rm -rf "${HOME}/.local/share/hecatron/node"
-}
-# install.sh's official builds and their links, and NodeSource's package,
-# which earlier versions installed.
-uninstall_linux() {
-    local link
-    for link in /usr/local/bin/*; do
-        case "$(readlink "${link}" 2>/dev/null)" in
-            /opt/node/*) $SUDO rm -f "${link}" ;;
-        esac
-    done
-    $SUDO rm -rf /opt/node
-    $SUDO apt-get remove -y nodejs 2>/dev/null || true
-}
+uninstall_macos() { leave_node; }
+uninstall_linux() { leave_node; }
 
 log "Uninstalling TypeScript (Node.js)..."
 "uninstall_${OS}"

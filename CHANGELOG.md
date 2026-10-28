@@ -6,6 +6,19 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Uninstalling a language leaves shared and system software:** an
+  `uninstall.sh` removes only what is the language's own and hecatron
+  installed. A toolchain another language's installer also installs stays,
+  with a line saying so (`Left CMake installed: C, C++, Objective-C, COBOL
+  and Fortran share it.`): CMake (C, C++, Fortran), Node.js (TypeScript,
+  JavaScript), the .NET SDK (C#, F#, VB.NET), Erlang/OTP (Erlang, which now
+  removes only rebar3), uv (Python) and Homebrew's gcc (Fortran). Python no
+  longer removes the distribution's `python3` (`apt-get remove python3`
+  could take much of a Debian or Ubuntu system with it); it removes uv's
+  Python builds, unless Mojo runs on one. PHP removes only the `-cli`,
+  `-xml` and `-mbstring` packages its installer installs, instead of
+  `php*` followed by `apt-get autoremove`. D also removes dub.
+
 - **Doctor notes:** a `doctor.sh` line starting `note: ` (`note` in
   `_common.sh`) is shown under the language, like the version notes, without
   counting as a problem, for what's worth knowing about a healthy toolchain.
