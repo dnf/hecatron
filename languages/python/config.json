@@ -180,40 +180,6 @@
       ]
     }
   },
-  "install": {
-    "via": {
-      "tool": "uv",
-      "run": [
-        "uv",
-        "python",
-        "install",
-        "{version}"
-      ]
-    },
-    "tools": {
-      "uv": {
-        "version": "0.13.6",
-        "archive": {
-          "url": "https://github.com/astral-sh/uv/releases/download/{version}/uv-{arch}-{os}.{ext}",
-          "checksum": "https://github.com/astral-sh/uv/releases/download/{version}/uv-{arch}-{os}.{ext}.sha256",
-          "os": {
-            "linux": "unknown-linux-gnu",
-            "macos": "apple-darwin",
-            "windows": "pc-windows-msvc"
-          },
-          "arch": {
-            "x86_64": "x86_64",
-            "aarch64": "aarch64"
-          },
-          "ext": {
-            "windows": "zip",
-            "default": "tar.gz"
-          },
-          "strip": 1
-        }
-      }
-    }
-  },
   "errorPatterns": [
     {
       "tool": "pytest",

@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "toolchain": {
+    "versions": "system",
+    "packages": {
+      "apt": [
+        "bash"
+      ],
+      "brew": [
+        "bash"
+      ]
+    }
+  },
+  "tools": [
+    {
+      "name": "shellcheck",
+      "packages": {
+        "apt": [
+          "shellcheck"
+        ],
+        "brew": [
+          "shellcheck"
+        ]
+      },
+      "check": {
+        "command": "shellcheck"
+      }
+    },
+    {
+      "name": "bats",
+      "when": {
+        "glob": "*.bats",
+        "because": "a component has .bats tests"
+      },
+      "packages": {
+        "apt": [
+          "bats"
+        ],
+        "brew": [
+          "bats-core"
+        ]
+      },
+      "check": {
+        "command": "bats"
+      }
+    }
+  ],
+  "uninstall": {
+    "keep": [
+      "bash"
+    ],
+    "because": "Bash is a system utility"
+  }
+}

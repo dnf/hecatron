@@ -12,10 +12,12 @@ import (
 )
 
 // install and uninstall are manage.py's cmd_install and cmd_uninstall in
-// Go: each language's install.sh or uninstall.sh (they stay scripts) from
-// the project root, with hook_env's variables and the language's version
-// environment. Installing every language defers fetching dependencies until
-// every toolchain is in (HECATRON_DEFER_DEPS, #107).
+// Go: each language's install.sh or uninstall.sh from the project root,
+// with hook_env's variables and the language's version environment, or,
+// for a language whose install.json this binary carries out, the executor
+// (installdata.go): those first, their system packages in one call.
+// Installing every language defers fetching dependencies until every
+// toolchain is in (HECATRON_DEFER_DEPS, #107).
 
 // installStep is one language's script and what it runs with.
 type installStep struct {
@@ -26,7 +28,7 @@ type installStep struct {
 // ones), stopping at the first that fails, or every added one, carrying on
 // past failures and fetching the dependencies the installers deferred.
 func (c *cli) install() (int, bool) {
-	args, ok := parseManageArgs(c.args, nil, nil, -1)
+	args, ok := parseManageArgs(c.args, []string{"--plan"}, nil, -1)
 	if !ok {
 		return 0, false
 	}
@@ -49,6 +51,32 @@ func (c *cli) install() (int, bool) {
 	if !ok {
 		return 0, false
 	}
+	env := c.environment(nil)
+	manager := packageManager(env)
+	var choices, data []installerChoice
+	var scripts []installStep
+	for _, step := range steps {
+		choice := chooseInstaller(c.project, step.lang, "install.sh", manager)
+		choices = append(choices, choice)
+		if choice.def != nil {
+			data = append(data, choice)
+		} else {
+			scripts = append(scripts, step)
+		}
+	}
+	if args.flags["--plan"] {
+		printInstallPlan(os.Stdout, c.project, choices, env, manager)
+		return 0, true
+	}
+	// Every language installed from data first, in one plan: its system
+	// packages in one package-manager call (none of them needs a script's).
+	failed := applyData(c.project, data, env, manager)
+	if len(failed) > 0 && !installAll {
+		return 1, true
+	}
+	if len(data) > 0 {
+		c.project.ForgetInstalled()
+	}
 	deferred, err := os.CreateTemp("", "hecatron-deps-*.txt")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
@@ -60,8 +88,7 @@ func (c *cli) install() (int, bool) {
 	if installAll {
 		extra = []string{"HECATRON_DEFER_DEPS=" + deferred.Name()}
 	}
-	var failed []string
-	for i, step := range steps {
+	for i, step := range scripts {
 		if c.runDefinitionScript(step, i > 0, extra) != 0 {
 			if !installAll {
 				return 1, true
@@ -116,8 +143,16 @@ func (c *cli) uninstall() (int, bool) {
 	if !ok {
 		return 0, false
 	}
+	env := c.environment(nil)
+	manager := packageManager(env)
 	for i, step := range steps {
-		if status := c.runDefinitionScript(step, i > 0, nil); status != 0 {
+		status := 0
+		if choice := chooseInstaller(c.project, step.lang, "uninstall.sh", manager); choice.def != nil {
+			status = uninstallData(c.project, choice, env, manager)
+		} else {
+			status = c.runDefinitionScript(step, i > 0, nil)
+		}
+		if status != 0 {
 			return status, true
 		}
 	}
@@ -154,6 +189,7 @@ func (c *cli) runDefinitionScript(step installStep, afterAnother bool, extra []s
 		"HECATRON_PROJECT=" + p.Name,
 		"HECATRON_COMPONENTS=" + strings.Join(p.Components, " "),
 		"HECATRON_IMPL_PATH=" + p.ImplPath,
+		"HECATRON_BINARY=" + binaryPath(),
 	}, extra...))
 	if afterAnother {
 		p.ForgetInstalled()
@@ -167,6 +203,16 @@ func (c *cli) runDefinitionScript(step installStep, afterAnother bool, extra []s
 	cmd.Dir, cmd.Env = p.Root, env
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	return pythonReturnCode(cmd.Run())
+}
+
+// binaryPath is this binary, which a converted language's install.sh runs
+// (`hecatron _install`) when another installer calls it.
+func binaryPath() string {
+	self, err := os.Executable()
+	if err != nil {
+		return ""
+	}
+	return self
 }
 
 // fetchDeps is `hecatron deps LANG` from the root, as manage.py runs it

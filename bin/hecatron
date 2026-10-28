@@ -44,7 +44,7 @@ Set up:
   advisor [--fix] [lang...]  Recommend each ecosystem's good practices for the project
   init [dir]                 Set up a repository for hecatron
   doctor [--fix] [lang...]   Check toolchains; --fix runs installers to repair them
-  install [lang...]          Install toolchains (all of the project's when none named)
+  install [lang...]          Install toolchains (all of the project's when none named; --plan: only show how)
   uninstall <lang...>        Uninstall toolchains
   get-started                Status table and install menu
   bootstrap                  Set up a fresh machine for the project (base packages + install)

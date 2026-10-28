@@ -10,7 +10,7 @@ import (
 
 var languages = []string{"go", "rust", "python", "java", "elixir"}
 
-func load(t *testing.T, lang string) (*Spec, string) {
+func load(t *testing.T, lang string) (*Definition, string) {
 	t.Helper()
 	spec, version, err := Load(filepath.Join("..", "..", "languages"), lang)
 	if err != nil {

@@ -68,6 +68,20 @@ jobs:
             done
           done
 
+  # Installs as data (docs/installers.md): languages installed in fresh
+  # containers both ways, from their scripts and from install.json, must
+  # end up the same (tests/docker/parity.sh). Bash and Raku install a tool
+  # for some project files, Racket runs guarded steps.
+  install-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Script and data installs agree
+        run: tests/docker/parity.sh ubuntu:24.04 bash raku racket
+
   # Hecatron runs on the bash macOS ships (3.2); the runners' bash is newer,
   # so run the tests under 3.2 itself.
   bash-3-2:

@@ -89,6 +89,8 @@ def cmd_install(args) -> int:
     npm ci runs a generator needing Ruby): each installer lists the languages
     it would fetch them for in the HECATRON_DEFER_DEPS file. Installing named
     languages fetches theirs as each installs."""
+    if args.plan:
+        needs_binary("install --plan")
     project = load_project()
     install_all = not args.languages
     langs = project.languages if install_all else resolve_all(project, args.languages, added_only=True)
@@ -864,6 +866,8 @@ def main(argv: list[str]) -> int:
         p.add_argument("languages", nargs="*")
         if name == "enable":
             p.add_argument("--all", action="store_true", help="re-enable every language")
+        if name == "install":
+            p.add_argument("--plan", action="store_true", help="show what would be installed (needs the binary)")
         p.set_defaults(func=func)
 
     p = sub.add_parser("list")

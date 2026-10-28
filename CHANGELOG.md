@@ -6,6 +6,23 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Installs as data (#77, stage 1):** with the binary, Bash, COBOL, D,
+  Erlang, Common Lisp, Octave, Pascal, Prolog, Racket, Raku and Tcl install
+  from a `languages/<lang>/install.json` instead of `install.sh`: every
+  step has a check, so a rerun does nothing and `doctor --fix` runs only
+  what fails; the doctor's checks come from the same data; installing
+  several languages makes one `apt-get install` (or `brew install`) for all
+  their packages; receipts record what hecatron installed, and uninstall
+  removes only that, keeping what another language needs. `hct install
+  --plan` shows what would happen. A project's own `install.sh` still
+  wins, and `HECATRON_INSTALLER=script` forces the scripts.
+  `tests/docker/parity.sh` checks the two ways agree. The prototype's
+  `"install"` key moved from `config.json` to `install.json`. Toolchains
+  the engine downloads go to `~/.local/share/hecatron/toolchains` (no
+  root), and `"ci": {"cache": true}` caches that directory, keyed on what
+  the engine would install; the eleven languages converted so far come
+  from apt, which isn't cached, so this grows with the languages moved to
+  downloads.
 - **Uninstalling a language leaves shared and system software:** an
   `uninstall.sh` removes only what is the language's own and hecatron
   installed. A toolchain another language's installer also installs stays,

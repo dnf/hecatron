@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/dnf/hecatron/internal/install"
 	"github.com/dnf/hecatron/internal/project"
 )
 
@@ -45,6 +46,9 @@ type cacheEntry struct {
 	kind     string
 	dirs     []string // ~/... or relative to the root
 	keyFiles []string // relative to the root
+	// data is what the executor would install (install.CacheKey), for a
+	// toolchain hecatron installs from its install.json; "" otherwise.
+	data string
 }
 
 // projectCache works out a language's caches: the toolchain keyed on the
@@ -58,6 +62,13 @@ func projectCache(p *project.Project, lang string) (languageCache, error) {
 		return languageCache{}, err
 	}
 	result := languageCache{lang: lang}
+	engine, data, err := engineToolchain(p, lang)
+	if err != nil {
+		return languageCache{}, err
+	}
+	if engine != "" {
+		spec.Toolchain = []string{engine}
+	}
 	if spec.Empty() {
 		return result, nil
 	}
@@ -89,13 +100,46 @@ func projectCache(p *project.Project, lang string) (languageCache, error) {
 	}
 	if len(spec.Toolchain) > 0 {
 		keys := []string{".hecatron/config.json", ".hecatron/languages/" + lang + "/config.json"}
+		if engine != "" {
+			keys = append(keys, ".hecatron/languages/"+lang+"/"+install.FileName)
+		}
 		result.caches = append(result.caches, cacheEntry{toolchainCache, cacheDirs(spec.Toolchain),
-			append(keys, anywhere(spec.KeyFiles)...)})
+			append(keys, anywhere(spec.KeyFiles)...), data})
 	}
 	if deps := cacheDirs(spec.Dependencies); len(deps) > 0 {
-		result.caches = append(result.caches, cacheEntry{dependencyCache, deps, anywhere(spec.LockFiles)})
+		result.caches = append(result.caches, cacheEntry{dependencyCache, deps, anywhere(spec.LockFiles), ""})
 	}
 	return result, nil
+}
+
+// engineInstalls says whether the executor carries out a definition on a
+// Linux runner (apt); tests replace it.
+var engineInstalls = func(def *install.Definition) bool { return def.Unsupported("apt") == "" }
+
+// engineToolchain is the directory CI caches for a language whose
+// toolchain hecatron's executor installs from its install.json on a Linux
+// runner into its own toolchains directory (no root, so a restore works),
+// and the key of what it would install there; "" for any other language,
+// whose definition's "cache" applies. A restored toolchain passes the
+// executor's checks, so the install does nothing; a partial one fails
+// them and is repaired.
+func engineToolchain(p *project.Project, lang string) (dir, data string, err error) {
+	path := p.Resolve(lang, install.FileName)
+	if path == "" {
+		return "", "", nil
+	}
+	def, err := install.LoadFile(path)
+	if err != nil {
+		return "", "", &project.Error{Message: err.Error()}
+	}
+	if !engineInstalls(def) || !def.InstallsIntoToolchainsHome() {
+		return "", "", nil
+	}
+	version, err := p.DefaultVersion(lang)
+	if err != nil {
+		return "", "", err
+	}
+	return install.ToolchainsHome + "/" + lang, def.CacheKey(version), nil
 }
 
 // githubCacheKey is an actions/cache key, and the prefix restore-keys
@@ -105,6 +149,9 @@ func githubCacheKey(lang string, entry cacheEntry, version string) (key, restore
 	restore = fmt.Sprintf("hecatron-%s-%s-${{ runner.os }}-", lang, entry.kind)
 	if entry.kind == toolchainCache {
 		restore += version + "-"
+	}
+	if entry.data != "" {
+		restore += "${{ runner.arch }}-" + entry.data + "-"
 	}
 	if len(entry.keyFiles) == 0 {
 		return restore + "none", restore
@@ -267,6 +314,9 @@ func gitlabCache(c languageCache, tag string) (yaml, links []string) {
 		prefix := c.lang + "-" + entry.kind
 		if entry.kind == toolchainCache {
 			prefix += "-" + tag
+		}
+		if entry.data != "" {
+			prefix += "-" + entry.data
 		}
 		yaml = append(yaml, "    - key:")
 		if files := gitlabKeyFileList(entry.keyFiles); len(files) > 0 {

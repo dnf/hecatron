@@ -7,6 +7,7 @@ Each language's definition lives in `languages/<lang>/` in this repository (a pr
 ```bash
 hecatron install                # install all available languages
 hecatron install go rust        # install specific languages
+hecatron install --plan         # show how each would install and what would run (needs the binary)
 hecatron uninstall go rust      # uninstall specific languages
 hecatron get-started            # interactive onboarding with status + install menu
 hecatron get-started --status   # print language status table
@@ -22,6 +23,74 @@ luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula...).
 Short aliases work everywhere: `hecatron install ad ts py rb rs kt gy lu ft c++ cs fs sw hs ex erl clj gm sc zg el pl dt ml`
 
 Misspelled names get a "did you mean?" prompt (e.g. `hecatron install elixer` suggests `elixir`).
+
+## Installs as data
+
+A language with a `languages/<lang>/install.json` is installed by
+hecatron's binary from that data instead of its `install.sh`
+([design.md §19](design.md#installs-as-data-77)). So far that covers the
+languages whose installers only install system packages: Bash, COBOL, D,
+Erlang, Common Lisp, Octave, Pascal, Prolog, Racket, Raku and Tcl.
+
+```json
+{
+  "schema": 1,
+  "toolchain": { "versions": "system", "packages": { "apt": ["rakudo"], "brew": ["rakudo"] } },
+  "tools": [
+    { "name": "zef",
+      "when": { "glob": "META6.json", "because": "a component has a META6.json" },
+      "packages": { "apt": ["raku-zef"], "brew": ["zef"] },
+      "check": { "command": "zef" } }
+  ]
+}
+```
+
+- **Every step has a check**, so a rerun does nothing and `doctor --fix`
+  runs only what fails. The doctor reports the failing checks of the tools
+  and steps that apply ("zef not installed (a component has a META6.json)").
+- **System packages are batched**: installing several languages makes one
+  `apt-get install` (or `brew install`) call for all their packages.
+- **Receipts** in `~/.local/share/hecatron/receipts/<lang>.json` record the
+  packages hecatron installed (only those that weren't there before), and
+  `hecatron uninstall` removes only those, keeping any another language's
+  receipt or definition also needs, or that the definition keeps (COBOL's
+  cmake). A language installed by its script has no receipt, and uninstall
+  then removes nothing and says so.
+- **Which runs**: the project's own `install.sh` always wins;
+  `HECATRON_INSTALLER=script` forces the scripts (for comparing or
+  bisecting); otherwise the data, when the binary can carry it out on this
+  machine (apt on Debian and Ubuntu, Homebrew on macOS); otherwise
+  `install.sh`. Without the binary, `bin/hecatron` runs the scripts, which
+  stay.
+- **`hecatron install --plan`** prints, for each language, every action and
+  whether it is done, will install or run, or is skipped (and why), the
+  languages left to their scripts and why, and the commands it would run.
+
+**CI caching.** Toolchains the binary downloads (not system packages) go
+to `~/.local/share/hecatron/toolchains/<lang>`, the user's own directory,
+so installing needs no root and a CI cache can restore them. With
+`"ci": {"cache": true}`, `hct workflows` caches that directory for each
+such language, keyed on the language, the platform, the definition and
+default version hecatron would install, and the project's own
+`install.json` and pin files. A restored toolchain passes the install's
+checks, so `hct install` does nothing; a partial restore fails them and is
+repaired. The languages converted so far all come from apt, which isn't
+cached (restoring it needs root); caching gets better as more languages
+move to downloaded toolchains.
+
+```bash
+hct install --plan go     # what would install, and how
+hct workflows             # with "ci": {"cache": true}, caches what can be
+```
+
+An installer that runs a converted language's `install.sh` (Elixir's and
+Gleam's run Erlang's) keeps working: that script starts with
+`install_from_data <lang>`, which hands over to the binary when there is one.
+
+`tests/docker/parity.sh ubuntu:24.04 raku racket` installs each language in
+two fresh containers, once with its scripts and once from its data, and
+fails unless both pass `tests/install/check.sh` and end with the same
+packages, commands and doctor report.
 
 ## Shared toolchains
 
@@ -117,6 +186,7 @@ Each script sources `languages/_common.sh` for shared helpers:
 - `impl_configures <lang> <file...>` — whether a component (or a directory above it) has one of the files, for a tool installed only where it's configured
 - `release_binary_install <name> <url> <sha256> [path]` — a pinned release download, checked against its checksum, into `/usr/local/bin`
 - `uv_install` — uv into `~/.local/bin`
+- `install_from_data <lang>` — first thing in a converted language's `install.sh` that other installers run: install from `install.json` through hecatron's binary, when there is one
 - `problem` / `doctor_done` — for `doctor.sh`: report a problem; exit non-zero if any were reported
 - `$OS` — `"macos"` or `"linux"`
 - `$SUDO` — `"sudo"` or `""` (when root)
@@ -128,6 +198,7 @@ A language definition has these files (see
 | File           | Purpose                                                       | Required |
 | -------------- | ------------------------------------------------------------- | -------- |
 | `config.json`  | Dependency commands, abbreviation, detection globs, PATH entries | Yes   |
+| `install.json` | Install as data, which the binary runs (above)                | No       |
 | `install.sh`   | Install toolchain + deps; idempotent, repairs                 | Yes      |
 | `uninstall.sh` | Remove toolchain                                              | Yes      |
 | `doctor.sh`    | Detect breakages beyond a missing command (`hecatron doctor`) | No       |
