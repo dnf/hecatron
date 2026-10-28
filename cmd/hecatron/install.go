@@ -68,6 +68,12 @@ func (c *cli) install() (int, bool) {
 		printInstallPlan(os.Stdout, c.project, choices, env, manager)
 		return 0, true
 	}
+	stopSudo, ok := adminRights(needRoot(c.project, choices, env, manager))
+	if !ok {
+		fmt.Fprintln(os.Stderr, "hecatron: nothing installed (no administrator rights)")
+		return 1, true
+	}
+	defer stopSudo()
 	// Every language installed from data first, in one plan: its system
 	// packages in one package-manager call (none of them needs a script's).
 	failed := applyData(c.project, data, env, manager)

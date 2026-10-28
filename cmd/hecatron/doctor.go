@@ -116,6 +116,14 @@ func (d *doctorRun) project() *project.Project { return d.cli.project }
 func (d *doctorRun) run(langs []string, fix bool) int {
 	var unhealthy []string
 	checks := d.checkAll(langs)
+	if fix {
+		stopSudo, ok := adminRights(d.needRepairRoot(langs, checks))
+		if !ok {
+			fmt.Fprintln(os.Stderr, "hecatron: nothing repaired (no administrator rights)")
+			return 1
+		}
+		defer stopSudo()
+	}
 	repaired := false
 	for i, lang := range langs {
 		check := checks[i]
@@ -180,6 +188,17 @@ func (d *doctorRun) run(langs []string, fix bool) int {
 		fmt.Printf("Repair with: hecatron doctor --fix %s   (runs each language's installer)\n", strings.Join(unhealthy, " "))
 	}
 	return 1
+}
+
+// needRepairRoot are the unhealthy languages whose repair may need root.
+func (d *doctorRun) needRepairRoot(langs []string, checks []languageCheck) []string {
+	var choices []installerChoice
+	for i, lang := range langs {
+		if problems, _ := splitNotes(checks[i].output); problems != "" {
+			choices = append(choices, d.fromData(lang))
+		}
+	}
+	return needRoot(d.project(), choices, d.env, d.manager)
 }
 
 // languageCheck is one language's check: its problems and notes (as
