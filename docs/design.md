@@ -332,7 +332,11 @@ configured runner (`vitest.config.*`, `jest.config.*`, `.mocharc.*`); else,
 and in a directory without a `package.json`, it tests the language's
 packages below (TypeScript's have a `tsconfig.json`, JavaScript's don't, as
 detection decides). It sets `CI=true` (unless it's set) so watching test
-runners run once.
+runners run once. A package its tests need built (a native addon, from a `napi`
+key, a `binding.gyp` or a build script running napi or node-gyp, whose
+`*.node` isn't built; or a `main` or `exports` entry point that isn't
+there) is built first: its build script, else `napi build --platform` or
+`node-gyp rebuild`.
 
 **Dependencies.** A `deps` hook fetches a component's dependencies with its
 ecosystem's tool, held to the lock file when there is one (it fails rather
@@ -389,10 +393,12 @@ saves it, as init would. Init itself:
    JavaScript unless a `tsconfig.json` makes it TypeScript), and a
    `package.json` without the definition's `detectScript` npm script doesn't
    count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
-   Examples, tests, docs, tools, hooks and vendored code (`examples/`,
-   `tests/`, `tests_data/`, `tools/`, `hooks/`, `fixtures/`, `templates/`,
-   `android/`, `third_party/`, `vendor/`, `vendored/`, `node_modules/` and
-   the like) are skipped. A language left out is listed with the reason.
+   Examples, tests and test data, docs, tools, hooks, a generator's
+   templates and vendored code (`examples/`, `tests/`, `tests_data/`,
+   `tools/`, `hooks/`, `templates/`, `fixtures/`, `android/`,
+   `third_party/`, `vendor/`, `vendored/`, `node_modules/` and the like, in any case:
+   `Examples/`) and hidden directories (`.jenkins/`) are skipped. A language left out
+   is listed with the reason.
 3. Detects the layout. A language's directory may carry any of its
    definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If
    the directories share a pattern with one part varying (`age/impl/go`,

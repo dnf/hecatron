@@ -65,6 +65,62 @@ class NodeTestHookTest(Fixture):
         self.assertEqual(self.ran(self.test()), ["npm CI=true"])
         self.assertEqual(self.ran(self.test(CI="false")), ["npm CI=false"])
 
+    def test_a_native_addon_is_built_before_its_tests(self):
+        self.files({"package.json": json.dumps({"napi": {"binaryName": "x"},
+                                                "scripts": {"build": "napi build --platform", "test": "ava"}}),
+                    "node_modules/.keep": ""})
+        name = os.path.basename(self.root)
+        self.assertEqual(self.ran(self.test()), [f"npm run build in {name}", f"npm run test in {name}"])
+        write(self.path("x.linux-x64-gnu.node"), "")
+        self.assertEqual(self.ran(self.test()), [f"npm run test in {name}"])
+
+    def test_napis_own_build_without_a_build_script(self):
+        self.files({"package.json": json.dumps({"napi": {}, "scripts": {"test": "ava"}}),
+                    "node_modules/.bin/napi": '#!/bin/sh\necho "ran napi $*"\n'})
+        os.chmod(self.path("node_modules/.bin/napi"), 0o755)
+        self.assertEqual(self.ran(self.test()),
+                         ["napi build --platform", "npm run test in " + os.path.basename(self.root)])
+
+    def test_a_build_script_running_node_gyp_counts_as_native(self):
+        self.files({"package.json": package(build="node-gyp rebuild", test="mocha"), "node_modules/.keep": "",
+                    "packages/pure/package.json": package(build="tsc", test="x")})
+        name = os.path.basename(self.root)
+        self.assertEqual(self.ran(self.test()), [f"npm run build in {name}", f"npm run test in {name}"])
+        os.makedirs(self.path("build", "Release"))
+        write(self.path("build", "Release", "addon.node"), "")
+        self.assertEqual(self.ran(self.test()), [f"npm run test in {name}"])
+
+    def test_a_missing_entry_point_is_built_before_the_tests(self):
+        self.files({"package.json": json.dumps({"main": "dist/index.cjs", "scripts": {"build": "tsc", "test": "jest"}}),
+                    "node_modules/.keep": ""})
+        name = os.path.basename(self.root)
+        self.assertEqual(self.ran(self.test()), [f"npm run build in {name}", f"npm run test in {name}"])
+        write(self.path("dist", "index.cjs"), "")
+        self.assertEqual(self.ran(self.test()), [f"npm run test in {name}"])
+
+    def test_an_entry_point_in_exports_counts(self):
+        exports = {".": {"types": "./index.d.ts", "import": "./dist/index.mjs"}}
+        self.files({"package.json": json.dumps({"exports": exports, "scripts": {"build": "x", "test": "y"}}),
+                    "node_modules/.keep": ""})
+        self.assertEqual(self.ran(self.test())[0], "npm run build in " + os.path.basename(self.root))
+
+    def test_a_failing_runner_fails_as_itself(self):
+        self.files({"package.json": "{}", "jest.config.js": "", "node_modules/.bin/jest": "#!/bin/sh\nexit 3\n"})
+        os.chmod(self.path("node_modules/.bin/jest"), 0o755)
+        result = self.test()
+        self.assertEqual(result.returncode, 3)
+        self.assertNotIn("no test command", result.stderr)
+
+    def test_npms_placeholder_test_script_isnt_a_test(self):
+        self.files({"package.json": package(test='echo "Error: no test specified" && exit 1')})
+        result = self.test()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("package.json has no test script", result.stderr)
+
+    def test_a_package_without_a_native_addon_isnt_built(self):
+        self.files({"package.json": package(build="tsc", test="jest"), "node_modules/.keep": ""})
+        self.assertEqual(self.ran(self.test()), ["npm run test in " + os.path.basename(self.root)])
+
     def test_without_a_package_json_the_languages_packages_below_run(self):
         # TypeScript's packages have a tsconfig.json; a package without a
         # test script, one in tests/ and one inside another are left out.

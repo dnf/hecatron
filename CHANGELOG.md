@@ -6,13 +6,15 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
-- **Detection:** a language whose build files are all more than three
-  levels below the directory the layout gives it (antlr4's Go module in
-  `runtime/Go/antlr/v4`, jsii's in `packages/@jsii/...`) gets its own
-  `implPaths` entry instead, since the hooks look no deeper and failed with
-  "no go.mod here, below, or above it"; files under `templates/` (project
-  scaffolding a tool generates from), `test_data/`, `tests_data/` and
-  `vendored/` no longer make a language.
+- **Node.js packages built before their tests:** `hct test typescript`
+  and `hct test javascript` first build a package whose tests need it
+  built: a native addon (napi-rs, node-gyp) not built yet, or an entry
+  point (`main`, `exports`) the build writes that isn't there. Through
+  the package's build script, else `napi build --platform` or `node-gyp
+  rebuild`, instead of failing with "Failed to load native binding" or
+  "Cannot find module dist/...". A configured test runner that fails now
+  fails as itself, and npm's placeholder test script counts as none.
+
 - **Node.js tests in more layouts:** `hct test typescript` and `hct test
   javascript` now test a workspace root without a `test` script through its
   packages' scripts, a package with a configured Vitest, Jest or Mocha but
@@ -130,6 +132,12 @@ minor version can change behaviour. Numbers are
   `"strip"`, a regular expression, is removed from the version the file
   gives, for ecosystems that write more than the version in it (asdf's and
   mise's Elixir `1.17.3-otp-27`).
+
+- **Detection skips more code that isn't the project's:** `hct init`
+  leaves out directories it skips in any case (`Examples/`), hidden
+  directories (`.jenkins/`), `templates/` and test data
+  (`tests_data/`, `test-data/`), so a Jenkinsfile, a code generator's
+  templates or an example no longer adds a language.
 
 ## 0.5.0 (2026-10-28)
 
