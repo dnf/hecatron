@@ -1,6 +1,6 @@
 {
   "name": "hecatron",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Build, test, lint and format code in almost any language through hecatron's hct, and know when to ask before installing toolchains.",
   "author": {
     "name": "dnf",
