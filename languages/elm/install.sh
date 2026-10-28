@@ -26,7 +26,7 @@ install_linux() {
 
 # Global npm packages go into Node's prefix, which may be root's. An official
 # Node.js build's prefix is its own directory (/opt/node/<version>), off PATH,
-# so link the commands into /usr/local/bin.
+# so link the commands into hecatron's bin directory.
 _npm_global() {
     local prefix tool
     prefix="$(npm prefix -g)"
@@ -39,7 +39,7 @@ _npm_global() {
     # isn't on PATH yet.
     for tool in "${prefix}"/bin/*; do
         [ -e "${tool}" ] || continue
-        has "$(basename "${tool}")" || $SUDO ln -sfn "${tool}" "/usr/local/bin/$(basename "${tool}")"
+        has "$(basename "${tool}")" || { mkdir -p "$(hecatron_bin)" && ln -sfn "${tool}" "$(hecatron_bin)/$(basename "${tool}")"; }
     done
 }
 

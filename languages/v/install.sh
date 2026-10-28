@@ -10,7 +10,8 @@ _install() {
             git clone --depth 1 https://github.com/vlang/v.git "$HOME/v"
             cd "$HOME/v" && make
         fi
-        $SUDO ln -sf "$HOME/v/v" /usr/local/bin/v
+        mkdir -p "$(hecatron_bin)"
+        ln -sf "$HOME/v/v" "$(hecatron_bin)/v"
     fi
 }
 

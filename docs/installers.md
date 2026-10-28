@@ -192,7 +192,7 @@ Each script sources `languages/_common.sh` for shared helpers:
 - `each_impl_versioned <lang> <command...>` — the same, with each component's toolchain version on PATH
 - `impl_deps <lang>` — install each component's dependencies with `hecatron deps` (its deps hook, held to the lock file); when `hecatron install` installs every language, after all the installers have run
 - `impl_configures <lang> <file...>` — whether a component (or a directory above it) has one of the files, for a tool installed only where it's configured
-- `release_binary_install <name> <url> <sha256> [path]` — a pinned release download, checked against its checksum, into `/usr/local/bin`
+- `release_binary_install <name> <url> <sha256> [path]` — a pinned release download, checked against its checksum, into hecatron's bin directory (`~/.local/share/hecatron/bin`; no root)
 - `uv_install` — uv into `~/.local/bin`
 - `install_from_data <lang>` — first thing in a converted language's `install.sh` that other installers run: install from `install.json` through hecatron's binary, when there is one
 - `problem` / `doctor_done` — for `doctor.sh`: report a problem; exit non-zero if any were reported

@@ -22,8 +22,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"slices"
 	"strings"
 
+	"github.com/dnf/hecatron/internal/install"
 	"github.com/dnf/hecatron/internal/project"
 )
 
@@ -46,6 +49,7 @@ type cli struct {
 }
 
 func run(argv []string) int {
+	linksOnPath()
 	c := &cli{home: project.NewHome(findHome()), command: "help"}
 	if len(argv) > 0 {
 		c.command, c.args = argv[0], argv[1:]
@@ -54,6 +58,18 @@ func run(argv []string) int {
 	status := c.dispatch()
 	c.showUpdateNotice()
 	return status
+}
+
+// linksOnPath puts hecatron's bin directory (install.LinksDir), where the
+// installers put the tools they install without root, first on PATH, as
+// install.sh's env and bin/hecatron do: what hecatron runs, and
+// finds, includes them where no shell sourced the env (a git hook a GUI
+// runs, CI).
+func linksOnPath() {
+	links, path := install.LinksDir(os.Environ()), os.Getenv("PATH")
+	if !slices.Contains(filepath.SplitList(path), links) {
+		_ = os.Setenv("PATH", links+string(os.PathListSeparator)+path)
+	}
 }
 
 func (c *cli) dispatch() int {
