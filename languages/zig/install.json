@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "toolchain": {
+    "versions": "single",
+    "archive": {
+      "url": "https://ziglang.org/download/{version}/zig-{arch}-{os}-{version}.tar.xz",
+      "os": {
+        "linux": "linux",
+        "macos": "macos"
+      },
+      "arch": {
+        "x86_64": "x86_64",
+        "aarch64": "aarch64"
+      },
+      "checksumIndex": {
+        "url": "https://ziglang.org/download/index.json",
+        "path": [
+          "{version}",
+          "{arch}-{os}",
+          "shasum"
+        ]
+      },
+      "strip": 1,
+      "check": {
+        "run": [
+          "{bin}/zig",
+          "version"
+        ]
+      }
+    }
+  },
+  "links": [
+    "zig"
+  ]
+}

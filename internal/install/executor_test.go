@@ -3,6 +3,7 @@ package install
 import (
 	"bytes"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -22,12 +23,23 @@ type fakeSystem struct {
 	broken    map[string]bool     // packages apt can't install
 	passing   map[string]bool     // run checks that pass, by argv
 	effects   map[string]string   // a step's argv → the run check it makes pass
+	served    map[string][]byte   // URLs Fetch answers
+	fetched   []string
 	ran       []string
+}
+
+func (f *fakeSystem) Fetch(url string) (io.ReadCloser, error) {
+	f.fetched = append(f.fetched, url)
+	body, ok := f.served[url]
+	if !ok {
+		return nil, errors.New(url + ": 404 Not Found")
+	}
+	return io.NopCloser(bytes.NewReader(body)), nil
 }
 
 func newFake(t *testing.T) *fakeSystem {
 	return &fakeSystem{t: t, bin: t.TempDir(), installed: map[string]bool{}, provides: map[string][]string{},
-		broken: map[string]bool{}, passing: map[string]bool{}, effects: map[string]string{}}
+		broken: map[string]bool{}, passing: map[string]bool{}, effects: map[string]string{}, served: map[string][]byte{}}
 }
 
 func (f *fakeSystem) env() []string { return []string{"PATH=" + f.bin, "HOME=" + f.t.TempDir()} }
@@ -225,10 +237,10 @@ func TestUninstallRemovesOnlyWhatNoOneElseNeeds(t *testing.T) {
 	for _, name := range []string{"ldc", "dub", "build-essential", "shared-lib", "named-lib"} {
 		f.install(name)
 	}
-	if err := record(receipts, "d", "apt", []string{"ldc", "dub", "build-essential", "shared-lib", "named-lib", "gone"}, nil); err != nil {
+	if err := record(receipts, "d", "apt", installed{packages: []string{"ldc", "dub", "build-essential", "shared-lib", "named-lib", "gone"}}); err != nil {
 		t.Fatal(err)
 	}
-	if err := record(receipts, "other", "apt", []string{"shared-lib"}, nil); err != nil {
+	if err := record(receipts, "other", "apt", installed{packages: []string{"shared-lib"}}); err != nil {
 		t.Fatal(err)
 	}
 	others := map[string]*Definition{"named": mustParse(t, `{"schema": 1, "toolchain": {"versions": "system",
@@ -268,14 +280,19 @@ func TestUnsupported(t *testing.T) {
 	cases := map[string]string{
 		rakuJSON:                         "",
 		`{"schema": 2, "toolchain": {}}`: "schema 2 is newer than this binary reads",
-		`{"schema": 1, "links": ["zig"], "toolchain": {"versions": "system", "packages": {"apt": ["x"]}}}`:                  `it uses "links", which this binary can't install yet`,
-		`{"schema": 1, "toolchain": {"versions": "system", "packages": {"apt": ["x"]}, "releases": {}}}`:                    `it uses "toolchain.releases", which this binary can't install yet`,
-		`{"schema": 1, "toolchain": {"versions": "managed", "archive": {"url": "u"}}}`:                                      "its toolchain isn't system packages, which this binary can't install yet",
-		`{"schema": 1, "toolchain": {"versions": "system", "packages": {"brew": ["x"]}}}`:                                   "it has no apt packages",
-		`{"schema": 1, "toolchain": {"versions": "system", "packages": {"apt": ["x"]}}, "tools": [{"use": "osv-scanner"}]}`: "tool osv-scanner isn't system packages, which this binary can't install yet",
+		`{"schema": 1, "installed": {}, "toolchain": {"versions": "system", "packages": {"apt": ["x"]}}}`:                                                                                                   `it uses "installed", which this binary can't install yet`,
+		`{"schema": 1, "toolchain": {"versions": "system", "packages": {"apt": ["x"]}, "releases": {}}}`:                                                                                                    `it uses "toolchain.releases", which this binary can't install yet`,
+		`{"schema": 1, "toolchain": {"versions": "managed", "archive": {"url": "u"}}}`:                                                                                                                      `only "versions": "single" release downloads are installed by this binary yet`,
+		`{"schema": 1, "toolchain": {"versions": "single", "archive": {"url": "u.tar.gz", "os": {"linux": "l"}, "arch": {"x86_64": "x"}, "check": {"path": "{bin}/x"}}}}`:                                   "its download for linux-x86_64 has no checksum",
+		`{"schema": 1, "toolchain": {"versions": "single", "archive": {"url": "u.tar.gz", "os": {"macos": "m"}, "arch": {"x86_64": "x"}, "sha256": {"macos-x86_64": "a"}, "check": {"path": "x"}}}}`:        "it has no download for linux-x86_64",
+		`{"schema": 1, "toolchain": {"versions": "single", "archive": {"url": "u.7z", "os": {"linux": "l"}, "arch": {"x86_64": "x"}, "checksum": "{url}.sha256", "check": {"path": "x"}}}}`:                 `its download's format "" isn't one this binary unpacks`,
+		`{"schema": 1, "toolchain": {"versions": "single", "archive": {"url": "u.zip", "os": {"linux": "l"}, "arch": {"x86_64": "x"}, "checksum": "{url}.sha256"}}}`:                                        `its download has no "check" saying the toolchain works`,
+		`{"schema": 1, "toolchain": {"versions": "single", "archive": {"url": "u.zip", "os": {"linux": "l"}, "arch": {"x86_64": "x"}, "checksum": "{url}.sha256", "check": {"path": "x"}, "mirror": "m"}}}`: `it uses "toolchain.archive.mirror", which this binary can't install yet`,
+		`{"schema": 1, "toolchain": {"versions": "system", "packages": {"brew": ["x"]}}}`:                                                                                                                   "it has no apt packages",
+		`{"schema": 1, "toolchain": {"versions": "system", "packages": {"apt": ["x"]}}, "tools": [{"use": "osv-scanner"}]}`:                                                                                 "tool osv-scanner isn't system packages, which this binary can't install yet",
 	}
 	for text, want := range cases {
-		if got := mustParse(t, text).Unsupported("apt"); got != want {
+		if got := mustParse(t, text).Unsupported("apt", linux); got != want {
 			t.Errorf("%s:\n  %q, want %q", text, got, want)
 		}
 	}
@@ -292,7 +309,7 @@ func TestUnsupported(t *testing.T) {
 // managers, the prototype's archives and installers are declined, and
 // every install.json reads.
 func TestBuiltInDefinitions(t *testing.T) {
-	converted := []string{"bash", "cobol", "d", "erlang", "lisp", "octave", "pascal", "prolog", "racket", "raku", "tcl"}
+	converted := []string{"bash", "cobol", "d", "erlang", "gleam", "lisp", "octave", "pascal", "prolog", "racket", "raku", "tcl", "zig"}
 	paths, _ := filepath.Glob(filepath.Join("..", "..", "languages", "*", FileName))
 	if len(paths) == 0 {
 		t.Fatal("no install.json")
@@ -305,7 +322,7 @@ func TestBuiltInDefinitions(t *testing.T) {
 			continue
 		}
 		for _, manager := range []string{"apt", "brew"} {
-			why := def.Unsupported(manager)
+			why := def.Unsupported(manager, Platform{map[string]string{"apt": "linux", "brew": "macos"}[manager], "x86_64"})
 			if contains(converted, lang) != (why == "") {
 				t.Errorf("%s on %s: %q", lang, manager, why)
 			}
@@ -336,3 +353,5 @@ func TestConditions(t *testing.T) {
 		}
 	}
 }
+
+var linux = Platform{"linux", "x86_64"}

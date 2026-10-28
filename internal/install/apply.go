@@ -3,6 +3,8 @@ package install
 import (
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -39,19 +41,22 @@ func (p *Plan) Apply(w io.Writer, receiptsDir string) map[string]error {
 	installedNow := p.Manager.Installed(p.missingPackages(p.Languages))
 	for _, lp := range p.Languages {
 		lang := lp.Language.Name
-		var installed, ran []string
+		var did installed
 		for _, name := range p.missingPackages([]*LanguagePlan{lp}) {
 			if installedNow[name] {
-				installed = append(installed, name)
+				did.packages = append(did.packages, name)
 			}
 		}
 		if failed[lang] == nil {
-			ran, failed[lang] = p.runSteps(w, lp)
+			failed[lang] = p.unpackAndLink(w, lp, &did)
+		}
+		if failed[lang] == nil {
+			did.steps, failed[lang] = p.runSteps(w, lp)
 		}
 		if failed[lang] == nil {
 			failed[lang] = p.verify(lp)
 		}
-		if err := record(receiptsDir, lang, p.Manager.Name, installed, ran); err != nil && failed[lang] == nil {
+		if err := record(receiptsDir, lang, p.Manager.Name, did); err != nil && failed[lang] == nil {
 			failed[lang] = fmt.Errorf("writing its receipt: %w", err)
 		}
 		if failed[lang] == nil {
@@ -69,6 +74,60 @@ func (p *Plan) install(w io.Writer, packages []string) error {
 		}
 	}
 	return nil
+}
+
+// unpackAndLink installs a language's release download whose check fails
+// (fetched into the downloads cache, verified, unpacked beside its home and
+// renamed into place) and makes its links.
+func (p *Plan) unpackAndLink(w io.Writer, lp *LanguagePlan, did *installed) error {
+	ctx := lp.Language.Ctx
+	for _, action := range lp.Actions {
+		if action.Kind != KindLink && action.Download == nil {
+			continue
+		}
+		action.evaluate(ctx, p.Manager)
+		if action.Done {
+			continue
+		}
+		if action.Kind == KindLink {
+			if err := makeLink(action.Link); err != nil {
+				return err
+			}
+			_, _ = fmt.Fprintf(w, "==> %s: linked %s\n", lp.Language.Name, action.Link[0])
+			did.links = append(did.links, action.Link[0])
+			continue
+		}
+		_, _ = fmt.Fprintf(w, "==> %s: downloading %s\n", lp.Language.Name, action.Download.describe())
+		file, err := action.Download.fetchVerified(ctx.System, DownloadsDir(ctx.Env))
+		if err != nil {
+			return err
+		}
+		if err := unpackInto(file, action.Download.Format, action.Download.Strip, action.Home); err != nil {
+			return fmt.Errorf("unpacking %s: %w", action.Download.URL, err)
+		}
+		did.homes = append(did.homes, action.Home)
+		if !action.Check.Holds(ctx) {
+			return fmt.Errorf("%s was unpacked into %s, but its check still fails (%s)", action.Label, action.Home, action.Check)
+		}
+	}
+	return nil
+}
+
+// makeLink points a link at its target, replacing a link but never a file
+// that isn't one (a command the user put there).
+func makeLink(link [2]string) error {
+	if info, err := os.Lstat(link[0]); err == nil {
+		if info.Mode()&os.ModeSymlink == 0 {
+			return fmt.Errorf("%s is there and isn't a link; not replacing it", link[0])
+		}
+		if err := os.Remove(link[0]); err != nil {
+			return err
+		}
+	}
+	if err := os.MkdirAll(filepath.Dir(link[0]), 0o755); err != nil {
+		return err
+	}
+	return os.Symlink(link[1], link[0])
 }
 
 // runSteps runs a language's steps whose checks fail, each checked again
@@ -102,7 +161,7 @@ func (p *Plan) verify(lp *LanguagePlan) error {
 		action.evaluate(lp.Language.Ctx, p.Manager)
 		if action.Applies && !action.Done {
 			what := action.Kind + " " + action.Label
-			if action.Kind == KindTool {
+			if action.Kind == KindTool || action.Problem != "" && action.Kind != KindStep {
 				what = action.Problem
 			}
 			return fmt.Errorf("still missing after the install: %s", what)

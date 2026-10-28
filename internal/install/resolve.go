@@ -16,6 +16,9 @@ type Platform struct {
 	Arch string
 }
 
+// Key is the platform as definitions name it: "linux-x86_64".
+func (p Platform) Key() string { return p.OS + "-" + p.Arch }
+
 // Platforms is every platform hecatron releases for.
 var Platforms = []Platform{
 	{"linux", "x86_64"}, {"linux", "aarch64"},

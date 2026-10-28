@@ -1,4 +1,8 @@
-# Gleam
-RUN GLEAM_ARCH="$(uname -m)" && \
-    curl -fsSL "https://github.com/gleam-lang/gleam/releases/download/v1.14.0/gleam-v1.14.0-${GLEAM_ARCH}-unknown-linux-musl.tar.gz" \
-    | tar xz -C /usr/local/bin gleam
+# Gleam: the version config.json pins (each-version: there is one), checked
+# against its published SHA-256
+# each-version
+RUN V="{version}" && U="https://github.com/gleam-lang/gleam/releases/download/v${V}/gleam-v${V}-$(uname -m)-unknown-linux-musl.tar.gz" && \
+    curl -fsSL -o /tmp/gleam.tar.gz "${U}" && \
+    echo "$(curl -fsSL "${U}.sha256" | cut -d' ' -f1)  /tmp/gleam.tar.gz" | sha256sum -c - >/dev/null && \
+    tar xzf /tmp/gleam.tar.gz -C /usr/local/bin gleam && rm /tmp/gleam.tar.gz
+# end-each-version

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/dnf/hecatron/internal/install"
 	"github.com/dnf/hecatron/internal/project"
@@ -70,11 +71,7 @@ func chooseInstaller(p *project.Project, lang, script string, manager *install.M
 		choice.reason = err.Error()
 		return choice
 	}
-	managerName := ""
-	if manager != nil {
-		managerName = manager.Name
-	}
-	if why := def.Unsupported(managerName); why != "" {
+	if why := def.Unsupported(manager.Name, platform()); why != "" {
 		choice.reason = install.FileName + ": " + why
 		return choice
 	}
@@ -95,6 +92,9 @@ func installLanguage(p *project.Project, choice installerChoice, env []string) (
 		return nil, err
 	}
 	language := &install.Language{Name: choice.lang, Def: choice.def, Path: choice.path}
+	if version, err := p.DefaultVersion(choice.lang); err == nil {
+		language.Version = strings.TrimPrefix(version, "=")
+	}
 	languageEnv, err := p.LanguageEnv(choice.lang, "")
 	if err != nil {
 		return nil, err

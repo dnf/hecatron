@@ -470,16 +470,16 @@ DO NOT EDIT banner naming the generator and its source:
   or into `/opt` and `/usr/local` (most JVM languages', Node.js, .NET and
   Ruby on Linux) aren't cached: restoring them needs root. A toolchain
   hecatron's executor downloads from its `install.json` (§19, installs as
-  data) goes to `~/.local/share/hecatron/toolchains/<lang>` instead, which
-  needs no root, and that directory is the language's toolchain cache,
+  data) goes to `~/.local/share/hecatron/toolchains/<lang>` instead (Gleam,
+  Zig), which needs no root, and that directory is the language's toolchain cache,
   keyed on the language, the platform (`runner.os`, `runner.arch`), a hash
   of the built-in `install.json` and default version (written into the
   key, so a hecatron with different data writes a new one), and the
   project's own `install.json`, config and pin files. A restored toolchain
   passes the executor's checks, so the install does nothing; a partial or
-  corrupt one fails them and is installed again. The languages converted
-  so far all install system packages, so none is cached this way yet;
-  each language moved to a download makes the cache cover more. Since the
+  corrupt one fails them and is installed again. Most languages converted
+  so far install system packages, which aren't cached; each language moved
+  to a download makes the cache cover more. Since the
   toolchain key names hecatron's version, upgrading hecatron makes `hecatron
   check` ask for the files to be regenerated.
 
@@ -637,8 +637,10 @@ Settled on 2026-10-26:
 ## 18. Toolchain versions
 
 Status: **accepted**; implemented for Python, Go, Rust, Node.js, Java,
-Ruby, PHP, .NET and Elixir. Other installers install one version per language, some
-the latest at install time (Swift, Julia, PowerShell, Odin, Crystal).
+Ruby, PHP, .NET and Elixir; Gleam and Zig install the one version their
+definition pins (§19, installs as data). Other installers install one
+version per language, some the latest at install time (Swift, Julia,
+PowerShell, Odin, Crystal).
 
 A project can need an older or newer version of a language than the
 newest one, and two projects on the same machine can need different ones. So
@@ -1198,20 +1200,22 @@ installers; the rest of the definitions are converted in later batches.
 2. **macOS uses the upstream release download where there is one**, so
    macOS and Linux install the same pinned version of a language
    downloaded as an archive; Homebrew stays for system packages (the
-   languages that come from apt on Linux). This lands with the archive
-   batch.
+   languages that come from apt on Linux). Done for the release
+   downloads converted so far (Gleam, Zig).
 3. **PATH: links to each language's default version in one hecatron bin
    directory**, which the `~/.hecatron/env` the top-level `install.sh`
    already writes puts on PATH; no shim. Hecatron's own commands put each
    component's version on PATH themselves (§18), so the links only serve
-   interactive shells. This lands with the archive batch, the first to
-   install outside the package manager.
+   interactive shells. The directory is `~/.local/share/hecatron/bin`
+   (under `$XDG_DATA_HOME` when set), which `~/.hecatron/env` puts on PATH
+   after hecatron's own `bin/`.
 
 **The format.** `install.json` has a `schema` (1), a `toolchain` (what
 provides the language: `"versions"`, `"system"` for the package manager's
 version, `"single"` or `"managed"` for versions hecatron installs, and one
-install kind: `packages` per package manager, or later `archive`, `vendor`,
-`via`), then optional lists, each entry with conditions:
+install kind: `packages` per package manager, or `archive`, a release
+download; later `vendor` and `via`), then optional lists, each entry with
+conditions:
 
 - `packages`: more system packages, with `when` (install only if it holds)
   and `unless` (already satisfied: D's `build-essential` unless there's a
@@ -1230,8 +1234,9 @@ Conditions are the hooks' tier-1 vocabulary (`file`, `missing`, `all`,
 directory), `command` (on the language's PATH), `run` (exits 0) and
 `platform`; file tests hold when any component's directory satisfies them.
 Anything needing a loop, string parsing or a second command's output is a
-hook or family code, not new syntax. Later stages add `archive`, `vendor`
-and `via` toolchains, shared tools in `languages/_tools.json`, `links`,
+hook or family code, not new syntax. Later stages add `vendor` and `via`
+toolchains, `"managed"` (side by side) downloads, shared tools in
+`languages/_tools.json`,
 `installed` (in place of `installed.sh`), `requires` and `installOf`,
 `hook`, `deps` and `legacy` (old locations to clean up).
 
@@ -1296,6 +1301,49 @@ don't depend on it.
 Pascal, Prolog, Racket, Raku and Tcl. Elixir, the twelfth the survey listed
 as packages only, is no longer: its installer now installs builds.hex.pm's
 releases side by side (#164).
+
+**Release downloads (stage 2).** A `toolchain.archive` is a release
+download, installed `"versions": "single"` (the definition's default from
+`config.json`) for now:
+
+- `url` is a template (`{version}`, `{os}`, `{arch}`, `{ext}`, with `os`,
+  `arch` and `ext` mapping hecatron's names to the publisher's); a
+  platform with no mapping isn't installed from data.
+- **A checksum is mandatory**, from one of: `sha256` inline by platform
+  (`"linux-x86_64": "…"`), `checksum`, a URL template serving it (a
+  sidecar such as Gleam's `{url}.sha256`: its first word), or
+  `checksumIndex`, a JSON index and the keys leading to it (Zig's
+  `index.json`, `["{version}", "{arch}-{os}", "shasum"]`). A definition
+  with none for the platform is declined.
+- `check` is required: what says the unpacked toolchain works
+  (`{"run": ["{bin}/zig", "version"]}`, with `{home}` and `{bin}`).
+- The download goes to `~/.cache/hecatron/downloads/<sha256>`, verified
+  before it is kept (a cached file is checked again before reuse); it is
+  unpacked (`tar.gz` and `zip` in Go, `tar.xz` with the system's `tar`,
+  `strip` leading components) beside its home and renamed into place, so
+  an interrupted install never leaves a half-unpacked home and a broken
+  one is replaced whole. The home is
+  `~/.local/share/hecatron/toolchains/<lang>/<version>`: no root.
+- `links` names the commands linked into the links directory (decision 3);
+  a link is replaced, a file that isn't one never is.
+- The doctor reports a home that is there but fails its check ("doesn't
+  work"), and the usual version check (`installed.sh`) a missing one;
+  `--fix` reinstalls from the downloads cache when it can.
+- The receipt records the homes and links, and uninstall removes them
+  (only ever under the toolchains and links directories).
+
+Converted: **Gleam** (GitHub release, sidecar checksum; Erlang/OTP from
+apt or Homebrew unless an `erl` is there) and **Zig** (ziglang.org,
+checksum from its index; it installed the latest release before, and now
+the version `config.json` pins). Both gain `version`, `track` and
+`path: ["{home}"]` in `config.json` and an `installed.sh` (the toolchains
+directory, then one on PATH from elsewhere), and their scripts install to
+the same place, on macOS too, checked the same way, so the two ways agree
+for the parity harness and for `bin/hecatron` without the binary. Not
+converted: Goose, whose `goose version` prints no version, so a pin can't
+be checked on a machine set up by its script; the "latest" languages
+(Crystal, Haxe, Julia, Nim, Odin, PowerShell, Swift), which need a pinned
+version and a source to update it first.
 
 **Parity.** `tests/docker/parity.sh <image> <lang>...` installs each
 language in two fresh containers with the binary built from the checkout,

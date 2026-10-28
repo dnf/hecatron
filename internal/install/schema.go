@@ -41,6 +41,9 @@ type Definition struct {
 	Tools     []Tool     `json:"tools,omitempty"`
 	Steps     []RunStep  `json:"steps,omitempty"`
 	Uninstall Uninstall  `json:"uninstall,omitempty"`
+	// Links are the default version's commands, linked into hecatron's bin
+	// directory (LinksDir) for interactive shells.
+	Links []string `json:"links,omitempty"`
 
 	keys map[string]json.RawMessage // every key as written, for Unsupported
 	raw  []byte                     // the file, for CacheKey
@@ -95,6 +98,7 @@ type Packages struct {
 	Managers map[string][]string
 	When     *Condition
 	Unless   *Condition
+	Problem  string // the doctor's message while Unless fails
 }
 
 // UnmarshalJSON reads a Packages entry: its managers are its other keys.
@@ -111,6 +115,8 @@ func (p *Packages) UnmarshalJSON(data []byte) error {
 			err = json.Unmarshal(value, &p.When)
 		case "unless":
 			err = json.Unmarshal(value, &p.Unless)
+		case "problem":
+			err = json.Unmarshal(value, &p.Problem)
 		default:
 			if !contains(knownManagers, key) {
 				return fmt.Errorf("packages: unknown key %q", key)
@@ -164,16 +170,33 @@ type Uninstall struct {
 
 // Archive is a release archive to unpack into the version's directory.
 type Archive struct {
-	URL      string            `json:"url,omitempty"` // template: {version} {os} {arch} {ext}
-	OS       map[string]string `json:"os,omitempty"`  // hecatron's OS name → the URL's
-	Arch     map[string]string `json:"arch,omitempty"`
-	Ext      map[string]string `json:"ext,omitempty"` // by OS; "default" for the rest
-	Checksum string            `json:"checksum,omitempty"`
+	URL  string            `json:"url,omitempty"` // template: {version} {os} {arch} {ext}
+	OS   map[string]string `json:"os,omitempty"`  // hecatron's OS name → the URL's
+	Arch map[string]string `json:"arch,omitempty"`
+	Ext  map[string]string `json:"ext,omitempty"` // by OS; "default" for the rest
+	// A download is verified against one of: SHA256, inline by platform
+	// ("linux-x86_64"); Checksum, a URL template serving it (a sidecar:
+	// its first word); ChecksumIndex, a JSON index listing it.
+	SHA256        map[string]string `json:"sha256,omitempty"`
+	Checksum      string            `json:"checksum,omitempty"`
+	ChecksumIndex *ChecksumIndex    `json:"checksumIndex,omitempty"`
 	// Resolver names Go code that finds the URL and checksum where a
 	// template can't (a release's build number, a paged API).
 	Resolver string            `json:"resolver,omitempty"`
-	Strip    int               `json:"strip,omitempty"` // leading path components to drop
-	Bin      map[string]string `json:"bin,omitempty"`   // by OS ("default"): the directory to put on PATH
+	Format   string            `json:"format,omitempty"` // tar.gz, tar.xz, zip; else from the URL
+	Strip    int               `json:"strip,omitempty"`  // leading path components to drop
+	Bin      map[string]string `json:"bin,omitempty"`    // by OS ("default"): the directory to put on PATH
+	// Check says the unpacked toolchain works ({home}, {bin}): a restored
+	// or interrupted one that doesn't is installed again.
+	Check *Condition `json:"check,omitempty"`
+}
+
+// ChecksumIndex is a JSON document listing downloads' SHA-256s: Path is the
+// keys leading to one, each a template (["{version}", "{arch}-{os}",
+// "shasum"]), since a key can hold dots.
+type ChecksumIndex struct {
+	URL  string   `json:"url"`
+	Path []string `json:"path"`
 }
 
 // Vendor is an installer the toolchain's own project publishes.
@@ -259,13 +282,13 @@ func (d *Definition) validate() error {
 // supportedKeys are the install.json keys this binary carries out. The
 // others ("family", "links", "installed", "deps", "hook", "installOf"...)
 // belong to later stages.
-var supportedKeys = []string{"schema", "toolchain", "packages", "tools", "steps", "uninstall"}
+var supportedKeys = []string{"schema", "toolchain", "packages", "tools", "steps", "uninstall", "links"}
 
 // Unsupported says why this binary can't carry out the definition on
 // manager's platform ("" when it can): a newer schema, a key or install
 // kind it doesn't run yet, or no package for the platform's package
 // manager. Its caller then runs install.sh.
-func (d *Definition) Unsupported(manager string) string {
+func (d *Definition) Unsupported(manager string, platform Platform) string {
 	if d.Schema > SchemaVersion {
 		return fmt.Sprintf("schema %d is newer than this binary reads", d.Schema)
 	}
@@ -284,14 +307,19 @@ func (d *Definition) Unsupported(manager string) string {
 	}
 	t := d.Toolchain
 	switch {
-	case t.Archive != nil, t.Vendor != nil, t.Via != nil, t.Platforms != nil:
-		return "its toolchain isn't system packages, which this binary can't install yet"
+	case t.Vendor != nil, t.Via != nil, t.Platforms != nil:
+		return "its toolchain isn't system packages or a release download, which this binary can't install yet"
+	case t.Archive != nil:
+		if why := t.Archive.unsupported(t.Versions, platform); why != "" {
+			return why
+		}
 	case t.Versions != "system":
-		return `only "versions": "system" toolchains are installed by this binary yet`
-	case manager == "":
-		return "this platform has no package manager hecatron uses"
-	case len(t.Packages[manager]) == 0:
+		return `a toolchain from system packages has "versions": "system"`
+	case len(t.Packages[manager]) == 0 && manager != "":
 		return "it has no " + manager + " packages"
+	}
+	if manager == "" && len(d.allPackages()) > 0 {
+		return "this platform has no package manager hecatron uses"
 	}
 	for _, tool := range d.Tools {
 		if tool.Use != "" || tool.Archive != nil || tool.Version != "" {
@@ -299,6 +327,72 @@ func (d *Definition) Unsupported(manager string) string {
 		}
 	}
 	return ""
+}
+
+// allPackages are every package the definition names, for any manager.
+func (d *Definition) allPackages() []string {
+	var names []string
+	for _, list := range d.Toolchain.Packages {
+		names = append(names, list...)
+	}
+	for _, entry := range d.Packages {
+		for _, list := range entry.Managers {
+			names = append(names, list...)
+		}
+	}
+	for _, tool := range d.Tools {
+		for _, list := range tool.Packages {
+			names = append(names, list...)
+		}
+	}
+	return names
+}
+
+// archiveKeys are the keys this binary reads in an archive.
+var archiveKeys = []string{"url", "os", "arch", "ext", "sha256", "checksum", "checksumIndex", "resolver", "format",
+	"strip", "bin", "check"}
+
+// unsupported says why this binary can't install the archive on platform.
+func (a *Archive) unsupported(versions string, platform Platform) string {
+	switch {
+	case versions != "single":
+		return `only "versions": "single" release downloads are installed by this binary yet`
+	case a.Resolver != "":
+		return "its download needs resolver " + a.Resolver + ", which this binary doesn't run yet"
+	case a.OS[platform.OS] == "" || a.Arch[platform.Arch] == "":
+		return "it has no download for " + platform.Key()
+	case a.SHA256[platform.Key()] == "" && a.Checksum == "" && a.ChecksumIndex == nil:
+		return "its download for " + platform.Key() + " has no checksum"
+	case a.Check == nil:
+		return `its download has no "check" saying the toolchain works`
+	}
+	if _, err := a.format(platform); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
+// format is how the download unpacks: tar.gz, tar.xz or zip.
+func (a *Archive) format(platform Platform) (string, error) {
+	format := a.Format
+	if format == "" {
+		url := a.URL
+		if ext := byOS(a.Ext, platform.OS); ext != "" {
+			url = strings.ReplaceAll(url, "{ext}", ext)
+		}
+		for _, known := range []string{"tar.gz", "tgz", "tar.xz", "zip"} {
+			if strings.HasSuffix(url, "."+known) {
+				format = known
+			}
+		}
+	}
+	switch format {
+	case "tgz":
+		return "tar.gz", nil
+	case "tar.gz", "tar.xz", "zip":
+		return format, nil
+	}
+	return "", fmt.Errorf("its download's format %q isn't one this binary unpacks", format)
 }
 
 // nestedKeys are the keys this binary reads inside the toolchain, a tool
@@ -329,6 +423,17 @@ func (d *Definition) unknownNestedKeys() []string {
 				if !contains(known, key) && !contains(unknown, section+"."+key) {
 					unknown = append(unknown, section+"."+key)
 				}
+			}
+		}
+	}
+	if raw, ok := d.keys["toolchain"]; ok {
+		var toolchain struct {
+			Archive map[string]json.RawMessage `json:"archive"`
+		}
+		_ = json.Unmarshal(raw, &toolchain)
+		for key := range toolchain.Archive {
+			if !contains(archiveKeys, key) {
+				unknown = append(unknown, "toolchain.archive."+key)
 			}
 		}
 	}

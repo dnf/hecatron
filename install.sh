@@ -179,19 +179,30 @@ _hecatron_binary() {
     rm -rf "${_hecatron_tmp}"
 }
 
-# ~/.hecatron/env (sh, bash, zsh) and env.fish: put bin/ on PATH once.
+# ~/.hecatron/env (sh, bash, zsh) and env.fish: put bin/ on PATH once, and
+# after it the links to each language's default toolchain that hecatron
+# installs itself (~/.local/share/hecatron/bin, docs/installers.md).
 _hecatron_write_env() {
     _hecatron_bin="$1/bin"
+    _hecatron_links="${XDG_DATA_HOME:-${HOME}/.local/share}/hecatron/bin"
     cat > "$1/env" <<EOF
-# hecatron: put the command on PATH (written by install.sh; sourced from your
-# shell's startup files).
+# hecatron: put the command, and the toolchains it installs, on PATH
+# (written by install.sh; sourced from your shell's startup files).
+case ":\${PATH}:" in
+    *":${_hecatron_links}:"*) ;;
+    *) export PATH="${_hecatron_links}:\${PATH}" ;;
+esac
 case ":\${PATH}:" in
     *":${_hecatron_bin}:"*) ;;
     *) export PATH="${_hecatron_bin}:\${PATH}" ;;
 esac
 EOF
     cat > "$1/env.fish" <<EOF
-# hecatron: put the command on PATH (written by install.sh).
+# hecatron: put the command, and the toolchains it installs, on PATH
+# (written by install.sh).
+if not contains "${_hecatron_links}" \$PATH
+    set -gx PATH "${_hecatron_links}" \$PATH
+end
 if not contains "${_hecatron_bin}" \$PATH
     set -gx PATH "${_hecatron_bin}" \$PATH
 end
@@ -276,7 +287,7 @@ _hecatron_status=$?
 unset -f _hecatron_say _hecatron_fail _hecatron_retry _hecatron_sudo _hecatron_python_ok _hecatron_macos_clt \
     _hecatron_linux_packages _hecatron_prerequisites _hecatron_script_dir _hecatron_fetch _hecatron_binary _hecatron_write_env \
     _hecatron_add_line _hecatron_modify_path _hecatron_install
-unset _hecatron_src _hecatron_dir _hecatron_repo _hecatron_version _hecatron_bin _hecatron_file \
+unset _hecatron_src _hecatron_dir _hecatron_repo _hecatron_version _hecatron_bin _hecatron_links _hecatron_file \
     _hecatron_line _hecatron_env_line _hecatron_rc _hecatron_here _hecatron_target _hecatron_sourced \
     _hecatron_flag _hecatron_label _hecatron_missing _hecatron_try _hecatron_go _hecatron_tag _hecatron_os \
     _hecatron_arch _hecatron_asset _hecatron_url _hecatron_tmp _hecatron_want _hecatron_got

@@ -3,6 +3,8 @@ package install
 import (
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -83,6 +85,26 @@ func (r *Removal) Apply(w io.Writer, manager *Manager, receiptsDir string) error
 	}
 	for _, kept := range r.Kept {
 		_, _ = fmt.Fprintf(w, "==> %s: keeping %s\n", r.Language, kept)
+	}
+	toolchains := filepath.Join(filepath.Dir(receiptsDir), "toolchains") + string(filepath.Separator)
+	for _, link := range r.Receipt.Links {
+		if target, err := os.Readlink(link); err == nil && strings.HasPrefix(target, toolchains) {
+			_, _ = fmt.Fprintf(w, "==> rm %s\n", link)
+			if err := os.Remove(link); err != nil {
+				return err
+			}
+		}
+	}
+	for _, home := range r.Receipt.Homes {
+		if !strings.HasPrefix(home, toolchains) {
+			continue // only ever hecatron's own toolchains directory
+		}
+		if _, err := os.Lstat(home); err == nil {
+			_, _ = fmt.Fprintf(w, "==> rm -r %s\n", home)
+			if err := os.RemoveAll(home); err != nil {
+				return err
+			}
+		}
 	}
 	if len(r.Remove) > 0 {
 		command := manager.RemoveCommand(r.Remove)

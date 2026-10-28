@@ -29,8 +29,9 @@ Misspelled names get a "did you mean?" prompt (e.g. `hecatron install elixer` su
 A language with a `languages/<lang>/install.json` is installed by
 hecatron's binary from that data instead of its `install.sh`
 ([design.md §19](design.md#installs-as-data-77)). So far that covers the
-languages whose installers only install system packages: Bash, COBOL, D,
-Erlang, Common Lisp, Octave, Pascal, Prolog, Racket, Raku and Tcl.
+languages whose installers only install system packages (Bash, COBOL, D,
+Erlang, Common Lisp, Octave, Pascal, Prolog, Racket, Raku and Tcl) and two
+release downloads (Gleam, Zig).
 
 ```json
 {
@@ -62,6 +63,12 @@ Erlang, Common Lisp, Octave, Pascal, Prolog, Racket, Raku and Tcl.
   machine (apt on Debian and Ubuntu, Homebrew on macOS); otherwise
   `install.sh`. Without the binary, `bin/hecatron` runs the scripts, which
   stay.
+- **Release downloads** are pinned (the version in `config.json`), always
+  checked against a SHA-256 (inline, a published checksum file, or the
+  publisher's index), unpacked into
+  `~/.local/share/hecatron/toolchains/<lang>/<version>` without root, and
+  their commands linked into `~/.local/share/hecatron/bin`, which
+  `~/.hecatron/env` puts on PATH. macOS gets the same download as Linux.
 - **`hecatron install --plan`** prints, for each language, every action and
   whether it is done, will install or run, or is skipped (and why), the
   languages left to their scripts and why, and the commands it would run.
@@ -74,12 +81,12 @@ such language, keyed on the language, the platform, the definition and
 default version hecatron would install, and the project's own
 `install.json` and pin files. A restored toolchain passes the install's
 checks, so `hct install` does nothing; a partial restore fails them and is
-repaired. The languages converted so far all come from apt, which isn't
-cached (restoring it needs root); caching gets better as more languages
-move to downloaded toolchains.
+repaired. Gleam and Zig are cached this way; the other converted languages come
+from apt, which isn't cached (restoring it needs root), so caching gets
+better as more languages move to downloaded toolchains.
 
 ```bash
-hct install --plan go     # what would install, and how
+hct install --plan zig    # what would install, and how
 hct workflows             # with "ci": {"cache": true}, caches what can be
 ```
 
@@ -134,6 +141,7 @@ Most languages install via Homebrew (including Dart via `dart-sdk`). Exceptions:
 - **Rust** — installed via rustup (not Homebrew, to avoid conflicts)
 - **Haskell** — installed via ghcup (GHC + cabal)
 - **Elm** — installed via `npm install -g` (requires Node.js)
+- **Gleam, Zig** — the same release download as on Linux, into `~/.local/share/hecatron/toolchains`
 
 ### Linux
 

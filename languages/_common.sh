@@ -702,6 +702,78 @@ release_binary_install() {
     rm -rf "${_work}"
 }
 
+# A language's default version (config.json's "version", without its "="),
+# for an installer that downloads a release: the version the binary installs
+# from install.json too.
+default_version() {
+    python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["version"].lstrip("="))' \
+        "$(dirname "${BASH_SOURCE[0]}")/$1/config.json"
+}
+
+# A release download, checked against its SHA-256, unpacked into hecatron's
+# toolchains directory as the binary's install.json installs it
+# (~/.local/share/hecatron/toolchains/<lang>/<version>; no root), and its
+# commands linked with toolchain_link. Unpacked in a temporary directory and
+# moved into place, so an interrupted install leaves nothing half done. Usage:
+#   toolchain_release_install LANG VERSION URL SHA256 STRIP
+toolchain_release_install() {
+    local _lang="$1" _version="$2" _url="$3" _sha256="$4" _strip="$5" _home _work _flag=-xzf
+    _home="$(toolchain_home "${_lang}" "${_version}")"
+    _work="$(mktemp -d)"
+    curl -fsSL -o "${_work}/download" "${_url}"
+    if [ "$(sha256_of "${_work}/download")" != "${_sha256}" ]; then
+        rm -rf "${_work}"
+        echo "error: the ${_lang} download doesn't match its checksum (${_url})" >&2
+        return 1
+    fi
+    case "${_url}" in
+        *.tar.xz) _flag=-xJf ;;
+    esac
+    mkdir -p "${_work}/home" "$(dirname "${_home}")"
+    tar -C "${_work}/home" --strip-components "${_strip}" "${_flag}" "${_work}/download"
+    rm -rf "${_home}"
+    mv "${_work}/home" "${_home}"
+    rm -rf "${_work}"
+}
+
+# hecatron's own data directory, and a version's directory in it.
+hecatron_data() { echo "${XDG_DATA_HOME:-${HOME}/.local/share}/hecatron"; }
+toolchain_home() { echo "$(hecatron_data)/toolchains/$1/$2"; }
+
+# Link commands from a toolchain directory into ~/.local/share/hecatron/bin.
+# Usage: toolchain_link HOME COMMAND...
+toolchain_link() {
+    local _home="$1" _command _bin
+    shift
+    _bin="$(hecatron_data)/bin"
+    mkdir -p "${_bin}"
+    for _command in "$@"; do
+        ln -sfn "${_home}/${_command}" "${_bin}/${_command}"
+    done
+}
+
+# Remove a language's toolchains directory and the links into it.
+toolchain_uninstall() {
+    local _dir _link
+    _dir="$(hecatron_data)/toolchains/$1"
+    for _link in "$(hecatron_data)"/bin/*; do
+        case "$(readlink "${_link}" 2>/dev/null)" in
+            "${_dir}"/*) rm -f "${_link}" ;;
+        esac
+    done
+    rm -rf "${_dir}"
+}
+
+# For installed.sh: "version<TAB>home" for each of a language's versions in
+# the toolchains directory whose COMMAND (relative to the home) is there.
+toolchain_installed() {
+    local _home
+    for _home in "$(hecatron_data)/toolchains/$1"/*; do
+        [ -x "${_home}/$2" ] && printf '%s\t%s\n' "${_home##*/}" "${_home}"
+    done
+    return 0
+}
+
 # For the install.sh of a language installed from its install.json
 # (docs/installers.md), which other installers still run directly (Elixir's
 # and Gleam's run Erlang's): install from the data through hecatron's binary,

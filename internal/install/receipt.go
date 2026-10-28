@@ -18,16 +18,48 @@ type Receipt struct {
 	Language string              `json:"language"`
 	Packages map[string][]string `json:"packages,omitempty"` // package manager → packages
 	Steps    []string            `json:"steps,omitempty"`    // steps it ran, for the record
+	Homes    []string            `json:"homes,omitempty"`    // toolchain directories it unpacked
+	Links    []string            `json:"links,omitempty"`    // links it made in LinksDir
 	Updated  string              `json:"updated"`
 }
 
-// ReceiptsDir is where receipts live: $XDG_DATA_HOME/hecatron/receipts,
-// else ~/.local/share/hecatron/receipts.
-func ReceiptsDir(env []string) string {
+// installed is what one install did, for the receipt.
+type installed struct {
+	packages, steps, homes, links []string
+}
+
+func (i installed) empty() bool {
+	return len(i.packages)+len(i.steps)+len(i.homes)+len(i.links) == 0
+}
+
+// dataDir is hecatron's own data directory: $XDG_DATA_HOME/hecatron, else
+// ~/.local/share/hecatron.
+func dataDir(env []string) string {
 	if data := getenv(env, "XDG_DATA_HOME"); data != "" {
-		return filepath.Join(data, "hecatron", "receipts")
+		return filepath.Join(data, "hecatron")
 	}
-	return filepath.Join(getenv(env, "HOME"), ".local", "share", "hecatron", "receipts")
+	return filepath.Join(getenv(env, "HOME"), ".local", "share", "hecatron")
+}
+
+// ReceiptsDir is where receipts live (receipts/ in the data directory).
+func ReceiptsDir(env []string) string { return filepath.Join(dataDir(env), "receipts") }
+
+// ToolchainsDir is where downloaded toolchains are unpacked, one
+// <lang>/<version> directory each (ToolchainsHome, or under
+// $XDG_DATA_HOME).
+func ToolchainsDir(env []string) string { return filepath.Join(dataDir(env), "toolchains") }
+
+// LinksDir holds links to each language's default version's commands,
+// which ~/.hecatron/env puts on PATH for interactive shells.
+func LinksDir(env []string) string { return filepath.Join(dataDir(env), "bin") }
+
+// DownloadsDir caches downloads by their SHA-256: $XDG_CACHE_HOME/hecatron/
+// downloads, else ~/.cache/hecatron/downloads.
+func DownloadsDir(env []string) string {
+	if cache := getenv(env, "XDG_CACHE_HOME"); cache != "" {
+		return filepath.Join(cache, "hecatron", "downloads")
+	}
+	return filepath.Join(getenv(env, "HOME"), ".cache", "hecatron", "downloads")
 }
 
 // ReadReceipt is a language's receipt, nil when there is none.
@@ -71,8 +103,8 @@ func ReadReceipts(dir, except string) (map[string]*Receipt, error) {
 }
 
 // record adds what an install did to the language's receipt.
-func record(dir, lang, manager string, packages, steps []string) error {
-	if len(packages) == 0 && len(steps) == 0 {
+func record(dir, lang, manager string, did installed) error {
+	if did.empty() {
 		return nil
 	}
 	receipt, err := ReadReceipt(dir, lang)
@@ -85,11 +117,13 @@ func record(dir, lang, manager string, packages, steps []string) error {
 	if receipt.Packages == nil {
 		receipt.Packages = map[string][]string{}
 	}
-	receipt.Packages[manager] = union(receipt.Packages[manager], packages)
+	receipt.Packages[manager] = union(receipt.Packages[manager], did.packages)
 	if len(receipt.Packages[manager]) == 0 {
 		delete(receipt.Packages, manager)
 	}
-	receipt.Steps = union(receipt.Steps, steps)
+	receipt.Steps = union(receipt.Steps, did.steps)
+	receipt.Homes = union(receipt.Homes, did.homes)
+	receipt.Links = union(receipt.Links, did.links)
 	receipt.Updated = time.Now().UTC().Format(time.RFC3339)
 	return writeReceipt(dir, receipt)
 }
