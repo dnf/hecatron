@@ -131,6 +131,19 @@ def dotnet():
                     yield sdk["version"], release["release-date"], lts
 
 
+def elixir():
+    page = 1
+    while True:
+        releases = json.loads(fetch(f"https://api.github.com/repos/elixir-lang/elixir/releases?per_page=100&page={page}"))
+        if not releases:
+            return
+        for release in releases:
+            version = release["tag_name"].lstrip("v")
+            if not release["prerelease"] and FINAL.match(version) and release.get("published_at"):
+                yield version, release["published_at"][:10], False
+        page += 1
+
+
 SOURCES = {
     "typescript": (node, "https://nodejs.org/dist/index.json"),
     "python": (python, "https://www.python.org/api/v2/downloads/release/"),
@@ -139,6 +152,7 @@ SOURCES = {
     "java": (java, "https://api.adoptium.net/v3/assets/feature_releases"),
     "ruby": (ruby, "https://github.com/ruby/www.ruby-lang.org/blob/master/_data/releases.yml"),
     "php": (php, "https://www.php.net/releases/"),
+    "elixir": (elixir, "https://github.com/elixir-lang/elixir/releases"),
     "csharp": (dotnet, "https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json"),
 }
 ALIASES = {"node": "typescript", "dotnet": "csharp"}

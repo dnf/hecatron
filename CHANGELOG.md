@@ -6,6 +6,18 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Elixir versions:** Elixir installs side by side from builds.hex.pm's
+  precompiled releases, with a default of 1.20.4 (it was Ubuntu's apt 1.14,
+  which current libraries warn about), a `.tool-versions` or `mise.toml`
+  pin (`1.17.3-otp-27` reads as 1.17.3) or the `elixir-version` a CI
+  workflow tests choosing another. Each version runs on an OTP it supports,
+  linked as `<home>/erlang`: the Erlang on PATH when it is one, else
+  builds.hex.pm's OTP build on Ubuntu or Homebrew's `erlang@N` on macOS. On
+  Debian, which has no builds there, an Elixir its own Erlang can't run
+  fails with the reason. Each version has its own Hex (`MIX_ARCHIVES`), so
+  one built on a newer OTP doesn't break an older Elixir's. `hct doctor
+  elixir` notes which OTP each component's Elixir runs on.
+
 - **Doctor notes:** a `doctor.sh` line starting `note: ` (`note` in
   `_common.sh`) is shown under the language, like the version notes, without
   counting as a problem, for what's worth knowing about a healthy toolchain.

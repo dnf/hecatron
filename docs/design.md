@@ -617,7 +617,7 @@ Settled on 2026-10-26:
 ## 18. Toolchain versions
 
 Status: **accepted**; implemented for Python, Go, Rust, Node.js, Java,
-Ruby, PHP and .NET. Other installers install one version per language, some
+Ruby, PHP, .NET and Elixir. Other installers install one version per language, some
 the latest at install time (Swift, Julia, PowerShell, Odin, Crystal).
 
 A project can need an older or newer version of a language than the
@@ -694,8 +694,8 @@ The dates come from tables shipped with each definition
 release), so resolution stays offline and two machines agree.
 `libexec/maintenance/release_dates.py` writes them from each language's
 release source: nodejs.org, python.org, go.dev's release history, Rust's
-`RELEASES.md`, Adoptium, ruby-lang.org, php.net and Microsoft's .NET release
-metadata. A weekly workflow (`.github/workflows/release-dates.yml`) reruns
+`RELEASES.md`, Adoptium, ruby-lang.org, php.net, Microsoft's .NET release
+metadata and Elixir's GitHub releases. A weekly workflow (`.github/workflows/release-dates.yml`) reruns
 it and opens a pull request when there are new releases. A language sharing
 another's toolchain names it in `releasesOf` (JavaScript's Node.js is
 TypeScript's, F#'s and VB.NET's SDK C#'s), and shares its version settings.
