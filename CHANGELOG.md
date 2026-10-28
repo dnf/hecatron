@@ -21,6 +21,12 @@ minor version can change behaviour. Numbers are
   toolchain JDK is found from its root and its version catalog
   (`libs.versions.jdk`), so a source directory's build gets it installed.
 
+- **Other languages' tools on PATH:** a language's hooks (and
+  `hct env LANG`) now also have the project's other added, enabled
+  languages' static `path` directories on PATH, after the language's own,
+  so a Ruby, OCaml or D build that runs `cargo` finds the Rust that
+  `hct install` put in `~/.cargo/bin`.
+
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
   checksum file, or the publisher's index). Gleam and Zig install that way,
