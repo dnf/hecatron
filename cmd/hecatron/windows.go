@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"runtime"
 
 	"github.com/dnf/hecatron/internal/platform"
@@ -72,4 +73,15 @@ func bashProgram() string {
 		return bash
 	}
 	return "bash"
+}
+
+// noPythonOnWindows is whether handing a command to the scripts is
+// pointless: on Windows without python3, where saying why the Go model
+// declined serves better than asking for Python.
+func noPythonOnWindows() bool {
+	if runtime.GOOS != "windows" {
+		return false
+	}
+	_, err := exec.LookPath("python3")
+	return err != nil
 }

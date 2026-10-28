@@ -45,7 +45,7 @@ func (c *cli) languageEnv() (int, bool) {
 	}
 	c.project.Environ = c.environment(nil)
 	env, err := c.project.LanguageEnv(lang, component)
-	if project.IsUnsupported(err) {
+	if project.IsUnsupported(err) && !noPythonOnWindows() {
 		return 0, false
 	}
 	if err != nil {
