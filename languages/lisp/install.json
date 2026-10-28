@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "toolchain": {
+    "versions": "system",
+    "packages": {
+      "apt": [
+        "sbcl"
+      ],
+      "brew": [
+        "sbcl"
+      ]
+    }
+  }
+}

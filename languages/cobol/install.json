@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "toolchain": {
+    "versions": "system",
+    "packages": {
+      "apt": [
+        "gnucobol",
+        "cmake"
+      ],
+      "brew": [
+        "gnu-cobol",
+        "cmake"
+      ]
+    }
+  },
+  "uninstall": {
+    "keep": [
+      "cmake"
+    ],
+    "because": "C, C++, Objective-C and Fortran install it with their scripts"
+  }
+}

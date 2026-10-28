@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dnf/hecatron/internal/install"
 	"github.com/dnf/hecatron/internal/project"
 )
 
@@ -141,7 +142,7 @@ func TestGitHubWorkflowCache(t *testing.T) {
 }
 
 func TestWithGitHubCacheLeavesOtherWorkflows(t *testing.T) {
-	c := languageCache{lang: "x", caches: []cacheEntry{{dependencyCache, []string{"~/.x"}, []string{"**/x.lock"}}}}
+	c := languageCache{lang: "x", caches: []cacheEntry{{dependencyCache, []string{"~/.x"}, []string{"**/x.lock"}, ""}}}
 	for _, body := range []string{
 		"jobs:\n  t:\n    steps:\n      - run: true\n",            // no checkout
 		"jobs:\n  t:\n    uses: actions/checkout@v4\n",            // not a step
@@ -249,5 +250,41 @@ func TestYAMLScalar(t *testing.T) {
 		if got := yamlScalar(in); got != want {
 			t.Errorf("yamlScalar(%q) = %s, want %s", in, got, want)
 		}
+	}
+}
+
+// A toolchain hecatron's executor installs into its own directory is
+// cached there, keyed on what it would install: the definition and the
+// default version (a literal hash), the project's install.json and pins,
+// the platform.
+func TestEngineToolchainCache(t *testing.T) {
+	p := ciFixture(t, strings.Replace(ciConfig, "%s", `, "ci": {"cache": true}`, 1))
+	if dir, _, err := engineToolchain(p, "bash"); err != nil || dir != "" {
+		t.Errorf("bash comes from apt, which isn't cached: %q %v", dir, err)
+	}
+	defer func(saved func(*install.Definition) bool) { engineInstalls = saved }(engineInstalls)
+	engineInstalls = func(*install.Definition) bool { return true }
+	dir := filepath.Join(p.Root, ".hecatron", "languages", "rust")
+	if err := os.WriteFile(filepath.Join(dir, "install.json"), []byte(`{"schema": 1, "toolchain": {"versions": "managed",
+		"archive": {"url": "https://example.com/rust-{version}.tar.gz"}}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	c, err := projectCache(p, "rust")
+	if err != nil {
+		t.Fatal(err)
+	}
+	toolchain := c.caches[0]
+	if toolchain.kind != toolchainCache || len(toolchain.dirs) != 1 || toolchain.dirs[0] != "~/.local/share/hecatron/toolchains/rust" ||
+		len(toolchain.data) != 16 || !contains(toolchain.keyFiles, ".hecatron/languages/rust/install.json") {
+		t.Errorf("rust's toolchain cache: %+v", toolchain)
+	}
+	key, restore := githubCacheKey("rust", toolchain, "v1")
+	if !strings.HasPrefix(key, "hecatron-rust-toolchain-${{ runner.os }}-v1-${{ runner.arch }}-"+toolchain.data+"-${{ hashFiles(") ||
+		!strings.HasPrefix(key, restore) {
+		t.Errorf("key %q, restore-keys %q", key, restore)
+	}
+	yaml, links := gitlabCache(c, "v1")
+	if !strings.Contains(strings.Join(yaml, "\n"), "prefix: rust-toolchain-v1-"+toolchain.data) || len(links) == 0 {
+		t.Errorf("GitLab: %q %q", yaml, links)
 	}
 }

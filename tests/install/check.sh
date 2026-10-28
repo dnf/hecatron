@@ -61,6 +61,12 @@ case " ${_unsupported} " in
 esac
 
 cd "${_project}" && git init -q
+# HECATRON_CHECK_SEED: a directory of project files copied in first, so
+# what an installer installs only for some files (Bats for .bats tests) is
+# checked too (tests/docker/parity.sh).
+if [ -n "${HECATRON_CHECK_SEED:-}" ]; then
+    cp -R "${HECATRON_CHECK_SEED}/." "${_project}/"
+fi
 hecatron init >/dev/null && hecatron add "${_lang}" >/dev/null
 echo "### doctor --fix ${_lang}"
 hecatron doctor --fix "${_lang}"; _fix=$?

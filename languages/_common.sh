@@ -686,6 +686,24 @@ release_binary_install() {
     rm -rf "${_work}"
 }
 
+# For the install.sh of a language installed from its install.json
+# (docs/installers.md), which other installers still run directly (Elixir's
+# and Gleam's run Erlang's): install from the data through hecatron's binary,
+# as `hecatron install` would, and exit with its status. The script carries
+# on itself without the binary (HECATRON_BINARY, which the binary gives the
+# installers it runs), under HECATRON_INSTALLER=script, or when the binary
+# declines the language (status 125: a project's own install.sh, a platform
+# the data doesn't cover). `hecatron _install` never runs a script, so the
+# two can't call each other in a loop.
+install_from_data() {
+    local _status=0
+    [ "${HECATRON_INSTALLER:-}" != script ] || return 0
+    [ -n "${HECATRON_BINARY:-}" ] && [ -x "${HECATRON_BINARY}" ] || return 0
+    "${HECATRON_BINARY}" _install "$1" || _status=$?
+    [ "${_status}" -eq 125 ] && return 0
+    exit "${_status}"
+}
+
 # OSV-Scanner (Google's), the dependency auditor `hecatron audit` uses for
 # ecosystems without one of their own (docs/audit.md), and what `hecatron
 # licenses` reads licenses with (docs/licenses.md): its release binary,
