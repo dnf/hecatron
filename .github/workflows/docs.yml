@@ -1,0 +1,41 @@
+name: Docs
+
+# A documentation-only change (ci.yml skips those): the unit tests, which
+# include every check that reads the docs (the language count, the languages
+# table, the generated skill reference). Quick, Linux only.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.md"
+      - "docs/**"
+      - "changelog.d/**"
+      - "assets/**"
+      - "LICENSE.md"
+      - "llms.txt"
+  pull_request:
+    branches: [main]
+    paths:
+      - "**.md"
+      - "docs/**"
+      - "changelog.d/**"
+      - "assets/**"
+      - "LICENSE.md"
+      - "llms.txt"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: The unit tests
+        env:
+          HECATRON_NO_GO: "1"
+        run: python3 -m unittest discover -s tests
