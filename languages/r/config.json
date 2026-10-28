@@ -31,5 +31,8 @@
     "lockFiles": [
       "renv.lock"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

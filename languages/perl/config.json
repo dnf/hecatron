@@ -40,5 +40,9 @@
   },
   "renovate": [
     "cpanfile"
+  ],
+  "installNeedsRoot": [
+    "linux",
+    "macos"
   ]
 }

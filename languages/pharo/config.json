@@ -29,5 +29,8 @@
     "dependencies": [
       "~/.cache/hecatron/pharo"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

@@ -3,8 +3,8 @@ package project
 import (
 	"os"
 	"path/filepath"
-	"sort"
 	"slices"
+	"sort"
 	"strings"
 )
 

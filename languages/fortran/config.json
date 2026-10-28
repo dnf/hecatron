@@ -18,5 +18,8 @@
     "make"
   ],
   "testing": "fpm test, CTest",
-  "linting": null
+  "linting": null,
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

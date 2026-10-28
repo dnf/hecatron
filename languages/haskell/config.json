@@ -46,5 +46,8 @@
   },
   "renovate": [
     "haskell-cabal"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

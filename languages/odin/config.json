@@ -13,5 +13,8 @@
     "odin"
   ],
   "testing": "@(test) procedures",
-  "linting": "odin vet"
+  "linting": "odin vet",
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

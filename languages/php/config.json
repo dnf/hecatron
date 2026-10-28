@@ -88,5 +88,8 @@
   "dependabot": "composer",
   "renovate": [
     "composer"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

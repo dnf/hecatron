@@ -30,5 +30,8 @@
       "*.opam.locked",
       "dune-project"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

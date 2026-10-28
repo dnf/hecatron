@@ -17,5 +17,8 @@
     "toolchain": [
       "~/.local/share/racket"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

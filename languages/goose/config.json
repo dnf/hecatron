@@ -16,5 +16,8 @@
     "goose"
   ],
   "testing": "test programs",
-  "linting": "goose check"
+  "linting": "goose check",
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

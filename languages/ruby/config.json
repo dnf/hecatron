@@ -102,5 +102,8 @@
   "dependabot": "bundler",
   "renovate": [
     "bundler"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

@@ -28,5 +28,8 @@
     "dependencies": [
       "~/.cache/uv"
     ]
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

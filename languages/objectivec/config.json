@@ -35,5 +35,8 @@
   "formatting": "clang-format",
   "notes": {
     "formatting": "Only when the project has a `.clang-format` file: C-family code has no single standard style."
-  }
+  },
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

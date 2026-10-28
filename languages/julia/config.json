@@ -30,5 +30,8 @@
       "Project.toml"
     ]
   },
-  "dependabot": "julia"
+  "dependabot": "julia",
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

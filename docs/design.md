@@ -1184,9 +1184,12 @@ entry points' output byte for byte. Decided with the first port
   `doctor --fix` name the languages whose install may need root, say why,
   and run `sudo -v` before any installer, refreshing it every minute until
   they finish (`cmd/hecatron/sudo.go`). An installer script may need root
-  wherever it runs; one from data, when its plan has a `sudo` command. The
-  aim beyond that is to need root less: tools hecatron downloads itself go
-  under `~/.local/share/hecatron` rather than `/usr/local/bin`.
+  where its definition's `installNeedsRoot` says (anywhere, without it, or
+  for a project's own); one from data, when its plan has a `sudo` command.
+  To need root less, tools hecatron downloads itself go in
+  `~/.local/share/hecatron/bin` rather than `/usr/local/bin`, and `hct`
+  puts that directory first on PATH, as install.sh's env does, so hooks a
+  GUI runs and CI find them too.
 
 - **`banner`** (`hecatron banner --generator PATH ...`, for a project's own
   generators) ported next, with `internal/generate`'s banner. It needs no

@@ -25,5 +25,9 @@
   "dependabot": "pub",
   "renovate": [
     "pub"
+  ],
+  "installNeedsRoot": [
+    "linux",
+    "macos"
   ]
 }
