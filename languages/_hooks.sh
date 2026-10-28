@@ -1363,9 +1363,11 @@ cmake_gtest_run() {
 # run, to tell.
 cmake_gtest_binaries() {
     local _file
-    { find "$1" \( -name _deps -o -name CMakeFiles \) -prune -o -type f -perm -u+x -print 2>/dev/null
-      find "$(cmake_source_dir)" -maxdepth 1 -type f -perm -u+x -print 2>/dev/null; } |
-        grep -Ev '\.(so|dylib|a|sh|py)(\.[0-9.]*)?$' | sort -u |
+    # The build's first, then the source directory's, each in a fixed
+    # order whatever the locale; a program found twice runs once.
+    { find "$1" \( -name _deps -o -name CMakeFiles \) -prune -o -type f -perm -u+x -print 2>/dev/null | LC_ALL=C sort
+      find "$(cmake_source_dir)" -maxdepth 1 -type f -perm -u+x -print 2>/dev/null | LC_ALL=C sort; } |
+        grep -Ev '\.(so|dylib|a|sh|py)(\.[0-9.]*)?$' | awk '!seen[$0]++' |
         while IFS= read -r _file; do
             if grep -qaF -- '--gtest_list_tests' "${_file}" 2>/dev/null; then echo "${_file}"; fi
         done
