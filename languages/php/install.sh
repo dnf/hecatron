@@ -84,7 +84,8 @@ _install_php() {
 # require, with require-dev's (the tests need them), one per line: each
 # component's own composer.json, else the nearest above it in the project
 # (Avro's and Thrift's root composer.json covers lang/php). Composer refuses
-# to install without them.
+# to install without them. A dependency's (Monolog's mongodb/mongodb needs
+# ext-mongodb) are the ones a dry run of the install names.
 _required_extensions() {
     local _dir
     while IFS= read -r _dir; do
@@ -105,6 +106,10 @@ for key in ("require", "require-dev"):
         if name.lower().startswith("ext-"):
             print(name[4:].lower())
 ' "${_dir}/composer.json"
+        if has composer; then
+            (cd "${_dir}" && composer install --dry-run --no-interaction --no-plugins --no-scripts 2>&1 </dev/null) |
+                grep -oE 'ext-[A-Za-z0-9_]+' | cut -c5- | tr '[:upper:]' '[:lower:]' || true
+        fi
     done < <(impl_dirs php) | sort -u
 }
 
