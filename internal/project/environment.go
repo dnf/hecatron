@@ -365,6 +365,11 @@ func (p *Project) LanguageEnv(lang, component string) (LanguageEnv, error) {
 		}
 		env.Path = append(env.Path, sortedDirs(matches)...)
 	}
+	others, err := p.othersStaticPath(lang, env.Path)
+	if err != nil {
+		return LanguageEnv{}, err
+	}
+	env.Path = append(env.Path, others...)
 	variables, present := definition.Get("env")
 	if fields != nil && present {
 		object, isObject := variables.(*Object)
@@ -391,6 +396,35 @@ func (p *Project) LanguageEnv(lang, component string) (LanguageEnv, error) {
 		}
 	}
 	return env, nil
+}
+
+// othersStaticPath are the static "path" directories of the project's other
+// added, enabled languages, in config order, leaving out any already in
+// have: a build in one language often runs another's tool (a Ruby gem's
+// Rakefile or an OCaml dune rule calling cargo), which that language's
+// installer put in a directory only its own environment has.
+func (p *Project) othersStaticPath(lang string, have []string) ([]string, error) {
+	seen := map[string]bool{}
+	for _, dir := range have {
+		seen[dir] = true
+	}
+	var dirs []string
+	for _, other := range p.Languages {
+		if other == lang || contains(p.Disabled, other) {
+			continue
+		}
+		static, err := p.StaticPath(other)
+		if err != nil {
+			return nil, err
+		}
+		for _, dir := range static {
+			if !seen[dir] {
+				seen[dir] = true
+				dirs = append(dirs, dir)
+			}
+		}
+	}
+	return dirs, nil
 }
 
 // hostOS is runtime.GOOS, which the parity tests set to take macOS's path
