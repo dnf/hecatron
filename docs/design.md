@@ -1117,8 +1117,9 @@ express it.
 1. **Rules in `config.json`** for what is a lookup: which build files mean
    which commands. An action names the build files to look for and where
    (`find`: here, `above-first` or `below-first`, as `find_build` does
-   today; found only in directories below, the action runs in each), then
-   its steps, in order:
+   today, or `below-else-here`, for a tool that also works without them:
+   Python's pytest; found only in directories below, the action runs in
+   each), then its steps, in order:
 
    ```json
    "lint": {"files": ["mix.exs"], "unknown": "no mix.exs", "steps": [

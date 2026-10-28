@@ -6,6 +6,12 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Python tests in monorepos:** `hct test python` in a directory without
+  a `pyproject.toml`, `setup.py` or `setup.cfg` now tests the Python
+  projects in the directories below (`py-polars/`, `python-package/`),
+  each in its own environment, instead of running pytest over the whole
+  tree; with none below, pytest runs there on its own as before.
+
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
   checksum file, or the publisher's index). Gleam and Zig install that way,
