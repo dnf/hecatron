@@ -4,7 +4,7 @@ description: Builds, tests, lints and formats code, fetches dependencies and che
 license: MIT
 compatibility: Needs the hct command (macOS or Linux), installed with hecatron's install.sh.
 metadata:
-  hecatron-version: "0.4.0"
+  hecatron-version: "0.5.0"
 allowed-tools: Bash(HECATRON_OUTPUT=agent hct status) Bash(hct status:*) Bash(hct --version) Bash(hct help:*) Bash(hct list:*) Bash(hct check) Bash(hct doctor)
 ---
 

@@ -6,6 +6,8 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+## 0.5.0 (2026-10-28)
+
 - **Leave files out of formatting:** `"format": {"exclude": [...]}` lists
   paths `hct format` and `hct lint`'s format check skip (a fixture
   misformatted on purpose, generated code), where hecatron gives the
