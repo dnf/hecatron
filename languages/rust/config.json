@@ -59,8 +59,7 @@
         {
           "run": [
             "cargo",
-            "test",
-            "--all-targets"
+            "test"
           ]
         }
       ]
