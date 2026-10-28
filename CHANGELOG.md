@@ -13,6 +13,26 @@ minor version can change behaviour. Numbers are
   "no go.mod here, below, or above it"; files under `templates/` (project
   scaffolding a tool generates from), `test_data/`, `tests_data/` and
   `vendored/` no longer make a language.
+- **Node.js tests in more layouts:** `hct test typescript` and `hct test
+  javascript` now test a workspace root without a `test` script through its
+  packages' scripts, a package with a configured Vitest, Jest or Mocha but
+  no script through that runner, and a directory without a `package.json`
+  (or a root `package.json` holding only tooling) through the language's
+  packages below it, where they failed with "no test command". Scripts
+  that call pnpm or Yarn by name find Corepack's shim on PATH, and tests
+  run with `CI=true` (unless it's set), so runners that would otherwise
+  watch for changes (Create React App's, Vitest's) run once.
+
+- **Detection:** `hct init` no longer proposes components from directories
+  like `src/<service>/src/main/<lang>` when another language's directory
+  isn't named for it (TypeScript in `src/frontend`), which left that
+  language, and every other one outside the pattern, with no directory.
+
+- **Other languages' tools on PATH:** a language's hooks (and
+  `hct env LANG`) now also have the project's other added, enabled
+  languages' static `path` directories on PATH, after the language's own,
+  so a Ruby, OCaml or D build that runs `cargo` finds the Rust that
+  `hct install` put in `~/.cargo/bin`.
 
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
