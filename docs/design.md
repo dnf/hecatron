@@ -1026,6 +1026,15 @@ entry points' output byte for byte. Decided with the first port
   script prints a NUL byte (dropped, as bash drops it, without the
   warning).
 
+- **`version <version>`** ported next (`version.sh`'s orchestration): each
+  added language's `version.sh` (the project's, else the built-in one;
+  still a script) with the version, from the root, with the project's
+  exported variables, then the count; a hook that fails stops it with the
+  hook's status, as `set -e` does. Bash's own report of a hook killed by a
+  signal (`Terminated  bash ...` on stderr) isn't repeated; the status is
+  the same. `metadata` stays a script: it is interactive and edits the
+  metadata file through Python string literals.
+
 - **Audit and outdated parsing** (#75; `internal/deps`) ported next:
   every report `audit.py` and `outdated.py` read (npm, pnpm, Yarn 1 and
   2+, Bun, pip-audit, govulncheck, bundler-audit, Composer, .NET and

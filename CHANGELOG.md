@@ -27,6 +27,8 @@ minor version can change behaviour. Numbers are
   command appends a table of languages and components with status and
   time, then each failure's error lines, log and rerun command; `audit`,
   `licenses` and `advisor` add their findings (#101).
+- **`hct version <version>` runs in the binary** (90 ms to 11 ms around a
+  stub hook); each language's `version.sh` stays a script.
 
 ## 0.5.0 (2026-10-28)
 
