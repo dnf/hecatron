@@ -400,7 +400,7 @@ saves it, as init would. Init itself:
    Examples, tests and test data, docs, tools, hooks, a generator's
    templates and vendored code (`examples/`, `tests/`, `tests_data/`,
    `tools/`, `hooks/`, `templates/`, `fixtures/`, `android/`,
-   `third_party/`, `vendor/`, `node_modules/` and the like, in any case:
+   `third_party/`, `vendor/`, `vendored/`, `node_modules/` and the like, in any case:
    `Examples/`) and hidden directories (`.jenkins/`) are skipped. A language left out
    is listed with the reason.
 3. Detects the layout. A language's directory may carry any of its
@@ -417,7 +417,10 @@ saves it, as init would. Init itself:
    `detectSources`, any file when it sits at the root or under one of the
    parents above (`lib/`, `sdks/`...: Thrift's `lib/go`, whose `go.mod` is at
    the root). So a build file at the root keeps a language there beside a
-   `languages/go/` holding no Go. A directory another language was found in
+   `languages/go/` holding no Go. A build file more than three levels below
+   a directory doesn't count, since the hooks look no deeper: with only such
+   build files the directory doesn't fit, and the language gets the
+   directory holding them (antlr4's `runtime/Go/antlr/v4`, not the root). A directory another language was found in
    doesn't fit (Cucumber's `javascript/` is TypeScript's, so JavaScript found
    in `jsonschema/` gets `implPaths` `jsonschema`). `--components` and
    `--impl-path` set the layout explicitly.
