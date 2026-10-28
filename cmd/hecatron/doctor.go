@@ -296,7 +296,7 @@ func reportModelError(err error) { reportModelErrorTo(os.Stderr, err) }
 func reportModelErrorTo(w io.Writer, err error) {
 	var e *project.Error
 	if errors.As(err, &e) {
-		fmt.Fprintln(w, "hecatron:", e.Message)
+		_, _ = fmt.Fprintln(w, "hecatron:", e.Message)
 	}
 }
 
