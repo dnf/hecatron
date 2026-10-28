@@ -200,10 +200,14 @@ spec = Spec(sys.argv[1])
 print(newest([v.strip() for v in sys.stdin if spec.matches(v.strip())]) or "")
 ' "$1" "${HECATRON_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/libexec/lib"
 }
-# A definition's default version (its config.json's "version", without "=").
+# A definition's default version (its config.json's "version", without
+# "="): the running installer's, or the named language's (`default_version
+# zig`), the version the binary installs from install.json too.
 default_version() {
-    python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["version"].lstrip("="))' \
-        "$(dirname "$0")/config.json"
+    local _config
+    _config="$(dirname "$0")/config.json"
+    [ -z "${1:-}" ] || _config="$(dirname "${BASH_SOURCE[0]}")/$1/config.json"
+    python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["version"].lstrip("="))' "${_config}"
 }
 
 # For Ruby's installer and doctor: whether Bundler would install into a gem
@@ -781,14 +785,6 @@ release_binary_install() {
     esac
     $SUDO install -m 0755 "${_work}/${_member}" "/usr/local/bin/${_name}"
     rm -rf "${_work}"
-}
-
-# A language's default version (config.json's "version", without its "="),
-# for an installer that downloads a release: the version the binary installs
-# from install.json too.
-default_version() {
-    python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["version"].lstrip("="))' \
-        "$(dirname "${BASH_SOURCE[0]}")/$1/config.json"
 }
 
 # A release download, checked against its SHA-256, unpacked into hecatron's
