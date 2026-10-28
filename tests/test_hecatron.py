@@ -584,6 +584,19 @@ class InstallTest(Fixture):
         self.assertIn("Failed to fetch dependencies: a", result.stderr)
 
 
+class BashTestHookTest(Fixture):
+    def test_bats_runs_the_suites_but_not_their_fixtures(self):
+        for name in ("test/a.bats", "test/sub/b.bats", "test/fixtures/bad.bats", "tests/c.bats"):
+            write(self.path(name), "")
+        fake = self.path(".fakebin", "bats")
+        write(fake, '#!/bin/sh\necho "ran bats $*"\n', 0o755)
+        env = {**os.environ, "PATH": f"{os.path.dirname(fake)}:{os.environ['PATH']}", "HECATRON_LANG": "bash"}
+        result = subprocess.run(["bash", os.path.join(HOME, "languages", "bash", "hooks", "test.sh")],
+                                cwd=self.root, env=env, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("ran bats test/a.bats test/sub/b.bats tests/c.bats", result.stdout)
+
+
 class LanguageCommandsTest(Fixture):
     def test_add_remove_enable_disable(self):
         self.configure()
