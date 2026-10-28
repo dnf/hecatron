@@ -39,6 +39,9 @@ import versions
 SCHEMA = 1
 # How old a checkout's last commit is before its toolchains are the releases
 # current then (Project.as_of).
+# Build output and dependencies, which floorFiles aren't read from.
+FLOOR_FILES_SKIPPED = {"bin", "obj", "node_modules", "build", "target", "packages"}
+
 AS_OF_AFTER_DAYS = 365
 HECATRON_HOME = os.environ.get(
     "HECATRON_HOME", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -403,6 +406,8 @@ class Project:
         default = self.default_version(lang)
         selects = True
         spec, source = self._pin(lang, component)
+        if isinstance(spec, str) and spec.startswith(versions.FLOOR):
+            spec = self._above_floor(lang, component, spec[len(versions.FLOOR):], default)
         if spec is versions.NOT_PINNED:
             spec, source = self._project_version(lang), "project"
             if spec is None:
@@ -417,6 +422,36 @@ class Project:
             if source == "default" or not spec.startswith("="):
                 spec, source = self._as_of_version(lang, spec, source)
         return {"spec": spec, "source": source, "exact": spec is not None and spec.startswith("=")}, selects
+
+    def _above_floor(self, lang: str, component: str, floor: str, default: str | None) -> str:
+        """The version for a pin that is a floor (global.json's latestMajor:
+        8.0.100 or later): the default when it is that or later, else the
+        newest release of the floor's major; raised to the newest major the
+        component's floor files need (a project targeting net10.0)."""
+        least = versions.Spec(floor).numbers
+        spec = default if default is not None and versions.Spec(default).numbers >= least else str(least[0])
+        needed = self._floor_files_major(lang, component)
+        if needed is not None and needed > versions.Spec(spec).numbers[0]:
+            spec = str(needed)
+        return spec
+
+    def _floor_files_major(self, lang: str, component: str) -> int | None:
+        """The newest major the definition's floorFiles ask for, in the
+        component's directory and up to three levels below it."""
+        entries = list(self._layer(lang, True).get("floorFiles", [])) + list(self._layer(lang, False).get("floorFiles", []))
+        if not entries:
+            return None
+        top = self.impl_dir(component, lang)
+        majors = []
+        for current, dirs, _ in os.walk(top):
+            dirs[:] = sorted(d for d in dirs if not d.startswith(".") and d not in FLOOR_FILES_SKIPPED)
+            if os.path.relpath(current, top).count(os.sep) >= 2 and current != top:
+                dirs[:] = []
+            for entry in entries:
+                spec, _ = self._read_entry(current, entry)
+                if isinstance(spec, str) and spec.startswith(versions.FLOOR):
+                    majors.append(versions.Spec(spec[len(versions.FLOOR):]).numbers[0])
+        return max(majors) if majors else None
 
     def _older_line(self, lang: str, supported: str, default: str) -> bool:
         """Whether the line a component supports up to (3.14) is older than

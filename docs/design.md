@@ -754,9 +754,16 @@ component, and the doctor says so.
 Some files name a floor rather than a version, and a format keeps the part
 the ecosystem holds fixed: `global.json`'s `rollForward` decides how far the
 .NET SDK may move from `sdk.version`, so `latestFeature` from 8.0.100 reads as
-`8.0` and `latestMajor` as `8`, the newest release of which always qualifies;
+`8.0` and `latestMinor` as `8`, the newest release of which always qualifies;
 `disable` is exact, and `patch`, the default, keeps the version as written,
-since its scope, a feature band (8.0.1xx), isn't a prefix. In
+since its scope, a feature band (8.0.1xx), isn't a prefix. `latestMajor` is a
+floor and nothing more, as .NET treats it (decided): the default when it is
+that version or later, else the newest release of the floor's major, raised
+to the newest major the component's `floorFiles` need. Those are a
+definition's files read in the component's directory and up to three levels
+below it (not build output): for .NET, the projects' `TargetFramework(s)`, so
+a `global.json` asking for 8.0.100 or later in a repository whose projects
+target `net10.0` gets SDK 10. In
 `composer.json`, `config.platform.php` (the PHP Composer resolves for) is a
 pin on its line (`8.4.0` reads as `8.4`); the `require` constraint on `php`
 isn't, because it is the range a library supports, which the default
