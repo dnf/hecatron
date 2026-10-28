@@ -568,6 +568,17 @@ class EnvironmentTest(VersionFixture):
         self.define(version="=2.0.0", path=["{home}/bin", static], env={"TOOL_HOME": "{home}"})
         self.assertEqual(self.load().language_env("tool", "a"), {"path": [static], "vars": {}})
 
+    def test_other_languages_static_path_entries_follow_its_own(self):
+        own, shared, cargo, off = (self.path(name) for name in ("own", "shared", "cargo", "off"))
+        for directory in (own, shared, cargo, off):
+            os.makedirs(directory)
+        self.define(path=[own, shared])
+        for lang, path in (("rs", [cargo, shared, "{home}/bin"]), ("off", [off])):
+            write(os.path.join(self.builtin, lang, "config.json"), json.dumps({"path": path}))
+        self.configure(languages=["tool", "rs", "off"], components=["a", "b"], implPath="{component}/{lang}")
+        write(self.path(".hecatron", "local.json"), json.dumps({"disabled": ["off"]}))
+        self.assertEqual(self.load().language_env("tool", "a")["path"], [own, shared, cargo])
+
     def test_hooks_run_with_their_components_environment(self):
         for component, version in (("a", "1.0.0"), ("b", "2.0.0")):
             os.makedirs(self.path("opt", f"tool-{version}"))
@@ -721,6 +732,20 @@ class ShippedDefinitionsTest(unittest.TestCase):
                 version = json.load(f).get("version")
             if version is not None:
                 self.assertTrue(str(version).startswith("="), f"{lang}: default version {version!r} isn't exact")
+
+    def test_installers_read_their_own_default_version_or_a_named_one(self):
+        # Installers call default_version for their own definition (rust's
+        # install.sh) and for another's (default_version zig), under set -u.
+        languages = os.path.join(HOME, "languages")
+        with open(os.path.join(languages, "rust", "config.json"), encoding="utf-8") as f:
+            rust = json.load(f)["version"].lstrip("=")
+        with open(os.path.join(languages, "zig", "config.json"), encoding="utf-8") as f:
+            zig = json.load(f)["version"].lstrip("=")
+        script = os.path.join(languages, "rust", "probe.sh")
+        result = subprocess.run(["bash", "-c", 'source "$1"; default_version; default_version zig', script,
+                                 os.path.join(languages, "_common.sh")], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.split(), [rust, zig])
 
     def test_every_shipped_release_table_parses_and_has_its_default(self):
         languages = os.path.join(HOME, "languages")
