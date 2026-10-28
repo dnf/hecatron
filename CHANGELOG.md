@@ -6,13 +6,6 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
-- **.NET's `rollForward: latestMajor` is a floor:** a `global.json` asking
-  for SDK 8.0.100 or later now gets hecatron's default SDK (10), or the
-  newest of its own major when that is newer than the default, raised to
-  the newest major the component's projects target (`net11.0` needs SDK
-  11). Before, it read as SDK 8, which can't build a project targeting
-  `net10.0`. Definitions name such files in the new `floorFiles` key.
-
 - **Node.js tests in more layouts:** `hct test typescript` and `hct test
   javascript` now test a workspace root without a `test` script through its
   packages' scripts, a package with a configured Vitest, Jest or Mocha but
@@ -130,6 +123,13 @@ minor version can change behaviour. Numbers are
   `"strip"`, a regular expression, is removed from the version the file
   gives, for ecosystems that write more than the version in it (asdf's and
   mise's Elixir `1.17.3-otp-27`).
+
+- **.NET's `rollForward: latestMajor` is a floor:** a `global.json` asking
+  for SDK 8.0.100 or later now gets hecatron's default SDK (10), or the
+  newest of its own major when that is newer than the default, raised to
+  the newest major the component's projects target (`net11.0` needs SDK
+  11). Before, it read as SDK 8, which can't build a project targeting
+  `net10.0`. Definitions name such files in the new `floorFiles` key.
 
 ## 0.5.0 (2026-10-28)
 
