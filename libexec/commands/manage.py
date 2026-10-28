@@ -457,7 +457,8 @@ def cmd_banner(args) -> int:
 # directory is placed there.
 SKIPPED_DIRS = {"android", "benchmarks", "buildSrc", "demo", "demos", "doc", "docs", "example", "examples",
                 "external", "fixtures", "hooks", "node_modules", "playground", "sample", "samples", "templates", "test",
-                "testdata", "tests", "third_party", "tools", "tutorial", "tutorials", "vendor"}
+                "test_data", "testdata", "tests", "tests_data", "third_party", "tools", "tutorial", "tutorials",
+                "vendor", "vendored"}
 
 # Where projects keep per-language code; when layouts disagree, one under
 # these (or at the root) beats one covering more languages (Beam's sdks/{lang}

@@ -382,9 +382,9 @@ saves it, as init would. Init itself:
    `package.json` without the definition's `detectScript` npm script doesn't
    count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
    Examples, tests, docs, tools, hooks and vendored code (`examples/`,
-   `tests/`, `tools/`, `hooks/`, `fixtures/`, `templates/`, `android/`,
-   `third_party/`, `vendor/`, `node_modules/` and the like) are skipped. A language left out
-   is listed with the reason.
+   `tests/`, `tests_data/`, `tools/`, `hooks/`, `fixtures/`, `templates/`,
+   `android/`, `third_party/`, `vendor/`, `vendored/`, `node_modules/` and
+   the like) are skipped. A language left out is listed with the reason.
 3. Detects the layout. A language's directory may carry any of its
    definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If
    the directories share a pattern with one part varying (`age/impl/go`,

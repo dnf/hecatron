@@ -21,7 +21,8 @@ import (
 var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildSrc": true, "demo": true, "demos": true,
 	"doc": true, "docs": true, "example": true, "examples": true, "external": true, "fixtures": true,
 	"hooks": true, "node_modules": true, "playground": true, "sample": true, "samples": true, "templates": true, "test": true,
-	"testdata": true, "tests": true, "third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true}
+	"test_data": true, "testdata": true, "tests": true, "tests_data": true, "third_party": true, "tools": true,
+	"tutorial": true, "tutorials": true, "vendor": true, "vendored": true}
 
 // preferredParents are where projects keep per-language code; when layouts
 // disagree, one under these (or at the root) beats one covering more

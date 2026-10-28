@@ -89,6 +89,7 @@ var detectionRepos = map[string]map[string]string{
 	"go directory module":      {"go/go.mod": "", "go/a.go": "", "rust/Cargo.toml": "", "go.work": ""},
 	"root module, code in lib": {"go.mod": "", "lib/go/thrift/a.go": "", "lib/java/pom.xml": "", "lib/rb/x.gemspec": ""},
 	"deep go module":           {"CMakeLists.txt": "", "src/a.cpp": "", "runtime/Go/antlr/v4/go.mod": "", "runtime/Go/antlr/v4/a.go": "", "pyproject.toml": ""},
+	"test data, vendored":      {"go.mod": "", "tests_data/basic/c/a.c": "", "src/vendored/xxhash/x.c": "", "src/a.go": ""},
 	"templates":                {"Cargo.toml": "", "crates/cli/src/templates/go.mod": ""},
 	"tcl in hooks":             {"go.mod": "", "languages/tcl/hooks/run.tcl": "", ".githooks/hooks/x.tcl": ""},
 }
