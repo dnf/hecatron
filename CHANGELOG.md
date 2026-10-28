@@ -27,6 +27,8 @@ minor version can change behaviour. Numbers are
   command appends a table of languages and components with status and
   time, then each failure's error lines, log and rerun command; `audit`,
   `licenses` and `advisor` add their findings (#101).
+- **`hct banner` runs in the binary,** without Python: 3 ms instead of
+  51 ms, for generators that call it for every file they write.
 
 ## 0.5.0 (2026-10-28)
 

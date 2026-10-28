@@ -11,7 +11,7 @@
 // (doctor.go; each language's doctor.sh stays bash), version's help, list,
 // env (with a language, its environment for a component), status, sync, advisor, and the
 // project commands (init, add, remove, enable, disable, check, dockerfile,
-// workflows: manage.go, init.go). The prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
+// workflows: manage.go, init.go), and banner (banner.go). The prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
 
 import (
@@ -89,7 +89,7 @@ func run(argv []string) int {
 			return status
 		}
 	}
-	if handler, ok := nativeCommands[c.command]; ok && (c.project != nil || c.command == "init") {
+	if handler, ok := nativeCommands[c.command]; ok && (c.project != nil || c.command == "init" || c.command == "banner") {
 		if status, handled := handler(c); handled {
 			return status
 		}
@@ -123,6 +123,7 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"dockerfile": (*cli).dockerfile,
 	"workflows":  (*cli).workflows,
 	"version":    (*cli).versionHelp,
+	"banner":     (*cli).banner,
 }
 
 // findProject finds the project (like git). A git repository with no
