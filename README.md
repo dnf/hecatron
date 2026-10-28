@@ -71,12 +71,29 @@ This installs anything hecatron itself needs that's missing (the Command Line
 Tools on macOS; git, Python 3 and perl on Linux), then the latest release
 into `~/.hecatron`, and adds it to your shell's startup files (bash, zsh and
 fish), so new shells have `hct`. It prints the one line that puts it on PATH
-in the current shell. Run it again to update. From a clone instead, source the installer, which also sets up the
+in the current shell. From a clone instead, source the installer, which also sets up the
 shell you're in:
 
 ```bash
 git clone https://github.com/dnf/hecatron ~/.hecatron && . ~/.hecatron/install.sh
 ```
+
+### Update
+
+```bash
+hct self-update            # the latest release
+hct self-update --check    # only say whether there is one (exit 3: there is)
+```
+
+Hecatron never updates itself: it generates CI workflows and a Dockerfile,
+and a new version can change them. Once a day at most it looks for a newer
+release in the background and says so in one line after a command, on a
+terminal, in human output only; never in CI or with
+`HECATRON_NO_UPDATE_CHECK=1`. `hct status` reports it too. `hct
+self-update` verifies the release's binary against its `SHA256SUMS`, swaps
+the new version in whole (a failure leaves the old one working) and
+refreshes the Agent Skill `hct skill install` put in place. A clone updates
+with `git pull`; running install.sh again works too.
 
 ## Quick start
 

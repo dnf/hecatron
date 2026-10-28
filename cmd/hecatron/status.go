@@ -12,7 +12,8 @@ import (
 
 const statusUsage = `Usage: hecatron status [--output human|agent|json]
 
-What to know first in a repository: hecatron's version, the project (its
+What to know first in a repository: hecatron's version (and a newer
+release when the last daily check found one; hct self-update), the project (its
 config saved or only detected), and for each language its directories, the
 toolchain version it resolves to and why, whether that toolchain is
 installed, the last run of each action, and its uncommitted changes; then
@@ -60,6 +61,7 @@ func (c *cli) status() int {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 1
 	}
+	s.SetUpdate(c.knownUpdate())
 	if err := status.Write(os.Stdout, s, string(format)); err != nil {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 1

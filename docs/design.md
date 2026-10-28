@@ -540,6 +540,43 @@ tarball; a release workflow updates the tap formula's URL and checksum. A
 project's `"hecatron": ">=x.y.z"` makes older installs fail with a clear
 message instead of misbehaving.
 
+**Updates: notify and self-update, never auto-update (decided
+2026-10-28).** Hecatron generates CI workflows and a Dockerfile, so a
+silent version change would change a project's generated files under it.
+So it only says a release is out and updates when asked, as `gh` does:
+
+- `hct self-update` (`internal/selfupdate`; binary only) updates an
+  installation install.sh made (a clone at a release tag, with
+  `bin/.hecatron-go` at that commit and `env`) to the latest release, or
+  `--version X.Y.Z`. It finds the release through GitHub's releases API
+  (`GITHUB_TOKEN` when set; `HECATRON_UPDATE_URL` replaces the API
+  address, for tests), downloads the machine's binary and `SHA256SUMS`
+  and refuses a mismatch or a short download, fetches the tag into the
+  installation's clone, clones that beside the installation with the
+  binary and the installation's untracked files (`env`, the cache, the
+  skill record), and swaps the two directories by renaming, undoing the
+  first rename if the second fails. It refuses a dev build (`hct
+  self-build`'s or `go build`'s), a checkout on a branch or with changes
+  ("update with git pull"), a directory install.sh didn't make, and one it
+  can't write. It then refreshes the skill copies `hct skill install`
+  made (`--user`, and each `--dir`, recorded in `.skill-installs`).
+  `--check` only reports: exit 0 up to date, 3 a newer release, 1 the
+  check failed.
+- **The notice.** A release binary (not a dev build) reads
+  `.update-check.json` in the installation (the latest version and when it
+  was checked) before each command. Once it is 24 hours old, it writes the
+  time and starts `hct _update-check` on its own, which asks the API with a
+  10-second timeout and caches the answer, so no command waits on the
+  network. A newer release than this one is said in one line on stderr
+  after the command (before a delegated one), only with stderr a terminal
+  and human output: never in CI (`CI` set), with `--output` or
+  `HECATRON_OUTPUT` naming another format, in an agent's session, in
+  GitHub Actions, or with `HECATRON_NO_UPDATE_CHECK=1`, which also stops
+  the check. `hct status` reports the cached newer release in every format
+  (`update` in JSON) and suggests `hct self-update`, asking the user
+  first; it never checks itself.
+- A project pinning the hecatron version it needs is tracked separately.
+
 ## 14. Implementation and testing
 
 **Language.** Bash for the entry point, installers, hooks and runner, and
@@ -1086,6 +1123,9 @@ entry points' output byte for byte. Decided with the first port
   thousands of variants with one value replaced or removed, comparing
   output and status byte for byte; the one wording left out is which pair
   of values a failed sort names.
+- **`hct self-update`** and the update notice (`internal/selfupdate`) are
+  native only (§13). `bin/hecatron self-update` without the binary says
+  so.
 
 ### Language definitions: data, families, scripts
 

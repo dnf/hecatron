@@ -29,6 +29,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | Is each toolchain working | `hct doctor [lang...]` | Read-only; see Installing |
 | Validate config and generated files | `hct check` | |
 | A language's environment in a shell | `eval "$(hct env LANG)"` | The PATH and variables its commands run with |
+| A newer hecatron | `hct self-update --check` | Exit 3: a newer release exists (`hct status` says so from its daily check). `hct self-update` installs it: ask the user first, as a new version can change generated files |
 
 - `--changed [REF]` (`test`, `lint`, `build`, `format`, `deps`): only the
   languages and components whose files changed since the merge base with

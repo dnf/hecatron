@@ -33,7 +33,7 @@ internal/                # Go packages: project (the model and version resolutio
                          # versions.py, and detection), generate (Dockerfile, workflows), runner (jobs, output),
                          # status (hct status), deps (audit and outdated reports), licenses and spdx
                          # (hct licenses), advisor (hct advisor), reports (JUnit, SARIF, job summary),
-                         # actions, install
+                         # actions, install, selfupdate (hct self-update and the update notice)
 ```
 
 Every command finds the project by walking up from the working directory

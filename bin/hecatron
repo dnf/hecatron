@@ -86,6 +86,7 @@ Hecatron itself:
   self-test                  Check hecatron's own code: shellcheck and the unit tests
   self-build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
+  self-update [--check]      Update hecatron to the latest release (install.sh's installs)
 
 Run 'hecatron <command> help' for a command's options, and 'hecatron help agents'
 for a compact reference for AI coding agents.
@@ -201,6 +202,10 @@ case "${_command}" in
     advisor)
         # Native in the Go core only (docs/design.md §19).
         echo "hecatron: advisor needs hecatron's binary, which install.sh downloads with a release" >&2
+        exit 1 ;;
+    self-update)
+        # Native in the Go core only (docs/design.md §19).
+        echo "hecatron: self-update needs hecatron's binary, which install.sh downloads with a release; a checkout updates with git pull" >&2
         exit 1 ;;
     licenses)
         # Native in the Go core only (docs/design.md §19).

@@ -166,6 +166,7 @@ func (c *cli) delegate(target func(*cli) target) int {
 			return 1
 		}
 	}
+	c.showUpdateNotice()
 	return replaceProcess(program, t.argv, c.environment(t.env))
 }
 
