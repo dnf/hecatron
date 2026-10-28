@@ -8,6 +8,7 @@ import contextlib
 import io
 import json
 import os
+import re
 import sys
 import unittest
 
@@ -217,3 +218,53 @@ class EndOfLifeTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+LANGUAGES = os.path.join(HOME, "languages")
+
+
+def licenses_languages() -> set[str]:
+    """The languages hct licenses reads (internal/licenses/licenses.go): those
+    with a lock file from a registry it covers."""
+    with open(os.path.join(HOME, "internal", "licenses", "licenses.go"), encoding="utf-8") as f:
+        source = f.read()
+    ecosystems = re.search(r"var Ecosystems = map\[string\]\[\]string\{(.*?)\n\}", source, re.S).group(1)
+    covered = re.search(r"var covered = map\[string\]bool\{(.*?)\n\}", source, re.S).group(1)
+    registries = set(re.findall(r'"([^"]+)": true', covered))
+    return {lang for lang, names in re.findall(r'"(\w+)":\s*\{([^}]*)\}', ecosystems)
+            if registries & set(re.findall(r'"([^"]+)"', names))}
+
+
+def installs_osv_scanner(lang: str) -> bool:
+    """Whether the language's installer, or one it always runs (not one it
+    runs only when a command is missing), installs OSV-Scanner."""
+    with open(os.path.join(LANGUAGES, lang, "install.sh"), encoding="utf-8") as f:
+        installer = f.read()
+    if re.search(r"^osv_scanner_install$", installer, re.M):
+        return True
+    delegate = re.search(r'^bash "\$\(dirname "\$0"\)/\.\./(\w+)/install\.sh"', installer, re.M)
+    return bool(delegate) and installs_osv_scanner(delegate.group(1))
+
+
+class OSVScannerInstallTest(unittest.TestCase):
+    """OSV-Scanner comes with every language that needs it, so no project
+    is left without it."""
+
+    def test_every_language_audited_with_it_installs_it(self):
+        for lang in sorted(os.listdir(LANGUAGES)):
+            hook = os.path.join(LANGUAGES, lang, "hooks", "audit.sh")
+            if not os.path.isfile(hook):
+                continue
+            with open(hook, encoding="utf-8") as f:
+                if "audit_osv" not in f.read():
+                    continue
+            with self.subTest(lang=lang):
+                self.assertTrue(installs_osv_scanner(lang))
+
+    def test_every_language_hct_licenses_reads_installs_it(self):
+        langs = licenses_languages()
+        self.assertIn("python", langs)
+        self.assertNotIn("elixir", langs)
+        for lang in sorted(langs):
+            with self.subTest(lang=lang):
+                self.assertTrue(installs_osv_scanner(lang))

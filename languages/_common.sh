@@ -687,7 +687,8 @@ release_binary_install() {
 }
 
 # OSV-Scanner (Google's), the dependency auditor `hecatron audit` uses for
-# ecosystems without one of their own (docs/audit.md): its release binary,
+# ecosystems without one of their own (docs/audit.md), and what `hecatron
+# licenses` reads licenses with (docs/licenses.md): its release binary,
 # pinned and checked against its checksum, into /usr/local/bin.
 _OSV_SCANNER_VERSION="2.7.0"
 osv_scanner_install() {
@@ -700,9 +701,9 @@ osv_scanner_install() {
         linux-aarch64 | linux-arm64) _platform=linux_arm64 _sha256=4061ef4c021ed3c47f203b818f337e351336cc5cd67c0274fc36bd1dfc728dd7 ;;
         macos-x86_64) _platform=darwin_amd64 _sha256=e82c5df7ab0a42dff29a1cd0660711447b56b4c0483ff66ad8634df10fd81a45 ;;
         macos-arm64) _platform=darwin_arm64 _sha256=d4926ef8da134332543be276dff157e4c170f99ad91fc48e89448a8816bdf70b ;;
-        *) echo "WARNING: no OSV-Scanner release for $(uname -sm); hecatron audit can't check this language" >&2; return 0 ;;
+        *) echo "WARNING: no OSV-Scanner release for $(uname -sm); hecatron audit and licenses can't use it" >&2; return 0 ;;
     esac
-    log "Installing OSV-Scanner ${_OSV_SCANNER_VERSION} (for hecatron audit)..."
+    log "Installing OSV-Scanner ${_OSV_SCANNER_VERSION} (for hecatron audit and licenses)..."
     _binary="$(mktemp)"
     curl -fsSL -o "${_binary}" \
         "https://github.com/google/osv-scanner/releases/download/v${_OSV_SCANNER_VERSION}/osv-scanner_${_platform}"
