@@ -71,29 +71,12 @@ This installs anything hecatron itself needs that's missing (the Command Line
 Tools on macOS; git, Python 3 and perl on Linux), then the latest release
 into `~/.hecatron`, and adds it to your shell's startup files (bash, zsh and
 fish), so new shells have `hct`. It prints the one line that puts it on PATH
-in the current shell. From a clone instead, source the installer, which also sets up the
+in the current shell. Run it again to update. From a clone instead, source the installer, which also sets up the
 shell you're in:
 
 ```bash
 git clone https://github.com/dnf/hecatron ~/.hecatron && . ~/.hecatron/install.sh
 ```
-
-### Update
-
-```bash
-hct self update            # the latest release
-hct self update --check    # only say whether there is one (exit 3: there is)
-```
-
-Hecatron never updates itself: it generates CI workflows and a Dockerfile,
-and a new version can change them. Once a day at most it looks for a newer
-release in the background and says so in one line after a command, on a
-terminal, in human output only; never in CI or with
-`HECATRON_NO_UPDATE_CHECK=1`. `hct status` reports it too. `hct
-self update` verifies the release's binary against its `SHA256SUMS`, swaps
-the new version in whole (a failure leaves the old one working) and
-refreshes the Agent Skill `hct skill install` put in place. A clone updates
-with `git pull`; running install.sh again works too.
 
 ## Quick start
 
@@ -350,9 +333,28 @@ problem, see [SECURITY.md](SECURITY.md).
 
 ## Contributing
 
-Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has
-the checks to run (`hct self test`), the conventions the code follows, and a
-map of the repository.
+Issues and pull requests are welcome.
+
+Especially for toolchains that are less well known.
+
+ESPECIALLY if you are a maintainer of such a toolchain.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## About the authors
+
+Hecatron was created by Don Neufeld and Claude Code.
+
+Don Neufeld was the CTO of [Medium](https://medium.com),
+developer of several massively multiplayer online games,
+VPE of multiple startups, and is currently an
+[Executive Coach](https://vpecoach.com) to engineering leaders.
+
+Don lives in the San Francisco Bay Area with his family,
+several thousand bees, and a quantity of fruit trees
+some might call excessive.
+
+Claude Code is a good bot.
 
 ## Acknowledgements
 
@@ -367,7 +369,7 @@ map of the repository.
 
 [MIT](LICENSE.md)
 
-## The name
+## Origin of the Name and Logo
 
 Hecatron comes from the [Hecatoncheires](https://en.wikipedia.org/wiki/Hecatoncheires),
 the "hundred-handed ones" of [Greek myth](https://en.wikipedia.org/wiki/Greek_mythology)
