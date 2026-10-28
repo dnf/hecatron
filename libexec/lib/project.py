@@ -637,6 +637,23 @@ class Project:
                 dirs += sorted(d for d in glob.glob(os.path.expanduser(pattern)) if os.path.isdir(d))
         return dirs
 
+    def _others_static_path(self, lang: str, have: list[str]) -> list[str]:
+        """The static "path" directories of the project's other added,
+        enabled languages, in config order, leaving out any already in
+        have: a build in one language often runs another's tool (a Ruby
+        gem's Rakefile or an OCaml dune rule calling cargo), which that
+        language's installer put in a directory only its own environment
+        has."""
+        seen, dirs, disabled = set(have), [], self.disabled
+        for other in self.languages:
+            if other == lang or other in disabled:
+                continue
+            for directory in self._static_path(other):
+                if directory not in seen:
+                    seen.add(directory)
+                    dirs.append(directory)
+        return dirs
+
     def language_env(self, lang: str, component: str | None = None) -> dict:
         """PATH entries (to prepend, in order) and variables for a language's
         work in a component. Entries and variables naming {home}, {version},
@@ -660,6 +677,7 @@ class Project:
             if "{" in pattern and not fields:
                 continue
             path += sorted(d for d in glob.glob(os.path.expanduser(expand(pattern))) if os.path.isdir(d))
+        path += self._others_static_path(lang, path)
         variables = {name: expand(value) for name, value in definition.get("env", {}).items()} if fields else {}
         if definition.get("sdkrootFromXcrun") and HOST_OS == "darwin" and "SDKROOT" not in os.environ:
             sdk = xcrun_sdk_path()
