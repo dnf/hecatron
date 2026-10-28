@@ -16,6 +16,11 @@ if [ "$(id -u)" -ne 0 ]; then
     SUDO="sudo"
 fi
 
+# Homebrew asks before each install by default since 2025; hct install and
+# doctor --fix are the request. Hints about its environment variables are
+# noise in an installer's output.
+export HOMEBREW_NO_ASK=1 HOMEBREW_NO_ENV_HINTS=1
+
 # The project being worked on (bin/hecatron exports HECATRON_ROOT), else the
 # repository the current directory is in.
 ROOT="${HECATRON_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"

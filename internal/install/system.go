@@ -169,15 +169,19 @@ func (m *Manager) InstallCommands(packages []string) [][]string {
 		}
 		return append(commands, m.sudo(append([]string{"apt-get", "-o", "Acquire::Retries=3", "install", "-y"}, packages...)...))
 	case "brew":
-		return [][]string{append([]string{"brew", "install"}, packages...)}
+		return [][]string{append([]string{"env", brewNoAsk, "brew", "install"}, packages...)}
 	}
 	return nil
 }
 
+// brewNoAsk stops Homebrew asking before it installs or removes, as it
+// does by default since 2025: the command is the request (apt-get's -y).
+const brewNoAsk = "HOMEBREW_NO_ASK=1"
+
 // RemoveCommand is the command removing packages.
 func (m *Manager) RemoveCommand(packages []string) []string {
 	if m.Name == "brew" {
-		return append([]string{"brew", "uninstall"}, packages...)
+		return append([]string{"env", brewNoAsk, "brew", "uninstall"}, packages...)
 	}
 	return m.sudo(append([]string{"apt-get", "remove", "-y"}, packages...)...)
 }
