@@ -183,6 +183,20 @@ func (c *cli) runHelpText() (text string, ok bool) {
 		out.WriteString("  --check    Change nothing; fail, listing the files the formatter would change\n" +
 			"             (hecatron lint runs this check too; docs/format.md)\n")
 	}
+	// The binary's own flags, listed by run.sh too (saying they need the
+	// binary), so the help is the same either way.
+	out.WriteString("\nWith hecatron's binary (install.sh downloads it with a release; docs/runner.md):\n" +
+		"  --output FORMAT\n" +
+		"             human, agent, json, ci, junit or sarif (else HECATRON_OUTPUT;\n" +
+		"             agent output for AI agents)\n" +
+		"  --timeout DURATION\n" +
+		"             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);\n" +
+		"             by default 5x its usual time from history.log, at least 10 minutes\n")
+	if changedActions[c.command] {
+		out.WriteString("  --changed [REF]\n" +
+			"             Only the languages, components and project tasks the files changed\n" +
+			"             since REF touch (default: the pull request's base, else the default branch)\n")
+	}
 	fmt.Fprintf(&out, "\nExamples:\n"+
 		"  hecatron %[1]s               Everything, in parallel\n"+
 		"  hecatron %[1]s go rs         Go and Rust (abbreviations work), every component\n"+

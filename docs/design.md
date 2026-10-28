@@ -503,7 +503,10 @@ modules by path.
 
 Unchanged from sayable's design, now shared: `doctor` checks each language's
 `dependency` and `lintDependency` commands from `config.json`, then runs the
-optional `doctor.sh`, which reports one `problem` per line. Installers are
+optional `doctor.sh`, which reports one `problem` per line. A line starting
+`note: ` (`note` in `_common.sh`) is shown under the language, like the
+version notes, but isn't a problem: a language with only notes is healthy,
+and `--fix` repairs only problems. Installers are
 idempotent and repair what their doctor detects (a linter built with an older
 Go, luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula).
 `doctor --fix` runs the installer of each unhealthy language and checks
@@ -718,7 +721,10 @@ Each `pinFiles` entry names a file and the format that reads it
 `libexec/lib/` with the rest of resolution, so a definition only chooses
 among them. A format turns the file's contents into hecatron's version syntax
 (below): `.python-version`'s `3.12` becomes the prefix `3.12`, a
-`rust-toolchain.toml` channel of `1.80.1` becomes `=1.80.1`. A value with no
+`rust-toolchain.toml` channel of `1.80.1` becomes `=1.80.1`. An entry's `strip`,
+a regular expression, is removed from the version first: asdf and mise
+write Elixir as `1.17.3-otp-27`, the release and the OTP it was built for,
+and an entry stripping `-otp-[0-9]+$` reads 1.17.3. A value with no
 version in it (`stable`, `lts/*`, `nightly`) is left to the ecosystem's own
 tool: hecatron neither installs nor checks that language's version for that
 component, and the doctor says so.
@@ -1025,6 +1031,15 @@ entry points' output byte for byte. Decided with the first port
   is `doctor.sh`'s byte for byte, but for bash's warning when a doctor
   script prints a NUL byte (dropped, as bash drops it, without the
   warning).
+
+- **`banner`** (`hecatron banner --generator PATH ...`, for a project's own
+  generators) ported next, with `internal/generate`'s banner. It needs no
+  project and no Python. argparse's other forms (a missing `--generator`,
+  an abbreviated option, a value starting with `-`), arguments that aren't
+  UTF-8, and an environment where Python's stdout may not be UTF-8
+  (`PYTHONIOENCODING`, `PYTHONUTF8` other than 1, a locale that is neither
+  C, POSIX nor UTF-8: Python fails there on the frame) are left to
+  `manage.py`.
 
 - **`version <version>`** ported next (`version.sh`'s orchestration): each
   added language's `version.sh` (the project's, else the built-in one;

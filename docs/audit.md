@@ -36,7 +36,8 @@ component whose files the auditor can't read (a Rust crate without
 `Cargo.lock`, a C library with no package manager) says "nothing to audit".
 
 `hct install <lang>` installs bundler-audit (Ruby) and OSV-Scanner (the
-languages above that use it), each at a pinned version; OSV-Scanner is its
+languages above that use it, and those `hct licenses` reads), each at a
+pinned version; OSV-Scanner is its
 release binary, checked against its published checksum. pip-audit and
 govulncheck run at pinned versions without being installed. Auditors need
 the network: they check online advisory databases.
