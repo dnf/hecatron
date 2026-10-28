@@ -31,6 +31,10 @@ minor version can change behaviour. Numbers are
   command appends a table of languages and components with status and
   time, then each failure's error lines, log and rerun command; `audit`,
   `licenses` and `advisor` add their findings (#101).
+- **`hct install` and `hct uninstall` run in the binary:** choosing the
+  languages, running their installers and fetching the deferred
+  dependencies no longer goes through manage.py (76 ms to 12 ms around a stub
+  installer); the installers stay scripts.
 - **`hct version <version>` runs in the binary** (90 ms to 11 ms around a
   stub hook); each language's `version.sh` stays a script.
 - **`hct banner` runs in the binary,** without Python: 3 ms instead of

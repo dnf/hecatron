@@ -1050,6 +1050,20 @@ entry points' output byte for byte. Decided with the first port
   the same. `metadata` stays a script: it is interactive and edits the
   metadata file through Python string literals.
 
+- **`install` and `uninstall`** ported next (#73, #76): `manage.py`'s
+  orchestration (every added language, or the added ones named; each
+  language's `install.sh` or `uninstall.sh`, still scripts, from the root
+  with the project's variables and the language's version environment,
+  `installed.sh` asked again once an earlier installer ran), the deferred
+  dependencies (`HECATRON_DEFER_DEPS`, #107: installing everything fetches
+  the dependencies the installers listed with `hct deps` once every
+  toolchain is in, this binary's own), the messages and exit statuses (a
+  script killed by a signal exits as Python's `sys.exit` makes it). The
+  languages' environments are worked out before any script runs, so a
+  project the model declines goes to `manage.py`; so do argparse's other
+  forms (`help`, an option). Parity tests run both with stub scripts on
+  fixture definitions.
+
 - **Audit and outdated parsing** (#75; `internal/deps`) ported next:
   every report `audit.py` and `outdated.py` read (npm, pnpm, Yarn 1 and
   2+, Bun, pip-audit, govulncheck, bundler-audit, Composer, .NET and
