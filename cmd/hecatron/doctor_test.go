@@ -34,6 +34,10 @@ printf 'thing broken\n\n  indented\n\n\n'; echo "to stderr" >&2; exit 1`,
 	"noinst/config.json": `{"dependency": "sh"}`,
 	"noinst/doctor.sh":   `echo "needs a fix"`,
 	"badver/config.json": `{"dependency": "sh", "version": "=x"}`,
+	"noted/config.json":  `{"dependency": "sh"}`,
+	"noted/doctor.sh":    `echo "note: a/noted on 27"; printf 'note: b/noted on 25\n\n'`,
+	"mixed/config.json":  `{"dependency": "sh"}`,
+	"mixed/doctor.sh":    `echo "note: paired"; echo "really broken"; echo "note:no space, so a problem"; echo "note: "; exit 1`,
 	"off/config.json":    `{"dependency": "sh"}`,
 	"off/doctor.sh":      `echo "disabled, so unchecked"`,
 }
@@ -44,6 +48,18 @@ var doctorArgs = [][]string{
 	{"doctor", "help"}, {"doctor", "--help", "ok"}, {"doctor", "ok", "help"}, {"doctor", "-x"}, {"doctor", "off"},
 	{"doctor", "--fix", "noinst"}, {"doctor", "--fix", "ok", "broken", "nodep"}, {"doctor", "broken"},
 	{"doctor", "--fix", "ver"}, {"doctor", "ver"}, {"doctor", "--fix"},
+	{"doctor", "noted"}, {"doctor", "noted", "mixed"}, {"doctor", "--fix", "noted"}, {"doctor", "--fix", "mixed"},
+}
+
+// doctorWants are what some invocations print, beyond matching
+// bin/hecatron: a doctor.sh's "note: " lines are shown, but only its other
+// lines are problems.
+var doctorWants = map[string]result{
+	"doctor noted": {status: 0, stdout: "  ok    noted\n          a/noted on 27\n          b/noted on 25\n\nAll 1 toolchains look healthy.\n"},
+	"doctor noted mixed": {status: 1, stdout: "  ok    noted\n          a/noted on 27\n          b/noted on 25\n" +
+		"  FAIL  mixed\n          really broken\n          note:no space, so a problem\n          paired\n\n" +
+		"1 of 2 need attention: mixed\n"},
+	"doctor --fix noted": {status: 0, stdout: "  ok    noted\n"},
 }
 
 func TestDoctorMatchesBinHecatron(t *testing.T) {
@@ -63,7 +79,7 @@ func TestDoctorMatchesBinHecatron(t *testing.T) {
 	}
 	files := map[string]string{
 		".hecatron/config.json": `{"schema": 1, "project": "doc", "components": ["a", "b"],
-			"languages": ["ok", "broken", "nodep", "lint", "builtin", "ver", "noinst", "off"]}`,
+			"languages": ["ok", "broken", "nodep", "lint", "builtin", "ver", "noinst", "off", "noted", "mixed"]}`,
 		".hecatron/local.json": `{"disabled": ["off"]}`,
 		"a/ok/x":               "", "a/broken/x": "", "a/ver/.ver": "1.5\n", "b/ver/support": "1.0\n", "b/ver/x": "",
 		"sub/x": "",
@@ -88,6 +104,10 @@ func TestDoctorMatchesBinHecatron(t *testing.T) {
 					}
 					if results[0] != results[1] {
 						t.Errorf("%q:\nbin/hecatron: %+v\nGo:           %+v", args, results[0], results[1])
+					}
+					if want, ok := doctorWants[strings.Join(args, " ")]; ok && name == "stubs" &&
+						(results[1].status != want.status || !strings.Contains(results[1].stdout, want.stdout)) {
+						t.Errorf("%q: want status %d and output containing\n%s\ngot %+v", args, want.status, want.stdout, results[1])
 					}
 					if diff := compareTrees(t, roots[0], roots[1]); diff != "" {
 						t.Errorf("%q: the files differ: %s", args, diff)

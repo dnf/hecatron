@@ -68,6 +68,11 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 	"rb/config.json":   `{"version": "=4.0.9", "pinFiles": [{"file": ".ruby-version", "format": "ruby-version"}]}`,
 	"sw/config.json":   `{"version": "=6.2", "pinFiles": [{"file": ".swift-version", "format": "swift-version"}]}`,
 
+	"ex/config.json": `{"version": "=1.20.4",
+		"pinFiles": [{"file": ".tool-versions", "format": "tool-versions", "key": "elixir", "strip": "-otp-[0-9]+$"},
+			{"file": "mise.toml", "format": "mise", "key": "elixir", "strip": "-otp-[0-9]+$"}]}`,
+	"exall/config.json":    `{"version": "=1.0", "pinFiles": [{"file": "pin", "format": "python-version", "strip": "[0-9.]+"}]}`,
+	"badstrip/config.json": `{"version": "=1.0", "pinFiles": [{"file": "pin", "format": "python-version", "strip": "("}]}`,
 	"inexact/config.json":  `{"version": "3.1"}`,
 	"numeric/config.json":  `{"version": 3.1}`,
 	"badfmt/config.json":   `{"version": "=1.0", "pinFiles": [{"file": "pin", "format": "nope"}]}`,
@@ -83,7 +88,7 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 }
 
 // versionLangs are the fixture languages compared.
-var versionLangs = []string{"py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw",
+var versionLangs = []string{"py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw", "ex", "exall", "badstrip",
 	"inexact", "numeric", "badfmt", "badspec", "noline", "neg", "failing", "oddpath", "rel", "unknown"}
 
 // pinned projects: one component per pin file format.
@@ -166,6 +171,14 @@ var pinnedFiles = map[string]string{
 	"i/fs/global.json":                             `{"sdk": {"version": "8.0.100", "rollForward": ["x"]}}`,
 	"i/jv/.sdkmanrc":                               "java=21.0.2-tem.x_1\nmaven=3\n",
 	"i/python/.tool-versions":                      "python\npython  3.8.10  3.9\n",
+	"a/ex/.tool-versions":                          "erlang 27.1\nelixir 1.17.3-otp-27\n",
+	"b/ex/mise.toml":                               "[tools]\nelixir = \"1.18-otp-26\"\n",
+	"c/ex/.tool-versions":                          "elixir 1.19.1\n",
+	"d/ex/.tool-versions":                          "elixir 1.16.0-rc.1\n",
+	"e/ex/.tool-versions":                          "elixir ref:main-otp-27\n",
+	"f/ex/.tool-versions":                          "elixir v1.15.8-otp-26\n",
+	"a/exall/pin":                                  "1.2.3\n",
+	"a/badstrip/pin":                               "1.2.3\n",
 	"i/rs/rust-toolchain.toml":                     "[toolchain]\nchannel = [\"1.70\"]\n",
 	"i/ph/composer.json":                           `{"config": {"platform": {"php": "v8.2.1"}}}`,
 	"i/gol/go.mod":                                 "go 1.21\ntoolchain local\n",
@@ -201,7 +214,7 @@ var pinnedFiles = map[string]string{
 
 func versionConfig(components ...string) string {
 	return `{"schema": 1, "components": ["` + strings.Join(components, `", "`) + `"],
-		"languages": ["py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw", "badfmt", "projectonly"]}`
+		"languages": ["py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw", "ex", "exall", "badstrip", "badfmt", "projectonly"]}`
 }
 
 var pinnedComponents = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p"}

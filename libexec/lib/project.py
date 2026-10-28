@@ -28,6 +28,7 @@ import fnmatch
 import glob
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -357,10 +358,16 @@ class Project:
         entry may name a pattern (".github/workflows/*.y*ml"): then the
         newest version any matching file gives, and that file."""
         found = []
+        strip = entry.get("strip")
+        if strip is not None:
+            try:
+                re.compile(strip)
+            except (re.error, TypeError):
+                raise ProjectError(f"pin file strip {strip!r} is not a regular expression") from None
         for path in sorted(glob.glob(os.path.join(directory, entry["file"]))):
             if os.path.isfile(path):
                 with open(path, encoding="utf-8", errors="replace") as f:
-                    spec = versions.read_pin(entry["format"], f.read(), entry.get("key"))
+                    spec = versions.strip_pin(versions.read_pin(entry["format"], f.read(), entry.get("key")), strip)
                 if spec is not versions.NOT_PINNED:
                     found.append((spec, path))
         if not found:

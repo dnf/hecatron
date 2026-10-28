@@ -8,11 +8,12 @@
 //
 // Ported: --version, help, the run commands (test, lint, build, clean,
 // rebuild, retest, audit, format, deps, outdated: run.go), doctor
-// (doctor.go; each language's doctor.sh stays bash), version's help, list,
+// (doctor.go; each language's doctor.sh stays bash), version (version.go; each
+// language's version.sh stays bash), list,
 // env (with a language, its environment for a component), status, sync, advisor, the
 // project commands (init, add, remove, enable, disable, check, dockerfile,
-// workflows: manage.go, init.go), and install and uninstall (install.go; each
-// language's install.sh and uninstall.sh stay bash). The prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
+// workflows: manage.go, init.go), banner (banner.go), and install and uninstall
+// (install.go; each language's install.sh and uninstall.sh stay bash). The prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
 
 import (
@@ -90,7 +91,7 @@ func run(argv []string) int {
 			return status
 		}
 	}
-	if handler, ok := nativeCommands[c.command]; ok && (c.project != nil || c.command == "init") {
+	if handler, ok := nativeCommands[c.command]; ok && (c.project != nil || c.command == "init" || c.command == "banner") {
 		if status, handled := handler(c); handled {
 			return status
 		}
@@ -123,7 +124,8 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"check":      (*cli).check,
 	"dockerfile": (*cli).dockerfile,
 	"workflows":  (*cli).workflows,
-	"version":    (*cli).versionHelp,
+	"version":    (*cli).versionCommand,
+	"banner":     (*cli).banner,
 	"install":    (*cli).install,
 	"uninstall":  (*cli).uninstall,
 }
