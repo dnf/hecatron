@@ -705,6 +705,20 @@ class GeneratedFilesTest(Fixture):
             content = f.read()
         self.assertIn("ENV LANG=C.UTF-8", content)
 
+    def test_dockerfile_curl_retries_before_any_download(self):
+        # Snippets' curl calls carry no retry options; a curlrc found through
+        # CURL_HOME (so whatever the user) gives them the installers' policy,
+        # set up before the first RUN that downloads anything.
+        self.assertEqual(self.hecatron("dockerfile").returncode, 0)
+        with open(self.path("Dockerfile"), encoding="utf-8") as f:
+            content = f.read()
+        self.assertIn("ENV CURL_HOME=/etc/hecatron-curl\n", content)
+        self.assertIn('> "${CURL_HOME}/.curlrc"', content)
+        for option in ("'retry = 4'", "'retry-delay = 3'", "'retry-connrefused'", "'retry-all-errors'",
+                       "'connect-timeout = 30'", "'speed-limit = 1024'", "'speed-time = 60'"):
+            self.assertIn(option, content)
+        self.assertLess(content.index("ENV CURL_HOME="), content.index("RUN apt-get"))
+
 
 class RunTest(Fixture):
     def setUp(self):

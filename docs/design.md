@@ -467,7 +467,14 @@ DO NOT EDIT banner naming the generator and its source:
 - **Dockerfile** (`generated.dockerfile`): collected from each language's
   `dockerfile` snippet (`# apt:` lines deduplicated into one `apt-get
   install`, `# after:` ordering, literal `RUN`/`ENV` blocks, and a block
-  repeated per toolchain version; see §18).
+  repeated per toolchain version; see §18). Before any snippet it writes a
+  curlrc (`/etc/hecatron-curl/.curlrc`, found through `ENV CURL_HOME`, so it
+  applies whatever the user) with the installers' retry policy (`retry 4`,
+  `retry-delay 3`, `retry-connrefused`, `connect-timeout 30`, `speed-limit
+  1024` over `speed-time 60`) plus `retry-all-errors`, so every `curl` in the
+  build, including those inside piped install scripts, retries transient
+  failures such as a dropped TLS connection. It stays in the image; a `RUN`
+  that wants curl's defaults passes `-q` first. No snippet uses wget.
 - **CI workflows** (`generated.workflows`): each language's project
   `workflow.yml`, with a banner. `hecatron check` verifies that each workflow
   mentions every component, generalising sayable's
