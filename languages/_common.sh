@@ -519,11 +519,54 @@ cmake_dependencies() {
 
 # For the native languages' installers and doctors (C, C++, Objective-C):
 # Meson, and the Ninja it builds with, where a component builds with Meson
-# (the hooks run it for a meson.build) and it isn't installed.
-meson_missing() { ! has meson && impl_configures "$1" meson.build; }
+# (the hooks run it for a meson.build) and it isn't installed, or is older
+# than a meson.build's project(meson_version: '>=X') asks for. The
+# distribution's Meson lags (Ubuntu 24.04's is 1.3; NumPy wants 1.8): where
+# a version is asked for, Linux gets the current release from PyPI as a uv
+# tool in ~/.local/bin, ahead of /usr/bin on PATH.
+meson_missing() {
+    local _need
+    impl_configures "$1" meson.build || return 1
+    has meson || return 0
+    _need="$(meson_required "$1")"
+    [ -n "${_need}" ] && version_older "$(meson --version 2>/dev/null)" "${_need}"
+}
 meson_install() {
     log "Installing Meson..."
-    if [ "${OS}" = "macos" ]; then brew_install meson; else apt_install meson ninja-build; fi
+    if [ "${OS}" = "macos" ]; then
+        brew_install meson
+    elif [ -n "$(meson_required "$1")" ]; then
+        apt_install ninja-build
+        uv_install
+        uv tool install --force meson
+    else
+        apt_install meson ninja-build
+    fi
+}
+# The newest Meson a language's meson.build files ask for, if any: theirs
+# in its components (three levels down, as the hooks look) and above them.
+meson_required() {
+    local _dir _file
+    while IFS= read -r _dir; do
+        find "${_dir}" -maxdepth 3 -name meson.build -type f -print 2>/dev/null
+        while [ "${_dir}" != "${ROOT}" ] && [ "${_dir}" != / ]; do
+            _dir="$(dirname "${_dir}")"
+            [ ! -f "${_dir}/meson.build" ] || echo "${_dir}/meson.build"
+        done
+    done < <(impl_dirs "$1") | sort -u | while IFS= read -r _file; do
+        sed -n "s/.*meson_version[[:space:]]*:[[:space:]]*['\"]>=[[:space:]]*\([0-9][0-9.]*\)['\"].*/\1/p" "${_file}"
+    done | awk -F. '{ printf "%05d%05d%05d %s\n", $1, $2, $3, $0 }' | sort | tail -n 1 | cut -d' ' -f2
+}
+# Whether dotted version $1 is older than $2 (1.3.2 < 1.10).
+version_older() {
+    awk -v a="$1" -v b="$2" 'BEGIN {
+        n = split(a, x, "."); m = split(b, y, ".")
+        for (i = 1; i <= (n > m ? n : m); i++) {
+            if (x[i] + 0 < y[i] + 0) exit 0
+            if (x[i] + 0 > y[i] + 0) exit 1
+        }
+        exit 1
+    }'
 }
 
 # For Rust's installer: the system software a component's crates build

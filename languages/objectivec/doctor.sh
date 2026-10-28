@@ -19,7 +19,7 @@ if ! has cmake; then
     done < <(impl_dirs objectivec)
 fi
 if meson_missing objectivec; then
-    problem "meson not installed (a component builds with it)"
+    problem "meson not installed, or older than a meson.build asks for (a component builds with it)"
 fi
 if clang_format_missing objectivec; then
     problem "neither uv nor clang-format installed (a component has a .clang-format)"
