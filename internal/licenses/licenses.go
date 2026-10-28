@@ -63,6 +63,9 @@ func notCoveredReason(lang string) string {
 	return "deps.dev, where OSV-Scanner finds licenses, has none for " + registryNames[ecosystems[0]]
 }
 
+// Covers says whether hecatron reads the language's licenses.
+func Covers(lang string) bool { return notCoveredReason(lang) == "" }
+
 // Target is one language in one component: what to report on.
 type Target struct {
 	Lang, Component, Dir string // Dir is absolute
