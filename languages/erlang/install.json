@@ -13,5 +13,13 @@
         "rebar3"
       ]
     }
+  },
+  "uninstall": {
+    "keep": [
+      "erlang-dev",
+      "erlang-tools",
+      "erlang"
+    ],
+    "because": "Gleam and Elixir run on its OTP"
   }
 }
