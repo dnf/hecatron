@@ -17,7 +17,9 @@ minor version can change behaviour. Numbers are
   forward to the installed runtime (a test project targeting net8.0 runs on
   .NET 10), and a directory with several projects and no solution tests
   each test project. A Clojure project with `deps.edn` but no `:test`
-  alias tests with Leiningen when it has `project.clj`.
+  alias tests with Leiningen when it has `project.clj`. A Gradle build's
+  toolchain JDK is found from its root and its version catalog
+  (`libs.versions.jdk`), so a source directory's build gets it installed.
 
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
