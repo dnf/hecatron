@@ -8,7 +8,8 @@
 //
 // Ported: --version, help, the run commands (test, lint, build, clean,
 // rebuild, retest, audit, format, deps, outdated: run.go), doctor
-// (doctor.go; each language's doctor.sh stays bash), version's help, list,
+// (doctor.go; each language's doctor.sh stays bash), version (version.go; each
+// language's version.sh stays bash), list,
 // env (with a language, its environment for a component), status, sync, advisor, and the
 // project commands (init, add, remove, enable, disable, check, dockerfile,
 // workflows: manage.go, init.go), and banner (banner.go). The prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
@@ -122,7 +123,7 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"check":      (*cli).check,
 	"dockerfile": (*cli).dockerfile,
 	"workflows":  (*cli).workflows,
-	"version":    (*cli).versionHelp,
+	"version":    (*cli).versionCommand,
 	"banner":     (*cli).banner,
 }
 
