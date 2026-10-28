@@ -320,7 +320,8 @@ func TestRenderers(t *testing.T) {
 	}
 	WriteChart(&chart, report, true, 60)
 	WriteAnnotations(&annotations, report, "")
-	golden(t, "render.agent", agent.String())
+	// Log paths are relative to Cwd with the platform's separator.
+	golden(t, "render.agent", filepath.ToSlash(agent.String()))
 	golden(t, "render.json", jsonOut.String())
 	golden(t, "render.chart", chart.String())
 	golden(t, "render.annotations", annotations.String())

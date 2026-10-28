@@ -47,6 +47,9 @@ func (c *cli) requireBash() int {
 	if runtime.GOOS != "windows" || !bashCommands[c.command] || (len(c.args) > 0 && isHelp(c.args[0])) {
 		return 0
 	}
+	if c.command == "version" && (len(c.args) == 0 || c.args[0] == "") {
+		return 0 // its usage, which the binary prints
+	}
 	if _, found := platform.Bash(os.Getenv("PATH")); found {
 		return 0
 	}

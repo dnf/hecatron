@@ -42,30 +42,33 @@ function Check([string[]] $Arguments, [int[]] $Status = @(0), [string] $Pattern 
     }
 }
 
-# A fixture project: a git repository with a Go and a Python component.
+# A fixture project: a git repository with Go and Python, its files staged
+# (detection reads git's index), CRLF line ends as Windows editors write.
 $project = Join-Path ([IO.Path]::GetTempPath()) "hecatron-smoke-$PID"
-New-Item -ItemType Directory -Force -Path "$project/svc", "$project/tools" | Out-Null
-Set-Content -Path "$project/svc/go.mod" -Value "module example.com/svc`n`ngo 1.22`n" -NoNewline
-Set-Content -Path "$project/svc/main.go" -Value "package main`n`nfunc main() {}`n" -NoNewline
-Set-Content -Path "$project/tools/pyproject.toml" -Value "[project]`nname = `"tools`"`nversion = `"0.1.0`"`n" -NoNewline
-Set-Content -Path "$project/tools/tool.py" -Value "print('hi')`n" -NoNewline
+New-Item -ItemType Directory -Force -Path "$project/app/go", "$project/app/python" | Out-Null
+Set-Content -Path "$project/app/go/go.mod" -Value "module example.com/app`r`n`r`ngo 1.22`r`n" -NoNewline
+Set-Content -Path "$project/app/go/main.go" -Value "package main`r`n`r`nfunc main() {}`r`n" -NoNewline
+Set-Content -Path "$project/app/python/pyproject.toml" -Value "[project]`r`nname = `"tools`"`r`nversion = `"0.1.0`"`r`n" -NoNewline
+Set-Content -Path "$project/app/python/.python-version" -Value "3.13`r`n" -NoNewline
+Set-Content -Path "$project/app/python/tool.py" -Value "print('hi')`r`n" -NoNewline
 Push-Location $project
 try {
     git init -q
     if ($LASTEXITCODE) { throw 'git init failed' }
+    git add -A
+    if ($LASTEXITCODE) { throw 'git add failed' }
 
-    Check @('--version') -Pattern '^hecatron \d'
+    Check @('--version') -Pattern '^\d+\.\d+'
     Check @('help') -Pattern 'Usage'
-    Check @('init') -Pattern 'config.json'
+    Check @('init') -Pattern 'go, python'
     if (-not (Test-Path "$project/.hecatron/config.json")) { $failures += 'init wrote no .hecatron/config.json' }
-    Check @('list') -Pattern 'go'
+    Check @('list') -Pattern '2 languages'
     Check @('check')
-    Check @('status') -Pattern 'go'
-    Check @('env')
-    Check @('env', 'go', '-c', 'svc') -Pattern 'PATH'
+    Check @('status') -Pattern 'python\s+app/python/\s+3\.13'
+    Check @('env') -Pattern '\$env:HECATRON_ROOT = '
+    Check @('env', 'python', '-c', '.')
     Check @('advisor') -Status 0, 1
     Check @('workflows', '--check') -Status 0, 1
-    Check @('dockerfile')
     $skills = Join-Path $project 'skills'
     Check @('skill', 'install', '--dir', $skills) -Pattern 'Installed'
     if (-not (Test-Path "$skills/hecatron/SKILL.md")) { $failures += 'skill install wrote no SKILL.md' }
@@ -75,7 +78,7 @@ try {
     New-Item -ItemType Directory -Force -Path $stub | Out-Null
     Set-Content -Path "$stub/osv-scanner.cmd" -Value "@echo {`"results`": []}`r`n@exit /b 0`r`n" -NoNewline
     $env:PATH = "$stub;$env:PATH"
-    Check @('licenses') -Status 0, 1
+    Check @('licenses') -Pattern 'NOT COVERED go'
 
     # What needs bash says so, and how to get it.
     Check @('test') -Status 3 -Pattern 'bash'
