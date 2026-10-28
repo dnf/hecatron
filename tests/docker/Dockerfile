@@ -5,6 +5,8 @@
 ARG BASE=ubuntu:26.04
 FROM ${BASE}
 ENV DEBIAN_FRONTEND=noninteractive
+# A developer machine's UTF-8 locale (see run.sh).
+ENV LANG=C.UTF-8
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates curl git gnupg perl python3 sudo unzip xz-utils \
