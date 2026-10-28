@@ -1,0 +1,7 @@
+hct sync: since COMMIT (HEAD@{1}, 1 commit): 2 files changed
+  deps: one [a] (a/one/one.lock): failed
+  toolchain: one [a] (a/one/.one-version): needs 1.3, not installed; hct install one installs it (ask the user first)
+hct deps: 0 passed, 1 failed (TIME)
+FAIL one (a/one/) exit 1, TIME, log ../.logs/deps/one.log
+  error: lock file out of date
+Rerun: hct deps one -c a

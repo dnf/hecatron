@@ -6,6 +6,14 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **`hct sync`:** after a pull, rebase or checkout, says in a few lines
+  what changed for hecatron since where `HEAD` was (or a ref): runs
+  `hct deps` for the components whose lock files changed (`--no-deps` only
+  says so), says the toolchain version each changed pin now needs and
+  whether it's installed (it never installs), and runs `hct check` when the
+  config, hooks or generated files changed. Never pulls or fetches; needs
+  the binary (#92).
+
 ## 0.5.0 (2026-10-28)
 
 - **Leave files out of formatting:** `"format": {"exclude": [...]}` lists

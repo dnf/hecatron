@@ -56,6 +56,19 @@ func (p *Project) BuildFiles(lang string) ([]string, error) {
 		}
 		patterns = append(patterns, list...)
 	}
+	versionFiles, err := p.VersionFiles(lang)
+	if err != nil {
+		return nil, err
+	}
+	return append(patterns, versionFiles...), nil
+}
+
+// VersionFiles are the file name patterns a language's versions are read
+// from: its definition's pinFiles and supportFiles, each looked for from a
+// component's directory up to the root (a pattern with a slash, such as
+// .github/workflows/*.yml, relative to the directory it's looked for in).
+func (p *Project) VersionFiles(lang string) ([]string, error) {
+	var patterns []string
 	for _, key := range []string{"pinFiles", "supportFiles"} {
 		entries, err := p.fileEntries(lang, key)
 		if err != nil {

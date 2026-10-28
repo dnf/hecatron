@@ -1,0 +1,3 @@
+hct sync: since COMMIT (HEAD~2, 2 commits): 3 files changed
+  deps: one [a] (a/one/one.lock), two [a] (a/two/two.lock): fetched
+  toolchain: one [a] (a/one/.one-version): needs 1.2.7, installed

@@ -43,6 +43,10 @@ each language's test, lint or build command.
 - Lint: `hct lint <lang>`. It includes the formatter's check; on a
   formatting failure run `hct format <lang>`, then lint again.
 - Build: `hct build <lang>`. Dependencies: `hct deps <lang>`.
+- After pulling, rebasing or switching branches: `hct sync`. It fetches
+  dependencies whose lock files changed, says which toolchain versions are
+  now needed (installing one is for the user to approve) and checks the
+  config.
 - Read the summary; open a log (`<logs>/<action>/<lang>.log`, path in the
   output) only for a failure whose excerpt isn't enough.
 - Exit status: 0 passed, 1 failed, 2 usage error, 3 a toolchain is missing.

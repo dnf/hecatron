@@ -950,6 +950,19 @@ entry points' output byte for byte. Decided with the first port
   `history.log` when the log is from the last run recorded there.
   `bin/hecatron status` without the binary says so.
 
+- **`hct sync [ref]`** (#92; `internal/changed`'s `Catch`, `cmd/hecatron/sync.go`)
+  is native only: after a pull, rebase or checkout, the files changed
+  between where `HEAD` was (the reflog, before a rebase's steps) or `ref`
+  and `HEAD`, mapped as `--changed` maps them, with three outcomes: changed
+  lock files (`cache.lockFiles`) run `hct deps` for those components
+  through the runner (`--no-deps` only says so); changed pin or support
+  files, or a language's project definition, say the version now needed and
+  whether `installed.sh` finds it, never installing (`hct install`,
+  "ask the user first"); changed `.hecatron/` files or generated files run
+  `hct check` (the binary, as a child process, so a delegated check stays
+  delegated). Reads git, never pulls or fetches. `bin/hecatron sync`
+  without the binary says so.
+
 - **`hct advisor`** (#105; `internal/advisor`) is native only too: what
   each language's ecosystem considers good practice for the project, each
   finding with a level (`recommended`, what the ecosystem asks for, or
