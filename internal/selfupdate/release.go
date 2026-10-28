@@ -1,4 +1,4 @@
-// Package selfupdate is `hct self-update` and the update notice: finding
+// Package selfupdate is `hct self update` and the update notice: finding
 // hecatron's releases on GitHub, verifying a release's binary against its
 // SHA256SUMS, replacing an installation install.sh made, and the cached
 // result of the last check for a newer release (docs/design.md §13).

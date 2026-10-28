@@ -26,7 +26,7 @@ _go="${HECATRON_HOME}/bin/.hecatron-go"
 if [ -z "${HECATRON_NO_GO:-}" ] && [ -x "${_go}" ] && [ -f "${_go}.commit" ] && [ -f "${HECATRON_HOME}/.git/HEAD" ]; then
     read -r _head < "${HECATRON_HOME}/.git/HEAD" || true
     read -r _built < "${_go}.commit" || true
-    # "dev": built from this checkout by hecatron self-build, for any branch.
+    # "dev": built from this checkout by hecatron self build, for any branch.
     if [ "${_built:-}" = dev ] || { [ -n "${_built:-}" ] && [ "${_head:-}" = "${_built}" ]; }; then
         exec "${_go}" "$@"
     fi
@@ -83,10 +83,10 @@ Project:
   metadata                   Update package metadata through metadata.sh hooks
 
 Hecatron itself:
-  self-test                  Check hecatron's own code: shellcheck and the unit tests
-  self-build                 Build the Go binary from this checkout, for working on hecatron
+  self update [--check]      Update hecatron to the latest release (install.sh's installs)
+  self test                  Check hecatron's own code: shellcheck and the unit tests
+  self build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
-  self-update [--check]      Update hecatron to the latest release (install.sh's installs)
 
 Run 'hecatron <command> help' for a command's options, and 'hecatron help agents'
 for a compact reference for AI coding agents.
@@ -123,6 +123,36 @@ if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 9))' 2>/dev/null; t
     exit 1
 fi
 
+_self_usage() {
+    cat <<EOF
+Usage: hecatron self <command>     (or: hct self <command>)
+
+Manage hecatron itself:
+  update [--check]     Update hecatron to the latest release (install.sh's installs)
+  test                 Check hecatron's own code: shellcheck and the unit tests
+  build                Build the Go binary from this checkout, for working on hecatron
+
+Run 'hecatron self update help' for its options.
+EOF
+}
+
+# hecatron self <command>: managing hecatron itself, as rustup self and uv
+# self do. self-test and self-build, their earlier names, still work.
+if [ "${_command}" = "self" ]; then
+    _command="self-${1:-help}"
+    [ "$#" -gt 0 ] && shift
+    case "${_command}" in
+        self-help|self--h|self---help) _self_usage; exit 0 ;;
+        self-test|self-build) ;;
+        self-update)
+            # Native in the Go core only (docs/design.md §19).
+            echo "hecatron: self update needs hecatron's binary, which install.sh downloads with a release; a checkout updates with git pull" >&2
+            exit 1 ;;
+        *)
+            echo "hecatron: self: unknown command '${_command#self-}' (try 'hecatron self help')" >&2
+            exit 2 ;;
+    esac
+fi
 if [ "${_command}" = "self-test" ]; then
     exec bash "${HECATRON_HOME}/libexec/commands/self-test.sh" "$@"
 fi
@@ -202,10 +232,6 @@ case "${_command}" in
     advisor)
         # Native in the Go core only (docs/design.md §19).
         echo "hecatron: advisor needs hecatron's binary, which install.sh downloads with a release" >&2
-        exit 1 ;;
-    self-update)
-        # Native in the Go core only (docs/design.md §19).
-        echo "hecatron: self-update needs hecatron's binary, which install.sh downloads with a release; a checkout updates with git pull" >&2
         exit 1 ;;
     licenses)
         # Native in the Go core only (docs/design.md §19).

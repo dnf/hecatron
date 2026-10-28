@@ -81,8 +81,8 @@ git clone https://github.com/dnf/hecatron ~/.hecatron && . ~/.hecatron/install.s
 ### Update
 
 ```bash
-hct self-update            # the latest release
-hct self-update --check    # only say whether there is one (exit 3: there is)
+hct self update            # the latest release
+hct self update --check    # only say whether there is one (exit 3: there is)
 ```
 
 Hecatron never updates itself: it generates CI workflows and a Dockerfile,
@@ -90,7 +90,7 @@ and a new version can change them. Once a day at most it looks for a newer
 release in the background and says so in one line after a command, on a
 terminal, in human output only; never in CI or with
 `HECATRON_NO_UPDATE_CHECK=1`. `hct status` reports it too. `hct
-self-update` verifies the release's binary against its `SHA256SUMS`, swaps
+self update` verifies the release's binary against its `SHA256SUMS`, swaps
 the new version in whole (a failure leaves the old one working) and
 refreshes the Agent Skill `hct skill install` put in place. A clone updates
 with `git pull`; running install.sh again works too.
@@ -351,7 +351,7 @@ problem, see [SECURITY.md](SECURITY.md).
 ## Contributing
 
 Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has
-the checks to run (`hct self-test`), the conventions the code follows, and a
+the checks to run (`hct self test`), the conventions the code follows, and a
 map of the repository.
 
 ## Acknowledgements

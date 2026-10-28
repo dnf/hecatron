@@ -22,7 +22,7 @@ const (
 	envPath    = "env"
 )
 
-// Install is an installation self-update can replace.
+// Install is an installation self update can replace.
 type Install struct {
 	Home    string // the installation directory
 	Version string // its VERSION
@@ -43,12 +43,12 @@ func (r *Refusal) Error() string {
 	return r.Reason + "; " + r.Advice
 }
 
-const pullAdvice = "update it with git pull (and hct self-build for the binary)"
+const pullAdvice = "update it with git pull (and hct self build for the binary)"
 
 // IsReleaseBinary is whether exe is the release binary of an installation
 // at home: in its bin/, at the commit it was downloaded for. Cheap enough to
 // ask on every command (no git), for the update notice: a dev build (hct
-// self-build's, or go build's) is never told about releases.
+// self build's, or go build's) is never told about releases.
 func IsReleaseBinary(home, exe string) bool {
 	if !sameFile(exe, filepath.Join(home, binaryPath)) {
 		return false
@@ -59,10 +59,10 @@ func IsReleaseBinary(home, exe string) bool {
 }
 
 // Inspect is the installation at home, which exe (this binary) belongs
-// to, if self-update can replace it; else a *Refusal saying why.
+// to, if self update can replace it; else a *Refusal saying why.
 func Inspect(home, exe string) (*Install, error) {
 	if runtime.GOOS == "windows" {
-		return nil, &Refusal{"hct self-update doesn't run on Windows yet", "download the release's binary from GitHub"}
+		return nil, &Refusal{"hct self update doesn't run on Windows yet", "download the release's binary from GitHub"}
 	}
 	commit := readFile(filepath.Join(home, commitPath))
 	switch {
@@ -72,7 +72,7 @@ func Inspect(home, exe string) (*Install, error) {
 		}
 		return nil, &Refusal{"this hct isn't the binary of an installation install.sh made (" + home + ")", "update it the way it was installed"}
 	case commit == "dev":
-		return nil, &Refusal{"this hct is a dev build (hct self-build) in the checkout " + home, pullAdvice}
+		return nil, &Refusal{"this hct is a dev build (hct self build) in the checkout " + home, pullAdvice}
 	case !isDir(filepath.Join(home, ".git")) || !isFile(filepath.Join(home, envPath)):
 		return nil, &Refusal{home + " wasn't installed by install.sh", "update it the way it was installed"}
 	}
@@ -92,7 +92,7 @@ func Inspect(home, exe string) (*Install, error) {
 	}
 	for _, dir := range []string{home, filepath.Dir(home)} {
 		if err := writable(dir); err != nil {
-			return nil, &Refusal{dir + " isn't writable (" + err.Error() + ")", "run hct self-update as the user who installed hecatron"}
+			return nil, &Refusal{dir + " isn't writable (" + err.Error() + ")", "run hct self update as the user who installed hecatron"}
 		}
 	}
 	version := readFile(filepath.Join(home, "VERSION"))

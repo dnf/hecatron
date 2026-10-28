@@ -139,5 +139,5 @@ missing dependencies too, both call one `*_fetch` function in
       hecatron installs one), and `tests/docker/install-test.sh ubuntu:24.04 <lang>`
       passing
 - [ ] The language count updated wherever the docs state it: `grep -rn
-      language-count` lists every line (the self-test fails on any it misses)
-- [ ] `hct self-test` passes
+      language-count` lists every line (the self test fails on any it misses)
+- [ ] `hct self test` passes

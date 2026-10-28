@@ -21,7 +21,7 @@ import (
 	"github.com/dnf/hecatron/internal/selfupdate"
 )
 
-// hct self-update and the update notice, against a fake GitHub (its
+// hct self update and the update notice, against a fake GitHub (its
 // releases API and downloads, through HECATRON_UPDATE_URL) and a fake
 // installation as install.sh makes one: a clone of a repository with
 // releases v0.5.0 and v0.6.0, at v0.5.0, with this binary as its
@@ -183,7 +183,7 @@ func readText(t *testing.T, path string) string {
 	return string(data)
 }
 
-// leftovers are self-update's staging or old directories beside home.
+// leftovers are self update's staging or old directories beside home.
 func leftovers(t *testing.T, home string) []string {
 	matches, _ := filepath.Glob(filepath.Join(filepath.Dir(home), ".hecatron.*"))
 	return matches
@@ -205,14 +205,14 @@ func TestSelfUpdate(t *testing.T) {
 	}
 	writeFiles(t, home, map[string]string{selfupdate.CacheFile: `{"checked":"` + time.Now().UTC().Format(time.RFC3339) + `","latest":"0.6.0"}`})
 
-	got := runIn(t, t.TempDir(), env, hct, "self-update", "--check")
-	if got.status != 3 || !strings.Contains(got.stdout, "hecatron 0.6.0 is available (this is 0.5.0): run hct self-update") {
+	got := runIn(t, t.TempDir(), env, hct, "self", "update", "--check")
+	if got.status != 3 || !strings.Contains(got.stdout, "hecatron 0.6.0 is available (this is 0.5.0): run hct self update") {
 		t.Fatalf("--check: %+v", got)
 	}
 
-	got = runIn(t, t.TempDir(), env, hct, "self-update")
+	got = runIn(t, t.TempDir(), env, hct, "self", "update")
 	if got.status != 0 || !strings.Contains(got.stdout, "Updated hecatron 0.5.0 → 0.6.0") {
-		t.Fatalf("self-update: %+v", got)
+		t.Fatalf("self update: %+v", got)
 	}
 	if v := readText(t, filepath.Join(home, "VERSION")); v != "0.6.0\n" {
 		t.Errorf("VERSION is %q", v)
@@ -254,24 +254,24 @@ func TestSelfUpdate(t *testing.T) {
 	if err := os.WriteFile(hct, []byte(readText(t, binary)), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	got = runIn(t, t.TempDir(), env, hct, "self-update")
+	got = runIn(t, t.TempDir(), env, hct, "self", "update")
 	if got.status != 0 || got.stdout != "hecatron 0.6.0 is already up to date\n" {
 		t.Errorf("up to date: %+v", got)
 	}
-	got = runIn(t, t.TempDir(), env, hct, "self-update", "--check")
+	got = runIn(t, t.TempDir(), env, hct, "self", "update", "--check")
 	if got.status != 0 || !strings.Contains(got.stdout, "hecatron 0.6.0 is up to date") {
 		t.Errorf("--check up to date: %+v", got)
 	}
 
 	// --version installs another release, an older one too.
-	got = runIn(t, t.TempDir(), env, hct, "self-update", "--version", "0.4.0")
+	got = runIn(t, t.TempDir(), env, hct, "self", "update", "--version", "0.4.0")
 	if got.status != 0 || !strings.Contains(got.stdout, "Updated hecatron 0.6.0 → 0.4.0") || readText(t, filepath.Join(home, "VERSION")) != "0.4.0\n" {
 		t.Errorf("--version 0.4.0: %+v", got)
 	}
 	if err := os.WriteFile(hct, []byte(readText(t, binary)), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	got = runIn(t, t.TempDir(), env, hct, "self-update", "--version", "9.9.9")
+	got = runIn(t, t.TempDir(), env, hct, "self", "update", "--version", "9.9.9")
 	if got.status != 1 || !strings.Contains(got.stderr, "there is no release 9.9.9") {
 		t.Errorf("--version 9.9.9: %+v", got)
 	}
@@ -293,7 +293,7 @@ func TestSelfUpdateFailuresChangeNothing(t *testing.T) {
 			home := fakeInstall(t)
 			hct := filepath.Join(home, "bin", ".hecatron-go")
 			before := readText(t, hct)
-			got := runIn(t, t.TempDir(), updateEnv(t, home, server), hct, "self-update")
+			got := runIn(t, t.TempDir(), updateEnv(t, home, server), hct, "self", "update")
 			if got.status != 1 || !strings.Contains(got.stderr, c.want) || !strings.Contains(got.stderr, "hecatron 0.5.0 is unchanged") {
 				t.Errorf("%+v", got)
 			}
@@ -307,7 +307,7 @@ func TestSelfUpdateFailuresChangeNothing(t *testing.T) {
 	}
 }
 
-// Installations self-update can't replace are refused, saying how to
+// Installations self update can't replace are refused, saying how to
 // update them instead.
 func TestSelfUpdateRefuses(t *testing.T) {
 	server := newFakeGitHub(t)
@@ -319,7 +319,7 @@ func TestSelfUpdateRefuses(t *testing.T) {
 		{"dev build", func(t *testing.T, home string) string {
 			writeFiles(t, home, map[string]string{"bin/.hecatron-go.commit": "dev\n"})
 			return ""
-		}, "dev build (hct self-build)"},
+		}, "dev build (hct self build)"},
 		{"go build in a checkout", func(t *testing.T, home string) string { return binary }, "a build from the checkout"},
 		{"a branch", func(t *testing.T, home string) string {
 			mustGit(t, home, "checkout", "-q", "-b", "work")
@@ -353,7 +353,7 @@ func TestSelfUpdateRefuses(t *testing.T) {
 			if hct == "" {
 				hct = filepath.Join(home, "bin", ".hecatron-go")
 			}
-			got := runIn(t, t.TempDir(), updateEnv(t, home, server), hct, "self-update")
+			got := runIn(t, t.TempDir(), updateEnv(t, home, server), hct, "self", "update")
 			if got.status != 1 || !strings.Contains(got.stderr, c.want) {
 				t.Errorf("%+v", got)
 			}
@@ -364,8 +364,8 @@ func TestSelfUpdateRefuses(t *testing.T) {
 	}
 	t.Run("bin/hecatron without the binary", func(t *testing.T) {
 		home := repoHome(t)
-		got := runIn(t, t.TempDir(), []string{"HECATRON_HOME=" + home, "HECATRON_NO_GO=1"}, "bash", filepath.Join(home, "bin", "hecatron"), "self-update")
-		if got.status != 1 || !strings.Contains(got.stderr, "self-update needs hecatron's binary") {
+		got := runIn(t, t.TempDir(), []string{"HECATRON_HOME=" + home, "HECATRON_NO_GO=1"}, "bash", filepath.Join(home, "bin", "hecatron"), "self", "update")
+		if got.status != 1 || !strings.Contains(got.stderr, "self update needs hecatron's binary") {
 			t.Errorf("%+v", got)
 		}
 	})
@@ -373,11 +373,11 @@ func TestSelfUpdateRefuses(t *testing.T) {
 		home := fakeInstall(t)
 		hct := filepath.Join(home, "bin", ".hecatron-go")
 		for _, args := range [][]string{{"--bogus"}, {"--version"}, {"--version", "1.2"}, {"--check", "--version", "0.6.0"}} {
-			if got := runIn(t, t.TempDir(), updateEnv(t, home, server), append([]string{hct, "self-update"}, args...)...); got.status != 2 {
+			if got := runIn(t, t.TempDir(), updateEnv(t, home, server), append([]string{hct, "self", "update"}, args...)...); got.status != 2 {
 				t.Errorf("%v: %+v", args, got)
 			}
 		}
-		if got := runIn(t, t.TempDir(), updateEnv(t, home, server), hct, "self-update", "help"); got.status != 0 || !strings.HasPrefix(got.stdout, "Usage: hecatron self-update") {
+		if got := runIn(t, t.TempDir(), updateEnv(t, home, server), hct, "self", "update", "help"); got.status != 0 || !strings.HasPrefix(got.stdout, "Usage: hecatron self update") {
 			t.Errorf("help: %+v", got)
 		}
 	})
@@ -466,12 +466,12 @@ func TestUpdateCheck(t *testing.T) {
 	if err := json.Unmarshal([]byte(got.stdout), &s); err != nil || s.Update == nil || s.Update.Latest != "0.6.0" || s.Version != "0.5.0" {
 		t.Fatalf("status json: %+v (%v)", got, err)
 	}
-	if last := s.Next[len(s.Next)-1]; last.Command != "hct self-update" {
+	if last := s.Next[len(s.Next)-1]; last.Command != "hct self update" {
 		t.Errorf("next: %+v", s.Next)
 	}
 	for _, format := range []string{"agent", "human"} {
 		got = runIn(t, root, env, hct, "status", "--output", format)
-		if !strings.Contains(got.stdout, "0.6.0 is available: hct self-update") {
+		if !strings.Contains(got.stdout, "0.6.0 is available: hct self update") {
 			t.Errorf("status %s: %+v", format, got)
 		}
 	}
@@ -496,7 +496,7 @@ func TestUpdateNoticeOnATerminal(t *testing.T) {
 	if err := selfupdate.WriteCache(home, selfupdate.Cache{Checked: time.Now(), Latest: "0.6.0"}); err != nil {
 		t.Fatal(err)
 	}
-	notice := "A new release of hecatron is available: 0.5.0 → 0.6.0. Run `hct self-update`."
+	notice := "A new release of hecatron is available: 0.5.0 → 0.6.0. Run `hct self update`."
 	for _, c := range []struct {
 		command string
 		env     []string
@@ -511,7 +511,7 @@ func TestUpdateNoticeOnATerminal(t *testing.T) {
 		{"--version", []string{"GITHUB_ACTIONS=true"}, false},
 		{"status --output agent", nil, false},
 		{"status --output=junit", nil, false},
-		{"self-update --check", nil, false},
+		{"self update --check", nil, false},
 	} {
 		t.Run(c.command+" "+strings.Join(c.env, " "), func(t *testing.T) {
 			got := runIn(t, t.TempDir(), updateEnv(t, home, server, c.env...), "script", "-qec", hct+" "+c.command, "/dev/null")
@@ -519,5 +519,33 @@ func TestUpdateNoticeOnATerminal(t *testing.T) {
 				t.Errorf("notice shown %v: %+v", shown, got)
 			}
 		})
+	}
+}
+
+// hct self test and self build, and their earlier hyphenated names, run
+// the same scripts with the same arguments in both entry points.
+func TestSelfGroup(t *testing.T) {
+	home := t.TempDir()
+	writeFiles(t, home, map[string]string{
+		"libexec/commands/self-test.sh":  `echo "self-test.sh $*"` + "\n",
+		"libexec/commands/self-build.sh": `echo "self-build.sh $*"` + "\n",
+		"VERSION":                        "0.5.0\n",
+		"bin/hecatron":                   readText(t, filepath.Join(repoHome(t), "bin", "hecatron")),
+	})
+	for _, c := range []struct {
+		args []string
+		want string
+	}{
+		{[]string{"self", "test", "-x"}, "self-test.sh -x\n"},
+		{[]string{"self-test", "-x"}, "self-test.sh -x\n"},
+		{[]string{"self", "build"}, "self-build.sh \n"},
+		{[]string{"self-build"}, "self-build.sh \n"},
+	} {
+		for name, argv := range map[string][]string{"binary": {binary}, "bin/hecatron": {"bash", filepath.Join(home, "bin", "hecatron")}} {
+			got := runIn(t, t.TempDir(), []string{"HECATRON_HOME=" + home, "HECATRON_NO_GO=1"}, append(argv, c.args...)...)
+			if got.status != 0 || got.stdout != c.want {
+				t.Errorf("%s %v: %+v", name, c.args, got)
+			}
+		}
 	}
 }

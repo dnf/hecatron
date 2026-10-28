@@ -14,14 +14,14 @@ import (
 	"github.com/dnf/hecatron/internal/selfupdate"
 )
 
-const selfUpdateUsage = `Usage: hecatron self-update [--check] [--version X.Y.Z]
+const selfUpdateUsage = `Usage: hecatron self update [--check] [--version X.Y.Z]
 
 Update hecatron to the latest release: its binary for this machine,
 checked against the release's SHA256SUMS, and its files, prepared beside
 the installation and swapped in, so a failure leaves the old version
 working. The Agent Skill hct skill install put in ~/.claude/skills or
 another --dir is refreshed too. Only for an installation install.sh made;
-a git checkout updates with git pull (and hct self-build).
+a git checkout updates with git pull (and hct self build).
 
 Hecatron never updates itself: it generates CI workflows and a Dockerfile,
 which a new version can change. Once a day at most it looks for a newer
@@ -36,10 +36,10 @@ Flags:
 GITHUB_TOKEN, when set, is sent to GitHub's API (a higher rate limit).
 `
 
-// The exit status of self-update --check when a newer release exists.
+// The exit status of self update --check when a newer release exists.
 const statusUpdateAvailable = 3
 
-// selfUpdate is `hecatron self-update`. It exists only in the Go core.
+// selfUpdate is `hecatron self update`. It exists only in the Go core.
 func (c *cli) selfUpdate() int {
 	check, version := false, ""
 	for i := 0; i < len(c.args); i++ {
@@ -70,7 +70,7 @@ func (c *cli) selfUpdate() int {
 	current := c.home.Version()
 	exe, err := executable()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "hecatron: self-update:", err)
+		fmt.Fprintln(os.Stderr, "hecatron: self update:", err)
 		return 1
 	}
 	install, refusal := selfupdate.Inspect(c.home.Dir, exe)
@@ -81,7 +81,7 @@ func (c *cli) selfUpdate() int {
 		return c.checkForUpdate(ctx, client, current, refusal)
 	}
 	if refusal != nil {
-		fmt.Fprintln(os.Stderr, "hecatron: self-update:", refusal)
+		fmt.Fprintln(os.Stderr, "hecatron: self update:", refusal)
 		return 1
 	}
 	var release *selfupdate.Release
@@ -91,11 +91,11 @@ func (c *cli) selfUpdate() int {
 		release, err = client.Latest(ctx)
 	}
 	if selfupdate.IsNoRelease(err) && version != "" {
-		fmt.Fprintf(os.Stderr, "hecatron: self-update: there is no release %s\n", version)
+		fmt.Fprintf(os.Stderr, "hecatron: self update: there is no release %s\n", version)
 		return 1
 	}
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "hecatron: self-update: finding the release:", err)
+		fmt.Fprintln(os.Stderr, "hecatron: self update: finding the release:", err)
 		return 1
 	}
 	if version == "" {
@@ -111,7 +111,7 @@ func (c *cli) selfUpdate() int {
 		err = selfupdate.Replace(install, release, binary)
 	}
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "hecatron: self-update: %v\nhecatron %s is unchanged.\n", err, install.Version)
+		fmt.Fprintf(os.Stderr, "hecatron: self update: %v\nhecatron %s is unchanged.\n", err, install.Version)
 		return 1
 	}
 	fmt.Printf("Updated hecatron %s → %s\n", install.Version, release.Version)
@@ -122,12 +122,12 @@ func (c *cli) selfUpdate() int {
 	return 0
 }
 
-// checkForUpdate is self-update --check: the latest release against this
+// checkForUpdate is self update --check: the latest release against this
 // one, and (when it can't update itself) how this installation updates.
 func (c *cli) checkForUpdate(ctx context.Context, client *selfupdate.Client, current string, refusal error) int {
 	release, err := client.Latest(ctx)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "hecatron: self-update: finding the latest release:", err)
+		fmt.Fprintln(os.Stderr, "hecatron: self update: finding the latest release:", err)
 		return 1
 	}
 	if refusal == nil {
@@ -137,7 +137,7 @@ func (c *cli) checkForUpdate(ctx context.Context, client *selfupdate.Client, cur
 	if selfupdate.Newer(release.Version, current) {
 		status = statusUpdateAvailable
 		if refusal == nil {
-			fmt.Printf("hecatron %s is available (this is %s): run hct self-update\n", release.Version, current)
+			fmt.Printf("hecatron %s is available (this is %s): run hct self update\n", release.Version, current)
 		} else {
 			fmt.Printf("hecatron %s is available (this is %s)\n", release.Version, current)
 		}
@@ -145,14 +145,18 @@ func (c *cli) checkForUpdate(ctx context.Context, client *selfupdate.Client, cur
 		fmt.Printf("hecatron %s is up to date (the latest release is %s)\n", current, release.Version)
 	}
 	if refusal != nil {
-		fmt.Printf("hct self-update can't update this one: %v\n", refusal)
+		fmt.Printf("hct self update can't update this one: %v\n", refusal)
 	}
 	return status
 }
 
 func selfUpdateUsageError(message string) int {
-	fmt.Fprintf(os.Stderr, "hecatron: self-update: %s\n%s", message, selfUpdateUsage)
+	fmt.Fprintf(os.Stderr, "hecatron: self update: %s\n%s", message, selfUpdateUsage)
 	return 2
+}
+
+func isSelfUpdate(command string, args []string) bool {
+	return command == "self" && len(args) > 0 && args[0] == "update"
 }
 
 // executable is this binary's path, links followed.
@@ -169,7 +173,7 @@ func executable() (string, error) {
 // done (when a notice may be shown at all), and once a day a new check, in
 // a process of its own, so no command waits on the network.
 func (c *cli) prepareUpdateNotice() {
-	if !selfupdate.ChecksAllowed(os.Getenv) || c.command == "self-update" || strings.HasPrefix(c.command, "_") {
+	if !selfupdate.ChecksAllowed(os.Getenv) || isSelfUpdate(c.command, c.args) || strings.HasPrefix(c.command, "_") {
 		return
 	}
 	exe, err := executable()
@@ -242,7 +246,7 @@ func (c *cli) knownUpdate() (latest string, checked time.Time) {
 }
 
 // writeEnv is `hecatron _write-env DIR HOME`: install.sh's env and
-// env.fish for an installation at HOME, written into DIR. hct self-update
+// env.fish for an installation at HOME, written into DIR. hct self update
 // runs the new release's binary with it, so the files are that release's.
 func writeEnv(args []string) int {
 	if len(args) != 2 {

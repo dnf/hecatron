@@ -53,8 +53,8 @@ func (s *Status) SetUpdate(latest string, checked time.Time) {
 	if latest == "" {
 		return
 	}
-	s.Update = &Update{Latest: latest, Checked: checked.UTC(), Command: "hct self-update"}
-	s.Next = append(s.Next, Next{"hct self-update", "hecatron " + latest + " is available", true})
+	s.Update = &Update{Latest: latest, Checked: checked.UTC(), Command: "hct self update"}
+	s.Next = append(s.Next, Next{"hct self update", "hecatron " + latest + " is available", true})
 }
 
 // Language is one of the project's languages.

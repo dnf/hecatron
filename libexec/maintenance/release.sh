@@ -6,7 +6,7 @@
 #
 # 1. Checks: on main, clean and up to date with origin; gh signed in; the
 #    version is X.Y.Z, newer than VERSION, and not tagged yet; CHANGELOG.md
-#    has an "## Unreleased" section with entries; `hecatron self-test` passes.
+#    has an "## Unreleased" section with entries; `hecatron self test` passes.
 # 2. On a release-X.Y.Z branch: VERSION, the Unreleased heading becomes
 #    "## X.Y.Z (date)" under a new empty Unreleased, and the README's
 #    "version X.Y" status line.
@@ -69,7 +69,7 @@ check() {
         grep -qx '## Unreleased' CHANGELOG.md || fail "CHANGELOG.md has no '## Unreleased' section"
         [ -n "$(unreleased_entries | tr -d '[:space:]')" ] || fail "CHANGELOG.md's Unreleased section is empty"
     fi
-    bin/hecatron self-test >/dev/null 2>&1 || fail "hecatron self-test fails; run it to see why"
+    bin/hecatron self test >/dev/null 2>&1 || fail "hecatron self test fails; run it to see why"
 }
 
 bump() {

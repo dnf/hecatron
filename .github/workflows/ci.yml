@@ -19,12 +19,12 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install shellcheck
       - name: shellcheck and the unit tests
-        run: bin/hecatron self-test
+        run: bin/hecatron self test
       - name: The command runs
         run: bin/hecatron --version && bin/hct help
 
   # Hecatron tested with itself (.hecatron/config.json): its toolchain from
-  # hct install, the binary from hct self-build, then hct lint and hct test,
+  # hct install, the binary from hct self build, then hct lint and hct test,
   # as a user's project would run them, with annotations on the change.
   self-hosted:
     runs-on: ubuntu-latest
@@ -37,8 +37,8 @@ jobs:
           go-version-file: go.mod
       - name: hct install (Go's linter)
         run: bin/hct install
-      - name: hct self-build
-        run: bin/hct self-build
+      - name: hct self build
+        run: bin/hct self build
       - name: hct lint
         run: bin/hct lint
       - name: hct test

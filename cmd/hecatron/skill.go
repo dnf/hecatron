@@ -21,7 +21,7 @@ use hct, where the agent finds it:
   --dir DIR   DIR/hecatron: another agent that reads Agent Skills (its
               documentation says where it looks)
 Installing again replaces the copy, so it matches this hecatron. A folder
-there that isn't hecatron's skill is left alone. hct self-update refreshes
+there that isn't hecatron's skill is left alone. hct self update refreshes
 the --user and --dir copies; a --project copy is the repository's to update.
 
 hecatron skill path prints where the skill is inside hecatron. In Claude
@@ -131,7 +131,7 @@ func isHecatronSkill(dir string) bool {
 }
 
 // skillRecord lists, in a release installation, where hct skill install
-// put the skill (--user, --dir), for hct self-update to refresh.
+// put the skill (--user, --dir), for hct self update to refresh.
 const skillRecord = ".skill-installs"
 
 // recordSkill adds destination to the record, in a release installation

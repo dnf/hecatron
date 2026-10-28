@@ -108,7 +108,8 @@ func TestNoticeAllowed(t *testing.T) {
 		{"GitHub Actions", env("GITHUB_ACTIONS=true"), "test", nil, true, true, false},
 		{"after --", env(), "parallel", []string{"x", "--", "--output", "json"}, true, true, true},
 		{"env", env(), "env", nil, true, true, false},
-		{"self-update", env(), "self-update", nil, true, true, false},
+		{"self update", env(), "self", []string{"update"}, true, true, false},
+		{"self test", env(), "self", []string{"test"}, true, true, true},
 		{"internal", env(), "_update-check", nil, true, true, false},
 	} {
 		if got := NoticeAllowed(c.getenv, c.command, c.args, c.stdout, c.stderr); got != c.want {

@@ -33,7 +33,7 @@ internal/                # Go packages: project (the model and version resolutio
                          # versions.py, and detection), generate (Dockerfile, workflows), runner (jobs, output),
                          # status (hct status), deps (audit and outdated reports), licenses and spdx
                          # (hct licenses), advisor (hct advisor), reports (JUnit, SARIF, job summary),
-                         # actions, install, selfupdate (hct self-update and the update notice)
+                         # actions, install, selfupdate (hct self update and the update notice)
 ```
 
 Every command finds the project by walking up from the working directory
@@ -43,7 +43,7 @@ project path from its own location.
 ## Checks
 
 ```bash
-bin/hecatron self-test    # shellcheck (zero warnings), then the unit tests
+bin/hecatron self test    # shellcheck (zero warnings), then the unit tests
 ```
 
 ## Conventions

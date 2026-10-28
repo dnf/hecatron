@@ -14,10 +14,9 @@ func ChecksAllowed(getenv func(string) string) bool {
 // quietCommands print what's read by programs or replace hecatron, so no
 // notice follows them.
 var quietCommands = map[string]bool{
-	"self-update": true,
-	"env":         true,
-	"banner":      true,
-	"plan":        true,
+	"env":    true,
+	"banner": true,
+	"plan":   true,
 }
 
 // NoticeAllowed is whether the update notice may be shown after command:
@@ -25,7 +24,8 @@ var quietCommands = map[string]bool{
 // HECATRON_OUTPUT naming another format, not an AI agent's session, not
 // GitHub Actions).
 func NoticeAllowed(getenv func(string) string, command string, args []string, stdoutTerminal, stderrTerminal bool) bool {
-	if !ChecksAllowed(getenv) || !stderrTerminal || quietCommands[command] || strings.HasPrefix(command, "_") {
+	selfUpdate := command == "self" && len(args) > 0 && args[0] == "update"
+	if !ChecksAllowed(getenv) || !stderrTerminal || quietCommands[command] || selfUpdate || strings.HasPrefix(command, "_") {
 		return false
 	}
 	format := getenv("HECATRON_OUTPUT")
@@ -49,5 +49,5 @@ flags:
 
 // Notice is the line saying a newer release exists.
 func Notice(current, latest string) string {
-	return fmt.Sprintf("A new release of hecatron is available: %s → %s. Run `hct self-update`.", current, latest)
+	return fmt.Sprintf("A new release of hecatron is available: %s → %s. Run `hct self update`.", current, latest)
 }

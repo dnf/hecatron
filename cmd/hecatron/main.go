@@ -14,7 +14,7 @@
 // project commands (init, add, remove, enable, disable, check, dockerfile,
 // workflows: manage.go, init.go), banner (banner.go), and install and uninstall
 // (install.go; each language's install.sh and uninstall.sh stay bash),
-// and self-update (selfupdate.go), which only the binary has. The
+// and self update (selfupdate.go), which only the binary has. The
 // prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
 
@@ -75,8 +75,8 @@ func (c *cli) dispatch() int {
 		return c.licenses()
 	case "skill":
 		return c.skill()
-	case "self-update":
-		return c.selfUpdate()
+	case "self":
+		return c.self()
 	case "_update-check":
 		return c.updateCheck()
 	case "_write-env":
@@ -91,9 +91,9 @@ func (c *cli) dispatch() int {
 		return c.installHidden()
 	case "_gotest":
 		return c.goTestFilter()
-	case "self-test":
+	case "self-test": // self test's earlier name
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
-	case "self-build":
+	case "self-build": // self build's earlier name
 		return c.delegate(bashScript("libexec/commands/self-build.sh"))
 	}
 	implementation, known := delegated[c.command]

@@ -268,6 +268,7 @@ recipes do today. Output of single-language runs streams and is also saved to
 | `hecatron env` | Shell code for a project's own scripts: `eval "$(hecatron env)"` loads the language lists and helpers | `source helpers.sh` |
 | `hecatron parallel <name> "job"...` | Run a project's own job list (just recipes by default) with the parallel display and logs | `run-parallel.sh` |
 | `hecatron --version` | Hecatron's own version | new |
+| `hecatron self update\|test\|build` | Manage hecatron itself: update to a release (§13), its own checks, build its binary from a checkout | new |
 
 Flags shared by the run commands: `-j N|P%|unlimited` (concurrency) and
 `-s scroll|full|zoom` (display) for parallel runs, as today, and `-c
@@ -279,6 +280,12 @@ Which languages an action covers follows from their hooks: a language with a
 so on, so `config.json` needs no `compiled`/`hasLint` flags. `hecatron
 bootstrap` sets up a fresh machine for the project (base packages, then
 `hecatron install`).
+
+**Commands about hecatron itself go under `hct self` (decided
+2026-10-28),** with a space, as package managers do (`rustup self update`,
+`uv self update`): `self update`, `self test`, `self build`, and any later
+self-management command. `hct self` lists them. `self-test` and
+`self-build`, their earlier names, still work, unlisted.
 
 Exit status: 0 when everything run passed, 1 when anything failed, 2 for a
 usage error. A language whose toolchain is missing is reported as "not
@@ -554,12 +561,12 @@ tarball; a release workflow updates the tap formula's URL and checksum. A
 project's `"hecatron": ">=x.y.z"` makes older installs fail with a clear
 message instead of misbehaving.
 
-**Updates: notify and self-update, never auto-update (decided
+**Updates: notify and self update, never auto-update (decided
 2026-10-28).** Hecatron generates CI workflows and a Dockerfile, so a
 silent version change would change a project's generated files under it.
 So it only says a release is out and updates when asked, as `gh` does:
 
-- `hct self-update` (`internal/selfupdate`; binary only) updates an
+- `hct self update` (`internal/selfupdate`; binary only) updates an
   installation install.sh made (a clone at a release tag, with
   `bin/.hecatron-go` at that commit and `env`) to the latest release, or
   `--version X.Y.Z`. It finds the release through GitHub's releases API
@@ -573,7 +580,7 @@ So it only says a release is out and updates when asked, as `gh` does:
   a parity test, and the new binary's own `hct _write-env` when it has
   one), so new PATH entries reach shells, and swaps the two directories
   by renaming, undoing the first rename if the second fails. It refuses a dev build (`hct
-  self-build`'s or `go build`'s), a checkout on a branch or with changes
+  self build`'s or `go build`'s), a checkout on a branch or with changes
   ("update with git pull"), a directory install.sh didn't make, and one it
   can't write. It then refreshes the skill copies `hct skill install`
   made (`--user`, and each `--dir`, recorded in `.skill-installs`).
@@ -590,7 +597,7 @@ So it only says a release is out and updates when asked, as `gh` does:
   `HECATRON_OUTPUT` naming another format, in an agent's session, in
   GitHub Actions, or with `HECATRON_NO_UPDATE_CHECK=1`, which also stops
   the check. `hct status` reports the cached newer release in every format
-  (`update` in JSON) and suggests `hct self-update`, asking the user
+  (`update` in JSON) and suggests `hct self update`, asking the user
   first; it never checks itself.
 - A project pinning the hecatron version it needs is tracked separately.
 
@@ -1148,8 +1155,8 @@ entry points' output byte for byte. Decided with the first port
   thousands of variants with one value replaced or removed, comparing
   output and status byte for byte; the one wording left out is which pair
   of values a failed sort names.
-- **`hct self-update`** and the update notice (`internal/selfupdate`) are
-  native only (§13). `bin/hecatron self-update` without the binary says
+- **`hct self update`** and the update notice (`internal/selfupdate`) are
+  native only (§13). `bin/hecatron self update` without the binary says
   so.
 
 ### Language definitions: data, families, scripts

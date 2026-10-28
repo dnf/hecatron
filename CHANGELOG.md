@@ -6,7 +6,11 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
-- **`hct self-update`:** updates an installation install.sh made to the
+- **`hct self`:** hecatron's own commands take a space, as `rustup self`
+  and `uv self` do: `hct self update`, `hct self test` and `hct self
+  build`; `hct self` lists them. `self-test` and `self-build` still work.
+
+- **`hct self update`:** updates an installation install.sh made to the
   latest release (or `--version X.Y.Z`), its binary checked against the
   release's `SHA256SUMS` and the new version swapped in whole, so a
   failure leaves the old one working; rewrites `env` and `env.fish` as

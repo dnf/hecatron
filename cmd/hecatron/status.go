@@ -13,7 +13,7 @@ import (
 const statusUsage = `Usage: hecatron status [--output human|agent|json]
 
 What to know first in a repository: hecatron's version (and a newer
-release when the last daily check found one; hct self-update), the project (its
+release when the last daily check found one; hct self update), the project (its
 config saved or only detected), and for each language its directories, the
 toolchain version it resolves to and why, whether that toolchain is
 installed, the last run of each action, and its uncommitted changes; then
