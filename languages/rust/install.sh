@@ -49,7 +49,10 @@ _install_versions() {
         rustup toolchain install "${toolchain}" --profile default </dev/null
     done <<<"${specs}"
 }
-deps() { _install_versions; }
+deps() {
+    _install_versions
+    cargo_dependencies rust
+}
 
 log "Installing Rust..."
 "install_${OS}"
