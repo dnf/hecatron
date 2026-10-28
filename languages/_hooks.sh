@@ -625,6 +625,9 @@ node_hook() {
     node_pm_command
     case "$1" in
         test)
+            # Test runners that watch for changes when not in CI (Create React
+            # App's, Vitest's) would never finish.
+            export CI="${CI:-true}"
             if npm_script test; then
                 npm_deps
                 run "${node_pm[@]}" run test

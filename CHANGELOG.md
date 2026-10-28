@@ -12,7 +12,9 @@ minor version can change behaviour. Numbers are
   no script through that runner, and a directory without a `package.json`
   (or a root `package.json` holding only tooling) through the language's
   packages below it, where they failed with "no test command". Scripts
-  that call pnpm or Yarn by name find Corepack's shim on PATH.
+  that call pnpm or Yarn by name find Corepack's shim on PATH, and tests
+  run with `CI=true` (unless it's set), so runners that would otherwise
+  watch for changes (Create React App's, Vitest's) run once.
 
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published

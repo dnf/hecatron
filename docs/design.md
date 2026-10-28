@@ -331,7 +331,8 @@ package's `test` script; a workspace root without one runs its packages'
 configured runner (`vitest.config.*`, `jest.config.*`, `.mocharc.*`); else,
 and in a directory without a `package.json`, it tests the language's
 packages below (TypeScript's have a `tsconfig.json`, JavaScript's don't, as
-detection decides).
+detection decides). It sets `CI=true` (unless it's set) so watching test
+runners run once.
 
 **Dependencies.** A `deps` hook fetches a component's dependencies with its
 ecosystem's tool, held to the lock file when there is one (it fails rather

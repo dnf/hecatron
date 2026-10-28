@@ -59,6 +59,12 @@ class NodeTestHookTest(Fixture):
         self.files({"package.json": package(test="jest"), "node_modules/.keep": ""})
         self.assertEqual(self.ran(self.test()), ["npm run test in " + os.path.basename(self.root)])
 
+    def test_watching_test_runners_run_once(self):
+        self.files({"package.json": package(test="react-scripts test"), "node_modules/.keep": ""})
+        write(os.path.join(self.bin, "npm"), '#!/bin/sh\necho "ran npm CI=${CI:-}"\n', 0o755)
+        self.assertEqual(self.ran(self.test()), ["npm CI=true"])
+        self.assertEqual(self.ran(self.test(CI="false")), ["npm CI=false"])
+
     def test_without_a_package_json_the_languages_packages_below_run(self):
         # TypeScript's packages have a tsconfig.json; a package without a
         # test script, one in tests/ and one inside another are left out.
