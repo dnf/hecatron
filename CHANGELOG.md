@@ -6,6 +6,10 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Doctor notes:** a `doctor.sh` line starting `note: ` (`note` in
+  `_common.sh`) is shown under the language, like the version notes, without
+  counting as a problem, for what's worth knowing about a healthy toolchain.
+
 - **`hct sync`:** after a pull, rebase or checkout, says in a few lines
   what changed for hecatron since where `HEAD` was (or a ref): runs
   `hct deps` for the components whose lock files changed (`--no-deps` only
