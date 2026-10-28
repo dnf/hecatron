@@ -6,12 +6,25 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
-- **Rust's system dependencies:** `hct install rust` installs what a
-  component's crates build with, read from its Cargo.lock files: the
-  libraries common `-sys` crates link (OpenSSL, GLib, GTK and WebKitGTK,
-  D-Bus, ALSA...), Python's headers for PyO3, and the tools build
-  dependencies run (CMake for the `cmake` crate and zlib-ng, `protoc` for
-  prost-build unless protoc is vendored, Cap'n Proto, libclang for bindgen).
+- **Node.js packages built before their tests:** `hct test typescript`
+  and `hct test javascript` first build a package whose tests need it
+  built: a native addon (napi-rs, node-gyp) not built yet, or an entry
+  point (`main`, `exports`) the build writes that isn't there. Through
+  the package's build script, else `napi build --platform` or `node-gyp
+  rebuild`, instead of failing with "Failed to load native binding" or
+  "Cannot find module dist/...". A configured test runner that fails now
+  fails as itself, and npm's placeholder test script counts as none.
+
+- **Node.js tests in more layouts:** `hct test typescript` and `hct test
+  javascript` now test a workspace root without a `test` script through its
+  packages' scripts, a package with a configured Vitest, Jest or Mocha but
+  no script through that runner, and a directory without a `package.json`
+  (or a root `package.json` holding only tooling) through the language's
+  packages below it, where they failed with "no test command". Scripts
+  that call pnpm or Yarn by name find Corepack's shim on PATH, and tests
+  run with `CI=true` (unless it's set), so runners that would otherwise
+  watch for changes (Create React App's, Vitest's) run once.
+
 - **Detection:** `hct init` no longer proposes components from directories
   like `src/<service>/src/main/<lang>` when another language's directory
   isn't named for it (TypeScript in `src/frontend`), which left that
@@ -119,6 +132,12 @@ minor version can change behaviour. Numbers are
   `"strip"`, a regular expression, is removed from the version the file
   gives, for ecosystems that write more than the version in it (asdf's and
   mise's Elixir `1.17.3-otp-27`).
+
+- **Detection skips more code that isn't the project's:** `hct init`
+  leaves out directories it skips in any case (`Examples/`), hidden
+  directories (`.jenkins/`), `templates/` and test data
+  (`tests_data/`, `test-data/`), so a Jenkinsfile, a code generator's
+  templates or an example no longer adds a language.
 
 ## 0.5.0 (2026-10-28)
 
