@@ -210,6 +210,14 @@ class InitTest(Fixture):
         self.assertEqual(found, {"go": {"go"}})
         self.assertEqual(set(skipped), {"lua", "c"})
 
+    def test_skipped_names_in_any_case_hidden_directories_and_templates_are_skipped(self):
+        found, skipped = self.detect({"go/go.mod": "", "Examples/java/A.java": "", ".jenkins/x.groovy": "",
+                                      "cli/src/templates/pom.xml": "", "tests_data/groovy/x.groovy": ""},
+                                     {"go": {"detect": ["go.mod"]}, "java": {"detect": ["pom.xml"],
+                                      "detectSources": ["*.java"]}, "groovy": {"detectSources": ["*.groovy"]}})
+        self.assertEqual(found, {"go": {"go"}})
+        self.assertEqual(set(skipped), {"java", "groovy"})
+
     def test_build_files_outrank_sources(self):
         found, _ = self.detect({"java/pom.xml": "", "java/src/main/A.java": "", "tools/B.java": "",
                                 "kt/x.kt": ""},

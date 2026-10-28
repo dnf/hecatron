@@ -6,6 +6,12 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Detection skips more code that isn't the project's:** `hct init`
+  leaves out directories it skips in any case (`Examples/`), hidden
+  directories (`.jenkins/`), `templates/` and test data
+  (`tests_data/`, `test-data/`), so a Jenkinsfile, a code generator's
+  templates or an example no longer adds a language.
+
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
   checksum file, or the publisher's index). Gleam and Zig install that way,
