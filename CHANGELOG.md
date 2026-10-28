@@ -6,12 +6,6 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
-- **Python tests in monorepos:** `hct test python` in a directory without
-  a `pyproject.toml`, `setup.py` or `setup.cfg` now tests the Python
-  projects in the directories below (`py-polars/`, `python-package/`),
-  each in its own environment, instead of running pytest over the whole
-  tree; with none below, pytest runs there on its own as before.
-
 - **Node.js packages built before their tests:** `hct test typescript`
   and `hct test javascript` first build a package whose tests need it
   built: a native addon (napi-rs, node-gyp) not built yet, or an entry
