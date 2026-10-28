@@ -332,7 +332,11 @@ configured runner (`vitest.config.*`, `jest.config.*`, `.mocharc.*`); else,
 and in a directory without a `package.json`, it tests the language's
 packages below (TypeScript's have a `tsconfig.json`, JavaScript's don't, as
 detection decides). It sets `CI=true` (unless it's set) so watching test
-runners run once.
+runners run once. A package its tests need built (a native addon, from a `napi`
+key, a `binding.gyp` or a build script running napi or node-gyp, whose
+`*.node` isn't built; or a `main` or `exports` entry point that isn't
+there) is built first: its build script, else `napi build --platform` or
+`node-gyp rebuild`.
 
 **Dependencies.** A `deps` hook fetches a component's dependencies with its
 ecosystem's tool, held to the lock file when there is one (it fails rather

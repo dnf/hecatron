@@ -6,6 +6,15 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+- **Node.js packages built before their tests:** `hct test typescript`
+  and `hct test javascript` first build a package whose tests need it
+  built: a native addon (napi-rs, node-gyp) not built yet, or an entry
+  point (`main`, `exports`) the build writes that isn't there. Through
+  the package's build script, else `napi build --platform` or `node-gyp
+  rebuild`, instead of failing with "Failed to load native binding" or
+  "Cannot find module dist/...". A configured test runner that fails now
+  fails as itself, and npm's placeholder test script counts as none.
+
 - **Node.js tests in more layouts:** `hct test typescript` and `hct test
   javascript` now test a workspace root without a `test` script through its
   packages' scripts, a package with a configured Vitest, Jest or Mocha but
