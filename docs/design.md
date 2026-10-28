@@ -567,9 +567,12 @@ So it only says a release is out and updates when asked, as `gh` does:
   address, for tests), downloads the machine's binary and `SHA256SUMS`
   and refuses a mismatch or a short download, fetches the tag into the
   installation's clone, clones that beside the installation with the
-  binary and the installation's untracked files (`env`, the cache, the
-  skill record), and swaps the two directories by renaming, undoing the
-  first rename if the second fails. It refuses a dev build (`hct
+  binary and the installation's untracked files (the cache, the skill
+  record), writes `env` and `env.fish` as the release's install.sh would
+  (a Go port of its writer, held to install.sh's output byte for byte by
+  a parity test, and the new binary's own `hct _write-env` when it has
+  one), so new PATH entries reach shells, and swaps the two directories
+  by renaming, undoing the first rename if the second fails. It refuses a dev build (`hct
   self-build`'s or `go build`'s), a checkout on a branch or with changes
   ("update with git pull"), a directory install.sh didn't make, and one it
   can't write. It then refreshes the skill copies `hct skill install`

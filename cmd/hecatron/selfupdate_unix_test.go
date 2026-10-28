@@ -171,7 +171,7 @@ func fakeInstall(t *testing.T) (home string) {
 // CI, no agent, no real home or token.
 func updateEnv(t *testing.T, home string, server *fakeGitHub, extra ...string) []string {
 	return append([]string{"HECATRON_HOME=" + home, "HECATRON_UPDATE_URL=" + server.URL, "HOME=" + t.TempDir(),
-		"CI=", "GITHUB_ACTIONS=", "CLAUDECODE=", "HECATRON_OUTPUT=", "HECATRON_NO_UPDATE_CHECK=", "GITHUB_TOKEN="}, extra...)
+		"XDG_DATA_HOME=", "CI=", "GITHUB_ACTIONS=", "CLAUDECODE=", "HECATRON_OUTPUT=", "HECATRON_NO_UPDATE_CHECK=", "GITHUB_TOKEN="}, extra...)
 }
 
 func readText(t *testing.T, path string) string {
@@ -226,8 +226,14 @@ func TestSelfUpdate(t *testing.T) {
 	if tag := mustGit(t, home, "describe", "--tags", "--exact-match"); tag != "v0.6.0" {
 		t.Errorf("at %s", tag)
 	}
-	if env := readText(t, filepath.Join(home, "env")); env != "# hecatron's PATH\n" {
-		t.Errorf("env not kept: %q", env)
+	wantEnv, wantFish := selfupdate.EnvFiles(home, func(name string) string {
+		return map[string]string{"HOME": user}[name]
+	})
+	if env := readText(t, filepath.Join(home, "env")); env != wantEnv {
+		t.Errorf("env not rewritten as install.sh would: %q", env)
+	}
+	if fish := readText(t, filepath.Join(home, "env.fish")); fish != wantFish {
+		t.Errorf("env.fish not written as install.sh would: %q", fish)
 	}
 	if !selfupdate.IsReleaseBinary(home, hct) {
 		t.Errorf("not a release installation afterwards")

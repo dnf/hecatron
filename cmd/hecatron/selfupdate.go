@@ -240,3 +240,18 @@ func (c *cli) knownUpdate() (latest string, checked time.Time) {
 	cache := selfupdate.ReadCache(c.home.Dir)
 	return cache.Newer(c.home.Version()), cache.Checked
 }
+
+// writeEnv is `hecatron _write-env DIR HOME`: install.sh's env and
+// env.fish for an installation at HOME, written into DIR. hct self-update
+// runs the new release's binary with it, so the files are that release's.
+func writeEnv(args []string) int {
+	if len(args) != 2 {
+		fmt.Fprintln(os.Stderr, "usage: hecatron _write-env DIR HOME")
+		return 2
+	}
+	if err := selfupdate.WriteEnv(args[0], args[1], os.Getenv); err != nil {
+		fmt.Fprintln(os.Stderr, "hecatron:", err)
+		return 1
+	}
+	return 0
+}

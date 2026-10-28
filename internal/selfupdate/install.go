@@ -154,6 +154,12 @@ func Replace(install *Install, release *Release, binary []byte) error {
 	if err := os.WriteFile(filepath.Join(staging, commitPath), []byte(commit+"\n"), 0o644); err != nil {
 		return err
 	}
+	if err := writeNewEnv(staging, home); err != nil {
+		return fmt.Errorf("writing env: %w", err)
+	}
+	// Two renames, not one atomic step: POSIX can't swap two directories,
+	// so for a moment there is no installation. A failed second rename
+	// puts the old one back.
 	old := filepath.Join(parent, base+".old-"+strings.TrimPrefix(filepath.Base(staging), base+".update-"))
 	if err := os.Rename(home, old); err != nil {
 		return err
@@ -166,6 +172,23 @@ func Replace(install *Install, release *Release, binary []byte) error {
 	}
 	swapped = true
 	_ = os.RemoveAll(old)
+	return nil
+}
+
+// writeNewEnv writes env and env.fish as the release's install.sh would:
+// with this binary's writer, then the release's own binary's (`hct
+// _write-env`), which knows that release's PATH entries; a release from
+// before that command keeps this one's files. A new PATH entry (the
+// toolchains' links) so reaches shells without rerunning install.sh.
+func writeNewEnv(staging, home string) error {
+	if err := WriteEnv(staging, home, os.Getenv); err != nil {
+		return err
+	}
+	cmd := exec.Command(filepath.Join(staging, binaryPath), "_write-env", staging, home)
+	cmd.Env = append(os.Environ(), "HECATRON_HOME="+staging, "HECATRON_NO_UPDATE_CHECK=1")
+	if cmd.Run() != nil {
+		return WriteEnv(staging, home, os.Getenv) // whatever it left half-written
+	}
 	return nil
 }
 

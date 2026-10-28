@@ -79,6 +79,8 @@ func (c *cli) dispatch() int {
 		return c.selfUpdate()
 	case "_update-check":
 		return c.updateCheck()
+	case "_write-env":
+		return writeEnv(c.args)
 	case "advisor":
 		return c.advisor()
 	case "_audit":
