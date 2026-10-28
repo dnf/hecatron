@@ -33,7 +33,7 @@ deps() {
         log "Installing CMake..."
         if [ "${OS}" = "macos" ]; then brew_install cmake; else apt_install cmake; fi
     fi
-    if meson_missing objectivec; then meson_install; fi
+    if meson_missing objectivec; then meson_install objectivec; fi
     # uv runs the pinned clang-format hecatron format uses (languages/_format.sh).
     if clang_format_missing objectivec; then uv_install; fi
 }

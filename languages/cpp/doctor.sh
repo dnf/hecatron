@@ -4,7 +4,7 @@
 source "$(dirname "$0")/../_common.sh"
 
 if meson_missing cpp; then
-    problem "meson not installed (a component builds with it)"
+    problem "meson not installed, or older than a meson.build asks for (a component builds with it)"
 fi
 if clang_format_missing cpp; then
     problem "neither uv nor clang-format installed (a component has a .clang-format)"
