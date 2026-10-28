@@ -62,7 +62,8 @@ jobs:
     needs: [projects, binary]
     strategy:
       fail-fast: false
-      max-parallel: 20
+      # Leaves room for CI on other pull requests: an account runs 20 jobs at once.
+      max-parallel: 12
       matrix:
         repo: ${{ fromJSON(needs.projects.outputs.list) }}
     runs-on: ubuntu-24.04
