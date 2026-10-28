@@ -13,7 +13,6 @@
     "go",
     "java",
     "javascript",
-    "php",
     "python",
     "swift",
     "typescript"
@@ -1198,8 +1197,7 @@
    "repo": "facebook/flow",
    "category": "polyglot",
    "languages": [
-    "javascript",
-    "ocaml"
+    "javascript"
    ],
    "why": "OCaml type checker with JavaScript packages",
    "github": {

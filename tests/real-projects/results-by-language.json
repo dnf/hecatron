@@ -82,19 +82,6 @@
   {
    "repo": "antlr/antlr4",
    "category": "polyglot",
-   "language": "php",
-   "expected": true,
-   "detected": false,
-   "result": "not-detected",
-   "seconds": null,
-   "failureCategory": null,
-   "commit": "7d5770395bb7b02eb56e7c62662cb1d7c08f42a3",
-   "date": "2026-10-28",
-   "hecatronVersion": "0.5.0"
-  },
-  {
-   "repo": "antlr/antlr4",
-   "category": "polyglot",
    "language": "python",
    "expected": true,
    "detected": true,
@@ -2376,19 +2363,6 @@
    "result": "fail",
    "seconds": 0,
    "failureCategory": "no-command",
-   "commit": "ee13cc60563f4b01fed7e43b93c9dd2a322dc4c6",
-   "date": "2026-10-28",
-   "hecatronVersion": "0.5.0"
-  },
-  {
-   "repo": "facebook/flow",
-   "category": "polyglot",
-   "language": "ocaml",
-   "expected": true,
-   "detected": false,
-   "result": "not-detected",
-   "seconds": null,
-   "failureCategory": null,
    "commit": "ee13cc60563f4b01fed7e43b93c9dd2a322dc4c6",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
