@@ -85,12 +85,15 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 	"failing/installed.sh": `printf '1.0\t/opt/x\n'; exit 3`,
 	"oddpath/config.json":  `{"version": "=1.0", "path": ["{home}/{nope}"]}`,
 	"rel/config.json":      `{"path": ["static*/bin", "toolchains"]}`,
+	"dup/config.json":      `{"path": ["/usr/bin", "{home}/bin"]}`,
+	"also/config.json":     `{"path": ["/usr/bin", "/bin"]}`,
+	"off/config.json":      `{"path": ["/usr/sbin"]}`,
 	"oddpath/installed.sh": `printf '1.0\t/opt/x\n'`,
 }
 
 // versionLangs are the fixture languages compared.
 var versionLangs = []string{"py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw", "ex", "exall", "badstrip",
-	"inexact", "numeric", "badfmt", "badspec", "noline", "neg", "failing", "oddpath", "rel", "unknown"}
+	"inexact", "numeric", "badfmt", "badspec", "noline", "neg", "failing", "oddpath", "rel", "dup", "also", "off", "unknown"}
 
 // pinned projects: one component per pin file format.
 var pinnedFiles = map[string]string{
@@ -303,6 +306,9 @@ func versionCases() []parityCase {
 		"a/net/global.json":     `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
 	}, map[string]string{"HECATRON_AS_OF": "2024-06-01"})
 	add("versions: no HOME", pinned, map[string]string{"HOME": ""})
+	add("versions: other languages' static paths", with(pinnedFiles, map[string]string{
+		".hecatron/config.json": `{"schema": 1, "languages": ["py", "off", "dup", "also", "gol"]}`,
+		".hecatron/local.json":  `{"disabled": ["off"]}`}), nil)
 	add("versions: implPath outside the root", with(pinnedFiles, map[string]string{
 		".hecatron/config.json": `{"schema": 1, "components": ["a", "b"], "implPath": "../{component}/{lang}", "languages": ["py"]}`}), nil)
 	add("versions: project versions", with(config(`, "languages": ["py", "jv", "rs"]`), map[string]string{
