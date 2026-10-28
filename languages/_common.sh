@@ -502,6 +502,87 @@ cmake_dependencies() {
     if [ "${OS}" = "macos" ]; then brew_install ${_packages}; else apt_install ${_packages}; fi
 }
 
+# For Rust's installer: the system software a component's crates build
+# against or run at build time, as distribution packages, for the common
+# ones. A -sys crate links a system library (openssl-sys, glib-sys); a build
+# dependency runs a tool (the cmake crate runs cmake, prost-build runs protoc,
+# bindgen loads libclang). The crates are the ones Cargo.lock lists: the
+# component's own, the workspace's above it, and those of crates below it.
+# A crate that vendors what it needs (protoc-bin-vendored) needs nothing.
+_cargo_package() {
+    if [ "${OS}" = "macos" ]; then
+        case "$1" in
+            openssl-sys) echo "openssl pkgconf" ;;
+            cmake) echo cmake ;;
+            prost-build) echo protobuf ;;
+            capnpc) echo capnp ;;
+            glib-sys) echo "glib pkgconf" ;;
+        esac
+    else
+        case "$1" in
+            openssl-sys) echo "libssl-dev pkg-config" ;;
+            cmake) echo cmake ;;
+            libz-sys) echo "zlib1g-dev pkg-config cmake" ;;
+            prost-build) echo protobuf-compiler ;;
+            capnpc) echo capnproto ;;
+            bindgen) echo libclang-dev ;;
+            pyo3-build-config) echo python3-dev ;;
+            glib-sys | gobject-sys | gio-sys) echo "libglib2.0-dev pkg-config" ;;
+            gdk-sys | gtk-sys) echo libgtk-3-dev ;;
+            webkit2gtk-sys) echo libwebkit2gtk-4.1-dev ;;
+            javascriptcore-rs-sys) echo libjavascriptcoregtk-4.1-dev ;;
+            soup3-sys) echo libsoup-3.0-dev ;;
+            libdbus-sys) echo "libdbus-1-dev pkg-config" ;;
+            alsa-sys) echo "libasound2-dev pkg-config" ;;
+            libudev-sys) echo "libudev-dev pkg-config" ;;
+            yeslogic-fontconfig-sys | servo-fontconfig-sys) echo "libfontconfig1-dev pkg-config" ;;
+            wayland-sys) echo "libwayland-dev pkg-config" ;;
+            xkbcommon-sys) echo libxkbcommon-dev ;;
+        esac
+    fi
+}
+# The crates the Cargo.lock files of a language's components list, one per line.
+cargo_lock_crates() {
+    local _dir _lock
+    while IFS= read -r _dir; do
+        find "${_dir}" -maxdepth 4 \( -name target -o -name node_modules -o -name '.*' ! -name . \) -prune -o \
+            -name Cargo.lock -type f -print 2>/dev/null
+        while [ "${_dir}" != "${ROOT}" ] && [ "${_dir}" != / ]; do
+            _dir="$(dirname "${_dir}")"
+            if [ -f "${_dir}/Cargo.lock" ]; then
+                echo "${_dir}/Cargo.lock"
+                break
+            fi
+        done
+    done < <(impl_dirs "$1") | sort -u | while IFS= read -r _lock; do
+        sed -n 's/^name = "\([A-Za-z0-9_-]*\)"$/\1/p' "${_lock}"
+    done | sort -u
+}
+cargo_dependencies() {
+    local _crates _crate _packages="" _package _available=""
+    _crates="$(cargo_lock_crates "$1")"
+    for _crate in ${_crates}; do
+        case "${_crate}" in
+            prost-build) if grep -qx protoc-bin-vendored <<<"${_crates}"; then continue; fi ;;
+        esac
+        _packages="${_packages} $(_cargo_package "${_crate}")"
+    done
+    _packages="$(echo "${_packages}" | xargs -n1 2>/dev/null | sort -u | xargs 2>/dev/null)"
+    [ -n "${_packages}" ] || return 0
+    if [ "${OS}" = "linux" ]; then
+        for _package in ${_packages}; do
+            if ! dpkg -s "${_package}" >/dev/null 2>&1 && apt_has "${_package}"; then
+                _available="${_available} ${_package}"
+            fi
+        done
+        _packages="${_available# }"
+        [ -n "${_packages}" ] || return 0
+    fi
+    log "Installing what the crates build with: ${_packages}"
+    # shellcheck disable=SC2086 # one word per package
+    if [ "${OS}" = "macos" ]; then brew_install ${_packages}; else apt_install ${_packages}; fi
+}
+
 # For the native languages' installers and doctors (C, C++, Objective-C):
 # Meson, and the Ninja it builds with, where a component builds with Meson
 # (the hooks run it for a meson.build) and it isn't installed.
