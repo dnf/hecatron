@@ -23,6 +23,16 @@ minor version can change behaviour. Numbers are
   and a build whose `java` is a runtime without `javac` (a JRE another
   package pulled in) runs on the newest installed JDK.
 
+- **Node.js tests in more layouts:** `hct test typescript` and `hct test
+  javascript` now test a workspace root without a `test` script through its
+  packages' scripts, a package with a configured Vitest, Jest or Mocha but
+  no script through that runner, and a directory without a `package.json`
+  (or a root `package.json` holding only tooling) through the language's
+  packages below it, where they failed with "no test command". Scripts
+  that call pnpm or Yarn by name find Corepack's shim on PATH, and tests
+  run with `CI=true` (unless it's set), so runners that would otherwise
+  watch for changes (Create React App's, Vitest's) run once.
+
 - **Detection:** `hct init` no longer proposes components from directories
   like `src/<service>/src/main/<lang>` when another language's directory
   isn't named for it (TypeScript in `src/frontend`), which left that
