@@ -135,6 +135,23 @@ class DocTest(unittest.TestCase):
             self.assertEqual(json.load(f), report.by_language_data(projects, results),
                              "results-by-language.json is out of date: python3 tests/real-projects/report.py render")
 
+    def test_each_tested_project_has_its_badge(self):
+        projects, results = report.load_all()
+        wanted = report.badges(projects, results)
+        on_disk = {}
+        for name in os.listdir(report.BADGES):
+            with open(os.path.join(report.BADGES, name), encoding="utf-8") as f:
+                on_disk[name] = json.load(f)
+        self.assertEqual(on_disk, wanted, "badges/ is out of date: python3 tests/real-projects/report.py render")
+
+    def test_a_badge_says_how_many_languages_pass(self):
+        def row(result):
+            return {"detected": True, "result": result}
+        self.assertEqual(report.badge([row("pass"), row("pass")])["message"], "passing")
+        self.assertEqual(report.badge([row("pass"), row("fail")])["message"], "1/2 languages")
+        self.assertEqual(report.badge([row("fail")])["color"], "red")
+        self.assertIsNone(report.badge([{"detected": None, "result": "untested"}]))
+
 
 if __name__ == "__main__":
     unittest.main()
