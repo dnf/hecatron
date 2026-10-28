@@ -343,7 +343,12 @@ build); a CMake project whose files never set up a test (no `add_test`,
 after building, while one that does but registered none fails. The C, C++ and
 Objective-C installers install Meson where a component builds with it; where
 a `meson.build` asks for a newer Meson (`meson_version: '>=1.8.3'`) than the
-distribution has, Linux gets the current release from PyPI as a uv tool. CTest runs
+distribution has, Linux gets the current release from PyPI as a uv tool.
+They also install the common libraries a component's build needs, as
+distribution packages: those a CMake build's `find_package()` and
+`pkg_check_modules()` name, and, for a build without CMake (a Makefile),
+those its sources `#include` (`<zlib.h>` is zlib's) unless the project has
+the header itself. CTest runs
 from the build directory of the subdirectory that calls `enable_testing()`
 when the top level doesn't (Zstandard's `build/cmake/`). A Makefile's test
 hook builds the default target before `make check` or `make test`, which

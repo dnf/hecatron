@@ -357,8 +357,9 @@ dotnet_runtimes_missing() {
 }
 
 # For the native languages' installers (C, C++, Objective-C): the libraries a
-# component's CMake build looks for, as distribution packages, for the common
-# ones. A name is a find_package() name, or a pkg-config module (from
+# component's CMake build looks for (or, without CMake, its sources include:
+# native_include_packages), as distribution packages, for the common ones. A
+# name is a find_package() name, or a pkg-config module (from
 # pkg_check_modules() or pkg_search_module()) as "pkg-config:<module>". A name
 # not in the table is left to the project (its README, or a vcpkg or Conan
 # manifest), except that on Debian and Ubuntu a pkg-config module <name> is
@@ -398,6 +399,7 @@ _cmake_package() {
             BISON) echo bison ;;
             PCRE2 | libpcre2-8) echo pcre2 ;;
             cJSON | libcjson) echo cjson ;;
+            PNG | libpng) echo libpng ;;
         esac
     else
         case "${_name}" in
@@ -430,6 +432,10 @@ _cmake_package() {
             BISON) echo bison ;;
             PCRE2 | libpcre2-8) echo libpcre2-dev ;;
             cJSON | libcjson) echo libcjson-dev ;;
+            Curses) echo libncurses-dev ;;
+            SQLite3 | sqlite3) echo libsqlite3-dev ;;
+            PNG | libpng) echo libpng-dev ;;
+            EXPAT | expat) echo libexpat1-dev ;;
             Threads) ;;
             liblzma | LibLZMA) echo liblzma-dev ;;
             lib*) if [ "$1" != "${_name}" ]; then echo "${_name}-dev"; fi ;;
@@ -501,11 +507,62 @@ while paths:
 print("\n".join(sorted(names)))
 '
 }
+# What a language's components that don't build with CMake (a Makefile,
+# autotools, Meson) include from the common libraries, one name per line, as
+# cmake_find_packages names them: CobolCraft's C++ includes <zlib.h> (ZLIB).
+# Only headers in the table count, and not one the project has itself.
+native_include_packages() {
+    local _dir
+    while IFS= read -r _dir; do
+        _native_builds_with_cmake "${_dir}" && continue
+        find "${_dir}" -mindepth 1 -maxdepth 4 \( -type d \( -name '.?*' -o -name third_party -o -name third-party \
+            -o -name external -o -name vendor -o -name deps -o -name node_modules -o -name build \) -prune \) -o \
+            \( -name '*.c' -o -name '*.h' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' -o -name '*.hh' \
+            -o -name '*.hpp' -o -name '*.hxx' -o -name '*.m' -o -name '*.mm' \) -type f -print 2>/dev/null
+    done < <(impl_dirs "$1") | sort -u | python3 -c '
+import re, sys
+HEADERS = [(r"zlib\.h", "ZLIB"), (r"bzlib\.h", "BZip2"), (r"lzma\.h", "LibLZMA"), (r"zstd\.h", "zstd"),
+           (r"lz4\.h", "lz4"), (r"openssl/.+", "OpenSSL"), (r"curl/curl\.h", "CURL"), (r"yaml-cpp/.+", "yaml-cpp"),
+           (r"nlohmann/json\.hpp", "nlohmann_json"), (r"boost/.+", "Boost"), (r"fmt/.+", "fmt"),
+           (r"spdlog/.+", "spdlog"), (r"gtest/.+", "GTest"), (r"gmock/.+", "GMock"), (r"re2/re2\.h", "re2"),
+           (r"unicode/\w+\.h", "ICU"), (r"google/protobuf/.+", "Protobuf"), (r"(glib|gio)(-object)?\.h|glib/.+", "GLIB"),
+           (r"jansson\.h", "jansson"), (r"snappy\.h", "Snappy"), (r"event2/.+", "Libevent"), (r"json/json\.h", "JsonCpp"),
+           (r"uv\.h", "libuv"), (r"pcre2\.h", "PCRE2"), (r"cjson/cJSON\.h", "cJSON"), (r"sasl/sasl\.h", "CyrusSASL"),
+           (r"catch2/.+", "Catch2"), (r"doctest/doctest\.h", "doctest"), (r"benchmark/benchmark\.h", "benchmark"),
+           (r"n?curses\.h", "Curses"), (r"sqlite3\.h", "SQLite3"), (r"png\.h", "PNG"), (r"expat\.h", "EXPAT")]
+paths = sys.stdin.read().splitlines()
+own = set()
+for path in paths:
+    parts = path.split("/")
+    own.update("/".join(parts[i:]) for i in range(len(parts)))
+names = set()
+for path in paths:
+    try:
+        text = open(path, errors="replace").read()
+    except OSError:
+        continue
+    for header in re.findall(r"^[ \t]*#[ \t]*include[ \t]*<([^>\s]+)>", text, re.M):
+        if header in own:
+            continue
+        names.update(name for pattern, name in HEADERS if re.fullmatch(pattern, header))
+print("\n".join(sorted(names)))
+'
+}
+# Whether a component builds with CMake: a CMakeLists.txt in its directory
+# or above it in the project, which cmake_find_packages reads instead.
+_native_builds_with_cmake() {
+    local _dir="$1"
+    while :; do
+        [ ! -f "${_dir}/CMakeLists.txt" ] || return 0
+        if [ "${_dir}" = "${ROOT}" ] || [ "${_dir}" = / ]; then return 1; fi
+        _dir="$(dirname "${_dir}")"
+    done
+}
 cmake_dependencies() {
     local _name _package _packages=""
     while IFS= read -r _name; do
         [ -n "${_name}" ] && _packages="${_packages} $(_cmake_package "${_name}")"
-    done < <(cmake_find_packages "$1")
+    done < <(cmake_find_packages "$1"; native_include_packages "$1")
     _packages="$(echo "${_packages}" | xargs -n1 2>/dev/null | sort -u | xargs 2>/dev/null)"
     # Distributions name and split packages differently, and a lib<name>-dev
     # guess may name none: install the ones there are.
@@ -517,7 +574,7 @@ cmake_dependencies() {
         _packages="${_available# }"
     fi
     [ -n "${_packages}" ] || return 0
-    log "Installing the libraries the CMake builds look for: ${_packages}"
+    log "Installing the libraries the builds look for: ${_packages}"
     # shellcheck disable=SC2086 # one word per package
     if [ "${OS}" = "macos" ]; then brew_install ${_packages}; else apt_install ${_packages}; fi
 }
