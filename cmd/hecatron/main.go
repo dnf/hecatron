@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/dnf/hecatron/internal/project"
@@ -44,6 +45,9 @@ func run(argv []string) int {
 	c := &cli{home: project.NewHome(findHome()), command: "help"}
 	if len(argv) > 0 {
 		c.command, c.args = argv[0], argv[1:]
+	}
+	if status := c.requireBash(); status != 0 {
+		return status
 	}
 	switch c.command {
 	case "help", "-h", "--help":
@@ -206,5 +210,5 @@ func gitTopLevel() (string, bool) {
 	if err != nil {
 		return "", false
 	}
-	return strings.TrimRight(string(out), "\n"), true
+	return filepath.FromSlash(strings.TrimRight(string(out), "\n")), true
 }

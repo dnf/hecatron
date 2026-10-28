@@ -25,6 +25,7 @@ var (
 func init() {
 	read := func(list string, into map[string]string) {
 		for _, line := range strings.Split(list, "\n") {
+			line = strings.TrimSuffix(line, "\r") // a checkout with CRLF line ends
 			if line == "" || strings.HasPrefix(line, "#") {
 				continue
 			}

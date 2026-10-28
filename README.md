@@ -78,6 +78,22 @@ shell you're in:
 git clone https://github.com/dnf/hecatron ~/.hecatron && . ~/.hecatron/install.sh
 ```
 
+**Windows** (native, early: [#78](https://github.com/dnf/hecatron/issues/78)),
+in PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/dnf/hecatron/main/install.ps1 | iex
+```
+
+This installs the latest release's binary, checksum-verified, into
+`%LOCALAPPDATA%\hecatron\home\bin` and adds it to your user PATH; run it again
+to update. `hct init`, `list`, `status`, `check`, `env`, `advisor`,
+`licenses`, `workflows`, `dockerfile` and `skill` run natively. The commands
+that run a language's hooks (`test`, `lint`, `build`, `doctor`, `install`...)
+still need bash: they use [Git for Windows](https://gitforwindows.org)'
+bash when it's installed, and otherwise say so. Or use hecatron in WSL,
+where it works as on Linux.
+
 ## Quick start
 
 ```bash
@@ -287,7 +303,9 @@ expect changes before 1.0. Changes are listed in
 [CHANGELOG.md](CHANGELOG.md).
 
 - **Platforms:** macOS (Apple Silicon and Intel) and Linux (Debian and
-  Ubuntu, x86_64 and arm64).
+  Ubuntu, x86_64 and arm64). Windows (x86_64 and arm64) natively for the
+  commands that don't run hooks; the rest need Git for Windows' bash for
+  now ([#78](https://github.com/dnf/hecatron/issues/78)).
 - **Next:** a single fast binary written in Go, with native Windows support
   ([design](docs/design.md#19-a-go-core-and-native-windows),
   [#80](https://github.com/dnf/hecatron/issues/80)); and for CI, a GitHub

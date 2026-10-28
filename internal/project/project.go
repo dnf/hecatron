@@ -530,11 +530,6 @@ func isFile(path string) bool {
 	return err == nil && info.Mode().IsRegular()
 }
 
-func isExecutableFile(path string) bool {
-	info, err := os.Stat(path)
-	return err == nil && info.Mode().IsRegular() && info.Mode()&0o111 != 0
-}
-
 func isDir(path string) bool {
 	info, err := os.Stat(path)
 	return err == nil && info.IsDir()

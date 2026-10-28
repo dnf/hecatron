@@ -377,7 +377,8 @@ func TestAgentsSectionMatchesManagePy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if agentsSection != string(want) {
+	// Python's stdout writes \r\n on Windows.
+	if agentsSection != strings.ReplaceAll(string(want), "\r\n", "\n") {
 		t.Errorf("manage.py:\n%s\nGo:\n%s", want, agentsSection)
 	}
 }

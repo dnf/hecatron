@@ -27,6 +27,18 @@ minor version can change behaviour. Numbers are
   command appends a table of languages and components with status and
   time, then each failure's error lines, log and rerun command; `audit`,
   `licenses` and `advisor` add their findings (#101).
+- **Native Windows, first steps (#78):** `install.ps1` installs the
+  release's Windows binary (checksum-verified) with its definitions into
+  `%LOCALAPPDATA%\hecatron\home` and puts it on the user's PATH.
+  `init`, `list`, `status`, `check`, `env` (printing PowerShell),
+  `advisor`, `licenses`, `workflows`, `dockerfile` and `skill` run without
+  bash or Python; the commands that run hooks use Git for Windows' bash,
+  never WSL's, and without it say what to install (exit 3). A Windows CI
+  job runs the Go tests, these commands and `install.ps1`. Fixed on
+  Windows: PATH's separator, `.exe` lookups (PATHEXT), environment names'
+  case, the home directory (`USERPROFILE`), and paths in generated files
+  (always `/`). The repository checks out with LF line ends everywhere
+  (`.gitattributes`).
 
 ## 0.5.0 (2026-10-28)
 

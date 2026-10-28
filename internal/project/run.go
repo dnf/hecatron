@@ -37,7 +37,7 @@ func (p *Project) StaticPath(lang string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	home, haveHome := p.lookupEnv("HOME")
+	home, haveHome := p.lookupEnv(homeVariable)
 	var dirs []string
 	for _, pattern := range patterns {
 		if strings.Contains(pattern, "{") {

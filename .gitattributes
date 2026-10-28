@@ -1,0 +1,3 @@
+# LF everywhere, on Windows too: bash scripts, generated files and the
+# fixtures tests compare byte for byte break with CRLF (docs/design.md §19).
+* text=auto eol=lf

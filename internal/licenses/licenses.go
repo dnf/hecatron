@@ -176,7 +176,7 @@ func Gather(root string, targets []Target, scan Scanner) (*Report, error) {
 			}
 		}
 		for _, result := range osv.Results {
-			source := result.Source.Path
+			source := filepath.Clean(result.Source.Path) // Windows: either slash
 			if !filepath.IsAbs(source) {
 				source = filepath.Join(dir, source)
 			}

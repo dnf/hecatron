@@ -172,7 +172,7 @@ func (d *doctorRun) problems(lang string) string {
 		fmt.Fprintf(&out, "%s: %s %s not installed (from %s)\n", m.Component, lang, m.Spec, m.Source)
 	}
 	if script := d.project().Resolve(lang, "doctor.sh"); script != "" {
-		cmd := exec.Command("bash", script)
+		cmd := exec.Command(bashProgram(), script)
 		cmd.Dir, cmd.Env = d.root, env
 		cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, &out, os.Stderr
 		_ = cmd.Run() // a doctor.sh exits non-zero when it finds problems; it printed them
@@ -184,7 +184,7 @@ func (d *doctorRun) problems(lang string) string {
 // working directory, with doctor.sh's environment, its output shown, its
 // failure ignored (the language is checked again).
 func (d *doctorRun) runInstaller(installer string) {
-	cmd := exec.Command("bash", installer)
+	cmd := exec.Command(bashProgram(), installer)
 	cmd.Env = d.env
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	_ = cmd.Run()

@@ -69,7 +69,7 @@ func fixtureProject(t *testing.T) (string, []Target, Scanner) {
 		if err != nil {
 			return nil, err
 		}
-		return []byte(strings.ReplaceAll(string(data), capturedAt, root)), nil
+		return []byte(strings.ReplaceAll(string(data), capturedAt, jsonPath(root))), nil
 	}
 	return root, targets, scan
 }
@@ -325,3 +325,7 @@ func TestNormalize(t *testing.T) {
 		t.Error("nothing declared")
 	}
 }
+
+// jsonPath is a path as it is written inside a JSON string: Windows'
+// backslashes escaped.
+func jsonPath(path string) string { return strings.ReplaceAll(path, `\`, `\\`) }
