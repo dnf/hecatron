@@ -179,20 +179,7 @@ func truncate(line string) string {
 // Extract finds what went wrong in a log: lines matching patterns (nil for
 // none), else the default patterns, else the log's last lines.
 func Extract(log []byte, patterns *Patterns) Excerpt {
-	var lines, components []string
-	component := ""
-	for _, raw := range strings.Split(string(log), "\n") {
-		line := cleanLine(raw)
-		if m := componentHeader.FindStringSubmatch(line); m != nil {
-			component = m[1]
-			continue
-		}
-		if componentResult.MatchString(line) {
-			continue
-		}
-		lines = append(lines, line)
-		components = append(components, component)
-	}
+	lines, components := logLines(log)
 	// A command the shell couldn't find (a linter not installed) comes first
 	// whatever else matched: it's why the rest failed, and what to fix.
 	missing := match(lines, components, MissingCommandPatterns)
@@ -211,7 +198,72 @@ func Extract(log []byte, patterns *Patterns) Excerpt {
 	return tail(lines, components)
 }
 
+// logLines are a log's lines as a person reads them, each with the
+// component it's from, without hecatron's own header and result lines.
+func logLines(log []byte) (lines, components []string) {
+	component := ""
+	for _, raw := range strings.Split(string(log), "\n") {
+		line := cleanLine(raw)
+		if m := componentHeader.FindStringSubmatch(line); m != nil {
+			component = m[1]
+			continue
+		}
+		if componentResult.MatchString(line) {
+			continue
+		}
+		lines = append(lines, line)
+		components = append(components, component)
+	}
+	return lines, components
+}
+
+// MaxLocated caps Locate: a linter reporting more is reported in part.
+const MaxLocated = 5000
+
+// Locate is every error line in a log that names a file and line, for
+// reports that place each one (SARIF, Code Quality): the language's
+// patterns' when they match anything, else the default patterns'. Unlike
+// an excerpt, it isn't cut at ExcerptLines.
+func Locate(log []byte, patterns *Patterns) []ErrorLine {
+	lines, components := logLines(log)
+	var found []ErrorLine
+	if patterns != nil {
+		found = matchUpTo(lines, components, patterns, MaxLocated)
+	}
+	if len(found) == 0 {
+		found = matchUpTo(lines, components, DefaultPatterns, MaxLocated)
+	}
+	var located []ErrorLine
+	for _, line := range found {
+		if line.File != "" && line.Line > 0 {
+			located = append(located, line)
+		}
+	}
+	return located
+}
+
+// ComponentLogs splits a language job's log at hecatron's "=== action
+// component (lang) ===" headers: each component's part, header included.
+func ComponentLogs(log []byte) map[string][]byte {
+	parts := map[string][]byte{}
+	component := ""
+	for _, raw := range strings.SplitAfter(string(log), "\n") {
+		if m := componentHeader.FindStringSubmatch(cleanLine(strings.TrimSuffix(raw, "\n"))); m != nil {
+			component = m[1]
+		}
+		if component != "" {
+			parts[component] = append(parts[component], raw...)
+		}
+	}
+	return parts
+}
+
 func match(lines, components []string, patterns *Patterns) []ErrorLine {
+	return matchUpTo(lines, components, patterns, ExcerptLines)
+}
+
+// matchUpTo is the first limit distinct lines patterns match.
+func matchUpTo(lines, components []string, patterns *Patterns, limit int) []ErrorLine {
 	versions := map[string]string{}
 	for tool, re := range patterns.ToolVersions {
 		for _, line := range lines {
@@ -255,7 +307,7 @@ func match(lines, components []string, patterns *Patterns) []ErrorLine {
 			}
 			break
 		}
-		if len(found) == ExcerptLines {
+		if len(found) == limit {
 			break
 		}
 	}

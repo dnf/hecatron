@@ -32,7 +32,8 @@ cmd/hecatron/            # the Go core's entry point (docs/design.md §19): port
 internal/                # Go packages: project (the model and version resolution, a port of project.py and
                          # versions.py, and detection), generate (Dockerfile, workflows), runner (jobs, output),
                          # status (hct status), deps (audit and outdated reports), licenses and spdx
-                         # (hct licenses), advisor (hct advisor), actions, install
+                         # (hct licenses), advisor (hct advisor), reports (JUnit, SARIF, job summary),
+                         # actions, install
 ```
 
 Every command finds the project by walking up from the working directory

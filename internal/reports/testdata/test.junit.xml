@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="hct test" tests="8" failures="4" errors="0" skipped="1" time="14.000">
+  <testsuite name="go/age" tests="1" failures="1" errors="0" skipped="0" time="7.000">
+    <properties>
+      <property name="log" value="testdata/logs/test-go.log"/>
+    </properties>
+    <testcase name="age" classname="go" time="7.000">
+      <failure message="--- FAIL: TestAdd (0.00s)" type="failed">--- FAIL: TestAdd (0.00s)
+calc_test.go:7: Add(2, 3) = -1, want 5
+log: testdata/logs/test-go.log</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="go/date" tests="1" failures="0" errors="0" skipped="0" time="5.000">
+    <properties>
+      <property name="log" value="testdata/logs/test-go.log"/>
+    </properties>
+    <testcase name="date" classname="go" time="5.000"/>
+  </testsuite>
+  <testsuite name="python/." tests="3" failures="2" errors="0" skipped="0" time="1.500">
+    <properties>
+      <property name="log" value="testdata/logs/none.log"/>
+    </properties>
+    <testcase name="test_add" classname="test_calc" time="0.000">
+      <failure message="assert -1 == 5" type="">def test_add():
+&gt;       assert add(2, 3) == 5
+E       assert -1 == 5
+E        +  where -1 = add(2, 3)
+
+test_calc.py:5: AssertionError</failure>
+    </testcase>
+    <testcase name="test_add_zero" classname="test_calc" time="0.000"/>
+    <testcase name="test_add_type" classname="test_calc" time="0.000">
+      <failure message="TypeError: unsupported operand type(s) for -: &#39;NoneType&#39; and &#39;int&#39;" type="">def test_add_type():
+&gt;       add(None, 1)
+
+test_calc.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = None, b = 1
+
+    def add(a, b):
+&gt;       return a - b
+               ^^^^^
+E       TypeError: unsupported operand type(s) for -: &#39;NoneType&#39; and &#39;int&#39;
+
+calc.py:2: TypeError</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="rust" tests="1" failures="0" errors="0" skipped="1" time="0.000">
+    <testcase name="rust" classname="rust" time="0.000">
+      <skipped message="not installed"/>
+    </testcase>
+  </testsuite>
+  <testsuite name="docs" tests="1" failures="0" errors="0" skipped="0" time="0.300">
+    <properties>
+      <property name="log" value="/repo/.logs/test/docs.log"/>
+    </properties>
+    <testcase name="docs" classname="docs" time="0.300"/>
+  </testsuite>
+  <testsuite name="flaky" tests="1" failures="1" errors="0" skipped="0" time="0.100">
+    <properties>
+      <property name="log" value="testdata/logs/test-flaky.log"/>
+    </properties>
+    <testcase name="flaky" classname="flaky" time="0.100">
+      <failure message="flaky failed: | pipes &amp; &lt;tags&gt; ```fence```" type="failed">flaky failed: | pipes &amp; &lt;tags&gt; ```fence```
+log: testdata/logs/test-flaky.log</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

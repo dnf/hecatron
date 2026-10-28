@@ -63,13 +63,13 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 			a.components = append(a.components, strings.TrimPrefix(arg, "--component="))
 		case arg == "--output":
 			if i+1 >= len(args) {
-				return a, fmt.Errorf("--output needs a format: human, agent, json or ci")
+				return a, fmt.Errorf("--output needs a format: human, agent, json, ci, junit or sarif")
 			}
 			a.output = value()
 		case strings.HasPrefix(arg, "--output="):
 			a.output = strings.TrimPrefix(arg, "--output=")
 			if a.output == "" {
-				return a, fmt.Errorf("--output needs a format: human, agent, json or ci")
+				return a, fmt.Errorf("--output needs a format: human, agent, json, ci, junit or sarif")
 			}
 		case arg == "--changed":
 			a.changed = true
@@ -152,6 +152,14 @@ func (c *cli) runCommand() (int, bool) {
 		c.args = a.rest
 		return 0, false
 	}
+	stdoutReport, err := reportOutput(c.command, a.output)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "hecatron:", err)
+		return 2, true
+	}
+	if stdoutReport != "" {
+		a.output = string(runner.JSON) // the report replaces it
+	}
 	format, err := runner.SelectFormat(a.output, os.Getenv, runner.IsTerminal(os.Stdout))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
@@ -177,6 +185,9 @@ func (c *cli) runCommand() (int, bool) {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	r.ctx = ctx
+	var cleanup func()
+	r.reports, cleanup = newReportSettings(c.command, stdoutReport)
+	defer cleanup()
 	status := r.run()
 	if ctx.Err() != nil {
 		return 130, true
@@ -290,6 +301,7 @@ type invocation struct {
 	named     []runner.Job       // the targets, resolved
 	selection *changed.Selection // --changed's, else nil
 	patterns  map[string]*runner.Patterns
+	reports   *reportSettings // reportfiles.go
 }
 
 // resolveTargets turns the targets into jobs as run.sh's _run_target would
@@ -357,7 +369,7 @@ func (r *invocation) run() int {
 func (r *invocation) sub(action string) *invocation {
 	c := *r.cli
 	c.command = action
-	s := &invocation{cli: &c, ctx: r.ctx, shell: r.shell, args: r.args, format: r.format, timeout: r.timeout, patterns: r.patterns, selection: r.selection}
+	s := &invocation{cli: &c, ctx: r.ctx, shell: r.shell, args: r.args, format: r.format, timeout: r.timeout, patterns: r.patterns, selection: r.selection, reports: r.reports}
 	s.resolveTargets()
 	return s
 }
@@ -374,6 +386,7 @@ func (r *invocation) environment() []string {
 	for _, export := range r.shell.Exports {
 		extra = append(extra, export[0]+"="+export[1])
 	}
+	extra = append(extra, r.auditFindingsEnv()...)
 	return r.cli.environment(append(extra, r.args.env...))
 }
 
@@ -427,14 +440,7 @@ func (r *invocation) runNamed() int {
 		}
 	}
 	report := r.report(results, time.Since(start))
-	switch r.format {
-	case runner.Agent:
-		runner.WriteAgent(os.Stdout, report)
-	case runner.JSON:
-		_ = runner.WriteJSON(os.Stdout, report)
-	case runner.CI:
-		runner.WriteAnnotations(os.Stdout, report, os.Getenv("GITHUB_WORKSPACE"))
-	}
+	r.writeReport(report)
 	return runner.ExitStatus(results)
 }
 
@@ -538,7 +544,7 @@ func (r *invocation) runAll() int {
 	if len(jobs) == 0 {
 		switch {
 		case r.format == runner.JSON:
-			_ = runner.WriteJSON(os.Stdout, r.report(nil, 0))
+			r.writeReport(r.report(nil, 0))
 		case r.selection != nil && !r.selection.Empty() && len(r.args.components) > 0:
 			fmt.Printf("%s; none in -c %s\n", r.selection.Line(), strings.Join(r.args.components, " "))
 		case r.selection != nil && !r.selection.Empty():
@@ -582,6 +588,7 @@ func (r *invocation) runAll() int {
 		report := r.report(results, 0)
 		if human {
 			runner.WriteNothingRan(os.Stdout, report)
+			r.finishReports(report)
 		} else {
 			r.writeReport(report)
 		}
@@ -609,8 +616,13 @@ func (r *invocation) runAll() int {
 	return runner.ExitStatus(results)
 }
 
-// writeReport writes what follows human output, or replaces it.
+// writeReport writes what follows human output, or replaces it, and the
+// reports for CI.
 func (r *invocation) writeReport(report *runner.Report) {
+	defer r.finishReports(report)
+	if r.writeStdoutReport(report) {
+		return
+	}
 	switch r.format {
 	case runner.Agent:
 		runner.WriteAgent(os.Stdout, report)

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="calc.CalcTest" tests="2" skipped="0" failures="1" errors="0" timestamp="2026-10-28T00:58:54.251Z" hostname="4944f1200964" time="0.012">
+  <properties/>
+  <testcase name="addsZero()" classname="calc.CalcTest" time="0.007"/>
+  <testcase name="adds()" classname="calc.CalcTest" time="0.004">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;5&gt; but was: &lt;-1&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;5&gt; but was: &lt;-1&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:145)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:531)
+	at app//calc.CalcTest.adds(CalcTest.java:10)
+	at java.base@25.0.5/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base@25.0.5/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base@25.0.5/java.util.ArrayList.forEach(ArrayList.java:1604)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -13,6 +13,20 @@ minor version can change behaviour. Numbers are
   whether it's installed (it never installs), and runs `hct check` when the
   config, hooks or generated files changed. Never pulls or fetches; needs
   the binary (#92).
+- **Reports every CI reads:** with the binary, `HECATRON_REPORT_DIR`
+  receives JUnit XML from `hct test`, `lint` and `build` (a suite per
+  language and component, with the tools' own test cases where they write
+  them: Maven Surefire and Failsafe, Gradle, sbt, `go test -json`, pytest,
+  and anything a hook leaves in `HECATRON_TEST_REPORTS`), SARIF 2.1.0 from
+  `hct lint` and `hct audit` (an advisory per rule, at the lock file, for
+  GitHub code scanning), and GitLab Code Quality JSON from `hct lint`,
+  beside the normal output; `--output junit` and `--output sarif` print one
+  instead. The generated GitLab pipeline hands JUnit and Code Quality to
+  the merge request widgets (#100).
+- **GitHub Actions job summary:** with `GITHUB_STEP_SUMMARY` set, each run
+  command appends a table of languages and components with status and
+  time, then each failure's error lines, log and rerun command; `audit`,
+  `licenses` and `advisor` add their findings (#101).
 
 ## 0.5.0 (2026-10-28)
 

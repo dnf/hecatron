@@ -69,6 +69,8 @@ func run(argv []string) int {
 		return c.auditTool()
 	case "_outdated":
 		return c.outdatedTool()
+	case "_gotest":
+		return c.goTestFilter()
 	case "self-test":
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
 	case "self-build":

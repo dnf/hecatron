@@ -200,6 +200,10 @@ func stepIndent(lines []string, at int, match []string) int {
 
 func indentOf(line string) int { return len(line) - len(strings.TrimLeft(line, " ")) }
 
+// gitlabReportDir is where the pipeline's hct commands write their reports
+// for GitLab, relative to the project directory jobs start in.
+const gitlabReportDir = "hecatron-reports"
+
 // GitLabCI is the project's .gitlab-ci.yml: a job per language that
 // installs hecatron (at the version that generated it) and runs hct
 // install, test and lint for the language, which cover every component.
@@ -215,6 +219,7 @@ func GitLabCI(p *project.Project, settings project.CISettings, version string) (
 	lines := []string{strings.TrimRight(banner, "\n"), "",
 		"variables:",
 		"  HECATRON_VERSION: " + yamlScalar(tag),
+		"  HECATRON_REPORT_DIR: " + yamlScalar(gitlabReportDir),
 		"",
 		"default:",
 		"  image: " + yamlScalar(settings.Image),
@@ -235,13 +240,17 @@ func GitLabCI(p *project.Project, settings project.CISettings, version string) (
 			lines = append(lines, cache...)
 			script = links
 		}
-		// TODO(#100): add artifacts:reports:junit once hct writes JUnit
-		// reports (--output junit / HECATRON_REPORT_DIR).
 		script = append(script, "hct install "+lang, "hct test "+lang, "hct lint "+lang)
 		lines = append(lines, "  script:")
 		for _, command := range script {
 			lines = append(lines, "    - "+yamlScalar(command))
 		}
+		// HECATRON_REPORT_DIR's files (docs/runner.md, "Reports"): the
+		// tests for the merge request's test widget, lint's findings for
+		// its code quality widget; kept when the job fails too.
+		lines = append(lines, "  artifacts:", "    when: always", "    reports:",
+			"      junit: "+yamlScalar(gitlabReportDir+"/test-"+lang+".junit.xml"),
+			"      codequality: "+yamlScalar(gitlabReportDir+"/lint-"+lang+".codequality.json"))
 	}
 	return strings.Join(lines, "\n") + "\n", nil
 }

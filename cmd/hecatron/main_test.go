@@ -25,6 +25,10 @@ func TestMain(m *testing.M) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+	// Nor may a run under test write reports into the CI job running it.
+	for _, name := range []string{"GITHUB_STEP_SUMMARY", "HECATRON_REPORT_DIR"} {
+		_ = os.Unsetenv(name)
+	}
 	dir, err := os.MkdirTemp("", "hecatron-test")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

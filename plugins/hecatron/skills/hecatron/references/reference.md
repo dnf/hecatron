@@ -56,7 +56,8 @@ system of its own. `hct` and `hecatron` are the same command.
   and by default when `CLAUDECODE=1` is set and stdout isn't a terminal)
   gives one summary line, then each failure with its log and its error
   lines, then a `Rerun:` command; a passing run is one line.
-  `--output json` gives one JSON document. Its exit status 3 means a
+  `--output json` gives one JSON document (`--output junit`, and `sarif`
+  for lint and audit, give those formats). Its exit status 3 means a
   failure whose language command (`go`, `cargo`...) isn't on PATH:
   install the toolchain (ask first, below).
 - A job that runs far longer than it usually does is stopped and reported

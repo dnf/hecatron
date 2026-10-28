@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/dnf/hecatron/internal/licenses"
+	"github.com/dnf/hecatron/internal/reports"
 	"github.com/dnf/hecatron/internal/runner"
 )
 
@@ -103,6 +104,7 @@ func (c *cli) licenses() int {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 1
 	}
+	appendStepSummary(reports.LicensesSummary(report))
 	if report.Policy != nil && len(report.Policy.Violations) > 0 {
 		return 1
 	}

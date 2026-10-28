@@ -1,0 +1,34 @@
+# example.com/fix/c [example.com/fix/c.test]
+c/c.go:3:23: cannot use "x" (untyped string constant) as int value in return statement
+--- FAIL: TestSubs (0.00s)
+    a_test.go:6: parent says
+    --- FAIL: TestSubs/bad (0.00s)
+        a_test.go:8: bad 1
+    --- FAIL: TestSubs/nested (0.00s)
+        --- FAIL: TestSubs/nested/deep (0.00s)
+            a_test.go:10: deep fail
+--- FAIL: TestFail (0.00s)
+    a_test.go:18: plain fail
+FAIL
+FAIL	example.com/fix/a	0.002s
+--- FAIL: TestPanics (0.00s)
+    b_test.go:6: before
+panic: assignment to entry in nil map [recovered, repanicked]
+
+goroutine 6 [running]:
+testing.tRunner.func1.2({0x55a7a0, 0x6cacf0})
+	/usr/lib/go/src/testing/testing.go:1974 +0x232
+testing.tRunner.func1()
+	/usr/lib/go/src/testing/testing.go:1977 +0x349
+panic({0x55a7a0?, 0x6cacf0?})
+	/usr/lib/go/src/runtime/panic.go:860 +0x13a
+example.com/fix/b.TestPanics(0x3d6273840248?)
+	/src/fix/b/b_test.go:8 +0x54
+testing.tRunner(0x3d6273840248, 0x592e30)
+	/usr/lib/go/src/testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/lib/go/src/testing/testing.go:2101 +0x4c5
+FAIL	example.com/fix/b	0.003s
+FAIL	example.com/fix/c [build failed]
+ok  	example.com/fix/d	0.002s
+FAIL

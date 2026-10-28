@@ -204,11 +204,78 @@ hct sync: since 3f2a1c9e01 (HEAD@{1}, 12 commits): 31 files changed
 
 The Go core (`docs/design.md` §19), built from a checkout, has the same
 scheduling and history, and adds output for whoever reads it:
-`--output human|agent|json|ci` (or `HECATRON_OUTPUT`). Agent output is a
+`--output human|agent|json|ci` (or `HECATRON_OUTPUT`), and reports for CI
+(below). Agent output is a
 summary line and only the failures, each with its log path and the error
 lines that matter, under a third of the size of the human summary; CI
 output adds GitHub annotations at each error's file and line. Its live
 display has no swim lanes yet.
+
+## Reports
+
+With the binary, a run also writes what CI systems and forges read
+(docs/design.md §20), alongside its normal output, so one run feeds both
+the log and the forge:
+
+| Report | Commands | `HECATRON_REPORT_DIR` file | On stdout instead |
+| --- | --- | --- | --- |
+| JUnit XML | test, lint, build | `<action>.junit.xml` | `--output junit` (any run command) |
+| SARIF 2.1.0 | lint, audit | `<action>.sarif` | `--output sarif` |
+| GitLab Code Quality JSON | lint | `lint.codequality.json` | |
+| GitHub Actions job summary | every run command, `licenses`, `advisor` | appended to `GITHUB_STEP_SUMMARY` | |
+
+A run of named targets adds them to the name (`hct test go` writes
+`test-go.junit.xml`), so the commands one CI job runs don't overwrite each
+other's files. A relative `HECATRON_REPORT_DIR` is relative to where hct
+runs. Writing a report never changes the exit status; a failure to write
+one is a warning. The scripts without the binary write none.
+
+**JUnit:** one `<testsuite>` per language and component (`go/age`), and
+per project task, tool, and language skipped as not installed or
+disabled. Where the tool reports its own tests, they are the suite's test
+cases (a failed component none of whose cases failed, such as a build
+error before any test ran, adds a case for the component); otherwise the
+suite has one case for the component, its failure's text the component's
+error lines and log. Merged today:
+
+- **Maven (Surefire, Failsafe), Gradle and sbt:** any `TEST-*.xml` under a
+  `surefire-reports`, `failsafe-reports`, `test-results` or `test-reports`
+  directory in the component, written while its tests ran (by any
+  language: Java, Kotlin, Scala, Groovy...).
+- **Go:** asked for JUnit, the default test hook runs `go test -json`
+  through `hecatron _gotest`, which saves the events and prints what `go
+  test` without `-json` would (each failed test's lines, the package
+  results), so the log and the error lines are unchanged.
+- **pytest:** the default test hook adds `--junitxml`.
+- **Any hook:** the test hooks get `HECATRON_TEST_REPORTS`, an empty
+  directory, when JUnit is wanted; JUnit XML (`*.xml`: Jest's `jest-junit`,
+  Vitest's `--reporter=junit`, PHPUnit's `--log-junit`, `dotnet test
+  --logger junit`...) or `go test -json` events (`*.json`) a hook writes
+  there are merged.
+
+Not merged yet by the default hooks: Jest, Vitest, .NET, PHPUnit, RSpec,
+Cargo and the rest (one case per component).
+
+**SARIF and Code Quality** (lint): each error line in a failed lint job's
+log that names a file and line (the language's error patterns, else the
+generic ones; every one, not the excerpt's ten), at its file relative to
+the workspace (`GITHUB_WORKSPACE`, `CI_PROJECT_DIR`, else the project
+root), as an `error` under the rule `lint/<language>`; in Code Quality, a
+`major` issue with a fingerprint. Audit's SARIF is in
+[audit.md](audit.md#in-ci).
+
+**Job summary:** when `GITHUB_STEP_SUMMARY` names a file, each run
+appends Markdown: its summary line, a table of languages and components
+with their status and time, then each failure with its error lines (agent
+output's), its log and the command that reruns them; `hct audit` adds a
+table of findings, `hct licenses` its violations and licenses, `hct
+advisor` its findings.
+
+The pipeline `hecatron workflows` writes for GitLab sets
+`HECATRON_REPORT_DIR` and hands each job's `test-<lang>.junit.xml` and
+`lint-<lang>.codequality.json` to the merge request's test and code
+quality widgets (`artifacts:reports`). On GitHub, upload SARIF with
+`github/codeql-action/upload-sarif` and show JUnit with a reporting action.
 
 [libexec/runner/README.md](../libexec/runner/README.md) documents the bash
 runner's internals: its flags, history format and display code.
