@@ -34,6 +34,9 @@ if [ -n "${HECATRON_TEST_BINARY:-}" ]; then
 fi
 [ -n "${HECATRON_INSTALLER:-}" ] && _extra+=(--env "HECATRON_INSTALLER=${HECATRON_INSTALLER}")
 [ -n "${HECATRON_CHECK_SEED:-}" ] && _extra+=(--env "HECATRON_CHECK_SEED=${HECATRON_CHECK_SEED}")
+# A developer machine's UTF-8 locale: the image's default C locale makes an
+# embedded Python's filesystem encoding ASCII, which no newcomer's machine has.
 exec docker run --rm ${_tty[@]+"${_tty[@]}"} ${_extra[@]+"${_extra[@]}"} \
+    --env LANG=C.UTF-8 \
     --volume "${_checkout}:/hecatron:ro" \
     "${_image}" "$@"

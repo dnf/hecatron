@@ -452,12 +452,14 @@ def cmd_banner(args) -> int:
 
 
 # Trees holding code that isn't the project's own implementation: vendored
-# dependencies, samples, tests, docs and tooling (hooks/: git hooks, build
-# hooks). A language found only there isn't added, and no language's
-# directory is placed there.
-SKIPPED_DIRS = {"android", "benchmarks", "buildSrc", "demo", "demos", "doc", "docs", "example", "examples",
-                "external", "fixtures", "hooks", "node_modules", "playground", "sample", "samples", "test", "testdata",
-                "tests", "third_party", "tools", "tutorial", "tutorials", "vendor"}
+# dependencies, samples, tests and test data, docs, tooling (hooks/: git
+# hooks, build hooks) and a generator's templates, whatever their case
+# (Examples/), and hidden directories (.jenkins/, .github/). A language found
+# only there isn't added, and no language's directory is placed there.
+SKIPPED_DIRS = {"android", "benchmarks", "buildsrc", "demo", "demos", "doc", "docs", "example", "examples",
+                "external", "fixtures", "hooks", "node_modules", "playground", "sample", "samples", "templates", "test",
+                "test-data", "test_data", "testdata", "tests", "tests_data", "third_party", "tools", "tutorial",
+                "tutorials", "vendor"}
 
 # Where projects keep per-language code; when layouts disagree, one under
 # these (or at the root) beats one covering more languages (Beam's sdks/{lang}
@@ -481,7 +483,8 @@ def dir_names(defs: dict[str, dict]) -> dict[str, list[str]]:
 
 
 def _is_skipped(directory: str) -> bool:
-    return any(part in SKIPPED_DIRS for part in directory.split("/"))
+    return any(part.lower() in SKIPPED_DIRS or part.startswith(".") and part != "."
+               for part in directory.split("/"))
 
 
 def tracked_files(root: str) -> list[str]:
@@ -685,7 +688,7 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
     if not templates:
         return ["."], ".", {}
     split = [t.split("/") for t in templates]
-    if len(templates) > 1 and len({len(parts) for parts in split}) == 1:
+    if len(templates) > 1 and len({len(parts) for parts in split}) == 1 and all(roots.values()):
         varying = [i for i in range(len(split[0])) if len({parts[i] for parts in split}) > 1]
         if len(varying) == 1:
             i = varying[0]
