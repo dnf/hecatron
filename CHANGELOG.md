@@ -30,6 +30,10 @@ minor version can change behaviour. Numbers are
   scaffolding a tool generates from), `test_data/`, `tests_data/` and
   `vendored/` no longer make a language.
 
+- **Swift:** a package that declares no test target (a C library's
+  `Package.swift` for SwiftPM users) passes `hct test` instead of failing
+  on "no tests found".
+
 - **Release downloads as data (#77, stage 2):** `install.json` can name a
   release download, always checked against a SHA-256 (inline, a published
   checksum file, or the publisher's index). Gleam and Zig install that way,
