@@ -18,10 +18,11 @@ pytest_sets() {
     return 1
 }
 
-# Whether a file named like the glob is here or below, outside version
-# control, environments, dependencies and build output.
+# Directories never searched: version control, environments, dependencies,
+# test data and build output (dirs_below_with's).
 _skipped_dirs=('.*' node_modules vendor third_party third-party external
     testdata test-data test_data fixtures build target out dist bin obj)
+# Whether a file named like the glob is here or below.
 has_below() {
     local _skip=() _dir
     for _dir in "${_skipped_dirs[@]}"; do _skip+=(-o -name "${_dir}"); done
