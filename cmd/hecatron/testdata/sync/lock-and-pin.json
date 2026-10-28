@@ -1,0 +1,94 @@
+{
+  "base": {
+    "ref": "HEAD@{1}",
+    "source": "the reflog",
+    "commit": "COMMIT",
+    "commits": 1,
+    "ancestor": true
+  },
+  "head": "COMMIT",
+  "files": [
+    "a/one/.one-version",
+    "a/one/one.lock"
+  ],
+  "deps": {
+    "languages": [
+      {
+        "name": "one",
+        "components": [
+          "a"
+        ],
+        "files": [
+          "a/one/one.lock"
+        ],
+        "status": "passed"
+      }
+    ],
+    "ran": true,
+    "command": "hct deps one -c a",
+    "run": {
+      "command": "deps",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 0,
+      "summary": {
+        "passed": 1,
+        "failed": 0,
+        "timedOut": 0,
+        "skipped": 0
+      },
+      "logs": "ROOT/.logs/deps",
+      "jobs": [
+        {
+          "label": "one",
+          "kind": "language",
+          "language": "one",
+          "status": "passed",
+          "exitCode": 0,
+          "duration": 0,
+          "log": "ROOT/.logs/deps/one.log",
+          "timeLimit": {
+            "seconds": 600,
+            "source": "history",
+            "description": "LIMIT"
+          },
+          "components": [
+            {
+              "name": "a",
+              "dir": "ROOT/a/one",
+              "failed": false
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "toolchains": [
+    {
+      "name": "one",
+      "components": [
+        "a"
+      ],
+      "files": [
+        "a/one/.one-version"
+      ],
+      "versions": [
+        {
+          "components": [
+            "a"
+          ],
+          "spec": "1.3",
+          "exact": false,
+          "source": "pin:a/one/.one-version",
+          "installed": false
+        }
+      ],
+      "install": {
+        "command": "hct install one",
+        "askUser": true
+      }
+    }
+  ],
+  "nothing": false,
+  "exitCode": 0
+}

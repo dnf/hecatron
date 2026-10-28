@@ -158,6 +158,48 @@ tasks that the files changed since `REF` touch.
   alone, and the exit status is 0.
 - The bash runner (`run.sh`, without the binary) has no `--changed`.
 
+## After a pull: `hct sync`
+
+`hct sync [REF]` says, in a few lines, what the working tree moving (a
+pull, a rebase, a branch switch) means for hecatron, and does the safe part:
+
+```
+hct sync: since 3f2a1c9e01 (HEAD@{1}, 12 commits): 31 files changed
+  deps: typescript (web/package-lock.json), python [api] (api/uv.lock): fetched
+  toolchain: go (go/go.mod): needs 1.27.4, not installed; hct install go installs it (ask the user first)
+  check: .hecatron/config.json changed; hct check passed
+```
+
+- **The base** is `REF`, else where `HEAD` was before it last moved: the
+  reflog's `HEAD@{1}`, or, when the last moves were a rebase's steps, where
+  `HEAD` was before the rebase started. With no such entry (a fresh clone),
+  it says there's nothing to compare with and exits 0. The changes are the
+  files that differ between the base and `HEAD` (uncommitted changes are
+  yours, not the pull's). It reads git only: it never pulls, rebases or
+  fetches.
+- **A lock file changed** (a definition's `cache.lockFiles`: `uv.lock`,
+  `package-lock.json`, `go.sum`...) in a component's directory, below it,
+  or above it (a workspace's): `hct deps` runs for those languages and
+  components, through the runner (its logs, history and time limits; the
+  live display on a terminal). `--no-deps` says what to run instead.
+- **A pin or support file changed** (`pinFiles`, `supportFiles`, looked for
+  from each component's directory up to the root), or the language's
+  definition under `.hecatron/languages/<lang>/` (its project `version`):
+  the version each of those components now needs and whether it's
+  installed (the definition's `installed.sh`). It never installs: a
+  missing version suggests `hct install <lang>`, marked "ask the user
+  first", as `hct status` marks it.
+- **`.hecatron/` changed** (`config.json`, hooks, definitions, templates;
+  not `local.json`), or a file hecatron generates (the Dockerfile,
+  workflows, `.gitlab-ci.yml`, Dependabot or Renovate configuration), or a
+  version when the project generates files: `hct check` runs, and its
+  output is shown when it fails.
+- **Nothing relevant:** one line saying so.
+- `--output human|agent|json` is chosen as for `hct test`; JSON output
+  holds the base, the files, each part's result and `hct deps`'s own JSON
+  report. Exit status 1 when `hct deps` or `hct check` fails, 2 for a usage
+  error (a `REF` that names no commit), else 0. Needs the binary.
+
 ## With the Go binary
 
 The Go core (`docs/design.md` §19), built from a checkout, has the same

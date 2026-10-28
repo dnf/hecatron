@@ -9,7 +9,7 @@
 // Ported: --version, help, the run commands (test, lint, build, clean,
 // rebuild, retest, audit, format, deps, outdated: run.go), doctor
 // (doctor.go; each language's doctor.sh stays bash), version's help, list,
-// env (with a language, its environment for a component), status, advisor, and the
+// env (with a language, its environment for a component), status, sync, advisor, and the
 // project commands (init, add, remove, enable, disable, check, dockerfile,
 // workflows: manage.go, init.go). The prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
@@ -57,6 +57,8 @@ func run(argv []string) int {
 		return plan(c.home, c.args)
 	case "status":
 		return c.status()
+	case "sync":
+		return c.sync()
 	case "licenses":
 		return c.licenses()
 	case "skill":

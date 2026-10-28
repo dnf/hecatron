@@ -1,0 +1,3 @@
+hct sync: since COMMIT (HEAD@{1}, 1 commit): 2 files changed
+  deps: one [a] (a/one/one.lock): fetched
+  toolchain: one [a] (a/one/.one-version): needs 1.3, not installed; hct install one installs it (ask the user first)
