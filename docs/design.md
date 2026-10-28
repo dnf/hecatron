@@ -390,7 +390,7 @@ saves it, as init would. Init itself:
 3. Detects the layout. A language's directory may carry any of its
    definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If
    the directories share a pattern with one part varying (`age/impl/go`,
-   `date/impl/go`), and every language has a directory named for it, it
+   `date/impl/go`) and every language has a directory named for it, it
    proposes `components` and `implPath`; otherwise one
    component, at the pattern under `sdks/`, `sdk/`, `lib/`, `lang/`,
    `bindings/`, `ffi/`, `packages/` or the root if there is one, else the

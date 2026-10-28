@@ -9,10 +9,13 @@ minor version can change behaviour. Numbers are
 - **Detection:** skipped directories match in any case (SWIG's
   `Examples/`) and include test data (`test_data/`, `tests_data/`,
   `test-data/`); dotfiles aren't sources (a `.nvim.lua` no longer adds
-  Lua); components are proposed only when every language has a directory
-  named for it, so a language beside them (Ruby in `src/email/`) gets its
-  own `implPaths` instead of no directory at all. Lua isn't detected from
-  premake build scripts, nor R from an Octave package's `DESCRIPTION`.
+  Lua). Lua isn't detected from premake build scripts, nor R from an
+  Octave package's `DESCRIPTION`.
+
+- **Detection:** `hct init` no longer proposes components from directories
+  like `src/<service>/src/main/<lang>` when another language's directory
+  isn't named for it (TypeScript in `src/frontend`), which left that
+  language, and every other one outside the pattern, with no directory.
 
 - **Other languages' tools on PATH:** a language's hooks (and
   `hct env LANG`) now also have the project's other added, enabled
