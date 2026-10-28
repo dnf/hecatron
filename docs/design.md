@@ -1032,6 +1032,15 @@ entry points' output byte for byte. Decided with the first port
   script prints a NUL byte (dropped, as bash drops it, without the
   warning).
 
+- **`banner`** (`hecatron banner --generator PATH ...`, for a project's own
+  generators) ported next, with `internal/generate`'s banner. It needs no
+  project and no Python. argparse's other forms (a missing `--generator`,
+  an abbreviated option, a value starting with `-`), arguments that aren't
+  UTF-8, and an environment where Python's stdout may not be UTF-8
+  (`PYTHONIOENCODING`, `PYTHONUTF8` other than 1, a locale that is neither
+  C, POSIX nor UTF-8: Python fails there on the frame) are left to
+  `manage.py`.
+
 - **Audit and outdated parsing** (#75; `internal/deps`) ported next:
   every report `audit.py` and `outdated.py` read (npm, pnpm, Yarn 1 and
   2+, Bun, pip-audit, govulncheck, bundler-audit, Composer, .NET and
