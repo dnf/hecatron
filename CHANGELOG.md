@@ -133,18 +133,18 @@ minor version can change behaviour. Numbers are
   gives, for ecosystems that write more than the version in it (asdf's and
   mise's Elixir `1.17.3-otp-27`).
 
-- **Detection skips more code that isn't the project's:** `hct init`
-  leaves out directories it skips in any case (`Examples/`), hidden
-  directories (`.jenkins/`), `templates/` and test data
-  (`tests_data/`, `test-data/`), so a Jenkinsfile, a code generator's
-  templates or an example no longer adds a language.
-
 - **.NET's `rollForward: latestMajor` is a floor:** a `global.json` asking
   for SDK 8.0.100 or later now gets hecatron's default SDK (10), or the
   newest of its own major when that is newer than the default, raised to
   the newest major the component's projects target (`net11.0` needs SDK
   11). Before, it read as SDK 8, which can't build a project targeting
   `net10.0`. Definitions name such files in the new `floorFiles` key.
+
+- **Detection skips more code that isn't the project's:** `hct init`
+  leaves out directories it skips in any case (`Examples/`), hidden
+  directories (`.jenkins/`), `templates/` and test data
+  (`tests_data/`, `test-data/`), so a Jenkinsfile, a code generator's
+  templates or an example no longer adds a language.
 
 ## 0.5.0 (2026-10-28)
 
