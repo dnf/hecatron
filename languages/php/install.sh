@@ -80,6 +80,59 @@ _install_php() {
     $SUDO ln -sfn "/usr/bin/php${line}" "${_shim_root}/${line}/bin/php"
 }
 
+# The PHP extensions (curl, mongodb...) the components' composer.json files
+# require, with require-dev's (the tests need them), one per line: each
+# component's own composer.json, else the nearest above it in the project
+# (Avro's and Thrift's root composer.json covers lang/php). Composer refuses
+# to install without them.
+_required_extensions() {
+    local _dir
+    while IFS= read -r _dir; do
+        while [ ! -f "${_dir}/composer.json" ] && [ "${_dir}" != "${ROOT}" ] && [ "${_dir}" != / ]; do
+            _dir="$(dirname "${_dir}")"
+        done
+        [ -f "${_dir}/composer.json" ] || continue
+        python3 -c '
+import json, sys
+try:
+    with open(sys.argv[1], encoding="utf-8") as f:
+        document = json.load(f)
+except (OSError, ValueError):
+    sys.exit()
+for key in ("require", "require-dev"):
+    section = document.get(key) if isinstance(document, dict) else None
+    for name in section if isinstance(section, dict) else ():
+        if name.lower().startswith("ext-"):
+            print(name[4:].lower())
+' "${_dir}/composer.json"
+    done < <(impl_dirs php) | sort -u
+}
+
+# The apt package of a PHP line's extension (php8.5-mysql has pdo_mysql).
+_extension_package() {
+    local line="$1" ext="$2"
+    case "${ext}" in
+        pdo_mysql | mysqli | mysqlnd) ext=mysql ;;
+        pdo_pgsql) ext=pgsql ;;
+        pdo_sqlite) ext=sqlite3 ;;
+    esac
+    echo "php${line}-${ext}"
+}
+
+# The extensions the project requires that a line lacks, from its packages
+# where they exist: one that isn't packaged stays the project's to provide.
+_install_extensions() {
+    local line="$1" ext package loaded missing=()
+    loaded="$("/usr/bin/php${line}" -m 2>/dev/null | tr '[:upper:]' '[:lower:]')"
+    while IFS= read -r ext; do
+        [ -n "${ext}" ] || continue
+        grep -qx "${ext}" <<<"${loaded}" && continue
+        package="$(_extension_package "${line}" "${ext}")"
+        if apt_has "${package}"; then missing+=("${package}"); fi
+    done < <(_required_extensions)
+    [ "${#missing[@]}" -eq 0 ] || apt_install "${missing[@]}"
+}
+
 _install_versions() {
     local specs spec
     specs="$(missing_versions php)"
@@ -93,6 +146,13 @@ _install_versions() {
 # its own PHP, since Composer resolves for the PHP it runs on.
 deps() {
     _install_versions
+    if [ "${OS}" != "macos" ]; then
+        local php
+        for php in "${_shim_root}"/*/bin/php; do
+            [ -e "${php}" ] || continue
+            _install_extensions "$(basename "$(dirname "$(dirname "${php}")")")"
+        done
+    fi
     impl_deps php
 }
 
