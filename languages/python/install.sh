@@ -50,3 +50,5 @@ deps() {
 log "Installing Python..."
 "install_${OS}"
 deps
+# OSV-Scanner, which hecatron licenses reads this language's licenses with.
+osv_scanner_install

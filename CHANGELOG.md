@@ -33,6 +33,11 @@ minor version can change behaviour. Numbers are
   `licenses` and `advisor` add their findings (#101).
 - **The run commands' help lists `--output`, `--timeout` and `--changed`**
   (`hct test help`), noting that they need hecatron's binary.
+- **OSV-Scanner for `hct licenses`:** every language `hct licenses` reads
+  (TypeScript, JavaScript, Python, Go, Ruby, PHP, C#, F#, VB.NET and
+  Clojure, besides those whose audit already used it) installs OSV-Scanner
+  2.7.0 with its toolchain, so a project of only those languages no longer
+  stops at "OSV-Scanner isn't installed".
 
 ## 0.5.0 (2026-10-28)
 
