@@ -9,7 +9,7 @@ MOJO_VERSION="0.26.1.0"
 # The `mojo` command comes from the mojo-compiler dependency, so its
 # executables are installed too.
 _install() {
-    if mojo --version 2>/dev/null | grep -qF "Mojo ${MOJO_VERSION} "; then
+    if grep -qF "Mojo ${MOJO_VERSION} " <<<"$(mojo --version 2>/dev/null)"; then
         return
     fi
     if ! has uv; then
