@@ -733,6 +733,20 @@ class ShippedDefinitionsTest(unittest.TestCase):
             if version is not None:
                 self.assertTrue(str(version).startswith("="), f"{lang}: default version {version!r} isn't exact")
 
+    def test_installers_read_their_own_default_version_or_a_named_one(self):
+        # Installers call default_version for their own definition (rust's
+        # install.sh) and for another's (default_version zig), under set -u.
+        languages = os.path.join(HOME, "languages")
+        with open(os.path.join(languages, "rust", "config.json"), encoding="utf-8") as f:
+            rust = json.load(f)["version"].lstrip("=")
+        with open(os.path.join(languages, "zig", "config.json"), encoding="utf-8") as f:
+            zig = json.load(f)["version"].lstrip("=")
+        script = os.path.join(languages, "rust", "probe.sh")
+        result = subprocess.run(["bash", "-c", 'source "$1"; default_version; default_version zig', script,
+                                 os.path.join(languages, "_common.sh")], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.split(), [rust, zig])
+
     def test_every_shipped_release_table_parses_and_has_its_default(self):
         languages = os.path.join(HOME, "languages")
         for lang in sorted(os.listdir(languages)):
