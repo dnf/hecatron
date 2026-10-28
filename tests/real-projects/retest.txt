@@ -1,0 +1,9 @@
+facebook/zstd
+redis/redis
+PyO3/pyo3
+google/magika
+tree-sitter/tree-sitter
+apache/opendal
+rerun-io/rerun
+numpy/numpy
+pydantic/pydantic
