@@ -20,6 +20,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | Known vulnerabilities | `hct audit [lang...]` | `--fail-on critical\|high\|moderate\|low` (default high) |
 | Newer dependency versions | `hct outdated [lang...]` | Report only; `--json`, `--fail` |
 | Dependency licenses | `hct licenses [lang...]` | Per license and package, unknowns apart; exit 1 when the config's `licenses` policy refuses one; needs OSV-Scanner and the binary |
+| Software bill of materials | `hct sbom [lang...] [-o FILE]` | CycloneDX 1.6 JSON (`--format spdx`: SPDX 2.3); `--no-dev`; `SOURCE_DATE_EPOCH` for reproducible output; needs OSV-Scanner and the binary |
 | Where to start | `HECATRON_OUTPUT=agent hct status` | Each language's directories, toolchain version and whether it's installed, last runs, uncommitted changes, and what to run next; one `git status`, installs nothing |
 | After a pull, rebase or checkout | `hct sync [ref]` | Since where HEAD was (the reflog) or `ref`: runs `hct deps` where lock files changed (`--no-deps`: says so), says the version each changed pin now needs and whether it's installed (installs nothing), runs `hct check` when the config, hooks or generated files changed; never pulls or fetches; exit 1 when deps or check fails. Needs the binary |
 | What the ecosystems recommend | `hct advisor [lang...]` | Lock files, toolchain pins and end of life, linter config, CI coverage; each with why and a link. Reads files only; `--fix` adds pin files; `--fail-on recommended` |

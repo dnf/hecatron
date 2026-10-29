@@ -26,7 +26,7 @@ through them.
 | `doctor.go` | `doctor`'s driver: the checks, in parallel through the runner; `--fix` runs installers one at a time |
 | `install.go`, `installdata.go`, `sudo.go` | `install` and `uninstall`: each language's script, or the install engine for a language whose `install.json` the binary can carry out; the hidden `_install`; asking for root once (`sudo -v`, refreshed) |
 | `manage.go`, `init.go`, `list.go`, `banner.go`, `env.go`, `version.go` | The project commands `manage.py` runs (`add`, `remove`, `enable`, `disable`, `check`, `dockerfile`, `workflows`, `init`), `list`, `banner`, `env`, `version`, writing exactly what the scripts write |
-| `status.go`, `sync.go`, `advisor.go`, `licenses.go`, `secrets.go`, `skill.go` | Native-only commands |
+| `status.go`, `sync.go`, `advisor.go`, `licenses.go`, `sbom.go`, `secrets.go`, `skill.go` | Native-only commands |
 | `execute.go` | `exec`: a command run with a component's language environment (`project.LanguageEnv`), replacing the binary's process where the platform allows |
 | `selfupdate.go`, `selfuninstall.go` | `self update` (and the hidden `_update-check`, `_write-env`) and `self uninstall` |
 | `pin.go` | The warning when the running hecatron isn't the project's pinned one (once per command tree: `HECATRON_PIN_WARNED`) |
@@ -45,6 +45,7 @@ through them.
 | `deps` | Reads the audit and outdated reports of every supported tool, as `audit.py` and `outdated.py` do, with Python's JSON rules (`pyjson.go`) |
 | `reports` | JUnit XML (merging the tools' own test reports: `native.go`), SARIF 2.1.0, GitLab Code Quality and the GitHub job summary |
 | `licenses`, `spdx` | `hct licenses`: OSV-Scanner's and the lock files' licenses, SPDX expressions, the project's policy |
+| `sbom` | `hct sbom`: CycloneDX 1.6 and SPDX 2.3 JSON from `licenses.GatherAll`, purls |
 | `secrets` | `hct audit`'s secret scan: runs gitleaks with `--redact` and a generated config (what git ignores, `audit.secrets.ignore`), decoding only each finding's rule, file, line, commit and fingerprint |
 | `advisor` | `hct advisor`: rules from `advice.json` and `languages/_advice.json`, conditions, the rules written in Go (toolchain support, lock freshness, CI coverage, audit acceptances) |
 | `status` | `hct status` |

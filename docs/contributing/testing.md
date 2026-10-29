@@ -23,7 +23,7 @@ bash 3.2, the version macOS ships.
 | Install parity | `tests/docker/parity.sh`, `tests/docker/parity/<lang>/` | A language installed from its scripts and from its data must end up the same ([install engine](install-engine.md#parity)) |
 | hecatron's installer | `tests/installer/check.sh` | `install.sh` in a container (it edits startup files) |
 | Coverage | `tests/coverage/`, [`.github/workflows/coverage.yml`](../../.github/workflows/coverage.yml) | Every language's install test on every platform, weekly, written to [coverage.md](../guide/coverage.md) |
-| Schemas | `tests/schemas/` | The JSON schemas generated files are checked against (GitLab CI, Dependabot, SARIF) |
+| Schemas | `tests/schemas/` | The JSON schemas generated files are checked against (GitLab CI, Dependabot, SARIF, CycloneDX 1.6, SPDX 2.3) |
 
 A downstream job that checks out sayable and runs `hct check` and `hct test
 go python` against it, so a change that breaks the project hecatron came
