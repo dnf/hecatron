@@ -50,7 +50,7 @@ HECATRON_HOME = os.environ.get(
 # HECATRON_BUILTIN_LANGUAGES points the tests at fixture definitions.
 BUILTIN_LANGUAGES = os.environ.get("HECATRON_BUILTIN_LANGUAGES") or os.path.join(HECATRON_HOME, "languages")
 # Built-in default hooks live in languages/<lang>/hooks/ (docs/guide/hooks.md).
-HOOKS = ("test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh", "format.sh", "deps.sh", "outdated.sh")
+HOOKS = ("test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh", "format.sh", "deps.sh", "outdated.sh", "docs.sh", "bench.sh")
 
 
 class ProjectError(Exception):
@@ -974,6 +974,8 @@ def shell_env(project: Project) -> str:
         _emit_list("_AUDIT_LANGS", [lang for lang in added if has_hook(lang, "audit.sh")]),
         _emit_list("_OUTDATED_LANGS", [lang for lang in added if has_hook(lang, "outdated.sh")]),
         _emit_list("_DEPS_LANGS", [lang for lang in added if has_hook(lang, "deps.sh")]),
+        _emit_list("_DOCS_LANGS", [lang for lang in added if has_hook(lang, "docs.sh")]),
+        _emit_list("_BENCH_LANGS", [lang for lang in added if has_hook(lang, "bench.sh")]),
         _emit_list("_FORMAT_LANGS", [lang for lang in added if has_hook(lang, "format.sh")]),
         _emit_list("_LINT_FORMAT_LANGS", [lang for lang in added
                                           if has_hook(lang, "format.sh") and lint_checks_format(project.config, lang)]),

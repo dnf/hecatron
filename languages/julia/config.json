@@ -18,6 +18,8 @@
   "testing": "Test (Pkg.test)",
   "linting": null,
   "formatting": "JuliaFormatter",
+  "docs": "Documenter",
+  "benchmarks": "BenchmarkTools",
   "notes": {
     "formatting": "Only when the project has a `.JuliaFormatter.toml`."
   },

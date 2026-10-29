@@ -23,7 +23,7 @@ hct test          # every language's tests, in parallel
   component lives at a path built from a template, e.g.
   `{component}/impl/{lang}`.
 - **Action:** `test`, `lint`, `build`, `clean`, `deps`, `format`, `audit`,
-  `outdated`. A **hook** script implements it, run once per component.
+  `outdated`, `docs`, `bench`. A **hook** script implements it, run once per component.
 
 ## Pages
 

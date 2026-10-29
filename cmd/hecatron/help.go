@@ -36,6 +36,8 @@ Run (every component of each language; no languages means all, in parallel):
   licenses [lang...]         Every dependency's license, rolled up; fails on the project's policy
   deps [lang...]             Fetch dependencies, held to each component's lock file
   format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
+  docs [lang...]             Build API documentation with each ecosystem's tool
+  bench [lang...]            Run benchmarks
 
 Languages:
   list [languages] [--all]   Show the project's (or every known) language
@@ -175,6 +177,8 @@ var runActions = map[string]struct{ description, hook string }{
 	"deps":     {"Fetch each language's dependencies for every component, held to its lock file", "deps.sh"},
 	"outdated": {"Report newer versions of each language's dependencies in every component", "outdated.sh"},
 	"format":   {"Format each language's code with its formatter in every component", "format.sh"},
+	"docs":     {"Build each language's API documentation for every component", "docs.sh"},
+	"bench":    {"Run each language's benchmarks for every component", "bench.sh"},
 }
 
 // runHelpText is `hecatron test help` and the other run commands' help, as

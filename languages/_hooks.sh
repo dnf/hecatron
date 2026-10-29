@@ -63,6 +63,20 @@ unknown() {
     exit 1
 }
 
+# Where a docs hook's tool wrote the documentation (a directory relative to
+# this one, or absolute), relative to the project; said last, so the log
+# ends with it. A second argument qualifies it ("in each project").
+docs_written() {
+    local _dir="$1" _root
+    case "${_dir}" in
+        /*) ;;
+        .) _dir="$(pwd -P)" ;;
+        *) _dir="$(pwd -P)/${_dir#./}" ;;
+    esac
+    if _root="$(cd "${HECATRON_ROOT:-.}" 2>/dev/null && pwd -P)"; then _dir="${_dir#"${_root}"/}"; fi
+    echo "${HECATRON_LANG:-}: docs: written to ${_dir}${2:+ ($2)}"
+}
+
 # Whether a format hook only checks (hecatron format --check, and hecatron
 # lint): it changes nothing and fails, listing what it would change.
 format_checking() { [ "${HECATRON_FORMAT_CHECK:-}" = 1 ]; }
@@ -833,6 +847,29 @@ node_hook() {
         clean)
             if npm_script clean; then run "${node_pm[@]}" run clean
             else skip "package.json has no clean script"; fi ;;
+        # The package's own docs script, else TypeDoc when it's a
+        # dependency, into its default ./docs.
+        docs)
+            if npm_script docs; then
+                npm_deps
+                run "${node_pm[@]}" run docs
+            elif grep -qs '"typedoc"' package.json; then
+                npm_deps
+                run node_modules/.bin/typedoc
+                docs_written docs
+            else
+                skip "package.json has no docs script, and TypeDoc isn't among its dependencies"
+            fi ;;
+        bench)
+            local _script
+            for _script in bench benchmark; do
+                if npm_script "${_script}"; then
+                    npm_deps
+                    run "${node_pm[@]}" run "${_script}"
+                    return
+                fi
+            done
+            skip "package.json has no bench or benchmark script" ;;
     esac
 }
 
@@ -873,6 +910,8 @@ jvm_hook() {
             lint) skip "Maven has no standard lint goal" ;;
             format) jvm_format_maven ;;
             deps) maven dependency:go-offline ;;
+            docs) jvm_docs_maven ;;
+            bench) skip "Maven has no standard benchmark goal" ;;
         esac
     elif is_gradle || [ -n "${_gradle_above}" ]; then
         case "$1" in
@@ -884,6 +923,8 @@ jvm_hook() {
             # Resolving the dependency report downloads what it lists
             # (held to gradle.lockfile where the build locks).
             deps) gradle_ dependencies ;;
+            docs) jvm_docs_gradle "${_gradle_above:-.}" ;;
+            bench) jvm_bench_gradle "${_gradle_above:-.}" ;;
         esac
     elif [ -f build.sbt ]; then
         case "$1" in
@@ -893,6 +934,12 @@ jvm_hook() {
             lint) skip "sbt has no standard lint task" ;;
             format) jvm_format_sbt ;;
             deps) run sbt update ;;
+            docs)
+                run sbt doc
+                docs_written "target/scala-*/api" "in each project" ;;
+            bench)
+                grep -qs 'sbt-jmh' project/plugins.sbt || skip "no sbt-jmh in project/plugins.sbt"
+                run sbt Jmh/run ;;
         esac
     elif [ -f build.mill ] || [ -f build.sc ]; then
         case "$1" in
@@ -902,6 +949,8 @@ jvm_hook() {
             lint) skip "Mill has no standard lint task" ;;
             format) skip "Mill has no standard format task" ;;
             deps) skip "Mill has no standard dependency task" ;;
+            docs) skip "Mill has no standard docs task" ;;
+            bench) skip "Mill has no standard benchmark task" ;;
         esac
     else
         unknown "no pom.xml, build.gradle(.kts), build.sbt or build.mill"
@@ -986,23 +1035,97 @@ jvm_format_maven() {
         skip "no Spotless or fmt-maven-plugin in pom.xml"
     fi
 }
-# The build's own files: this project's, and the root's (its settings file,
-# version catalog and buildSrc convention plugins) when that is above.
-jvm_format_gradle() {
-    local _root _build_files=() _file
+# The build's own files, into gradle_files: this project's, and the root's
+# (its settings file, version catalog and buildSrc convention plugins) when
+# that is above.
+gradle_files=()
+gradle_build_files() {
+    local _root _file
     _root="$(nearest_with settings.gradle settings.gradle.kts || echo "$1")"
-    while IFS= read -r -d '' _file; do _build_files+=("${_file}"); done < <(
+    gradle_files=()
+    while IFS= read -r -d '' _file; do gradle_files+=("${_file}"); done < <(
         find . "${_root}" -maxdepth 3 \( -name build -o -name .gradle -o -name node_modules \) -prune -o \
             -type f \( -name '*.gradle' -o -name '*.gradle.kts' -o -name '*.versions.toml' \) -print0 2>/dev/null)
-    if grep -qs 'spotless' ${_build_files[@]+"${_build_files[@]}"}; then
+}
+# Whether the Gradle build's files name a plugin (gradle_build_files first).
+gradle_uses() { grep -qsE "$1" ${gradle_files[@]+"${gradle_files[@]}"}; }
+jvm_format_gradle() {
+    gradle_build_files "$1"
+    if gradle_uses 'spotless'; then
         if format_checking; then gradle_ spotlessCheck; else gradle_ spotlessApply; fi
-    elif grep -qs 'org.jlleitschuh.gradle.ktlint' ${_build_files[@]+"${_build_files[@]}"}; then
+    elif gradle_uses 'org.jlleitschuh.gradle.ktlint'; then
         if format_checking; then gradle_ ktlintCheck; else gradle_ ktlintFormat; fi
-    elif grep -qs 'org.jmailen.kotlinter' ${_build_files[@]+"${_build_files[@]}"}; then
+    elif gradle_uses 'org.jmailen.kotlinter'; then
         if format_checking; then gradle_ lintKotlin; else gradle_ formatKotlin; fi
     else
         skip "no Spotless, ktlint-gradle or Kotlinter in the Gradle build"
     fi
+}
+# API docs through the build: Javadoc for Java and Groovy, Dokka for Kotlin
+# and Scaladoc for Scala, where the build has their plugin; each project's
+# into the tool's own directory.
+jvm_docs_maven() {
+    case "${HECATRON_LANG:-}" in
+        kotlin)
+            grep -qs 'dokka-maven-plugin' pom.xml || skip "no dokka-maven-plugin in pom.xml"
+            maven dokka:dokka
+            docs_written target/dokka "in each module" ;;
+        scala)
+            grep -qs 'scala-maven-plugin' pom.xml || skip "no scala-maven-plugin in pom.xml"
+            maven scala:doc
+            docs_written target/site/scaladocs "in each module" ;;
+        *)
+            maven javadoc:javadoc
+            # Newer maven-javadoc-plugins write to target/reports/apidocs,
+            # older ones to target/site/apidocs.
+            if [ -d target/site/apidocs ] && [ ! -d target/reports/apidocs ]; then
+                docs_written target/site/apidocs "in each module"
+            else
+                docs_written target/reports/apidocs "in each module"
+            fi ;;
+    esac
+}
+jvm_docs_gradle() {
+    case "${HECATRON_LANG:-}" in
+        kotlin)
+            gradle_build_files "$1"
+            gradle_uses 'org\.jetbrains\.dokka' || skip "no Dokka in the Gradle build"
+            # Dokka 2's task, else Dokka 1's.
+            gradle_task_or dokkaGenerate dokkaHtml
+            docs_written build/dokka/html "in each project" ;;
+        scala)
+            gradle_ scaladoc
+            docs_written build/docs/scaladoc "in each project" ;;
+        groovy)
+            gradle_ groovydoc
+            docs_written build/docs/groovydoc "in each project" ;;
+        *)
+            gradle_ javadoc
+            docs_written build/docs/javadoc "in each project" ;;
+    esac
+}
+# JMH through its Gradle plugin, or kotlinx-benchmark's.
+jvm_bench_gradle() {
+    gradle_build_files "$1"
+    if gradle_uses 'org\.jetbrains\.kotlinx\.benchmark'; then
+        gradle_ benchmark
+    elif gradle_uses 'me\.champeau\.(gradle\.)?jmh'; then
+        gradle_ jmh
+    else
+        skip "no JMH or kotlinx-benchmark plugin in the Gradle build"
+    fi
+}
+# The first of the Gradle tasks the build has, as gradle_test finds them.
+gradle_task_or() {
+    local _log _status _task
+    _log="$(mktemp)"
+    for _task in "$@"; do
+        _status=0
+        gradle_ "${_task}" 2>&1 | tee "${_log}" || _status=$?
+        if [ "${_status}" -eq 0 ] || ! grep -q "Task '${_task}' not found" "${_log}"; then break; fi
+    done
+    rm -f "${_log}"
+    return "${_status}"
 }
 jvm_format_sbt() {
     grep -qs 'sbt-scalafmt' project/plugins.sbt || skip "no sbt-scalafmt in project/plugins.sbt"
@@ -1140,6 +1263,9 @@ native_hook() {
             build) cmake_build ;;
             clean) run rm -rf "${native_build}" ;;
             lint) skip "no standard linter for CMake builds" ;;
+            bench)
+                cmake_build
+                cmake_bench ;;
         esac
     elif [ -f meson.build ]; then
         case "$1" in
@@ -1147,6 +1273,11 @@ native_hook() {
             build) meson_setup; run meson compile -C "${native_build}" ;;
             clean) run rm -rf "${native_build}" ;;
             lint) skip "no standard linter for Meson builds" ;;
+            bench)
+                grep -rqsE --include=meson.build '(^|[^[:alnum:]_])benchmark[[:space:]]*\(' . ||
+                    skip "the Meson build declares no benchmark()"
+                meson_setup
+                run meson test -C "${native_build}" --benchmark ;;
         esac
     elif [ -f configure ] || [ -f configure.ac ] || [ -f Makefile ] || [ -f makefile ] || [ -f GNUmakefile ]; then
         [ -f Makefile ] || [ -f makefile ] || [ -f GNUmakefile ] || autotools_configure
@@ -1162,6 +1293,10 @@ native_hook() {
             build) run make ;;
             clean) if make_has clean; then run make clean; else skip "the Makefile has no clean target"; fi ;;
             lint) if make_has lint; then run make lint; else skip "the Makefile has no lint target"; fi ;;
+            bench)
+                if make_has bench; then run make bench
+                elif make_has benchmark; then run make benchmark
+                else skip "the Makefile has no bench or benchmark target"; fi ;;
         esac
     else
         unknown "no CMakeLists.txt, meson.build, configure or Makefile"
@@ -1362,6 +1497,24 @@ cmake_test() {
     fi
     run ctest --test-dir "${_part}" --output-on-failure --no-tests=error
 }
+# A CMake project's benchmarks: its bench or benchmark target, else the
+# Google Benchmark programs the build made, each.
+cmake_bench() {
+    local _target _binary _binaries=() _failed=0
+    for _target in bench benchmark benchmarks; do
+        if grep -rqsiE --include=CMakeLists.txt --include='*.cmake' --exclude-dir=_deps \
+            "add_custom_target[[:space:]]*\([[:space:]]*${_target}([[:space:]]|\))" "$(cmake_source_dir)"; then
+            run cmake --build "${native_build}" --target "${_target}"
+            return
+        fi
+    done
+    while IFS= read -r _binary; do _binaries+=("${_binary}"); done < <(cmake_programs_with "$(cmake_binary_dir)" --benchmark_filter)
+    [ "${#_binaries[@]}" -gt 0 ] || skip "no bench or benchmark target, and the build made no Google Benchmark programs"
+    for _binary in "${_binaries[@]}"; do
+        run "${_binary}" || _failed=1
+    done
+    [ "${_failed}" -eq 0 ] || exit 1
+}
 # GoogleTest programs the build made but CTest doesn't know of (LightGBM's
 # testlightgbm, built with BUILD_CPP_TEST and never add_test()ed): run each,
 # failing if any fails. Returns 1 when there are none.
@@ -1378,16 +1531,17 @@ cmake_gtest_run() {
 # The executables in a build directory (outside fetched dependencies and
 # CMake's own checks) and at the top of the source directory, where some
 # projects put them, that carry GoogleTest's command-line flags: read, not
-# run, to tell.
-cmake_gtest_binaries() {
-    local _file
+# run, to tell. cmake_programs_with takes the flag (Google Benchmark's).
+cmake_gtest_binaries() { cmake_programs_with "$1" --gtest_list_tests; }
+cmake_programs_with() {
+    local _file _flag="$2"
     # The build's first, then the source directory's, each in a fixed
     # order whatever the locale; a program found twice runs once.
     { find "$1" \( -name _deps -o -name CMakeFiles \) -prune -o -type f -perm -u+x -print 2>/dev/null | LC_ALL=C sort
       find "$(cmake_source_dir)" -maxdepth 1 -type f -perm -u+x -print 2>/dev/null | LC_ALL=C sort; } |
         grep -Ev '\.(so|dylib|a|sh|py)(\.[0-9.]*)?$' | awk '!seen[$0]++' |
         while IFS= read -r _file; do
-            if grep -qaF -- '--gtest_list_tests' "${_file}" 2>/dev/null; then echo "${_file}"; fi
+            if grep -qaF -- "${_flag}" "${_file}" 2>/dev/null; then echo "${_file}"; fi
         done
 }
 # The topmost directories below a build directory that CTest runs from

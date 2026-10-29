@@ -22,7 +22,7 @@ import (
 )
 
 // Actions are the run commands whose last run status reports, in order.
-var Actions = []string{"test", "lint", "build", "format", "deps", "audit", "outdated", "clean"}
+var Actions = []string{"test", "lint", "build", "format", "deps", "audit", "outdated", "docs", "bench", "clean"}
 
 // Status is everything status reports.
 type Status struct {

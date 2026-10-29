@@ -72,11 +72,11 @@ without `--fix` only checks and is safe.
 ## Changing how a language runs
 
 A script at `.hecatron/languages/<lang>/<action>.sh` (`test`, `lint`,
-`build`, `clean`, `format`, `deps`, `audit`, `outdated`) replaces hecatron's
-default for that language. It runs once per component, in the component's
-directory, with `HECATRON_LANG`, `HECATRON_COMPONENT` and `HECATRON_ROOT`
-set. `hct init` saves the detected layout as `.hecatron/config.json`, to
-commit and adjust.
+`build`, `clean`, `format`, `deps`, `audit`, `outdated`, `docs`,
+`bench`) replaces hecatron's default for that language. It runs once per
+component, in the component's directory, with `HECATRON_LANG`,
+`HECATRON_COMPONENT` and `HECATRON_ROOT` set. `hct init` saves the
+detected layout as `.hecatron/config.json`, to commit and adjust.
 
 ## More
 

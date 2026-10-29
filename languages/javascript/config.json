@@ -63,6 +63,8 @@
   "testing": "npm test (node:test, Jest...)",
   "linting": "npm run lint (ESLint...)",
   "formatting": "Prettier, Biome",
+  "docs": "npm run docs, TypeDoc",
+  "benchmarks": "npm run bench",
   "errorPatterns": [
     {
       "tool": "tsc",

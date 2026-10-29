@@ -13,6 +13,7 @@
   ],
   "testing": "nimble test",
   "linting": null,
+  "docs": "nim doc",
   "cache": {
     "dependencies": [
       "~/.nimble"

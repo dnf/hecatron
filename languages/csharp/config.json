@@ -51,6 +51,8 @@
   "testing": "dotnet test",
   "linting": "dotnet format",
   "formatting": "dotnet format",
+  "docs": "DocFX",
+  "benchmarks": "BenchmarkDotNet",
   "errorPatterns": [
     {
       "tool": "dotnet",

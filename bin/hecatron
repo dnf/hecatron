@@ -70,6 +70,8 @@ Run (every component of each language; no languages means all, in parallel):
   licenses [lang...]         Every dependency's license, rolled up; fails on the project's policy
   deps [lang...]             Fetch dependencies, held to each component's lock file
   format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
+  docs [lang...]             Build API documentation with each ecosystem's tool
+  bench [lang...]            Run benchmarks
 
 Languages:
   list [languages] [--all]   Show the project's (or every known) language
@@ -186,7 +188,7 @@ _project() {
 }
 
 case "${_command}" in
-    test|lint|build|clean|rebuild|retest|audit|format|deps|outdated)
+    test|lint|build|clean|rebuild|retest|audit|format|deps|outdated|docs|bench)
         _project
         exec bash "${HECATRON_HOME}/libexec/commands/run.sh" "${_command}" "$@" ;;
     doctor)

@@ -54,6 +54,8 @@
   "testing": "RSpec, Minitest",
   "linting": "RuboCop, Standard",
   "formatting": "RuboCop, Standard",
+  "docs": "YARD, RDoc",
+  "benchmarks": "Rake bench task",
   "errorPatterns": [
     {
       "tool": "rspec",

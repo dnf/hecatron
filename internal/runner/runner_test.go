@@ -333,6 +333,26 @@ func TestRenderers(t *testing.T) {
 	}
 }
 
+func TestDocsWritten(t *testing.T) {
+	log := "=== docs a (rust) ===\n+ cargo doc --no-deps\nrust: docs: written to target/doc\r\n" +
+		"rust: docs: building\nrust: docs: written to build/docs/javadoc (in each project)\n"
+	dirs := DocsWritten([]byte(log))
+	if want := []string{"target/doc", "build/docs/javadoc (in each project)"}; !reflect.DeepEqual(dirs, want) {
+		t.Errorf("DocsWritten = %q, want %q", dirs, want)
+	}
+	report := &Report{Action: "docs", Wall: time.Second, Results: []Result{
+		{Label: "rust", Lang: "rust", Status: Passed, Docs: []string{"target/doc"}}, {Label: "go", Lang: "go", Status: Passed}}}
+	var agent, human bytes.Buffer
+	WriteAgent(&agent, report)
+	if want := "hct docs: 2 passed (1.0s)\nrust: docs: written to target/doc\n"; agent.String() != want {
+		t.Errorf("agent output %q, want %q", agent.String(), want)
+	}
+	WriteDocs(&human, report)
+	if want := "\nrust: docs: written to target/doc\n"; human.String() != want {
+		t.Errorf("WriteDocs %q, want %q", human.String(), want)
+	}
+}
+
 func golden(t *testing.T, name, got string) {
 	t.Helper()
 	path := filepath.Join("testdata", name)

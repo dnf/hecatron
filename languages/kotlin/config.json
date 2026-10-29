@@ -21,6 +21,8 @@
   "testing": "JUnit, kotlin.test",
   "linting": "Gradle check (detekt, ktlint)",
   "formatting": "Spotless, ktlint-gradle, Kotlinter",
+  "docs": "Dokka",
+  "benchmarks": "JMH, kotlinx-benchmark",
   "errorPatterns": [
     {
       "tool": "javac",

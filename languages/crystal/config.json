@@ -18,6 +18,7 @@
   "testing": "crystal spec",
   "linting": "crystal tool format",
   "formatting": "crystal tool format",
+  "docs": "crystal docs",
   "cache": {
     "dependencies": [
       "~/.cache/shards",

@@ -76,6 +76,47 @@ The languages at least 5% of developers use, from the
 | [Wren](https://wren.io) | Small, fast, class-based scripting language for embedding. | [wren_cli](https://github.com/wren-lang/wren-cli) | test scripts | – | – | – |
 | [Zig](https://ziglang.org) | Simple systems language and C toolchain, with comptime. | [zig build](https://ziglang.org/learn/build-system/) | [zig build](https://ziglang.org/learn/build-system/) test | zig fmt | zig fmt | 0.17.0 |
 
+## API docs and benchmarks
+
+What `hct docs` and `hct bench` run by default ([commands](commands.md#run-commands)).
+Most run only where the project has the tool already: a dependency, a
+configuration file (`docs/conf.py`, a `Doxyfile`), a build step or script
+named for it. A language not listed, or a component without the tool, has
+nothing to run and is skipped.
+
+| Language | API docs | Benchmarks |
+| --- | --- | --- |
+| C | [Doxygen](https://www.doxygen.nl) | [Google Benchmark](https://github.com/google/benchmark), [Meson](https://mesonbuild.com) benchmarks, [make](https://www.gnu.org/software/make/) bench |
+| C# | [DocFX](https://dotnet.github.io/docfx/) | [BenchmarkDotNet](https://benchmarkdotnet.org) |
+| C++ | [Doxygen](https://www.doxygen.nl) | [Google Benchmark](https://github.com/google/benchmark), [Meson](https://mesonbuild.com) benchmarks, [make](https://www.gnu.org/software/make/) bench |
+| Clojure | [Codox](https://github.com/weavejester/codox) | – |
+| Crystal | [crystal docs](https://crystal-lang.org/reference/latest/syntax_and_semantics/documenting_code.html) | – |
+| D | [dub](https://dub.pm) build -b docs | – |
+| Dart | [dart doc](https://dart.dev/tools/dart-doc) | – |
+| Elixir | [ExDoc](https://hexdocs.pm/ex_doc/) | [Benchee](https://github.com/bencheeorg/benchee) |
+| Erlang | [EDoc](https://www.erlang.org/doc/apps/edoc/) | – |
+| F# | [fsdocs](https://fsprojects.github.io/FSharp.Formatting/) | [BenchmarkDotNet](https://benchmarkdotnet.org) |
+| Gleam | [gleam docs](https://gleam.run/command-line-reference/) | – |
+| Go | – | [go test](https://pkg.go.dev/cmd/go#hdr-Test_packages) -bench |
+| Groovy | [Groovydoc](https://groovy-lang.org/groovydoc.html), [Javadoc](https://docs.oracle.com/en/java/javase/21/docs/specs/man/javadoc.html) | [JMH](https://github.com/openjdk/jmh) |
+| Haskell | [Haddock](https://haskell-haddock.readthedocs.io) | [cabal](https://www.haskell.org/cabal/) bench, [Stack](https://docs.haskellstack.org) bench |
+| Java | [Javadoc](https://docs.oracle.com/en/java/javase/21/docs/specs/man/javadoc.html) | [JMH](https://github.com/openjdk/jmh) |
+| JavaScript | [npm](https://docs.npmjs.com/cli) run docs, [TypeDoc](https://typedoc.org) | [npm](https://docs.npmjs.com/cli) run bench |
+| Julia | [Documenter](https://documenter.juliadocs.org) | [BenchmarkTools](https://juliaci.github.io/BenchmarkTools.jl/) |
+| Kotlin | [Dokka](https://kotlinlang.org/docs/dokka-introduction.html) | [JMH](https://github.com/openjdk/jmh), [kotlinx-benchmark](https://github.com/Kotlin/kotlinx-benchmark) |
+| Nim | [nim doc](https://nim-lang.org/docs/docgen.html) | – |
+| Objective-C | [Doxygen](https://www.doxygen.nl) | – |
+| OCaml | [odoc](https://ocaml.github.io/odoc/) | [dune](https://dune.build) build @bench |
+| PHP | – | [PHPBench](https://phpbench.readthedocs.io) |
+| Python | [Sphinx](https://www.sphinx-doc.org), [pdoc](https://pdoc.dev) | [pytest-benchmark](https://pytest-benchmark.readthedocs.io) |
+| Ruby | [YARD](https://yardoc.org), [RDoc](https://ruby.github.io/rdoc/) | [Rake](https://ruby.github.io/rake/) bench task |
+| Rust | [cargo doc](https://doc.rust-lang.org/cargo/commands/cargo-doc.html) | [cargo bench](https://doc.rust-lang.org/cargo/commands/cargo-bench.html) |
+| Scala | [Scaladoc](https://docs.scala-lang.org/scala3/guides/scaladoc/) | [JMH](https://github.com/openjdk/jmh) |
+| Swift | [DocC](https://www.swift.org/documentation/docc/) | [package-benchmark](https://github.com/ordo-one/package-benchmark) |
+| TypeScript | [npm](https://docs.npmjs.com/cli) run docs, [TypeDoc](https://typedoc.org) | [npm](https://docs.npmjs.com/cli) run bench |
+| VB.NET | – | [BenchmarkDotNet](https://benchmarkdotnet.org) |
+| Zig | [zig build](https://ziglang.org/learn/build-system/) docs | [zig build](https://ziglang.org/learn/build-system/) bench |
+
 [^1]: Only when the project has a `.clang-format` file: C-family code has no single standard style.
 [^2]: Only when the build applies one; hecatron runs it through the build.
 [^3]: Only when the project depends on one, at the version it locks.

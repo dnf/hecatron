@@ -49,6 +49,8 @@
   "testing": "cargo test",
   "linting": "Clippy, rustfmt",
   "formatting": "rustfmt",
+  "docs": "cargo doc",
+  "benchmarks": "cargo bench",
   "actions": {
     "test": {
       "find": "above-first",

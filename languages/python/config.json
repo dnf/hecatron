@@ -73,6 +73,8 @@
   "testing": "pytest",
   "linting": "Ruff",
   "formatting": "Ruff, Black",
+  "docs": "Sphinx, pdoc",
+  "benchmarks": "pytest-benchmark",
   "actions": {
     "test": {
       "find": "below-else-here",

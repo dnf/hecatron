@@ -69,6 +69,8 @@
   "testing": "JUnit",
   "linting": "Gradle check",
   "formatting": "Spotless, fmt-maven-plugin",
+  "docs": "Javadoc",
+  "benchmarks": "JMH",
   "family": "jvm",
   "errorPatterns": [
     {

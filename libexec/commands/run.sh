@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hecatron test|lint|build|clean|rebuild|retest|audit|format|deps|outdated [-j N] [-s MODE] [-c COMPONENT]... [target ...]
+# hecatron test|lint|build|clean|rebuild|retest|audit|format|deps|outdated|docs|bench [-j N] [-s MODE] [-c COMPONENT]... [target ...]
 #
 # With targets, runs each one in turn, streaming its output and saving it to
 # <logs>/<action>/<target>.log. A target is a language (every component), a
@@ -55,6 +55,8 @@ _describe() {
         format) echo "Format each language's code with its formatter in every component" ;;
         deps) echo "Fetch each language's dependencies for every component, held to its lock file" ;;
         outdated) echo "Report newer versions of each language's dependencies in every component" ;;
+        docs) echo "Build each language's API documentation for every component" ;;
+        bench) echo "Run each language's benchmarks for every component" ;;
     esac
 }
 
@@ -69,6 +71,8 @@ _action_langs() {
         format) echo "${_FORMAT_LANGS}" ;;
         deps) echo "${_DEPS_LANGS}" ;;
         outdated) echo "${_OUTDATED_LANGS}" ;;
+        docs) echo "${_DOCS_LANGS}" ;;
+        bench) echo "${_BENCH_LANGS}" ;;
     esac
 }
 
@@ -126,7 +130,7 @@ _usage() {
         printf '%s\n' "  --history  The secrets scan reads every commit instead of the working tree"
     fi
     case "${_action}" in
-        test|lint|build|format|deps|rebuild|retest)
+        test|lint|build|format|deps|rebuild|retest|docs|bench)
             printf '%s\n' \
                 "  --changed [REF]" \
                 "             Only the languages, components and project tasks the files changed" \
@@ -212,8 +216,28 @@ if [ "${#_targets[@]}" -eq 0 ]; then
         echo "Nothing to ${_action}."
         exit 0
     fi
-    exec "${HECATRON_HOME}/libexec/runner/run-parallel.sh" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} \
-        "${_action}" "${_jobs[@]}"
+    if [ "${_action}" != docs ]; then
+        exec "${HECATRON_HOME}/libexec/runner/run-parallel.sh" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} \
+            "${_action}" "${_jobs[@]}"
+    fi
+    # hct docs ends with where each language's docs are, from the lines its
+    # hooks end with (docs_written in languages/_hooks.sh), as the binary does.
+    _status=0
+    "${HECATRON_HOME}/libexec/runner/run-parallel.sh" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} \
+        "${_action}" "${_jobs[@]}" || _status=$?
+    _written=()
+    for _job in "${_jobs[@]}"; do
+        case "${_job}" in
+            *::*)
+                while IFS= read -r _line; do _written+=("${_line}"); done < <(
+                    grep -hE '^[^[:space:]]+: docs: written to ' "${HECATRON_LOGS}/docs/${_job%%::*}.log" 2>/dev/null) ;;
+        esac
+    done
+    if [ "${#_written[@]}" -gt 0 ]; then
+        printf '\n'
+        printf '%s\n' "${_written[@]}"
+    fi
+    exit "${_status}"
 fi
 
 # --- Named targets, one at a time -----------------------------------------
@@ -241,6 +265,8 @@ _run_target() {
         format) echo "No formatter for ${name} (skipping)" ;;
         deps) echo "No dependency manager for ${name} (skipping)" ;;
         outdated) echo "No outdated report for ${name} (skipping)" ;;
+        docs) echo "No docs tool for ${name} (skipping)" ;;
+        bench) echo "No benchmark runner for ${name} (skipping)" ;;
         *) echo "error: ${name} has no ${_action} hook (.hecatron/languages/${name}/${_action}.sh)" >&2; return 1 ;;
     esac
 }
