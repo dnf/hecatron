@@ -58,7 +58,7 @@ func secretsProject(t *testing.T, config string) (string, []string, string) {
 	}
 	// hct puts hecatron's bin directory on PATH, where a real gitleaks may
 	// be: an empty one.
-	env := []string{"HECATRON_HOME=" + repoHome(t), "HECATRON_BUILTIN_LANGUAGES=", "HECATRON_OUTPUT=", "CLAUDECODE=", "GITHUB_ACTIONS=",
+	env := []string{"HECATRON_HOME=" + repoHome(t), "HECATRON_BUILTIN_LANGUAGES=", "HECATRON_OUTPUT=", "CLAUDECODE=", "GITHUB_ACTIONS=", "GITHUB_WORKSPACE=", "CI_PROJECT_DIR=",
 		"XDG_DATA_HOME=" + t.TempDir(), "PATH=" + bin + ":" + os.Getenv("PATH"), "CAPTURE=" + capture, "FAKE_SECRET=" + fakeSecret}
 	return root, env, capture
 }
