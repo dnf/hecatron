@@ -45,6 +45,13 @@ seen. `report.py` also writes a shields.io endpoint file per tested
 project (`badges/OWNER_REPO.json`: passing, N/M languages or failing), so
 a project can show a badge that follows its latest result without running
 anything itself; the page lists the Markdown for each passing project.
+`run.sh --actions test,lint,build` (the workflow's `actions` input when
+dispatched; the monthly run tests only) records lint and build as steps
+beside the tests, whose result stays the language's. Each run records the
+free disk space before, after each step and at the end, and the page
+flags runs that fell under 2 GB. The failure categories are regular
+expressions in `report.py`; `report.py categories LOG...` re-parses saved
+logs, to try a change to them without rerunning the projects.
 
 ### What CI runs
 

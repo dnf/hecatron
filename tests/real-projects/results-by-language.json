@@ -87,7 +87,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "other",
+   "failureCategory": "no-tests",
    "commit": "7d5770395bb7b02eb56e7c62662cb1d7c08f42a3",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -100,7 +100,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 10,
-   "failureCategory": "other",
+   "failureCategory": "build",
    "commit": "7d5770395bb7b02eb56e7c62662cb1d7c08f42a3",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -139,7 +139,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 319,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "fc390cd3442ba8f2a1db964dee735c6f1234c4e1",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -152,7 +152,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "fc390cd3442ba8f2a1db964dee735c6f1234c4e1",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -165,7 +165,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "fc390cd3442ba8f2a1db964dee735c6f1234c4e1",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -178,7 +178,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 133,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "fc390cd3442ba8f2a1db964dee735c6f1234c4e1",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -230,7 +230,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 31,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "c22f6b3f820375abce41473da30ecdff3ce8d436",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -295,7 +295,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 3,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "c22f6b3f820375abce41473da30ecdff3ce8d436",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -503,7 +503,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 138,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "cba73417cd23a9bde511bdfc1ed54b82f5978e48",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -646,7 +646,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "8e936331b6fa5c4b28ba356a10a518ea72b20ba4",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -854,7 +854,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "451bc73c1f53b421b9e04685fc77f11e444a00a6",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -906,7 +906,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 5,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "451bc73c1f53b421b9e04685fc77f11e444a00a6",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -932,7 +932,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 101,
-   "failureCategory": "other",
+   "failureCategory": "toolchain-version",
    "commit": "451bc73c1f53b421b9e04685fc77f11e444a00a6",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -971,7 +971,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 661,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "3f263156a9a4ea3fd3c2eb78dbd796314958fd0b",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -1036,7 +1036,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "e69f8c08fa1581c41f7543a87938a98c2aca2206",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -1075,7 +1075,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 4,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "e69f8c08fa1581c41f7543a87938a98c2aca2206",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -1153,7 +1153,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "build",
    "commit": "e69f8c08fa1581c41f7543a87938a98c2aca2206",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -1218,7 +1218,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "e69f8c08fa1581c41f7543a87938a98c2aca2206",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -1257,7 +1257,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 3,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "461e7d35ae4d18cb09de63fe43ecc0215ae99c04",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -1309,7 +1309,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 4,
-   "failureCategory": "other",
+   "failureCategory": "build",
    "commit": "51ed90703f503850176c4b737349b21d5deb43c2",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -1348,7 +1348,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 3,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "51ed90703f503850176c4b737349b21d5deb43c2",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -1374,7 +1374,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 3,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "51ed90703f503850176c4b737349b21d5deb43c2",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -1621,7 +1621,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "cc87328b8d0869e45f0074d0d91f21253eac8dee",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -1959,7 +1959,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "85eb4edd51f2c9e123e461dfc5d2dd9dd2d8d5ee",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2154,7 +2154,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 161,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "894ed804b5ba90f97853c46d066ecf6efd8b5120",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2167,7 +2167,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 22,
-   "failureCategory": "other",
+   "failureCategory": "no-tests",
    "commit": "894ed804b5ba90f97853c46d066ecf6efd8b5120",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2245,7 +2245,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 10,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "a751e2d92abcd63b01d1400789789f5ea289a8b0",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2310,7 +2310,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "no-tests",
    "commit": "a751e2d92abcd63b01d1400789789f5ea289a8b0",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2336,7 +2336,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "a751e2d92abcd63b01d1400789789f5ea289a8b0",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2375,7 +2375,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "toolchain-version",
    "commit": "ec18e5aeb68f78ea261a271e0f0cf1124db9edf3",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2453,7 +2453,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "tests",
+   "failureCategory": "system",
    "commit": "d89c4b1c52e25ddafe047bc78bbee5c1e24b1809",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2557,7 +2557,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "dependencies",
    "commit": "f58d5768f1fd0df9f71aa6ae5f63645e2637c31f",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2635,7 +2635,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "no-tests",
    "commit": "f58d5768f1fd0df9f71aa6ae5f63645e2637c31f",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2674,7 +2674,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "build",
+   "failureCategory": "dependencies",
    "commit": "f58d5768f1fd0df9f71aa6ae5f63645e2637c31f",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2830,7 +2830,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "100f66e6242ab8bf8d32feb8f3bf086db66ae2b5",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2843,7 +2843,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "100f66e6242ab8bf8d32feb8f3bf086db66ae2b5",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2856,7 +2856,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "100f66e6242ab8bf8d32feb8f3bf086db66ae2b5",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -2908,7 +2908,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "2da0056814cf180480a19f5cf811e7e1c054bf6d",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3090,7 +3090,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 54,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "d9a5e8af4b5898aff65981ab472d5466a43698bc",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3103,7 +3103,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 33,
-   "failureCategory": "other",
+   "failureCategory": "toolchain-version",
    "commit": "54bed1982f63a82f7834988b95b2043ee050b489",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3181,7 +3181,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "9767815cb73a924300535b09c5d08a3a8cc33f57",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3454,7 +3454,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 3,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "f0474775543516a837ce336ef90ff6ab5cb00ff7",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3519,7 +3519,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "a03560b0352b8574e03c9b9f045f3c0c2a596e33",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3558,7 +3558,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "a03560b0352b8574e03c9b9f045f3c0c2a596e33",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3571,7 +3571,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "other",
+   "failureCategory": "no-tests",
    "commit": "a03560b0352b8574e03c9b9f045f3c0c2a596e33",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3584,7 +3584,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 3,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "a03560b0352b8574e03c9b9f045f3c0c2a596e33",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3597,7 +3597,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "a03560b0352b8574e03c9b9f045f3c0c2a596e33",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3662,7 +3662,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "dependencies",
    "commit": "e246a2560645b7525f5775669ed816eb57c5bcc8",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3714,7 +3714,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 165,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "087e93b3a1fdf44f97bc92b5b9c2ba221cb2488b",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -3818,7 +3818,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "no-tests",
    "commit": "6389c79f91cd67ed2de3ebdcf84ec8c2d2d23c11",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4026,7 +4026,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "other",
+   "failureCategory": "no-tests",
    "commit": "42d78dc5e37523ffaf1abf2fac178923658b2fb5",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4377,7 +4377,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 43,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "96296840c9234404c4c38888de63f92b4b3e7fa0",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4429,7 +4429,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "876916f2b3c277141f736317e52b26511dadaf13",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4455,7 +4455,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 143,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "876916f2b3c277141f736317e52b26511dadaf13",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4494,7 +4494,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 136,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "876916f2b3c277141f736317e52b26511dadaf13",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4650,7 +4650,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 176,
-   "failureCategory": "other",
+   "failureCategory": "tests",
    "commit": "0a67d2d228767ae0114af7374ee1d9e546af98e3",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4663,7 +4663,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 3,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "72ea9e285fe1828977d1cd2bc596b901bcc57440",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4702,7 +4702,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "other",
+   "failureCategory": "toolchain-version",
    "commit": "69d7e7adbbf3d4ec26b5f05543793ca576f65a00",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4715,7 +4715,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 68,
-   "failureCategory": "other",
+   "failureCategory": "tests",
    "commit": "fecbcf2db4d701ee67461847345cfdc1a274be91",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4793,7 +4793,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "toolchain",
    "commit": "afdac65e0f80c0ccf9e8909da97c411567908b57",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4819,7 +4819,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 523,
-   "failureCategory": "tests",
+   "failureCategory": "system",
    "commit": "8871ab0bda9bbcc4edbef9b1a402eb4c47ef9398",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4858,7 +4858,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 35,
-   "failureCategory": "other",
+   "failureCategory": "tests",
    "commit": "5387c061461c811d106b125588f064c4739342cb",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -4871,7 +4871,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "dependencies",
    "commit": "a2ea581c23fdc184168423adbd4b4c1f48d42743",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5092,7 +5092,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 5,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "7d9b1f430bb65ac664e120af227bf9a795ad6333",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5118,7 +5118,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 30,
-   "failureCategory": "other",
+   "failureCategory": "build",
    "commit": "95c0d300494307278fdfb4e02729679c437c2e24",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5157,7 +5157,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "other",
+   "failureCategory": "tests",
    "commit": "d5f30d69c151494c24feef6bff06e60a4f919fc7",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5183,7 +5183,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 16,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "328240916032ec3834a1fb56b81ca398df80f084",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5339,7 +5339,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 22,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "e8c420df7a901b51b10c70bc08b56af7310d00f2",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5404,7 +5404,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "build",
    "commit": "dcbeeb5a6155bd6223ea69a1f18f9f8be17ad62d",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5495,7 +5495,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 80,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "270222e9ba8f32d2d71509fd9ceeaa9c35054347",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5651,7 +5651,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 299,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "608ff6adb438ddfc67c539acffeb356d73876160",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5833,7 +5833,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1168,
-   "failureCategory": "other",
+   "failureCategory": "no-tests",
    "commit": "8482a57cba609afefaecf96e53dd06314dcb0541",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5846,7 +5846,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "no-tests",
    "commit": "8482a57cba609afefaecf96e53dd06314dcb0541",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5937,7 +5937,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 249,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "5d84f3f222b41409a6983d2ac90513ad9702fa9e",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -5950,7 +5950,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "build",
    "commit": "5d84f3f222b41409a6983d2ac90513ad9702fa9e",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6015,7 +6015,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "61e71ccf8aa17a2fb6fe5caa115daf21a0b3e9fa",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6041,7 +6041,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 73,
-   "failureCategory": "other",
+   "failureCategory": "toolchain-version",
    "commit": "61e71ccf8aa17a2fb6fe5caa115daf21a0b3e9fa",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6054,7 +6054,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "b833c1b9bf6712cc8a03bb301b77c48984a2373d",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6067,7 +6067,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "b833c1b9bf6712cc8a03bb301b77c48984a2373d",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6184,7 +6184,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 3,
-   "failureCategory": "other",
+   "failureCategory": "toolchain-version",
    "commit": "26f9ec8be637d24d0dee18d51e129cc1a99f3a7c",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6223,7 +6223,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "cb77e1bfaa02449b2a61486ce02f509438c801a5",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6236,7 +6236,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "dependencies",
    "commit": "0be3285ca748db2ae1b05a3535d8ae194ffe9e6b",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6249,7 +6249,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 77,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "0be3285ca748db2ae1b05a3535d8ae194ffe9e6b",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6301,7 +6301,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 12,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "61f1c1862e985b5f449971383cc3be22e2688c84",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6314,7 +6314,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 81,
-   "failureCategory": "other",
+   "failureCategory": "setup",
    "commit": "61f1c1862e985b5f449971383cc3be22e2688c84",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6327,7 +6327,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 3,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "61f1c1862e985b5f449971383cc3be22e2688c84",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6340,7 +6340,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 1,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "881af30732bd66517ea829b5c102e224cae1f51e",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6353,7 +6353,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 0,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "881af30732bd66517ea829b5c102e224cae1f51e",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6379,7 +6379,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 6,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "881af30732bd66517ea829b5c102e224cae1f51e",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6392,7 +6392,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "build",
+   "failureCategory": "system",
    "commit": "1d89c17cef552c69585e5e6f9501535459ff7477",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6496,7 +6496,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 2,
-   "failureCategory": "other",
+   "failureCategory": "build",
    "commit": "548a3692f59405aeb239c5b63fa589824eee51e8",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6522,7 +6522,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 5,
-   "failureCategory": "other",
+   "failureCategory": "build",
    "commit": "548a3692f59405aeb239c5b63fa589824eee51e8",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6535,7 +6535,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 3,
-   "failureCategory": "other",
+   "failureCategory": "build",
    "commit": "548a3692f59405aeb239c5b63fa589824eee51e8",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6587,7 +6587,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 33,
-   "failureCategory": "other",
+   "failureCategory": "system",
    "commit": "ad067fddf76a32c3071f8f3a31e8719d348e2737",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"
@@ -6600,7 +6600,7 @@
    "detected": true,
    "result": "fail",
    "seconds": 78,
-   "failureCategory": "other",
+   "failureCategory": "toolchain-version",
    "commit": "ad067fddf76a32c3071f8f3a31e8719d348e2737",
    "date": "2026-10-28",
    "hecatronVersion": "0.5.0"

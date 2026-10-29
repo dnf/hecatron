@@ -26,6 +26,10 @@ on:
         description: "Projects to test, space-separated OWNER/REPO (empty: every project in tests/real-projects/projects.json)"
         required: false
         default: ""
+      actions:
+        description: "Actions per language, comma-separated, of test, lint and build (the monthly run: test)"
+        required: false
+        default: "test"
       cache:
         description: "Restore and save the toolchain caches (off: install everything from scratch)"
         type: boolean
@@ -191,13 +195,14 @@ jobs:
           REPO: ${{ matrix.repo }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           CACHE: ${{ needs.projects.outputs.cache }}
+          ACTIONS: ${{ inputs.actions || 'test' }}
         run: |
           if [ "${CACHE}" = true ]; then
             # Made here, not by docker, so the container's user owns it.
             export HECATRON_TEST_CACHE="${RUNNER_TEMP}/real-projects-cache"
             mkdir -p "${HECATRON_TEST_CACHE}"
           fi
-          tests/docker/run.sh ubuntu:24.04 python3 /hecatron/tests/real-projects/cache.py run --image ubuntu:24.04 --budget 3300 \
+          tests/docker/run.sh ubuntu:24.04 python3 /hecatron/tests/real-projects/cache.py run --image ubuntu:24.04 --budget 3300 --actions "${ACTIONS}" \
             --host "GitHub Actions ubuntu-24.04 (${ImageVersion:-unknown image version})" --run-url "${RUN_URL}" \
             "${REPO}" 2>&1 | tee run.log || true
           python3 tests/real-projects/report.py summary run.log >> "${GITHUB_STEP_SUMMARY}" || true
