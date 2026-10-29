@@ -128,6 +128,28 @@ def yields(rule: dict, paths, build_file: str | None = None) -> bool:
     return len(others) > len(own)
 
 
+def yields_in(definition: dict, directory: str, listing) -> bool:
+    """Whether one of a definition's build files is in the directory (whose
+    names are listing) and its "detectYields" rule holds there, as detection
+    decides: the directory is the other language's. The Node hooks ask it
+    too (node_below_dirs in languages/_hooks.sh)."""
+    rule = definition.get("detectYields")
+    if not rule:
+        return False
+    build_file = build_file_in(directory, listing, definition.get("detect", []))
+    return build_file is not None and yields(rule, tracked_paths_below(directory), build_file)
+
+
+def read_definition(lang: str, root: str | None = None) -> dict:
+    """A language's config.json, the built-in one's keys overlaid by the
+    project's at root (as Project.definitions merges them), without reading
+    the project's config."""
+    merged = _read_json(os.path.join(BUILTIN_LANGUAGES, lang, "config.json"), {})
+    if root:
+        merged.update(_read_json(os.path.join(root, ".hecatron", "languages", lang, "config.json"), {}))
+    return merged
+
+
 def _output_dir(build_file: str, keys) -> str | None:
     """The directory a build file names at a key path (["compilerOptions",
     "outDir"]), relative to the build file's directory and normalized; None
@@ -375,12 +397,7 @@ class Project:
         """Whether one of the language's build files is in the directory and
         its "detectYields" rule holds there, as detection decides: the
         directory is the other language's."""
-        d = self.definitions.get(lang, {})
-        rule = d.get("detectYields")
-        if not rule:
-            return False
-        build_file = build_file_in(directory, listing, d.get("detect", []))
-        return build_file is not None and yields(rule, tracked_paths_below(directory), build_file)
+        return yields_in(self.definitions.get(lang, {}), directory, listing)
 
     def impl_dir(self, component: str, lang: str) -> str:
         """Where a component's code in a language lives: the template filled

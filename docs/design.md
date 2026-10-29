@@ -366,8 +366,9 @@ package's `test` script; a workspace root without one runs its packages'
 (`workspaces`, `pnpm-workspace.yaml`); a package without one runs its
 configured runner (`vitest.config.*`, `jest.config.*`, `.mocharc.*`); else,
 and in a directory without a `package.json`, it tests the language's
-packages below (TypeScript's have a `tsconfig.json`, JavaScript's don't, as
-detection decides). It sets `CI=true` (unless it's set) so watching test
+packages below (TypeScript's have a `tsconfig.json`, but for one beside
+mostly JavaScript, which is JavaScript's: detection's `detectYields`, the
+same rule through `project.py`). It sets `CI=true` (unless it's set) so watching test
 runners run once. A package its tests need built (a native addon, from a `napi`
 key, a `binding.gyp` or a build script running napi or node-gyp, whose
 `*.node` isn't built; or a `main` or `exports` entry point that isn't
@@ -1423,7 +1424,26 @@ conditions:
   ("bats not installed (a component has .bats tests)") and a `check`;
 - `steps`: commands run after the packages (`raco pkg install
   compiler-lib`), each with a `check` and the `problem` the doctor reports
-  while it fails;
+  while it fails; a `download` (`url` and its mandatory `sha256`, cached
+  and verified as archives are) the run names as `{file}`, `{data}` for
+  hecatron's data directory, and `creates`, a directory inside it removed
+  before the step runs again and by uninstall (Common Lisp's Quicklisp,
+  installed with its quickstart `quicklisp.lisp` into
+  `~/.local/share/hecatron/quicklisp`, no root);
+- `aptSources`: a signed apt repository for one distribution (`distro`,
+  /etc/os-release's `ID`) whose own packages are too old (SWI-Prolog's PPA
+  on Ubuntu, whose 9.0 lsp_server can't use): `uri`, `suite` (default
+  `{codename}`), `components`, and the `key` URL and its `fingerprint`,
+  checked in Go (the primary key's, and only one key) before the key goes
+  in `/etc/apt/keyrings/hecatron-<name>.asc` and the repository in
+  `/etc/apt/sources.list.d/hecatron-<name>.sources`, signed by it alone.
+  Adding one refreshes the package lists, upgrades the `packages` it
+  provides that apt installed from the distribution (not receipted: they
+  weren't hecatron's), and first removes the installed `replaces`, the
+  distribution's packages whose files its packages take over without
+  saying so (Ubuntu's `swi-prolog-core`). A release the repository has no
+  suite for keeps the distribution's packages. The doctor reports a source
+  not added; uninstall removes the two files;
 - `uninstall.keep`: packages uninstall never removes, with `because`
   (COBOL's cmake, which C, C++ and Fortran install with their scripts).
 

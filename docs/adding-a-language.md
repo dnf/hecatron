@@ -89,7 +89,14 @@ the binary. Racket's:
 - `tools`: `name`, `packages`, `when` (with `because`, the doctor's reason)
   and `check`, for a program the hooks need.
 - `steps`: `run`, `check` and `problem`, run after the packages when the
-  check fails.
+  check fails; optionally a `download` (`url`, `sha256`) the run names as
+  `{file}`, and `creates`, a directory under `{data}` (hecatron's data
+  directory) uninstall removes, as Common Lisp's Quicklisp step does.
+- `aptSources`: a signed apt repository for one `distro` whose packages are
+  too old: `name`, `uri`, `components`, `key` and `fingerprint`, the
+  `packages` it upgrades and the `replaces` it removes first, as Prolog's
+  SWI-Prolog PPA on Ubuntu. `apt_source` in `_common.sh` adds it the same
+  way for `install.sh`.
 - `uninstall.keep` (with `because`): packages uninstall leaves, shared with
   languages still installed by scripts.
 - Conditions: `file`, `missing`, `glob`, `command`, `run`, `platform`,
