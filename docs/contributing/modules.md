@@ -67,7 +67,7 @@ through them.
 | `codegen/` | `dockerfile.py`, `banner.py`; `languages_doc.py` writes [languages.md](../guide/languages.md) from the definitions; `skill.py` keeps the Agent Skill in `plugins/hecatron/` in step with `docs/agents.md` |
 | `metadata/set.sh`, `onboarding/get-started.sh`, `bootstrap/` | `metadata`, `get-started`, `bootstrap` |
 | `lint/shellcheck.sh` | ShellCheck on every tracked shell script (`hct lint shell`) |
-| `maintenance/` | `release.sh` ([releasing](releasing.md)), `release_dates.py` (each language's `releases.json`), `ci-jobs.sh` (which CI jobs a change runs), `check_links.py` (external links in the docs, weekly) |
+| `maintenance/` | `release.sh` ([releasing](releasing.md)), `release_dates.py` (each language's `releases.json`), `ci-jobs.sh` (which CI jobs a change runs), `check_links.py` (external links in the docs, weekly), `prune-worktrees.sh` (removes the worktrees whose work is in main; `--dry-run` lists them) |
 
 ## Language definitions: `languages/`
 
