@@ -1,0 +1,1232 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2023-11-14T22:13:20Z",
+    "creators": [
+      "Tool: hecatron-0.6.0"
+    ]
+  },
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://spdx.org/spdxdocs/fixtures-84c854f1-fc38-5da5-a8e6-3207738b40a2",
+  "name": "fixtures",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Project-fixtures",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "fixtures",
+      "primaryPackagePurpose": "APPLICATION",
+      "sourceInfo": "git commit 0123456789abcdef0123456789abcdef01234567"
+    },
+    {
+      "SPDXID": "SPDXRef-Component-csharp-app",
+      "comment": "A component of fixtures: csharp",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "csharp-app"
+    },
+    {
+      "SPDXID": "SPDXRef-Component-dart-app",
+      "comment": "A component of fixtures: dart",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "dart-app"
+    },
+    {
+      "SPDXID": "SPDXRef-Component-elixir-app",
+      "comment": "A component of fixtures: elixir",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "elixir-app"
+    },
+    {
+      "SPDXID": "SPDXRef-Component-go-app",
+      "comment": "A component of fixtures: go",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "go-app"
+    },
+    {
+      "SPDXID": "SPDXRef-Component-java-app",
+      "comment": "A component of fixtures: java",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "java-app"
+    },
+    {
+      "SPDXID": "SPDXRef-Component-php-app",
+      "comment": "A component of fixtures: php",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "php-app"
+    },
+    {
+      "SPDXID": "SPDXRef-Component-python-app",
+      "comment": "A component of fixtures: python",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "python-app"
+    },
+    {
+      "SPDXID": "SPDXRef-Component-ruby-app",
+      "comment": "A component of fixtures: ruby",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "ruby-app"
+    },
+    {
+      "SPDXID": "SPDXRef-Component-rust-app",
+      "comment": "A component of fixtures: rust",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "rust-app"
+    },
+    {
+      "SPDXID": "SPDXRef-Component-typescript-app",
+      "comment": "A component of fixtures: typescript",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "name": "typescript-app"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-crates.io-itoa-1.0.9",
+      "comment": "Used by rust-app (rust), from rust/Cargo.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/itoa@1.0.9",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "itoa",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.9"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-crates.io-ryu-1.0.15",
+      "comment": "Used by rust-app (rust), from rust/Cargo.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/ryu@1.0.15",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0 OR BSL-1.0",
+      "name": "ryu",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.15"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-crates.io-serde-1.0.193",
+      "comment": "Used by rust-app (rust), from rust/Cargo.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/serde@1.0.193",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "serde",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.193"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-crates.io-serde-json-1.0.108",
+      "comment": "Used by rust-app (rust), from rust/Cargo.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/serde_json@1.0.108",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0 OR MIT",
+      "name": "serde_json",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.108"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Packagist-monolog-monolog-3.5.0",
+      "comment": "Used by php-app (php), from php/composer.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:composer/monolog/monolog@3.5.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "monolog/monolog",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "3.5.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Packagist-psr-log-3.0.0",
+      "comment": "Used by php-app (php), from php/composer.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:composer/psr/log@3.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "psr/log",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "3.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-RubyGems-mini-portile2-2.8.5",
+      "comment": "Used by ruby-app (ruby), from ruby/Gemfile.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:gem/mini_portile2@2.8.5",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "mini_portile2",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "2.8.5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-RubyGems-nokogiri-1.15.5",
+      "comment": "Used by ruby-app (ruby), from ruby/Gemfile.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:gem/nokogiri@1.15.5",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "nokogiri",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.15.5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-RubyGems-racc-1.7.3",
+      "comment": "Used by ruby-app (ruby), from ruby/Gemfile.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:gem/racc@1.7.3",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Ruby OR BSD-2-Clause",
+      "name": "racc",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.7.3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-RubyGems-rack-2.2.8",
+      "comment": "Used by ruby-app (ruby), from ruby/Gemfile.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:gem/rack@2.2.8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "rack",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "2.2.8"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Go-github.com-go-sql-driver-mysql-1.7.1",
+      "comment": "Used by go-app (go), from go/go.mod",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:golang/github.com/go-sql-driver/mysql@1.7.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MPL-2.0",
+      "name": "github.com/go-sql-driver/mysql",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.7.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Go-github.com-google-uuid-1.6.0",
+      "comment": "Used by go-app (go), from go/go.mod",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:golang/github.com/google/uuid@1.6.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "BSD-3-Clause",
+      "name": "github.com/google/uuid",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.6.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Go-github.com-inconshreveable-mousetrap-1.1.0",
+      "comment": "Used by go-app (go), from go/go.mod",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:golang/github.com/inconshreveable/mousetrap@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0",
+      "name": "github.com/inconshreveable/mousetrap",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.1.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Go-github.com-spf13-cobra-1.8.0",
+      "comment": "Used by go-app (go), from go/go.mod",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:golang/github.com/spf13/cobra@1.8.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0",
+      "name": "github.com/spf13/cobra",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.8.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Go-github.com-spf13-pflag-1.0.5",
+      "comment": "Used by go-app (go), from go/go.mod",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:golang/github.com/spf13/pflag@1.0.5",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "BSD-3-Clause",
+      "name": "github.com/spf13/pflag",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Hex-decimal-2.1.1",
+      "comment": "Used by elixir-app (elixir), from elixir/mix.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:hex/decimal@2.1.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "name": "decimal",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "2.1.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Hex-jason-1.4.1",
+      "comment": "Used by elixir-app (elixir), from elixir/mix.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:hex/jason@1.4.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "name": "jason",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.4.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Maven-com.google.protobuf-protobuf-java-3.21.9",
+      "comment": "Used by java-app (java), from java/pom.xml",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.google.protobuf/protobuf-java@3.21.9",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "BSD-3-Clause",
+      "name": "com.google.protobuf:protobuf-java",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "3.21.9"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Maven-com.mysql-mysql-connector-j-8.2.0",
+      "comment": "Used by java-app (java), from java/pom.xml",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.mysql/mysql-connector-j@8.2.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseComments": "declared, not an SPDX expression: non-standard",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "name": "com.mysql:mysql-connector-j",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "8.2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Maven-org.apache.commons-commons-lang3-3.14.0",
+      "comment": "Used by java-app (java), from java/pom.xml",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.apache.commons/commons-lang3@3.14.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0",
+      "name": "org.apache.commons:commons-lang3",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "3.14.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Maven-org.hamcrest-hamcrest-core-1.3",
+      "comment": "Used by java-app (java), from java/pom.xml",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.hamcrest/hamcrest-core@1.3",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseComments": "declared, not an SPDX expression: non-standard",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "name": "org.hamcrest:hamcrest-core",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-npm-ansi-styles-4.3.0",
+      "comment": "Used by typescript-app (typescript), from typescript/package-lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:npm/ansi-styles@4.3.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "ansi-styles",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "4.3.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-npm-caniuse-lite-1.0.30001570",
+      "comment": "Used by typescript-app (typescript), from typescript/package-lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:npm/caniuse-lite@1.0.30001570",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "CC-BY-4.0",
+      "name": "caniuse-lite",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.30001570"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-npm-chalk-4.1.2",
+      "comment": "Used by typescript-app (typescript), from typescript/package-lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:npm/chalk@4.1.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "chalk",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "4.1.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-npm-color-convert-2.0.1",
+      "comment": "Used by typescript-app (typescript), from typescript/package-lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:npm/color-convert@2.0.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "color-convert",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "2.0.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-npm-color-name-1.1.4",
+      "comment": "Used by typescript-app (typescript), from typescript/package-lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:npm/color-name@1.1.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "color-name",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.1.4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-npm-has-flag-4.0.0",
+      "comment": "Used by typescript-app (typescript), from typescript/package-lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:npm/has-flag@4.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "has-flag",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "4.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-npm-left-pad-1.3.0",
+      "comment": "Used by typescript-app (typescript), from typescript/package-lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:npm/left-pad@1.3.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "WTFPL",
+      "name": "left-pad",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.3.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-npm-lodash-4.17.21",
+      "comment": "Used by typescript-app (typescript), from typescript/package-lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:npm/lodash@4.17.21",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "lodash",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "4.17.21"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-npm-supports-color-7.2.0",
+      "comment": "Used by typescript-app (typescript), from typescript/package-lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:npm/supports-color@7.2.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "supports-color",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "7.2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-NuGet-Newtonsoft.Json-13.0.3",
+      "comment": "Used by csharp-app (csharp), from csharp/packages.lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:nuget/Newtonsoft.Json@13.0.3",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "Newtonsoft.Json",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "13.0.3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-NuGet-Serilog-3.1.1",
+      "comment": "Used by csharp-app (csharp), from csharp/packages.lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:nuget/Serilog@3.1.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0",
+      "name": "Serilog",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "3.1.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-NuGet-System.Memory-4.5.5",
+      "comment": "Used by csharp-app (csharp), from csharp/packages.lock.json",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:nuget/System.Memory@4.5.5",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseComments": "declared, not an SPDX expression: non-standard",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "name": "System.Memory",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "4.5.5"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Pub-collection-1.18.0",
+      "comment": "Used by dart-app (dart), from dart/pubspec.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pub/collection@1.18.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "name": "collection",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.18.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Pub-path-1.8.3",
+      "comment": "Used by dart-app (dart), from dart/pubspec.lock",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pub/path@1.8.3",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "name": "path",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.8.3"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyPI-certifi-2023.7.22",
+      "comment": "Used by python-app (python), from python/requirements.txt",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/certifi@2023.7.22",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MPL-2.0",
+      "name": "certifi",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "2023.7.22"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyPI-chardet-5.2.0",
+      "comment": "Used by python-app (python), from python/requirements.txt",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/chardet@5.2.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseComments": "declared, not an SPDX expression: non-standard",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "name": "chardet",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "5.2.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyPI-charset-normalizer-3.5.2",
+      "comment": "Used by python-app (python), from python/requirements.txt",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/charset-normalizer@3.5.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "charset-normalizer",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "3.5.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyPI-idna-3.9.0",
+      "comment": "Used by python-app (python), from python/requirements.txt",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/idna@3.9.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseComments": "declared, not an SPDX expression: non-standard",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "name": "idna",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "3.9.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyPI-pycrypto-2.6.1",
+      "comment": "Used by python-app (python), from python/requirements.txt",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/pycrypto@2.6.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseComments": "declared, not an SPDX expression: non-standard",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "name": "pycrypto",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "2.6.1"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyPI-pyqt5-qt5-5.15.2",
+      "comment": "Used by python-app (python), from python/requirements.txt",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/pyqt5-qt5@5.15.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "LGPL-3.0-only",
+      "name": "pyqt5-qt5",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "5.15.2"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyPI-pyqt5-sip-12.20.0",
+      "comment": "Used by python-app (python), from python/requirements.txt",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/pyqt5-sip@12.20.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "BSD-2-Clause",
+      "name": "pyqt5-sip",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "12.20.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyPI-pyqt5-5.15.10",
+      "comment": "Used by python-app (python), from python/requirements.txt",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/pyqt5@5.15.10",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "GPL-3.0-only",
+      "name": "pyqt5",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "5.15.10"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyPI-requests-2.31.0",
+      "comment": "Used by python-app (python), from python/requirements.txt",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/requests@2.31.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "Apache-2.0",
+      "name": "requests",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "2.31.0"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyPI-urllib3-2.8.0",
+      "comment": "Used by python-app (python), from python/requirements.txt",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:pypi/urllib3@2.8.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "MIT",
+      "name": "urllib3",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "2.8.0"
+    }
+  ],
+  "relationships": [
+    {
+      "relatedSpdxElement": "SPDXRef-Project-fixtures",
+      "relationshipType": "DESCRIBES",
+      "spdxElementId": "SPDXRef-DOCUMENT"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Component-csharp-app",
+      "relationshipType": "CONTAINS",
+      "spdxElementId": "SPDXRef-Project-fixtures"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Component-dart-app",
+      "relationshipType": "CONTAINS",
+      "spdxElementId": "SPDXRef-Project-fixtures"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Component-elixir-app",
+      "relationshipType": "CONTAINS",
+      "spdxElementId": "SPDXRef-Project-fixtures"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Component-go-app",
+      "relationshipType": "CONTAINS",
+      "spdxElementId": "SPDXRef-Project-fixtures"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Component-java-app",
+      "relationshipType": "CONTAINS",
+      "spdxElementId": "SPDXRef-Project-fixtures"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Component-php-app",
+      "relationshipType": "CONTAINS",
+      "spdxElementId": "SPDXRef-Project-fixtures"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Component-python-app",
+      "relationshipType": "CONTAINS",
+      "spdxElementId": "SPDXRef-Project-fixtures"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Component-ruby-app",
+      "relationshipType": "CONTAINS",
+      "spdxElementId": "SPDXRef-Project-fixtures"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Component-rust-app",
+      "relationshipType": "CONTAINS",
+      "spdxElementId": "SPDXRef-Project-fixtures"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Component-typescript-app",
+      "relationshipType": "CONTAINS",
+      "spdxElementId": "SPDXRef-Project-fixtures"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-NuGet-Newtonsoft.Json-13.0.3",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-csharp-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-NuGet-Serilog-3.1.1",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-csharp-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-NuGet-System.Memory-4.5.5",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-csharp-app"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Package-Pub-collection-1.18.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-dart-app"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Package-Pub-path-1.8.3",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-dart-app"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Package-Hex-decimal-2.1.1",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-elixir-app"
+    },
+    {
+      "relatedSpdxElement": "SPDXRef-Package-Hex-jason-1.4.1",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-elixir-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-Go-github.com-go-sql-driver-mysql-1.7.1",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-go-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-Go-github.com-google-uuid-1.6.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-go-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-Go-github.com-inconshreveable-mousetrap-1.1.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-go-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-Go-github.com-spf13-cobra-1.8.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-go-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-Go-github.com-spf13-pflag-1.0.5",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-go-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-Maven-com.google.protobuf-protobuf-java-3.21.9",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-java-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-Maven-com.mysql-mysql-connector-j-8.2.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-java-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-Maven-org.apache.commons-commons-lang3-3.14.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-java-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-Maven-org.hamcrest-hamcrest-core-1.3",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-java-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-Packagist-monolog-monolog-3.5.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-php-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-Packagist-psr-log-3.0.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-php-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-PyPI-certifi-2023.7.22",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-python-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-PyPI-chardet-5.2.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-python-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-PyPI-charset-normalizer-3.5.2",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-python-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-PyPI-idna-3.9.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-python-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-PyPI-pycrypto-2.6.1",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-python-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-PyPI-pyqt5-qt5-5.15.2",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-python-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-PyPI-pyqt5-sip-12.20.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-python-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-PyPI-pyqt5-5.15.10",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-python-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-PyPI-requests-2.31.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-python-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-PyPI-urllib3-2.8.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-python-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-RubyGems-mini-portile2-2.8.5",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-ruby-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-RubyGems-nokogiri-1.15.5",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-ruby-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-RubyGems-racc-1.7.3",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-ruby-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-RubyGems-rack-2.2.8",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-ruby-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-crates.io-itoa-1.0.9",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-rust-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-crates.io-ryu-1.0.15",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-rust-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-crates.io-serde-1.0.193",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-rust-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-crates.io-serde-json-1.0.108",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-rust-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-npm-ansi-styles-4.3.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-typescript-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-npm-caniuse-lite-1.0.30001570",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-typescript-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-npm-chalk-4.1.2",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-typescript-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-npm-color-convert-2.0.1",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-typescript-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-npm-color-name-1.1.4",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-typescript-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-npm-has-flag-4.0.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-typescript-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-npm-left-pad-1.3.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-typescript-app"
+    },
+    {
+      "comment": "direct",
+      "relatedSpdxElement": "SPDXRef-Package-npm-lodash-4.17.21",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-typescript-app"
+    },
+    {
+      "comment": "transitive",
+      "relatedSpdxElement": "SPDXRef-Package-npm-supports-color-7.2.0",
+      "relationshipType": "DEPENDS_ON",
+      "spdxElementId": "SPDXRef-Component-typescript-app"
+    }
+  ],
+  "spdxVersion": "SPDX-2.3"
+}

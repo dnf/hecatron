@@ -475,6 +475,19 @@ entry points' output byte for byte. Decided with the first port
   Docker (`tests/licenses/capture.sh`) into
   `tests/output/osv-scanner/2.7.0/`. `bin/hecatron licenses` without the
   binary says so.
+- **`hct sbom`** (#226; `internal/sbom`) is native only and reuses hct
+  licenses' pipeline (`licenses.GatherAll`: the same scan, also listing
+  the registries deps.dev has no licenses for) rather than a second
+  scanner. CycloneDX 1.6 (default) and SPDX 2.3 JSON, written as maps
+  without a library. Purls are built from OSV-Scanner's ecosystem, name and
+  version. The lock files hecatron reads say direct or transitive but not
+  through which package, so CycloneDX's graph has each component's direct
+  dependencies and is declared incomplete; SPDX's `DEPENDS_ON` carries
+  `direct`/`transitive` as a comment. Unknown licenses are omitted or
+  `NOASSERTION`. The serial number and namespace are a name-based UUID of
+  the content, so `SOURCE_DATE_EPOCH` gives a reproducible document. The
+  golden SBOMs of the license fixtures are checked against the official
+  schemas vendored in `tests/schemas/` (`tests/test_sbom.py`).
 - **Secret scanning** (#191; `internal/secrets`) is native only: a
   `secrets` job in `hct audit` beside the languages' (as `shell` is in
   lint), and the target `hct audit secrets`. It wraps gitleaks (pinned,

@@ -1,0 +1,1609 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "component:csharp-app",
+      "name": "csharp-app",
+      "properties": [
+        {
+          "name": "hecatron:languages",
+          "value": "csharp"
+        }
+      ],
+      "type": "application"
+    },
+    {
+      "bom-ref": "component:dart-app",
+      "name": "dart-app",
+      "properties": [
+        {
+          "name": "hecatron:languages",
+          "value": "dart"
+        }
+      ],
+      "type": "application"
+    },
+    {
+      "bom-ref": "component:elixir-app",
+      "name": "elixir-app",
+      "properties": [
+        {
+          "name": "hecatron:languages",
+          "value": "elixir"
+        }
+      ],
+      "type": "application"
+    },
+    {
+      "bom-ref": "component:go-app",
+      "name": "go-app",
+      "properties": [
+        {
+          "name": "hecatron:languages",
+          "value": "go"
+        }
+      ],
+      "type": "application"
+    },
+    {
+      "bom-ref": "component:java-app",
+      "name": "java-app",
+      "properties": [
+        {
+          "name": "hecatron:languages",
+          "value": "java"
+        }
+      ],
+      "type": "application"
+    },
+    {
+      "bom-ref": "component:php-app",
+      "name": "php-app",
+      "properties": [
+        {
+          "name": "hecatron:languages",
+          "value": "php"
+        }
+      ],
+      "type": "application"
+    },
+    {
+      "bom-ref": "component:python-app",
+      "name": "python-app",
+      "properties": [
+        {
+          "name": "hecatron:languages",
+          "value": "python"
+        }
+      ],
+      "type": "application"
+    },
+    {
+      "bom-ref": "component:ruby-app",
+      "name": "ruby-app",
+      "properties": [
+        {
+          "name": "hecatron:languages",
+          "value": "ruby"
+        }
+      ],
+      "type": "application"
+    },
+    {
+      "bom-ref": "component:rust-app",
+      "name": "rust-app",
+      "properties": [
+        {
+          "name": "hecatron:languages",
+          "value": "rust"
+        }
+      ],
+      "type": "application"
+    },
+    {
+      "bom-ref": "component:typescript-app",
+      "name": "typescript-app",
+      "properties": [
+        {
+          "name": "hecatron:languages",
+          "value": "typescript"
+        }
+      ],
+      "type": "application"
+    },
+    {
+      "bom-ref": "pkg:cargo/itoa@1.0.9",
+      "licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "name": "itoa",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "rust-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "rust"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "rust/Cargo.lock"
+        }
+      ],
+      "purl": "pkg:cargo/itoa@1.0.9",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.9"
+    },
+    {
+      "bom-ref": "pkg:cargo/ryu@1.0.15",
+      "licenses": [
+        {
+          "expression": "Apache-2.0 OR BSL-1.0"
+        }
+      ],
+      "name": "ryu",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "rust-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "rust"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "rust/Cargo.lock"
+        }
+      ],
+      "purl": "pkg:cargo/ryu@1.0.15",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.15"
+    },
+    {
+      "bom-ref": "pkg:cargo/serde@1.0.193",
+      "licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "name": "serde",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "rust-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "rust"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "rust/Cargo.lock"
+        }
+      ],
+      "purl": "pkg:cargo/serde@1.0.193",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.193"
+    },
+    {
+      "bom-ref": "pkg:cargo/serde_json@1.0.108",
+      "licenses": [
+        {
+          "expression": "Apache-2.0 OR MIT"
+        }
+      ],
+      "name": "serde_json",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "rust-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "rust"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "rust/Cargo.lock"
+        }
+      ],
+      "purl": "pkg:cargo/serde_json@1.0.108",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.108"
+    },
+    {
+      "bom-ref": "pkg:composer/monolog/monolog@3.5.0",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "monolog/monolog",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "php-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "php"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "php/composer.lock"
+        }
+      ],
+      "purl": "pkg:composer/monolog/monolog@3.5.0",
+      "scope": "required",
+      "type": "library",
+      "version": "3.5.0"
+    },
+    {
+      "bom-ref": "pkg:composer/psr/log@3.0.0",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "psr/log",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "php-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "php"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "php/composer.lock"
+        }
+      ],
+      "purl": "pkg:composer/psr/log@3.0.0",
+      "scope": "required",
+      "type": "library",
+      "version": "3.0.0"
+    },
+    {
+      "bom-ref": "pkg:gem/mini_portile2@2.8.5",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "mini_portile2",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "ruby-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "ruby"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "ruby/Gemfile.lock"
+        }
+      ],
+      "purl": "pkg:gem/mini_portile2@2.8.5",
+      "scope": "required",
+      "type": "library",
+      "version": "2.8.5"
+    },
+    {
+      "bom-ref": "pkg:gem/nokogiri@1.15.5",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "nokogiri",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "ruby-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "ruby"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "ruby/Gemfile.lock"
+        }
+      ],
+      "purl": "pkg:gem/nokogiri@1.15.5",
+      "scope": "required",
+      "type": "library",
+      "version": "1.15.5"
+    },
+    {
+      "bom-ref": "pkg:gem/racc@1.7.3",
+      "licenses": [
+        {
+          "expression": "Ruby OR BSD-2-Clause"
+        }
+      ],
+      "name": "racc",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "ruby-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "ruby"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "ruby/Gemfile.lock"
+        }
+      ],
+      "purl": "pkg:gem/racc@1.7.3",
+      "scope": "required",
+      "type": "library",
+      "version": "1.7.3"
+    },
+    {
+      "bom-ref": "pkg:gem/rack@2.2.8",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "rack",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "ruby-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "ruby"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "ruby/Gemfile.lock"
+        }
+      ],
+      "purl": "pkg:gem/rack@2.2.8",
+      "scope": "required",
+      "type": "library",
+      "version": "2.2.8"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/go-sql-driver/mysql@1.7.1",
+      "licenses": [
+        {
+          "expression": "MPL-2.0"
+        }
+      ],
+      "name": "github.com/go-sql-driver/mysql",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "go-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "go"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "go/go.mod"
+        }
+      ],
+      "purl": "pkg:golang/github.com/go-sql-driver/mysql@1.7.1",
+      "scope": "required",
+      "type": "library",
+      "version": "1.7.1"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/google/uuid@1.6.0",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "github.com/google/uuid",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "go-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "go"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "go/go.mod"
+        }
+      ],
+      "purl": "pkg:golang/github.com/google/uuid@1.6.0",
+      "scope": "required",
+      "type": "library",
+      "version": "1.6.0"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/inconshreveable/mousetrap@1.1.0",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "github.com/inconshreveable/mousetrap",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "go-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "go"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "go/go.mod"
+        }
+      ],
+      "purl": "pkg:golang/github.com/inconshreveable/mousetrap@1.1.0",
+      "scope": "required",
+      "type": "library",
+      "version": "1.1.0"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/spf13/cobra@1.8.0",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "github.com/spf13/cobra",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "go-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "go"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "go/go.mod"
+        }
+      ],
+      "purl": "pkg:golang/github.com/spf13/cobra@1.8.0",
+      "scope": "required",
+      "type": "library",
+      "version": "1.8.0"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/spf13/pflag@1.0.5",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "github.com/spf13/pflag",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "go-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "go"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "go/go.mod"
+        }
+      ],
+      "purl": "pkg:golang/github.com/spf13/pflag@1.0.5",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.5"
+    },
+    {
+      "bom-ref": "pkg:hex/decimal@2.1.1",
+      "name": "decimal",
+      "properties": [
+        {
+          "name": "hecatron:component",
+          "value": "elixir-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "elixir"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "elixir/mix.lock"
+        }
+      ],
+      "purl": "pkg:hex/decimal@2.1.1",
+      "scope": "required",
+      "type": "library",
+      "version": "2.1.1"
+    },
+    {
+      "bom-ref": "pkg:hex/jason@1.4.1",
+      "name": "jason",
+      "properties": [
+        {
+          "name": "hecatron:component",
+          "value": "elixir-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "elixir"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "elixir/mix.lock"
+        }
+      ],
+      "purl": "pkg:hex/jason@1.4.1",
+      "scope": "required",
+      "type": "library",
+      "version": "1.4.1"
+    },
+    {
+      "bom-ref": "pkg:maven/com.google.protobuf/protobuf-java@3.21.9",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "com.google.protobuf:protobuf-java",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "java-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "java"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "java/pom.xml"
+        }
+      ],
+      "purl": "pkg:maven/com.google.protobuf/protobuf-java@3.21.9",
+      "scope": "required",
+      "type": "library",
+      "version": "3.21.9"
+    },
+    {
+      "bom-ref": "pkg:maven/com.mysql/mysql-connector-j@8.2.0",
+      "name": "com.mysql:mysql-connector-j",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:declaredLicense",
+          "value": "non-standard"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "java-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "java"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "java/pom.xml"
+        }
+      ],
+      "purl": "pkg:maven/com.mysql/mysql-connector-j@8.2.0",
+      "scope": "required",
+      "type": "library",
+      "version": "8.2.0"
+    },
+    {
+      "bom-ref": "pkg:maven/org.apache.commons/commons-lang3@3.14.0",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "org.apache.commons:commons-lang3",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "java-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "java"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "java/pom.xml"
+        }
+      ],
+      "purl": "pkg:maven/org.apache.commons/commons-lang3@3.14.0",
+      "scope": "required",
+      "type": "library",
+      "version": "3.14.0"
+    },
+    {
+      "bom-ref": "pkg:maven/org.hamcrest/hamcrest-core@1.3",
+      "name": "org.hamcrest:hamcrest-core",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:declaredLicense",
+          "value": "non-standard"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "java-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "java"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "java/pom.xml"
+        }
+      ],
+      "purl": "pkg:maven/org.hamcrest/hamcrest-core@1.3",
+      "scope": "required",
+      "type": "library",
+      "version": "1.3"
+    },
+    {
+      "bom-ref": "pkg:npm/ansi-styles@4.3.0",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "ansi-styles",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "typescript-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "typescript"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "typescript/package-lock.json"
+        }
+      ],
+      "purl": "pkg:npm/ansi-styles@4.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "4.3.0"
+    },
+    {
+      "bom-ref": "pkg:npm/caniuse-lite@1.0.30001570",
+      "licenses": [
+        {
+          "expression": "CC-BY-4.0"
+        }
+      ],
+      "name": "caniuse-lite",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "typescript-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "typescript"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "typescript/package-lock.json"
+        }
+      ],
+      "purl": "pkg:npm/caniuse-lite@1.0.30001570",
+      "scope": "required",
+      "type": "library",
+      "version": "1.0.30001570"
+    },
+    {
+      "bom-ref": "pkg:npm/chalk@4.1.2",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "chalk",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "typescript-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "typescript"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "typescript/package-lock.json"
+        }
+      ],
+      "purl": "pkg:npm/chalk@4.1.2",
+      "scope": "required",
+      "type": "library",
+      "version": "4.1.2"
+    },
+    {
+      "bom-ref": "pkg:npm/color-convert@2.0.1",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "color-convert",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "typescript-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "typescript"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "typescript/package-lock.json"
+        }
+      ],
+      "purl": "pkg:npm/color-convert@2.0.1",
+      "scope": "required",
+      "type": "library",
+      "version": "2.0.1"
+    },
+    {
+      "bom-ref": "pkg:npm/color-name@1.1.4",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "color-name",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "typescript-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "typescript"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "typescript/package-lock.json"
+        }
+      ],
+      "purl": "pkg:npm/color-name@1.1.4",
+      "scope": "required",
+      "type": "library",
+      "version": "1.1.4"
+    },
+    {
+      "bom-ref": "pkg:npm/has-flag@4.0.0",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "has-flag",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "typescript-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "typescript"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "typescript/package-lock.json"
+        }
+      ],
+      "purl": "pkg:npm/has-flag@4.0.0",
+      "scope": "required",
+      "type": "library",
+      "version": "4.0.0"
+    },
+    {
+      "bom-ref": "pkg:npm/left-pad@1.3.0",
+      "licenses": [
+        {
+          "expression": "WTFPL"
+        }
+      ],
+      "name": "left-pad",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "typescript-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "typescript"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "typescript/package-lock.json"
+        }
+      ],
+      "purl": "pkg:npm/left-pad@1.3.0",
+      "scope": "required",
+      "type": "library",
+      "version": "1.3.0"
+    },
+    {
+      "bom-ref": "pkg:npm/lodash@4.17.21",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "lodash",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "typescript-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "typescript"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "typescript/package-lock.json"
+        }
+      ],
+      "purl": "pkg:npm/lodash@4.17.21",
+      "scope": "required",
+      "type": "library",
+      "version": "4.17.21"
+    },
+    {
+      "bom-ref": "pkg:npm/supports-color@7.2.0",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "supports-color",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "typescript-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "typescript"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "typescript/package-lock.json"
+        }
+      ],
+      "purl": "pkg:npm/supports-color@7.2.0",
+      "scope": "required",
+      "type": "library",
+      "version": "7.2.0"
+    },
+    {
+      "bom-ref": "pkg:nuget/Newtonsoft.Json@13.0.3",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "Newtonsoft.Json",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "csharp-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "csharp"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "csharp/packages.lock.json"
+        }
+      ],
+      "purl": "pkg:nuget/Newtonsoft.Json@13.0.3",
+      "scope": "required",
+      "type": "library",
+      "version": "13.0.3"
+    },
+    {
+      "bom-ref": "pkg:nuget/Serilog@3.1.1",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "Serilog",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "csharp-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "csharp"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "csharp/packages.lock.json"
+        }
+      ],
+      "purl": "pkg:nuget/Serilog@3.1.1",
+      "scope": "required",
+      "type": "library",
+      "version": "3.1.1"
+    },
+    {
+      "bom-ref": "pkg:nuget/System.Memory@4.5.5",
+      "name": "System.Memory",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:declaredLicense",
+          "value": "non-standard"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "csharp-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "csharp"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "csharp/packages.lock.json"
+        }
+      ],
+      "purl": "pkg:nuget/System.Memory@4.5.5",
+      "scope": "required",
+      "type": "library",
+      "version": "4.5.5"
+    },
+    {
+      "bom-ref": "pkg:pub/collection@1.18.0",
+      "name": "collection",
+      "properties": [
+        {
+          "name": "hecatron:component",
+          "value": "dart-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "dart"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "dart/pubspec.lock"
+        }
+      ],
+      "purl": "pkg:pub/collection@1.18.0",
+      "scope": "required",
+      "type": "library",
+      "version": "1.18.0"
+    },
+    {
+      "bom-ref": "pkg:pub/path@1.8.3",
+      "name": "path",
+      "properties": [
+        {
+          "name": "hecatron:component",
+          "value": "dart-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "dart"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "dart/pubspec.lock"
+        }
+      ],
+      "purl": "pkg:pub/path@1.8.3",
+      "scope": "required",
+      "type": "library",
+      "version": "1.8.3"
+    },
+    {
+      "bom-ref": "pkg:pypi/certifi@2023.7.22",
+      "licenses": [
+        {
+          "expression": "MPL-2.0"
+        }
+      ],
+      "name": "certifi",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "python-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "python"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "python/requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/certifi@2023.7.22",
+      "scope": "required",
+      "type": "library",
+      "version": "2023.7.22"
+    },
+    {
+      "bom-ref": "pkg:pypi/chardet@5.2.0",
+      "name": "chardet",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:declaredLicense",
+          "value": "non-standard"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "python-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "python"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "python/requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/chardet@5.2.0",
+      "scope": "required",
+      "type": "library",
+      "version": "5.2.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/charset-normalizer@3.5.2",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "charset-normalizer",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "python-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "python"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "python/requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/charset-normalizer@3.5.2",
+      "scope": "required",
+      "type": "library",
+      "version": "3.5.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/idna@3.9.0",
+      "name": "idna",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:declaredLicense",
+          "value": "non-standard"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "python-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "python"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "python/requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/idna@3.9.0",
+      "scope": "required",
+      "type": "library",
+      "version": "3.9.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/pycrypto@2.6.1",
+      "name": "pycrypto",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:declaredLicense",
+          "value": "non-standard"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "python-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "python"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "python/requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/pycrypto@2.6.1",
+      "scope": "required",
+      "type": "library",
+      "version": "2.6.1"
+    },
+    {
+      "bom-ref": "pkg:pypi/pyqt5-qt5@5.15.2",
+      "licenses": [
+        {
+          "expression": "LGPL-3.0-only"
+        }
+      ],
+      "name": "pyqt5-qt5",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "python-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "python"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "python/requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/pyqt5-qt5@5.15.2",
+      "scope": "required",
+      "type": "library",
+      "version": "5.15.2"
+    },
+    {
+      "bom-ref": "pkg:pypi/pyqt5-sip@12.20.0",
+      "licenses": [
+        {
+          "expression": "BSD-2-Clause"
+        }
+      ],
+      "name": "pyqt5-sip",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "python-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "python"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "python/requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/pyqt5-sip@12.20.0",
+      "scope": "required",
+      "type": "library",
+      "version": "12.20.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/pyqt5@5.15.10",
+      "licenses": [
+        {
+          "expression": "GPL-3.0-only"
+        }
+      ],
+      "name": "pyqt5",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "python-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "python"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "python/requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/pyqt5@5.15.10",
+      "scope": "required",
+      "type": "library",
+      "version": "5.15.10"
+    },
+    {
+      "bom-ref": "pkg:pypi/requests@2.31.0",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "name": "requests",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "direct"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "python-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "python"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "python/requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/requests@2.31.0",
+      "scope": "required",
+      "type": "library",
+      "version": "2.31.0"
+    },
+    {
+      "bom-ref": "pkg:pypi/urllib3@2.8.0",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "name": "urllib3",
+      "properties": [
+        {
+          "name": "hecatron:dependency",
+          "value": "transitive"
+        },
+        {
+          "name": "hecatron:component",
+          "value": "python-app"
+        },
+        {
+          "name": "hecatron:language",
+          "value": "python"
+        },
+        {
+          "name": "hecatron:source",
+          "value": "python/requirements.txt"
+        }
+      ],
+      "purl": "pkg:pypi/urllib3@2.8.0",
+      "scope": "required",
+      "type": "library",
+      "version": "2.8.0"
+    }
+  ],
+  "compositions": [
+    {
+      "aggregate": "incomplete",
+      "dependencies": [
+        "component:csharp-app",
+        "component:dart-app",
+        "component:elixir-app",
+        "component:go-app",
+        "component:java-app",
+        "component:php-app",
+        "component:python-app",
+        "component:ruby-app",
+        "component:rust-app",
+        "component:typescript-app"
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "component:csharp-app",
+        "component:dart-app",
+        "component:elixir-app",
+        "component:go-app",
+        "component:java-app",
+        "component:php-app",
+        "component:python-app",
+        "component:ruby-app",
+        "component:rust-app",
+        "component:typescript-app"
+      ],
+      "ref": "project"
+    },
+    {
+      "dependsOn": [
+        "pkg:nuget/Newtonsoft.Json@13.0.3",
+        "pkg:nuget/Serilog@3.1.1"
+      ],
+      "ref": "component:csharp-app"
+    },
+    {
+      "dependsOn": [],
+      "ref": "component:dart-app"
+    },
+    {
+      "dependsOn": [],
+      "ref": "component:elixir-app"
+    },
+    {
+      "dependsOn": [
+        "pkg:golang/github.com/go-sql-driver/mysql@1.7.1",
+        "pkg:golang/github.com/google/uuid@1.6.0",
+        "pkg:golang/github.com/spf13/cobra@1.8.0"
+      ],
+      "ref": "component:go-app"
+    },
+    {
+      "dependsOn": [
+        "pkg:maven/com.mysql/mysql-connector-j@8.2.0",
+        "pkg:maven/org.apache.commons/commons-lang3@3.14.0"
+      ],
+      "ref": "component:java-app"
+    },
+    {
+      "dependsOn": [
+        "pkg:composer/monolog/monolog@3.5.0"
+      ],
+      "ref": "component:php-app"
+    },
+    {
+      "dependsOn": [
+        "pkg:pypi/certifi@2023.7.22",
+        "pkg:pypi/chardet@5.2.0",
+        "pkg:pypi/pycrypto@2.6.1",
+        "pkg:pypi/pyqt5@5.15.10",
+        "pkg:pypi/requests@2.31.0"
+      ],
+      "ref": "component:python-app"
+    },
+    {
+      "dependsOn": [
+        "pkg:gem/nokogiri@1.15.5",
+        "pkg:gem/rack@2.2.8"
+      ],
+      "ref": "component:ruby-app"
+    },
+    {
+      "dependsOn": [
+        "pkg:cargo/itoa@1.0.9",
+        "pkg:cargo/serde_json@1.0.108"
+      ],
+      "ref": "component:rust-app"
+    },
+    {
+      "dependsOn": [
+        "pkg:npm/caniuse-lite@1.0.30001570",
+        "pkg:npm/chalk@4.1.2",
+        "pkg:npm/left-pad@1.3.0",
+        "pkg:npm/lodash@4.17.21"
+      ],
+      "ref": "component:typescript-app"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "project",
+      "name": "fixtures",
+      "properties": [
+        {
+          "name": "hecatron:commit",
+          "value": "0123456789abcdef0123456789abcdef01234567"
+        }
+      ],
+      "type": "application"
+    },
+    "lifecycles": [
+      {
+        "phase": "pre-build"
+      }
+    ],
+    "timestamp": "2023-11-14T22:13:20Z",
+    "tools": {
+      "components": [
+        {
+          "externalReferences": [
+            {
+              "type": "website",
+              "url": "https://github.com/dnf/hecatron"
+            }
+          ],
+          "name": "hecatron",
+          "type": "application",
+          "version": "0.6.0"
+        }
+      ]
+    }
+  },
+  "serialNumber": "urn:uuid:2ff404f8-a656-5ba0-8bb4-11260a09fa36",
+  "specVersion": "1.6",
+  "version": 1
+}

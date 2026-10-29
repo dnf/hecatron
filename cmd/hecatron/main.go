@@ -89,6 +89,8 @@ func (c *cli) dispatch() int {
 		return c.sync()
 	case "licenses":
 		return c.licenses()
+	case "sbom":
+		return c.sbomCommand()
 	case "skill":
 		return c.skill()
 	case "self":

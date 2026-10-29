@@ -147,6 +147,23 @@ type osvReport struct {
 // the language there whose registry they come from. scan may be nil when
 // no target is covered.
 func Gather(root string, targets []Target, scan Scanner) (*Report, error) {
+	return gatherPackages(root, targets, scan, false)
+}
+
+// GatherAll is Gather for a bill of materials (hct sbom): the packages of
+// the registries whose licenses hecatron doesn't read are listed too, their
+// licenses unknown. Languages without a package registry still aren't.
+func GatherAll(root string, targets []Target, scan Scanner) (*Report, error) {
+	return gatherPackages(root, targets, scan, true)
+}
+
+// read says whether a language's lock files are read: those whose licenses
+// hecatron reads, or, for a bill of materials, any with a registry.
+func read(lang string, all bool) bool {
+	return Covers(lang) || (all && len(Ecosystems[lang]) > 0)
+}
+
+func gatherPackages(root string, targets []Target, scan Scanner, all bool) (*Report, error) {
 	report := &Report{}
 	var dirs []string
 	byDir := map[string][]Target{}
@@ -157,7 +174,9 @@ func Gather(root string, targets []Target, scan Scanner) (*Report, error) {
 				reported[t.Lang] = true
 				report.NotCovered = append(report.NotCovered, NotCovered{Language: t.Lang, Reason: reason})
 			}
-			continue
+			if !read(t.Lang, all) {
+				continue
+			}
 		}
 		if _, seen := byDir[t.Dir]; !seen {
 			dirs = append(dirs, t.Dir)
@@ -188,7 +207,7 @@ func Gather(root string, targets []Target, scan Scanner) (*Report, error) {
 			}
 			lock := readLock(source, result.Source.Type)
 			for _, p := range result.Packages {
-				target, ok := targetFor(byDir[dir], p.Package.Ecosystem)
+				target, ok := targetFor(byDir[dir], p.Package.Ecosystem, all)
 				if !ok || lock.isRoot(p.Package.Name, p.Package.Version) {
 					continue
 				}
@@ -197,8 +216,11 @@ func Gather(root string, targets []Target, scan Scanner) (*Report, error) {
 					approximate[target.Lang+"\x00"+target.Component+"\x00"+relative(root, source)] = true
 				}
 				declared := p.Licenses
-				if p.Package.Ecosystem == "Packagist" {
+				switch {
+				case p.Package.Ecosystem == "Packagist":
 					declared = lock.licenses[p.Package.Name]
+				case !covered[p.Package.Ecosystem]:
+					declared = nil // deps.dev has none for it, only "UNKNOWN"
 				}
 				pkg := Package{Ecosystem: p.Package.Ecosystem, Name: p.Package.Name, Version: p.Package.Version,
 					Declared: append([]string{}, declared...), Dependency: lock.dependency(p.Package.Name, result.Source.Type),
@@ -212,7 +234,7 @@ func Gather(root string, targets []Target, scan Scanner) (*Report, error) {
 		}
 	}
 	for _, t := range targets {
-		if notCoveredReason(t.Lang) == "" && !found[t] {
+		if read(t.Lang, all) && !found[t] {
 			report.NotCovered = append(report.NotCovered, NotCovered{Language: t.Lang, Component: t.Component,
 				Reason: "no lock file OSV-Scanner reads in " + relative(root, t.Dir)})
 		}
@@ -297,10 +319,10 @@ func isDev(groups []string) bool {
 	return false
 }
 
-func targetFor(targets []Target, ecosystem string) (Target, bool) {
+func targetFor(targets []Target, ecosystem string, all bool) (Target, bool) {
 	for _, t := range targets {
 		for _, e := range Ecosystems[t.Lang] {
-			if e == ecosystem && covered[e] {
+			if e == ecosystem && (covered[e] || all) {
 				return t, true
 			}
 		}

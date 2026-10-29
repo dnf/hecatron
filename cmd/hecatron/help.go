@@ -34,6 +34,7 @@ Run (every component of each language; no languages means all, in parallel):
   audit [lang...]            Check dependencies for known vulnerabilities (--fail-on SEVERITY)
   outdated [lang...]         Report newer versions of dependencies (--json, --fail)
   licenses [lang...]         Every dependency's license, rolled up; fails on the project's policy
+  sbom [lang...]             A software bill of materials (CycloneDX or SPDX JSON) for every component
   deps [lang...]             Fetch dependencies, held to each component's lock file
   format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
 

@@ -159,6 +159,34 @@ func TestEachEcosystem(t *testing.T) {
 	}
 }
 
+// GatherAll (hct sbom) lists the registries deps.dev lacks too, their
+// licenses unknown.
+func TestGatherAll(t *testing.T) {
+	root, targets, scan := fixtureProject(t)
+	all, err := GatherAll(root, targets, scan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"pub:lints", "hex:jason"} {
+		if p := find(all, key, ""); p == nil || !p.Unknown() || len(p.Declared) != 0 {
+			t.Errorf("%s: %+v", key, p)
+		}
+	}
+	if p := find(all, "pub:lints", ""); p == nil || !p.Dev {
+		t.Errorf("pub:lints is dev: %+v", p)
+	}
+	if len(all.Packages) != len(gather(t).Packages)+5 {
+		t.Errorf("%d packages; want those of Gather and dart's and elixir's 5", len(all.Packages))
+	}
+	reasons := map[string]bool{}
+	for _, n := range all.NotCovered {
+		reasons[n.Language] = true
+	}
+	if !reasons["zig"] || !reasons["dart"] {
+		t.Errorf("not covered: %+v", all.NotCovered)
+	}
+}
+
 func TestNoLockFile(t *testing.T) {
 	root := t.TempDir()
 	r, err := Gather(root, []Target{{Lang: "typescript", Component: "web", Dir: filepath.Join(root, "web")}},
