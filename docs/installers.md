@@ -29,7 +29,8 @@ runs `sudo -v`, so the password is asked for once, up front, never
 halfway through; it keeps sudo's credentials fresh until the installers
 finish. Nothing is asked as root, where sudo needs no password (CI), or
 off a terminal. Declining installs nothing. (Needs the binary.) Tools
-hecatron downloads itself (OSV-Scanner, formatters' release builds) go in
+hecatron downloads itself (OSV-Scanner, formatters' release builds,
+gitleaks from `hct install secrets` for [secret scanning](audit.md#secrets)) go in
 its bin directory, `~/.local/share/hecatron/bin`, which needs no root and
 which `hct` puts first on PATH for everything it runs; on macOS, only Perl
 (cpanm into the system Perl) and Dart (Flutter's cask) still ask.

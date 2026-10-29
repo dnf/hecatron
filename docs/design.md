@@ -196,6 +196,7 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `generated.ci` | The CI systems `hecatron workflows` generates for: `"github"` (each language's workflow, at `generated.workflows`), `"gitlab"` (`.gitlab-ci.yml`), or both as a list (binary only) | `"github"` |
 | `ci.cache` | Cache toolchains and dependencies in the generated CI (§11; binary only) | `false` |
 | `ci.image` | The image GitLab jobs run in (binary only) | `ubuntu:24.04` |
+| `ci.secrets` | Generate a job running `hct audit secrets`: a GitHub workflow named `secrets` at `generated.workflows`, a `secrets` job in `.gitlab-ci.yml` (audit.md; binary only) | `false` |
 | `ci.timeoutMinutes` | Each generated CI job's time limit, unless its template sets one (§11) | `60` |
 | `ci.languages` | Per language, its jobs' time limit (`{"pascal": 120}`) | `{}` |
 | `generated.dependabot` | `true` or a path: `hecatron workflows` writes Dependabot's configuration (§11; binary only) | none (`.github/dependabot.yml` with `true`) |
@@ -1206,6 +1207,20 @@ entry points' output byte for byte. Decided with the first port
   Docker (`tests/licenses/capture.sh`) into
   `tests/output/osv-scanner/2.7.0/`. `bin/hecatron licenses` without the
   binary says so.
+- **Secret scanning** (#191; `internal/secrets`) is native only: a
+  `secrets` job in `hct audit` beside the languages' (as `shell` is in
+  lint), and the target `hct audit secrets`. It wraps gitleaks (pinned,
+  its release checked against the SHA-256 in the binary, installed into
+  hecatron's bin directory by `hct install secrets` through
+  `install.InstallBinary`) rather than a scanner of our own. gitleaks runs
+  with `--redact` and a generated config extending the project's
+  `.gitleaks.toml` (else its defaults) with an allowlist of what git
+  ignores and `audit.secrets.ignore`; only a finding's rule, file, line,
+  commit and fingerprint are decoded from its report, so no output can
+  hold the secret. Findings go to the audit's SARIF and job summary as
+  critical. Without gitleaks the job is left out unless the project sets
+  `audit.secrets`, so `bin/hecatron audit`, which has no scan, and the
+  binary agree where nothing asks for one.
 
 - **The project commands** ported next (#73): `init`, `add`, `remove`,
   `enable`, `disable`, `check`, `dockerfile` and `workflows` (with
