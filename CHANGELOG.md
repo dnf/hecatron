@@ -6,6 +6,168 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+## 0.7.0 (2026-10-29)
+
+- **`curl … | sh` on macOS** says how to put `hct` on PATH in the current
+  shell, instead of "Ready: try 'hct help'": macOS's `sh` is bash, and
+  install.sh took bash reading it from a pipe for being sourced.
+
+- **Homebrew doesn't stop to ask:** `hct install` and `hct doctor --fix`
+  set `HOMEBREW_NO_ASK=1` for brew, which asks "Do you want to proceed
+  with the installation?" before each install by default in current
+  versions, and hide its environment-variable hints.
+
+- **`hct doctor` checks the languages at once,** with `hct test`'s live
+  display on a terminal, then prints the same report as before. With
+  `--fix`, repairs still run one at a time (package managers allow one
+  install at a time), and a language an earlier repair fixed isn't
+  repaired again.
+
+- **One password prompt, up front:** `hct install` and `hct doctor --fix`
+  name the languages whose install may need administrator rights and say
+  why, then ask for the password once (`sudo -v`) before any installer
+  runs, keeping it valid until they finish, instead of sudo prompting
+  halfway through. Nothing is asked as root, in CI or off a terminal.
+
+- **A project pins its hecatron:** `"hecatron": "0.6"` in
+  `.hecatron/config.json` takes any 0.6.x, `"0.6.1"` only that release
+  (`">=0.6.0"` is still a minimum). Another version warns on stderr and
+  fails `hct check` (a dev build only warns), and the generated GitLab
+  pipeline installs the pinned version (#167).
+- **install.sh takes a series:** `HECATRON_VERSION=v0.6` installs the latest
+  0.6.x release (#167).
+
+- **Root needed less:** OSV-Scanner, formatters' release builds (StyLua,
+  Air, Fourmolu, Ormolu), V, Goose, Elm's tools and bundler-audit now go
+  in hecatron's bin directory, `~/.local/share/hecatron/bin`, rather than
+  `/usr/local/bin` or `/opt`, so installing them needs no password. `hct`
+  puts that directory first on PATH for everything it runs. On macOS only
+  Perl's and Dart's installers still ask for administrator rights.
+
+- **`python` for builds that call it:** where there is only `python3`,
+  Python's installer (and the generated Dockerfile) links `python` to it in
+  `~/.local/share/hecatron/python/bin`, which every language's hooks have
+  on PATH, so a Rust or C++ build that runs `python` (rerun's, xgboost's)
+  finds it. Nothing outside hecatron's hooks sees the link, and a `python`
+  installed later replaces it (#206).
+- **pytest collects `Test*.py` files** (antlr4's Python runtime) where no
+  test file has pytest's default names and the project sets no
+  `python_files` (#206).
+- **pytest leaves out the Python projects inside the one it tests**
+  (pydantic-core in pydantic, ast-grep's `crates/pyo3`), whose dependencies
+  the outer project's environment doesn't install, unless the project's
+  `testpaths` name them (#206).
+- **A `tsconfig.json` beside mostly JavaScript is a JavaScript package**
+  (antlr4's `runtime/JavaScript`, with its type declarations), in detection
+  and in finding a language's directory: a definition's new `detectYields`
+  rule gives a hit to another language where its files outnumber the
+  language's own. Committed build output doesn't count (`dist/`, `build/`,
+  `out/`, `lib/`, the `outDir` in `tsconfig.json`, a `.js` beside its
+  `.ts`), so a TypeScript package that tracks its compiled JavaScript
+  stays TypeScript (#206).
+- **Libraries a Makefile build includes:** the C, C++ and Objective-C
+  installers install the common libraries the sources of a build without
+  CMake `#include` (`<zlib.h>`, `<openssl/ssl.h>`, `<sqlite3.h>`...), as they
+  did for CMake's `find_package()` (CobolCraft) (#206).
+- **GoogleTest programs CTest doesn't know of run:** a CMake project whose
+  build makes a GoogleTest program it never registers with CTest
+  (LightGBM's `testlightgbm`) has that program run as its tests (#206).
+
+- **Zig versions side by side:** a component whose `build.zig.zon` sets
+  `minimum_zig_version = "0.14.0"` gets Zig 0.14 (the newest 0.14.x), not
+  the default 0.17: Zig breaks compatibility between minor releases.
+  `hct install` installs each version the components need next to the
+  default in `~/.local/share/hecatron/toolchains/zig/`, and `hct test` and
+  the other hooks run each component's own (`hct env zig -c COMPONENT`
+  shows it). The `zig` on PATH stays the default. Older releases install
+  too (their downloads are named differently before 0.14.1).
+
+- **A current Erlang/OTP on Ubuntu:** Erlang's installer installs
+  builds.hex.pm's OTP 29.1.2 (the default `version` in its definition) into
+  `~/.local/share/hecatron/toolchains/erlang`, with its commands and
+  rebar3's release (3.27.3, checked against its SHA-256) in
+  `~/.local/share/hecatron/bin`, without root, instead of Ubuntu's own
+  Erlang: 24.04's OTP 25 is too old for current libraries (hackney) and
+  Gleam's standard library, which need OTP 26. Debian, which builds.hex.pm
+  has no builds for, still gets its distribution's Erlang and rebar3, and
+  macOS Homebrew's. The generated Dockerfile installs the same OTP and
+  rebar3. Gleam installs Erlang's OTP when the `erl` on PATH is older than
+  26, and its doctor reports one that is; `hct uninstall erlang` removes
+  the OTP build and rebar3 it installed (#206).
+
+- **Current SWI-Prolog on Ubuntu:** `hct install prolog` adds SWI-Prolog's
+  PPA (`ppa:swi-prolog/stable`, its key checked against its fingerprint)
+  and installs or upgrades SWI-Prolog from it, so packs that need 9.2 or
+  later (lsp_server) work; Debian and macOS keep their own. `hct doctor`
+  reports the PPA missing, and `hct uninstall prolog` removes it. An
+  `install.json` can name such a repository for any language
+  (`aptSources`).
+- **Quicklisp for Common Lisp:** `hct install lisp` installs Quicklisp into
+  `~/.local/share/hecatron/quicklisp` (no root; its quickstart pinned by
+  checksum), and the Common Lisp hooks fetch the dependencies of the
+  systems they build and test (their test systems' too) with it, so a
+  project such as cl-ppcre, whose tests need cl-unicode, tests without
+  setup. `hct doctor` reports Quicklisp missing; `hct uninstall lisp`
+  removes it. A Quicklisp the user's init file loads is used instead.
+- **JavaScript or TypeScript below:** without a `package.json` in a
+  component's directory, the Node.js hooks pick the packages below as
+  detection does, so a mostly-JavaScript package with a `tsconfig.json` is
+  JavaScript's, not TypeScript's.
+
+- **Secret scanning:** `hct audit` looks for committed credentials with
+  gitleaks, which `hct install secrets` installs (8.30.1, pinned and
+  checked against its checksum, into `~/.local/share/hecatron/bin`, no
+  root). `hct audit secrets` runs only the scan, of the working tree less
+  what git ignores, or of every commit with `--history`. Findings show
+  the rule, file, line and gitleaks' fingerprint, never the secret, in
+  every output and in the SARIF report and job summary, and fail the
+  audit. A project's `.gitleaks.toml` and `.gitleaksignore` apply, and
+  `"audit": {"secrets": {"ignore": [...]}}` leaves out paths such as test
+  fixtures. `"ci": {"secrets": true}` generates a CI job that runs it
+  (#191).
+
+- **Docs in two sets:** a [user guide](docs/guide/README.md), with a
+  reference for every command and its options, the project's
+  configuration, hooks, toolchain versions and generated files, and a
+  [contributor guide](docs/contributing/README.md), with the architecture,
+  each module, how a command flows through them, the install engine,
+  testing and releasing. `docs/design.md` is now the design record in
+  `docs/contributing/design.md`; `docs/agents.md` stays where it was (#98).
+
+- **`hct exec LANG [-c COMPONENT] -- CMD...`** runs a command with a
+  language's environment for a component, what `hct env LANG -c COMPONENT`
+  prints, without an `eval` first: useful where components use different
+  versions of one toolchain. Without `-c`, the component whose directory
+  holds the working directory, else the only one in the language. CMD runs
+  in the working directory and its exit status is hct's; a version not
+  installed is reported with the `hct install` to run (#225). Needs the
+  binary.
+
+- **A software bill of materials:** `hct sbom` writes CycloneDX 1.6 JSON
+  (or SPDX 2.3 with `--format spdx`) for every component in every
+  language, from what `hct licenses` reads: each package's purl, its SPDX
+  license where known (never guessed), direct or transitive where the lock
+  file says, dev and test dependencies marked (`--no-dev` leaves them out),
+  and the project's name, commit and a timestamp (`SOURCE_DATE_EPOCH` for
+  reproducible output). To stdout or `-o FILE`; positional languages and
+  `-c COMPONENT` select as `hct licenses` does. Packages from registries
+  deps.dev has no licenses for (pub.dev, Hex...) are listed without
+  licenses (#226).
+
+- **`hct docs` and `hct bench`:** two new run commands. `hct docs` builds
+  each component's API documentation with its ecosystem's tool into the
+  tool's own directory (`cargo doc --no-deps`, Sphinx with a
+  `docs/conf.py` or pdoc, Javadoc, Dokka, Scaladoc, DocFX, ExDoc, EDoc,
+  DocC, Haddock, odoc, `dart doc`, Documenter, TypeDoc, YARD or RDoc,
+  Doxygen with a `Doxyfile`...) and ends saying where (also in agent and
+  JSON output). `hct bench` runs benchmarks (`cargo bench`, `go test -run
+  '^$' -bench . ./...`, pytest-benchmark, JMH, BenchmarkDotNet,
+  `cabal bench`, package-benchmark, a CMake bench target or Google
+  Benchmark programs...). Both run only tools a component already has;
+  a language or component with none says so and passes. A project's
+  `docs.sh` or `bench.sh` replaces the default
+  ([languages](docs/guide/languages.md#api-docs-and-benchmarks)) (#227, #228).
+
 ## 0.6.0 (2026-10-28)
 
 - **Detection:** dotfiles aren't sources (a `.nvim.lua` no longer adds
