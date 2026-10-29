@@ -14,9 +14,13 @@ type Language struct {
 	Def  *Definition
 	Path string // the install.json it came from
 	// Version is the version a release download installs: the
-	// definition's default (config.json), without its "=".
+	// definition's default (config.json), without its "=", which its links
+	// point at.
 	Version string
-	Ctx     *Context
+	// Versions are the other exact versions a "managed" release download
+	// installs beside it: those the project's components resolve to.
+	Versions []string
+	Ctx      *Context
 	// Reported are the commands the doctor already checks (config.json's
 	// dependency and lintDependency): a tool whose check is one of them
 	// isn't reported twice.
@@ -45,6 +49,9 @@ type Action struct {
 	Download *download  // a release download (toolchain)
 	Home     string     // where it unpacks
 	Link     [2]string  // a link (link): its path and target
+	// Vars are the {home} and {bin} of the version a toolchain action
+	// installs, for its check.
+	Vars map[string]string
 
 	// Worked out by the plan.
 	Applies bool
@@ -104,26 +111,60 @@ func (l *Language) Actions(manager string) []*Action {
 	return actions
 }
 
-// archiveActions are a release download's actions: unpacking it into its
-// home under the toolchains directory, then linking its commands. The
-// context's {home} and {bin} become the version's.
+// archiveActions are a release download's actions: unpacking each version
+// into its home under the toolchains directory, side by side, then linking
+// the default's commands. The context's {home} and {bin} become the
+// default's.
 func (l *Language) archiveActions(archive *Archive) []*Action {
 	ctx := l.Ctx
-	home := filepath.Join(ToolchainsDir(ctx.Env), l.Name, l.Version)
-	bin := filepath.Join(home, byOS(archive.Bin, ctx.Platform.OS))
-	ctx.Vars = map[string]string{"home": home, "bin": bin}
-	d, err := archive.resolveDownload(l.Version, ctx.Platform)
-	if err != nil {
-		d = &download{URL: err.Error()}
+	var actions []*Action
+	var defaultBin string
+	for _, version := range l.installVersions() {
+		home := filepath.Join(ToolchainsDir(ctx.Env), l.Name, version)
+		bin := filepath.Join(home, byOS(archive.Bin, ctx.Platform.OS))
+		vars := map[string]string{"home": home, "bin": bin}
+		if version == l.Version {
+			ctx.Vars, defaultBin = vars, bin
+		}
+		d, err := archive.resolveDownload(version, ctx.Platform)
+		if err != nil {
+			d = &download{URL: err.Error()}
+		}
+		actions = append(actions, &Action{Kind: KindToolchain, Label: l.Name + " " + version, Download: d, Home: home,
+			Check: archive.Check, Applies: true, Vars: vars,
+			Problem: fmt.Sprintf("%s %s in %s doesn't work (hecatron doctor --fix %s installs it again)", l.Name, version, home, l.Name)})
 	}
-	actions := []*Action{{Kind: KindToolchain, Label: l.Name + " " + l.Version, Download: d, Home: home,
-		Check: archive.Check, Applies: true,
-		Problem: fmt.Sprintf("%s %s in %s doesn't work (hecatron doctor --fix %s installs it again)", l.Name, l.Version, home, l.Name)}}
 	for _, command := range l.Def.Links {
 		actions = append(actions, &Action{Kind: KindLink, Label: command, Applies: true,
-			Link: [2]string{filepath.Join(LinksDir(ctx.Env), command), filepath.Join(bin, command)}})
+			Link: [2]string{filepath.Join(LinksDir(ctx.Env), command), filepath.Join(defaultBin, command)}})
 	}
 	return actions
+}
+
+// installVersions are the versions a release download installs: the
+// default, then, for "managed", each other one, once.
+func (l *Language) installVersions() []string {
+	versions := []string{l.Version}
+	if l.Def.Toolchain.Versions != "managed" {
+		return versions
+	}
+	for _, version := range l.Versions {
+		if !contains(versions, version) {
+			versions = append(versions, version)
+		}
+	}
+	return versions
+}
+
+// context is the context an action's checks run in: its version's {home}
+// and {bin} for a toolchain.
+func (a *Action) context(ctx *Context) *Context {
+	if a.Vars == nil {
+		return ctx
+	}
+	own := *ctx
+	own.Vars = a.Vars
+	return &own
 }
 
 // linked says whether a link points at its target.
@@ -140,7 +181,7 @@ func (a *Action) evaluate(ctx *Context, manager *Manager) {
 		a.Done = linked(a.Link)
 		return
 	case a.Download != nil:
-		a.Done = a.Check.Holds(ctx)
+		a.Done = a.Check.Holds(a.context(ctx))
 		return
 	case a.Kind != KindStep && a.Kind != KindToolchain && len(a.Packages) == 0:
 		a.Applies, a.Reason = false, "no "+manager.Name+" package"

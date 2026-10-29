@@ -66,6 +66,9 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 			{"file": ".tool-versions", "format": "tool-versions", "key": "nodejs"}]}`,
 	"nd/releases.json": `{"releases": [["14.17.0", "2021-05-11", "lts"], ["16.1.0", "2021-05-04"], ["16.17.0", "2022-08-16", "lts"], ["24.22.1", "2026-10-01", "lts"]]}`,
 	"ts/config.json":   `{"releasesOf": "nd", "version": "=24.22.1", "track": "lts", "releaseLine": 1, "pinFiles": [{"file": ".nvmrc", "format": "nvmrc"}]}`,
+	"zg/config.json":   `{"version": "=0.17.0", "pinFiles": [{"file": "build.zig.zon", "format": "build-zig-zon"}], "path": ["{home}"]}`,
+	"zg/releases.json": `{"releases": [["0.13.0", "2024-06-07"], ["0.14.0", "2025-03-05"], ["0.14.1", "2025-05-21"], ["0.17.0", "2026-10-01"]]}`,
+	"zg/installed.sh":  `printf '0.17.0\t%s/toolchains/zig17\n0.14.1\t%s/toolchains/zig14\n' "$PWD" "$PWD"`,
 	"rb/config.json":   `{"version": "=4.0.9", "pinFiles": [{"file": ".ruby-version", "format": "ruby-version"}]}`,
 	"sw/config.json":   `{"version": "=6.2", "pinFiles": [{"file": ".swift-version", "format": "swift-version"}]}`,
 
@@ -92,7 +95,7 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 }
 
 // versionLangs are the fixture languages compared.
-var versionLangs = []string{"py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw", "ex", "exall", "badstrip",
+var versionLangs = []string{"py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "zg", "rb", "sw", "ex", "exall", "badstrip",
 	"inexact", "numeric", "badfmt", "badspec", "noline", "neg", "failing", "oddpath", "rel", "dup", "also", "off", "unknown"}
 
 // pinned projects: one component per pin file format.
@@ -131,6 +134,11 @@ var pinnedFiles = map[string]string{
 	"b/nd/.node-version":                           "v20.11.0\n",
 	"c/nd/.nvmrc":                                  "  'v18'  \n",
 	"a/ts/.nvmrc":                                  "16\n",
+	"a/zg/build.zig.zon":                           ".{\n    .name = .a,\n    .minimum_zig_version = \"0.14.0\",\n}\n",
+	"b/zg/build.zig.zon":                           ".{\n    // .minimum_zig_version = \"0.14.0\",\n}\n",
+	"c/zg/build.zig.zon":                           ".{ .minimum_zig_version = \"0.15.0-dev.1149+4e6a04929\" }",
+	"d/zg/build.zig.zon":                           ".{\n  .minimum_zig_version = \"master\",\n}\n",
+	"toolchains/zig14/":                            "",
 	"a/rb/.ruby-version":                           "ruby-3.2.2\n",
 	"b/rb/.ruby-version":                           "3.3.0-preview1\n",
 	"a/sw/.swift-version":                          "5.10\n",
@@ -218,7 +226,7 @@ var pinnedFiles = map[string]string{
 
 func versionConfig(components ...string) string {
 	return `{"schema": 1, "components": ["` + strings.Join(components, `", "`) + `"],
-		"languages": ["py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "rb", "sw", "ex", "exall", "badstrip", "badfmt", "projectonly"]}`
+		"languages": ["py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "zg", "rb", "sw", "ex", "exall", "badstrip", "badfmt", "projectonly"]}`
 }
 
 var pinnedComponents = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p"}

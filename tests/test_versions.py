@@ -153,6 +153,15 @@ jobs:
         self.assertEqual(self.read("go-mod-toolchain", "module m\n\ngo 1.22\n\ntoolchain go1.22.3\n"), "=1.22.3")
         self.assertIs(self.read("go-mod-toolchain", "module m\n\ngo 1.22\n"), versions.NOT_PINNED)
 
+    def test_build_zig_zon_pins_the_minimum_versions_line(self):
+        zon = '.{\n    .name = .app,\n    // .minimum_zig_version = "0.11.0",\n    .minimum_zig_version = "%s",\n}\n'
+        self.assertEqual(self.read("build-zig-zon", zon % "0.14.0"), "0.14")
+        self.assertEqual(self.read("build-zig-zon", zon % "0.15.0-dev.1149+4e6a04929"), "0.15")
+        self.assertIsNone(self.read("build-zig-zon", zon % "master"))
+        self.assertEqual(self.read("build-zig-zon", '.{ .name = .a, .minimum_zig_version = "0.16.0" }'), "0.16")
+        self.assertIs(self.read("build-zig-zon", '.{\n    // .minimum_zig_version = "0.11.0",\n}\n'),
+                      versions.NOT_PINNED)
+
     def test_gradle_daemon_jvm_gives_the_jdk(self):
         self.assertEqual(self.read("gradle-daemon-jvm", "toolchainVendor=ADOPTIUM\ntoolchainVersion=17\n"), "17")
 

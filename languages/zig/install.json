@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "toolchain": {
-    "versions": "single",
+    "versions": "managed",
     "archive": {
       "url": "https://ziglang.org/download/{version}/zig-{arch}-{os}-{version}.tar.xz",
       "os": {
@@ -18,6 +18,11 @@
           "{version}",
           "{arch}-{os}",
           "shasum"
+        ],
+        "urlPath": [
+          "{version}",
+          "{arch}-{os}",
+          "tarball"
         ]
       },
       "strip": 1,

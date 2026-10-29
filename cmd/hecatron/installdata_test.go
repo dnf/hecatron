@@ -47,6 +47,14 @@ echo "pkg's script" >> "${HECATRON_ROOT}/.scripts"
 	"caller/install.sh": `echo "caller's script" >> "${HECATRON_ROOT}/.scripts"
 bash "$(dirname "$0")/../pkg/install.sh"
 `,
+	"zz/config.json": `{"dependency": "zz", "version": "=1.0.0", "path": ["{home}"],
+		"pinFiles": [{"file": ".zz-version", "format": "python-version"}]}`,
+	"zz/releases.json": `{"releases": [["0.9.1", "2025-01-01"], ["0.9.2", "2025-02-01"], ["1.0.0", "2026-01-01"]]}`,
+	"zz/installed.sh":  `exit 0`,
+	"zz/install.json": `{"schema": 1, "toolchain": {"versions": "managed", "archive": {
+		"url": "https://example.com/zz-{version}-{os}-{arch}.tar.gz", "os": {"linux": "linux"},
+		"arch": {"x86_64": "x86_64", "aarch64": "aarch64"}, "checksum": "{url}.sha256", "check": {"path": "{home}/zz"}}},
+		"links": ["zz"]}`,
 	"nodata/config.json":  `{"dependency": "sh"}`,
 	"nodata/install.json": `{"schema": 1, "toolchain": {"versions": "system", "packages": {"brew": ["nodata"]}}}`,
 	"nodata/install.sh": `source "$(dirname "$0")/../_common.sh"
@@ -195,6 +203,31 @@ func TestConvertedInstallShHandsOverToTheBinary(t *testing.T) {
 	}
 	if r = f.run(nil, "_install", "caller"); r.status != declinedStatus || f.scripts() != "" {
 		t.Errorf("_install caller (no install.json) ran something: %+v", r)
+	}
+}
+
+// A "managed" release download installs the default and each version the
+// components resolve to, a prefix as its newest release in releases.json,
+// side by side; the link is the default's.
+func TestManagedDownloadPlansEachVersion(t *testing.T) {
+	f := newDataFixture(t, map[string]string{
+		".hecatron/config.json": `{"schema": 1, "languages": ["zz"]}`, "zz/.zz-version": "0.9\n"})
+	r := f.run(nil, "install", "--plan", "zz")
+	toolchains := filepath.Join(f.data, "hecatron", "toolchains", "zz")
+	for _, line := range []string{"install  toolchain zz 1.0.0 (", "install  toolchain zz 0.9.2 (",
+		"into " + filepath.Join(toolchains, "0.9.2"), "→ " + filepath.Join(toolchains, "1.0.0", "zz")} {
+		if !strings.Contains(r.stdout, line) {
+			t.Errorf("--plan lacks %q:\n%s", line, r.stdout)
+		}
+	}
+	if r.status != 0 || strings.Contains(r.stdout, "0.9.1") {
+		t.Errorf("--plan: %+v", r)
+	}
+
+	writeModeFile(t, filepath.Join(f.root, "zz", ".zz-version"), "2.1\n", 0o644)
+	r = f.run(nil, "install", "--plan", "zz")
+	if !strings.Contains(r.stderr, "no zz release matches 2.1 (from pin:zz/.zz-version) in its releases.json") {
+		t.Errorf("a version with no release: %+v", r)
 	}
 }
 

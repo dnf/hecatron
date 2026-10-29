@@ -24,6 +24,12 @@
   },
   "version": "=0.17.0",
   "track": "stable",
+  "pinFiles": [
+    {
+      "file": "build.zig.zon",
+      "format": "build-zig-zon"
+    }
+  ],
   "path": [
     "{home}"
   ],

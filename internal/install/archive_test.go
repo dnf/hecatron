@@ -202,3 +202,74 @@ func TestUnzipStripsAndStaysInside(t *testing.T) {
 		t.Error("an entry leaving the directory was unpacked")
 	}
 }
+
+func TestManagedInstallsEachVersionSideBySide(t *testing.T) {
+	f := newFake(t)
+	archive := tarGz(t)
+	older := strings.ReplaceAll(toolURL, "1.0", "0.9")
+	f.served[toolURL], f.served[older] = archive, archive
+	def := strings.Replace(toolJSON(`"sha256": {"linux-x86_64": "`+sum(archive)+`"}`), `"single"`, `"managed"`, 1)
+	language := f.archiveLanguage(def)
+	language.Versions = []string{"0.9", "1.0"}
+	env := language.Ctx.Env
+	plan := NewPlan(f.manager(), []*Language{language})
+	if actions := plan.Languages[0].Actions; len(actions) != 3 || actions[0].Label != "tool 1.0" || actions[1].Label != "tool 0.9" {
+		t.Fatalf("actions: %+v", actions)
+	}
+	var out bytes.Buffer
+	if errs := plan.Apply(&out, ReceiptsDir(env)); len(errs) > 0 {
+		t.Fatal(errs, out.String())
+	}
+	for _, version := range []string{"1.0", "0.9"} {
+		if _, err := os.Stat(filepath.Join(ToolchainsDir(env), "tool", version, "bin", "tool")); err != nil {
+			t.Error(err)
+		}
+	}
+	link := filepath.Join(LinksDir(env), "tool")
+	if target, _ := os.Readlink(link); target != filepath.Join(ToolchainsDir(env), "tool", "1.0", "bin", "tool") {
+		t.Errorf("the link points at %q, not the default's", target)
+	}
+	if receipt, _ := ReadReceipt(ReceiptsDir(env), "tool"); receipt == nil || len(receipt.Homes) != 2 {
+		t.Errorf("receipt: %+v", receipt)
+	}
+
+	// Each version is checked in its own home: one broken is reported and
+	// repaired alone.
+	if err := os.Remove(filepath.Join(ToolchainsDir(env), "tool", "0.9", "bin", "tool")); err != nil {
+		t.Fatal(err)
+	}
+	if problems := Problems(language, f.manager()); len(problems) != 1 || !strings.Contains(problems[0], "tool 0.9 in ") {
+		t.Errorf("problems: %q", problems)
+	}
+	if errs := NewPlan(f.manager(), []*Language{language}).Apply(&out, ReceiptsDir(env)); len(errs) > 0 {
+		t.Errorf("the repair: %v", errs)
+	}
+
+	// "single" installs the default alone, whatever the components want.
+	single := f.archiveLanguage(toolJSON(`"sha256": {"linux-x86_64": "` + sum(archive) + `"}`))
+	single.Versions = []string{"0.9"}
+	if actions := single.Actions(f.manager().Name); len(actions) != 2 || actions[0].Label != "tool 1.0" {
+		t.Errorf("single: %+v", actions)
+	}
+}
+
+func TestADownloadsURLFromItsIndex(t *testing.T) {
+	f := newFake(t)
+	archive := tarGz(t)
+	renamed := "https://example.com/old-name-1.0.tar.gz"
+	f.served[renamed] = archive
+	f.served["https://example.com/index.json"] = []byte(`{"1.0": {"amd64-linux": {"shasum": "` + sum(archive) +
+		`", "tarball": "` + renamed + `"}}}`)
+	language := f.archiveLanguage(toolJSON(`"checksumIndex": {"url": "https://example.com/index.json",
+		"path": ["{version}", "{arch}-{os}", "shasum"], "urlPath": ["{version}", "{arch}-{os}", "tarball"]}`))
+	var out bytes.Buffer
+	if errs := NewPlan(f.manager(), []*Language{language}).Apply(&out, ReceiptsDir(language.Ctx.Env)); len(errs) > 0 {
+		t.Fatal(errs, out.String())
+	}
+	if !contains(f.fetched, renamed) || contains(f.fetched, toolURL) {
+		t.Errorf("fetched %q", f.fetched)
+	}
+	if !strings.Contains(out.String(), "downloading the URL at 1.0 → amd64-linux → tarball in https://example.com/index.json (sha256 from it too)") {
+		t.Errorf("said %q", out.String())
+	}
+}
