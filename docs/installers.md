@@ -44,7 +44,7 @@ A language with a `languages/<lang>/install.json` is installed by
 hecatron's binary from that data instead of its `install.sh`
 ([design.md §19](design.md#installs-as-data-77)). So far that covers the
 languages whose installers only install system packages (Bash, COBOL, D,
-Erlang, Common Lisp, Octave, Pascal, Prolog, Racket, Raku and Tcl) and two
+Common Lisp, Octave, Pascal, Prolog, Racket, Raku and Tcl) and two
 release downloads (Gleam, Zig).
 
 ```json
@@ -104,9 +104,10 @@ hct install --plan zig    # what would install, and how
 hct workflows             # with "ci": {"cache": true}, caches what can be
 ```
 
-An installer that runs a converted language's `install.sh` (Elixir's and
-Gleam's run Erlang's) keeps working: that script starts with
-`install_from_data <lang>`, which hands over to the binary when there is one.
+An installer that runs a converted language's `install.sh` keeps working:
+that script starts with `install_from_data <lang>`, which hands over to the
+binary when there is one. Gleam's data runs Erlang's `install.sh` as a step
+when the `erl` on PATH is older than OTP 26.
 
 `tests/docker/parity.sh ubuntu:24.04 raku racket` installs each language in
 two fresh containers, once with its scripts and once from its data, and
@@ -127,7 +128,7 @@ Remove one of these by hand once no language needs it.
 | cmake           | C, C++, Objective-C, COBOL, Fortran    | Leaves cmake                                     |
 | JDK             | Java, Kotlin, Scala, Groovy, Clojure   | Leaves the JDKs; `hecatron uninstall java` only prints where they are |
 | Node.js         | TypeScript, JavaScript, Elm            | Leaves Node.js (JavaScript's installer is TypeScript's; Elm's installs Node if missing) |
-| Erlang/OTP      | Erlang, Elixir, Gleam                  | Leaves Erlang/OTP; Erlang's removes rebar3 (Elixir's removes the OTPs it installed for itself, see below) |
+| Erlang/OTP      | Erlang, Elixir, Gleam                  | Leaves the distribution's or Homebrew's Erlang/OTP; Erlang's removes rebar3 and its own OTP build (Elixir's removes the OTPs it installed for itself, see below) |
 | uv              | Python, C, C++, Objective-C, Mojo      | Leaves uv; Python's removes uv's Python builds, unless Mojo runs on one |
 | gcc (Homebrew)  | Fortran                                | Leaves Homebrew's gcc, which other formulae use  |
 
@@ -163,20 +164,30 @@ Languages install via a mix of apt packages and direct downloads:
 
 | Method           | Languages                                                                         |
 | ---------------- | --------------------------------------------------------------------------------- |
-| apt packages     | Ada, C/C++ (cmake), Erlang, Fortran, Lua, Perl, PHP (Ondřej Surý's packages) |
-| Direct download  | Dart, Elixir (builds.hex.pm), Gleam, Go, Java/Kotlin/Scala/Groovy (Temurin), Node.js, Swift, Zig |
+| apt packages     | Ada, C/C++ (cmake), Erlang (off Ubuntu), Fortran, Lua, Perl, PHP (Ondřej Surý's packages) |
+| Direct download  | Dart, Elixir and Erlang (builds.hex.pm), Gleam, Go, Java/Kotlin/Scala/Groovy (Temurin), Node.js, Swift, Zig |
 | Installer script | Clojure, Haskell (ghcup), Rust (rustup), Python (uv), .NET (dotnet-install.sh)    |
 | Built from source | Ruby (ruby-build)                                                                |
 | npm global       | Elm                                                                               |
+
+**Erlang** on Ubuntu is builds.hex.pm's OTP build at the version
+`config.json` pins (OTP 29), in
+`~/.local/share/hecatron/toolchains/erlang/<version>` with its commands
+linked into `~/.local/share/hecatron/bin`, and rebar3's release escript
+there too: Ubuntu's own Erlang is too old for current
+libraries and Gleam's standard library, which need OTP 26 (24.04's is 25).
+builds.hex.pm has no Debian builds, so Debian gets its distribution's
+Erlang and rebar3 (Debian 13's OTP 27), and `hecatron doctor erlang` notes
+an OTP older than 26. macOS gets Homebrew's `erlang` and `rebar3`.
 
 **Elixir** comes from builds.hex.pm's precompiled releases, one directory
 per version (`/opt/elixir/<version>`, `~/.local/share/hecatron/elixir/<version>`
 on macOS). Each release is built for a few OTP majors (1.20 for 27 to 29),
 so each version runs on an OTP it supports, linked as `<home>/erlang`: the
-Erlang on PATH when it is one, else one installed beside it, builds.hex.pm's
-OTP build in `/opt/erlang/<version>` on Ubuntu (24.04's apt Erlang is OTP 25)
-or Homebrew's `erlang@N` on macOS. Debian has no builds there, so a Debian
-machine runs the Elixirs its own Erlang supports (Debian 13's OTP 27 runs
+Erlang on PATH when it is one (Erlang's installer's, above), else one
+installed beside it, builds.hex.pm's OTP build in `/opt/erlang/<version>`
+on Ubuntu or Homebrew's `erlang@N` on macOS. Debian has no builds there, so
+a Debian machine runs the Elixirs its own Erlang supports (Debian 13's OTP 27 runs
 1.17 to 1.20), and the installer says so for one it can't. Each version
 has its own Hex in `<home>/archives` (`MIX_ARCHIVES`), since an archive
 built on one OTP doesn't load on an older one, so only these Elixirs count

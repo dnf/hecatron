@@ -160,9 +160,11 @@ class UninstallTest(unittest.TestCase):
         commands, _ = self.uninstall("d", "macos")
         self.assertIn(["brew", "uninstall", "dub"], commands)
 
-    def test_erlang_removes_rebar3_only(self):
+    def test_erlang_removes_rebar3_and_its_own_otp_only(self):
         commands, _ = self.uninstall("erlang", "linux")
         self.assertIn(["sudo", "apt-get", "remove", "-y", "rebar3"], commands)
+        self.assertIn(["rm", "-rf", f"{self.home}/.local/share/hecatron/toolchains/erlang"], commands)
+        self.assertIn(["rm", "-f", f"{self.home}/.local/share/hecatron/bin/rebar3"], commands)
         commands, _ = self.uninstall("erlang", "macos")
         self.assertIn(["brew", "uninstall", "rebar3"], commands)
 

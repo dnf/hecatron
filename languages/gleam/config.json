@@ -28,7 +28,8 @@
   "version": "=1.14.0",
   "track": "stable",
   "path": [
-    "{home}"
+    "{home}",
+    "~/.local/share/hecatron/bin"
   ],
   "installNeedsRoot": [
     "linux"

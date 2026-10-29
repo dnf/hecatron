@@ -1039,10 +1039,87 @@ toolchain_installed() {
     return 0
 }
 
+# Erlang/OTP, shared by Erlang's, Elixir's and Gleam's installers.
+# "major<TAB>root" of an erl: its OTP release and the directory holding it.
+# Not on stdin, which erl reads, and the loops calling this are reading.
+otp_of() {
+    "$1" -noshell -eval 'io:format("~s\t~s~n", [erlang:system_info(otp_release), code:root_dir()]), halt().' </dev/null 2>/dev/null
+}
+# Whether the erl on PATH is OTP MAJOR or newer (Gleam's standard library,
+# and current libraries, need 26).
+otp_at_least() {
+    local _major
+    _major="$(otp_of "$(command -v erl 2>/dev/null || echo erl)" | cut -f1)"
+    [ -n "${_major}" ] && [ "${_major}" -ge "$1" ]
+}
+# Where builds.hex.pm keeps its OTP builds for this machine (the ones
+# erlef/setup-beam installs): Ubuntu only, by release and architecture.
+otp_builds_url() {
+    local _arch _id _version
+    case "$(uname -m)" in
+        x86_64) _arch=amd64 ;;
+        aarch64 | arm64) _arch=arm64 ;;
+        *) return 1 ;;
+    esac
+    [ -r /etc/os-release ] || return 1
+    # shellcheck disable=SC1091 # the running system's, not this repository's
+    _id="$(. /etc/os-release && echo "${ID}")"
+    # shellcheck disable=SC1091 # the running system's, not this repository's
+    _version="$(. /etc/os-release && echo "${VERSION_ID:-}")"
+    [ "${_id}" = "ubuntu" ] || return 1
+    echo "https://builds.hex.pm/builds/otp/${_arch}/ubuntu-${_version}"
+}
+# The newest build in a builds.hex.pm builds.txt (stdin) that SPEC names, as
+# "version sha256": "28", the newest 28.x final release (28.4.1, not
+# 29.0-rc1); "=29.1.2", exactly that one.
+otp_build_matching() {
+    awk -v spec="$1" '{
+        name = substr($1, 5)
+        if (substr($1, 1, 4) != "OTP-") next
+        if (spec ~ /^=/) { if (name != substr(spec, 2)) next }
+        else if (index(name, spec) != 1 || substr(name, length(spec) + 1) !~ /^(\.[0-9]+)*$/) next
+        print name, $4
+    }' | sort -rV | head -1
+}
+# builds.hex.pm's OTP build that SPEC names (otp_build_matching), checked
+# against builds.txt's SHA-256, into DIR/<version> (with SUDO, the command a
+# root-owned DIR needs, or none); prints that directory, so what it says
+# goes to stderr. Fails where there's no such build: off Ubuntu (Debian has
+# none there), or a version it doesn't have.
+# Usage: otp_install_ubuntu SPEC DIR [SUDO]
+otp_install_ubuntu() {
+    local _spec="$1" _root="$2" _sudo="${3:-}" _builds _version _sha256 _work
+    _builds="$(otp_builds_url)" || return 1
+    read -r _version _sha256 < <(curl -fsSL "${_builds}/builds.txt" 2>/dev/null |
+        otp_build_matching "${_spec}") || return 1
+    [ -n "${_version}" ] || return 1
+    if [ ! -x "${_root}/${_version}/bin/erl" ]; then
+        log "Installing OTP ${_version} from builds.hex.pm..." >&2
+        _work="$(mktemp -d)"
+        # Called in a command substitution, where set -e doesn't apply.
+        curl -fsSL -o "${_work}/otp.tar.gz" "${_builds}/OTP-${_version}.tar.gz" || return 1
+        if [ "$(sha256_of "${_work}/otp.tar.gz")" != "${_sha256}" ]; then
+            rm -rf "${_work}"
+            echo "error: the OTP ${_version} download doesn't match its checksum" >&2
+            return 1
+        fi
+        ${_sudo} mkdir -p "${_root}/${_version}" &&
+            ${_sudo} tar -C "${_root}/${_version}" --strip-components 1 -xzf "${_work}/otp.tar.gz" &&
+            (cd "${_root}/${_version}" && ${_sudo} ./Install -minimal "${_root}/${_version}" >/dev/null) || {
+            rm -rf "${_work}"
+            ${_sudo} rm -rf "${_root:?}/${_version}"
+            return 1
+        }
+        rm -rf "${_work}"
+    fi
+    echo "${_root}/${_version}"
+}
+
 # For the install.sh of a language installed from its install.json
-# (docs/installers.md), which other installers still run directly (Elixir's
-# and Gleam's run Erlang's): install from the data through hecatron's binary,
-# as `hecatron install` would, and exit with its status. The script carries
+# (docs/installers.md) that other installers run directly (none now:
+# Erlang's, which Elixir's and Gleam's run, is a script again): install from
+# the data through hecatron's binary, as `hecatron install` would, and exit
+# with its status. The script carries
 # on itself without the binary (HECATRON_BINARY, which the binary gives the
 # installers it runs), under HECATRON_INSTALLER=script, or when the binary
 # declines the language (status 125: a project's own install.sh, a platform

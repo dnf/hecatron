@@ -309,7 +309,7 @@ func TestUnsupported(t *testing.T) {
 // managers, the prototype's archives and installers are declined, and
 // every install.json reads.
 func TestBuiltInDefinitions(t *testing.T) {
-	converted := []string{"bash", "cobol", "d", "erlang", "gleam", "lisp", "octave", "pascal", "prolog", "racket", "raku", "tcl", "zig"}
+	converted := []string{"bash", "cobol", "d", "gleam", "lisp", "octave", "pascal", "prolog", "racket", "raku", "tcl", "zig"}
 	paths, _ := filepath.Glob(filepath.Join("..", "..", "languages", "*", FileName))
 	if len(paths) == 0 {
 		t.Fatal("no install.json")

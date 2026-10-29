@@ -1,1 +1,20 @@
-# apt: erlang-dev erlang-tools rebar3
+# Erlang/OTP: builds.hex.pm's build for this Ubuntu at the version
+# config.json pins (each-version: there is one), checked against the SHA-256
+# its builds.txt lists, into /opt/erlang/<version> with its commands linked
+# into /usr/local/bin; and rebar3's release escript at the version
+# install.sh pins, checked against its SHA-256. Ubuntu's own Erlang is too
+# old for current libraries (24.04's is OTP 25).
+# each-version
+RUN V="{version}" && . /etc/os-release && U="https://builds.hex.pm/builds/otp/$(dpkg --print-architecture)/ubuntu-${VERSION_ID}" && \
+    R="/opt/erlang/${V}" && S="$(curl -fsSL "${U}/builds.txt" | awk -v n="OTP-${V}" '$1 == n {print $4}')" && \
+    curl -fsSL -o /tmp/otp.tar.gz "${U}/OTP-${V}.tar.gz" && \
+    echo "${S}  /tmp/otp.tar.gz" | sha256sum -c - >/dev/null && \
+    mkdir -p "${R}" && tar -C "${R}" --strip-components 1 -xzf /tmp/otp.tar.gz && rm /tmp/otp.tar.gz && \
+    (cd "${R}" && ./Install -minimal "${R}" >/dev/null) && \
+    for C in ct_run dialyzer epmd erl erl_call erlc escript run_erl to_erl typer; do \
+      if [ -x "${R}/bin/${C}" ]; then ln -sfn "${R}/bin/${C}" "/usr/local/bin/${C}"; fi; \
+    done
+# end-each-version
+RUN curl -fsSL -o /usr/local/bin/rebar3 https://github.com/erlang/rebar3/releases/download/3.27.3/rebar3 && \
+    echo "f1d87d78decfc56b87d971c75ee6355698ec0c49fadd57f2c056043b7ca291b5  /usr/local/bin/rebar3" | sha256sum -c - >/dev/null && \
+    chmod 0755 /usr/local/bin/rebar3

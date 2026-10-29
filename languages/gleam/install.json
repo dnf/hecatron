@@ -21,21 +21,23 @@
       }
     }
   },
-  "packages": [
+  "steps": [
     {
-      "apt": [
-        "erlang-dev",
-        "erlang-tools",
-        "rebar3"
+      "name": "Erlang/OTP",
+      "run": [
+        "bash",
+        "-c",
+        "exec bash \"${HECATRON_HOME}/languages/erlang/install.sh\""
       ],
-      "brew": [
-        "erlang",
-        "rebar3"
-      ],
-      "unless": {
-        "command": "erl"
+      "check": {
+        "run": [
+          "erl",
+          "-noshell",
+          "-eval",
+          "erlang:halt(case list_to_integer(erlang:system_info(otp_release)) >= 26 of true -> 0; false -> 1 end)."
+        ]
       },
-      "problem": "Erlang/OTP not installed (gleam build, run and test need erl)"
+      "problem": "Erlang/OTP 26 or newer not installed (gleam build, run and test need erl)"
     }
   ],
   "links": [
