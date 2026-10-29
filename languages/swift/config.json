@@ -14,6 +14,8 @@
   "testing": "XCTest, Swift Testing",
   "linting": null,
   "formatting": "swift-format",
+  "docs": "DocC",
+  "benchmarks": "package-benchmark",
   "cache": {
     "dependencies": [
       "~/.cache/org.swift.swiftpm"

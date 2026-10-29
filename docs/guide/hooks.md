@@ -9,7 +9,7 @@ hecatron's dispatcher.
 
 A project's `.hecatron/languages/<lang>/<action>.sh` (`test.sh`, `lint.sh`,
 `build.sh`, `clean.sh`, `deps.sh`, `format.sh`, `audit.sh`,
-`outdated.sh`) replaces the built-in default for that language
+`outdated.sh`, `docs.sh`, `bench.sh`) replaces the built-in default for that language
 ([resolving a language's files](configuration.md#resolving-a-languages-files));
 `version.sh` and `metadata.sh` serve `hct version` and `hct metadata`.
 
@@ -132,6 +132,28 @@ elsewhere only where the project configures one (Prettier, clang-format,
 Spotless), since a default would rewrite every file of a project that
 doesn't use it. (Owner's brief, 2026-10-27; the per-formatter choices are
 the implementation's, in [format.md](format.md).)
+
+## Docs and benchmarks
+
+A `docs` hook builds the component's API documentation with the
+ecosystem's tool into the tool's default directory (`cargo doc --no-deps`
+into the target directory's `doc/`, Sphinx into `docs/_build/html`) and
+ends by saying where, with `docs_written <dir>` from `languages/_hooks.sh`:
+`hct docs` repeats those lines after a parallel run, and puts them in agent
+and JSON output (`"docs"`). A `bench` hook runs the component's benchmarks
+(`cargo bench`, `go test -run '^$' -bench . ./...`). Both run only what the
+component already has (the toolchain's tool, or one among its dependencies
+or configuration) and otherwise `skip`, saying what they looked for. The
+shared functions are in `languages/_docs.sh` and `_bench.sh`. A project
+hook replaces the default, here MkDocs for Sphinx:
+
+```bash
+#!/usr/bin/env bash
+# .hecatron/languages/python/docs.sh
+source "${HECATRON_HOME}/languages/_hooks.sh"
+run uv run --with mkdocs mkdocs build --strict
+docs_written site
+```
 
 ## Environment
 

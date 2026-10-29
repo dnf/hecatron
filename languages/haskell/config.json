@@ -23,6 +23,8 @@
   "testing": "test suites",
   "linting": "HLint, cabal check",
   "formatting": "Fourmolu, Ormolu",
+  "docs": "Haddock",
+  "benchmarks": "cabal bench, Stack bench",
   "notes": {
     "formatting": "Only when the project configures one."
   },

@@ -117,6 +117,8 @@ func noHook(out io.Writer, action, lang string) runner.Outcome {
 		"format":   "No formatter for %s (skipping)",
 		"deps":     "No dependency manager for %s (skipping)",
 		"outdated": "No outdated report for %s (skipping)",
+		"docs":     "No docs tool for %s (skipping)",
+		"bench":    "No benchmark runner for %s (skipping)",
 	}
 	if message, ok := messages[action]; ok {
 		_, _ = fmt.Fprintf(out, message+"\n", lang)

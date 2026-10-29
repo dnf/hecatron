@@ -49,6 +49,8 @@
   "testing": "dotnet test",
   "linting": "Fantomas",
   "formatting": "Fantomas",
+  "docs": "fsdocs",
+  "benchmarks": "BenchmarkDotNet",
   "notes": {
     "formatting": "Only when Fantomas is in the project's .NET tool manifest."
   },

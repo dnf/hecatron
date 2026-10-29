@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Run one of a language's hooks (test, lint, build, clean, audit, format, deps
-# or outdated) for every component, or the ones named. Lint also runs the
-# format hook's check (docs/guide/format.md).
+# Run one of a language's hooks (test, lint, build, clean, audit, format, deps,
+# outdated, docs or bench) for every component, or the ones named. Lint also
+# runs the format hook's check (docs/guide/format.md).
 #
 # Usage: each-component.sh <action> <lang> [component ...]
 #

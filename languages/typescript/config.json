@@ -92,6 +92,8 @@
   "testing": "npm test",
   "linting": "npm run lint, tsc --noEmit",
   "formatting": "Prettier, Biome",
+  "docs": "npm run docs, TypeDoc",
+  "benchmarks": "npm run bench",
   "errorPatterns": [
     {
       "tool": "tsc",

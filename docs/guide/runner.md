@@ -1,7 +1,7 @@
 # The parallel runner
 
-`hct test`, `lint`, `build`, `clean`, `format`, `deps`, `audit` and
-`outdated` with no language named run every language at once. The runner
+`hct test`, `lint`, `build`, `clean`, `format`, `deps`, `audit`,
+`outdated`, `docs` and `bench` with no language named run every language at once. The runner
 decides how many jobs run together and in what order, from the machine it
 runs on and from how long each job took before, so a run gives its answers
 as early as it can and finishes as soon as it can.

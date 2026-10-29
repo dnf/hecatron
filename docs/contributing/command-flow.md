@@ -22,7 +22,7 @@ implementations. The pieces are in [modules](modules.md).
 
    | Command | Script |
    | --- | --- |
-   | `test` ... `outdated` | `libexec/commands/run.sh <action>` |
+   | `test` ... `outdated`, `docs`, `bench` | `libexec/commands/run.sh <action>` |
    | `doctor`, `version` | `libexec/commands/doctor.sh`, `version.sh` |
    | `init`, `install`, `list`, `add`, `check`, `dockerfile`, `workflows`, `banner`... | `libexec/commands/manage.py <command>` |
    | `get-started`, `metadata`, `bootstrap` | `libexec/onboarding/`, `metadata/`, `bootstrap/` |

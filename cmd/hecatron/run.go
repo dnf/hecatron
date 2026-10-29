@@ -17,7 +17,7 @@ import (
 )
 
 // The run commands (test, lint, build, clean, rebuild, retest, audit,
-// format, deps, outdated), as run.sh runs them: named targets one at a
+// format, deps, outdated, docs, bench), as run.sh runs them: named targets one at a
 // time, streaming their output; none, every language and project task in
 // parallel with internal/runner. Each language job runs the language's hook
 // for each component as each-component.sh does (hooks.go). What run.sh
@@ -124,7 +124,7 @@ func (c *cli) runCommand() (int, bool) {
 	}
 	if a.changed {
 		if !changedActions[c.command] {
-			fmt.Fprintf(os.Stderr, "hecatron: --changed works with test, lint, build, format, deps, rebuild and retest, not %s\n", c.command)
+			fmt.Fprintf(os.Stderr, "hecatron: --changed works with test, lint, build, format, deps, rebuild, retest, docs and bench, not %s\n", c.command)
 			return 2, true
 		}
 		if len(a.targets) > 0 {
@@ -201,7 +201,8 @@ func (c *cli) runCommand() (int, bool) {
 // changedActions are the commands --changed narrows: those whose result
 // follows from the files (not audit's or outdated's, which follow the
 // advisories and releases; nor clean).
-var changedActions = map[string]bool{"test": true, "lint": true, "build": true, "format": true, "deps": true, "rebuild": true, "retest": true}
+var changedActions = map[string]bool{"test": true, "lint": true, "build": true, "format": true, "deps": true, "rebuild": true, "retest": true,
+	"docs": true, "bench": true}
 
 // declineChanged leaves the command to run.sh, which has no --changed: an
 // error with it, else delegated.
@@ -452,6 +453,11 @@ func (r *invocation) runNamed() int {
 // report adds each failure's excerpt.
 func (r *invocation) report(results []runner.Result, wall time.Duration) *runner.Report {
 	for i := range results {
+		if r.command == "docs" && results[i].Ran() && results[i].Lang != "" {
+			if log, err := os.ReadFile(results[i].Log); err == nil {
+				results[i].Docs = runner.DocsWritten(log)
+			}
+		}
 		if !results[i].Unsuccessful() {
 			continue
 		}
@@ -558,11 +564,11 @@ func (r *invocation) runAll() int {
 		case r.selection != nil && !r.selection.Empty() && len(r.args.components) > 0:
 			fmt.Printf("%s; none in -c %s\n", r.selection.Line(), strings.Join(r.args.components, " "))
 		case r.selection != nil && !r.selection.Empty():
-			fmt.Printf("%s; nothing to %s there\n", r.selection.Line(), r.command)
+			fmt.Printf("%s; %s there\n", r.selection.Line(), nothingTo(r.command))
 		case r.selection != nil:
 			fmt.Println(r.selection.Line())
 		default:
-			fmt.Printf("Nothing to %s.\n", r.command)
+			fmt.Printf("%s.\n", capitalize(nothingTo(r.command)))
 		}
 		return 0
 	}
@@ -621,6 +627,7 @@ func (r *invocation) runAll() int {
 			runner.WriteChart(os.Stdout, report, runner.SlotMode(slots, jobs), chartWidth())
 		}
 		runner.WriteTally(os.Stdout, report)
+		runner.WriteDocs(os.Stdout, report)
 	}
 	r.writeReport(report)
 	return runner.ExitStatus(results)
@@ -654,4 +661,17 @@ func chartWidth() int {
 		return columns
 	}
 	return 80
+}
+
+// nothingTo says a command has nothing to run: "nothing to test", and for
+// the commands whose name isn't a verb, "no docs to build", "nothing to
+// benchmark". run.sh says the same.
+func nothingTo(command string) string {
+	switch command {
+	case "docs":
+		return "no docs to build"
+	case "bench":
+		return "nothing to benchmark"
+	}
+	return "nothing to " + command
 }

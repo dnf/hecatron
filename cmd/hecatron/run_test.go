@@ -38,6 +38,8 @@ var runProject = map[string]string{
 	".hecatron/languages/alpha/audit.sh":    stubHook,
 	".hecatron/languages/alpha/outdated.sh": stubHook,
 	".hecatron/languages/alpha/deps.sh":     stubHook,
+	".hecatron/languages/alpha/docs.sh":     stubHook + `echo "${HECATRON_LANG}: docs: written to $1/docs"` + "\n",
+	".hecatron/languages/gamma/bench.sh":    stubHook + `[ "$1" = b ] && exit 3; exit 0` + "\n",
 	".hecatron/languages/beta/config.json": `{"dependency": "sh", "env": {"STUB_VAR": "x"},
 		"errorPatterns": [{"regex": "^(?P<file>\\S+\\.src):(?P<line>\\d+): (?P<message>.+)$"}]}`,
 	".hecatron/languages/beta/test.sh":        stubHook + `[ "$1" = a ] && { echo "beta.src:3: broken" >&2; exit 2; }; exit 0` + "\n",
@@ -68,6 +70,7 @@ var runInvocations = [][]string{
 	{"audit", "--fail-on", "low"}, {"audit", "--fail-on=moderate", "alpha"}, {"outdated", "--fail"}, {"deps"},
 	{"build"}, {"build", "beta"}, {"clean"}, {"rebuild", "alpha"}, {"retest", "alpha"}, {"test", "gamma", "-c", "a", "-c", "b"},
 	{"test", "-c", "zz"}, {"test", "nope"}, {"test", "alpha", "nope"},
+	{"docs"}, {"docs", "alpha", "beta"}, {"bench"}, {"bench", "gamma", "-c", "a"}, {"bench", "alpha"},
 }
 
 var (

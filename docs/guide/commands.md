@@ -19,7 +19,7 @@ language whose toolchain is missing is reported as "not installed" and
 doesn't fail a parallel run.
 
 - [Run commands](#run-commands): `test`, `lint`, `build`, `clean`,
-  `rebuild`, `retest`, `deps`, `format`, `audit`, `outdated`
+  `rebuild`, `retest`, `deps`, `format`, `audit`, `outdated`, `docs`, `bench`
 - [Dependency reports](#dependency-reports): `licenses`, `sbom`
 - [The project at a glance](#the-project-at-a-glance): `status`, `sync`, `advisor`
 - [Setting up](#setting-up): `init`, `doctor`, `install`, `uninstall`, `get-started`, `bootstrap`
@@ -31,7 +31,7 @@ doesn't fail a parallel run.
 ## Run commands
 
 ```
-hct test|lint|build|clean|rebuild|retest|deps|format|audit|outdated [flags] [target ...]
+hct test|lint|build|clean|rebuild|retest|deps|format|audit|outdated|docs|bench [flags] [target ...]
 ```
 
 Each runs the language's hook for the action ([hooks](hooks.md)) once for
@@ -53,10 +53,23 @@ streamed. Each job's output is saved to `<logs>/<action>/<target>.log`.
 | `format` | Rewrite the code with each language's formatter ([format](format.md)) |
 | `audit` | Check dependencies for known vulnerabilities, and the files for committed secrets ([audit](audit.md)) |
 | `outdated` | Report direct dependencies with a newer version; passes unless a tool fails ([outdated](outdated.md)) |
+| `docs` | Build API documentation with each ecosystem's tool, into the tool's own directory, and say where |
+| `bench` | Run benchmarks with each ecosystem's harness; the numbers are the tools' own output |
 
 Which languages an action covers follows from their hooks: a language with
 a `build.sh` (the project's or the default) is built, one with a `lint.sh`
 is linted, and so on.
+
+`docs` and `bench` run only the tools a component already has: those in the
+toolchain, or in its dependencies or configuration (`cargo doc`, Sphinx
+with a `docs/conf.py`, TypeDoc as a dependency; `cargo bench`, `go test
+-bench`, pytest-benchmark, JMH, BenchmarkDotNet). `hct install` installs
+none. A language with no default (Go has no docs generator in its
+toolchain) says "No docs tool for go (skipping)", and a component without
+the tool or without benchmarks skips, saying why; neither fails. `hct docs`
+ends with where each language's docs were written. Neither is part of `hct
+check`, generated CI or `hct test`. Each language's defaults:
+[languages](languages.md#api-docs-and-benchmarks).
 
 Flags every run command takes:
 
@@ -88,6 +101,8 @@ hct format --check        # what the formatters would change
 hct audit --fail-on critical
 hct audit secrets --history   # only the secret scan, over every commit
 hct outdated --json py
+hct docs rs               # cargo doc --no-deps; says where (target/doc)
+hct bench go              # go test -run '^$' -bench . ./...
 hct test --changed        # only what this branch changed
 hct test --output agent   # a summary line and only the failures
 ```

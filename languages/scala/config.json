@@ -20,6 +20,8 @@
   "testing": "MUnit, ScalaTest",
   "linting": null,
   "formatting": "sbt-scalafmt, Spotless",
+  "docs": "Scaladoc",
+  "benchmarks": "JMH",
   "notes": {
     "formatting": "Only when the build applies one; hecatron runs it through the build."
   },

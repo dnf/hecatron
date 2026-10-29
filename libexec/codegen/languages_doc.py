@@ -3,7 +3,7 @@
 from the language definitions (languages/<lang>/config.json): its name,
 homepage and summary, the build systems, test runners and linters the default
 hooks use, the default toolchain version, and the platforms with no
-toolchain upstream.
+toolchain upstream; then what hct docs and hct bench run.
 
     python3 libexec/codegen/languages_doc.py           # write the file
     python3 libexec/codegen/languages_doc.py --check   # fail if it's out of date
@@ -79,6 +79,21 @@ ADDITIONAL_HEADING = """\
 ## Additional languages
 """
 
+DOCS_BENCH_HEADING = """\
+## API docs and benchmarks
+
+What `hct docs` and `hct bench` run by default ([commands](commands.md#run-commands)).
+Most run only where the project has the tool already: a dependency, a
+configuration file (`docs/conf.py`, a `Doxyfile`), a build step or script
+named for it. A language not listed, or a component without the tool, has
+nothing to run and is skipped.
+"""
+
+DOCS_BENCH_HEADER = """\
+| Language | API docs | Benchmarks |
+| --- | --- | --- |
+"""
+
 TABLE_HEADER = """\
 | Language | What it is | Build systems | Tests | Linting | Formatting | Default version |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -150,6 +165,18 @@ def table(entries: list[tuple[str, dict]], links: dict[str, str], notes: Notes) 
     return TABLE_HEADER + "\n".join(row(lang, config, links, notes) for lang, config in entries) + "\n"
 
 
+def docs_bench_table(entries: list[tuple[str, dict]], links: dict[str, str], notes: Notes) -> str:
+    rows = []
+    for lang, config in entries:
+        if not (config.get("docs") or config.get("benchmarks")):
+            continue
+        remarks = config.get("notes") or {}
+        note = lambda column: notes.ref(remarks[column]) if remarks.get(column) else ""  # noqa: E731
+        rows.append("| " + " | ".join([config.get("name", lang), cell(config.get("docs"), links, note("docs")),
+                                       cell(config.get("benchmarks"), links, note("benchmarks"))]) + " |")
+    return DOCS_BENCH_HEADER + "\n".join(rows) + "\n"
+
+
 def render() -> str:
     with open(TOOL_LINKS, encoding="utf-8") as f:
         links = json.load(f)
@@ -160,7 +187,8 @@ def render() -> str:
     popular = [(lang, config) for lang, config in definitions() if lang in POPULAR]
     additional = [(lang, config) for lang, config in definitions() if lang not in POPULAR]
     notes = Notes()
-    tables = [POPULAR_HEADING, table(popular, links, notes), ADDITIONAL_HEADING, table(additional, links, notes)]
+    tables = [POPULAR_HEADING, table(popular, links, notes), ADDITIONAL_HEADING, table(additional, links, notes),
+              DOCS_BENCH_HEADING, docs_bench_table(definitions(), links, notes)]
     return "\n".join([INTRO, *tables, notes.render()])
 
 

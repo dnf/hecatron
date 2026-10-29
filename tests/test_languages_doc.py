@@ -21,7 +21,8 @@ class LanguagesDocTest(unittest.TestCase):
     def test_every_language_is_listed_once(self):
         with open(os.path.join(ROOT, "docs", "guide", "languages.md"), encoding="utf-8") as f:
             text = f.read()
-        popular, additional = text.split("## Popular languages")[1].split("## Additional languages")
+        tables = text.split("## Popular languages")[1].split("## API docs and benchmarks")[0]
+        popular, additional = tables.split("## Additional languages")
         rows = [line for section in (popular, additional) for line in section.splitlines() if line.startswith("| [")]
         definitions = [d for d in os.listdir(os.path.join(ROOT, "languages"))
                        if os.path.isfile(os.path.join(ROOT, "languages", d, "config.json"))]
@@ -46,7 +47,21 @@ class LanguagesDocTest(unittest.TestCase):
                 with open(path, encoding="utf-8") as f:
                     notes = json.load(f).get("notes") or {}
                 with self.subTest(lang=lang):
-                    self.assertLessEqual(set(notes), {"buildSystems", "testing", "linting", "formatting"})
+                    self.assertLessEqual(set(notes), {"buildSystems", "testing", "linting", "formatting", "docs",
+                                                      "benchmarks"})
+
+    def test_a_docs_or_bench_hook_is_described(self):
+        languages = os.path.join(ROOT, "languages")
+        for lang in sorted(os.listdir(languages)):
+            path = os.path.join(languages, lang, "config.json")
+            if not os.path.isfile(path):
+                continue
+            with open(path, encoding="utf-8") as f:
+                config = json.load(f)
+            for hook, key in (("docs.sh", "docs"), ("bench.sh", "benchmarks")):
+                with self.subTest(lang=lang, hook=hook):
+                    has_hook = os.path.isfile(os.path.join(languages, lang, "hooks", hook))
+                    self.assertEqual(has_hook, bool(config.get(key)), f"{lang}: {hook} and \"{key}\" go together")
 
     def test_every_definition_describes_itself(self):
         languages = os.path.join(ROOT, "languages")

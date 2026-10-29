@@ -18,6 +18,8 @@
   "testing": "dune runtest",
   "linting": "ocamlformat, dune @check",
   "formatting": "ocamlformat",
+  "docs": "odoc",
+  "benchmarks": "dune build @bench",
   "notes": {
     "formatting": "Only when the project has a `.ocamlformat`."
   },

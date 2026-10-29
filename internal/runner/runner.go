@@ -17,6 +17,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -89,6 +90,37 @@ type Result struct {
 	Components []Component
 	Excerpt    Excerpt
 	Started    time.Duration // after the run started
+	// Docs are where hct docs wrote each component's documentation, as
+	// its hooks said (DocsWritten).
+	Docs []string
+}
+
+// docsWritten is the line a docs hook ends with (docs_written in
+// languages/_hooks.sh).
+var docsWritten = regexp.MustCompile(`(?m)^\S+: docs: written to (.+)$`)
+
+// DocsWritten are the directories a docs job's log says it wrote.
+func DocsWritten(log []byte) []string {
+	var dirs []string
+	for _, match := range docsWritten.FindAllSubmatch(log, -1) {
+		dirs = append(dirs, strings.TrimRight(string(match[1]), "\r"))
+	}
+	return dirs
+}
+
+// WriteDocs writes where each language's docs are, after a parallel hct
+// docs (run.sh prints the same lines from the logs).
+func WriteDocs(w io.Writer, r *Report) {
+	first := true
+	for _, result := range r.Results {
+		for _, dir := range result.Docs {
+			if first {
+				_, _ = fmt.Fprintln(w)
+				first = false
+			}
+			_, _ = fmt.Fprintf(w, "%s: docs: written to %s\n", result.Label, dir)
+		}
+	}
 }
 
 // ToolchainMissing reports whether the job failed in components whose

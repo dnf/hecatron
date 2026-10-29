@@ -81,10 +81,10 @@ through them.
 | `<lang>/installed.sh`, `releases.json` | The versions installed on this machine; the release dates resolution reads |
 | `<lang>/dockerfile` | The Dockerfile snippet |
 | `<lang>/advice.json` | `hct advisor`'s rules |
-| `<lang>/hooks/*.sh` | The default hooks: `test`, `lint`, `build`, `clean`, `deps`, `format`, `audit`, `outdated` |
+| `<lang>/hooks/*.sh` | The default hooks: `test`, `lint`, `build`, `clean`, `deps`, `format`, `audit`, `outdated`, and where the language has a tool for them, `docs` and `bench` |
 | `_common.sh` | Installer helpers: `$OS`, `$SUDO`, `apt_install`, `brew_install`, `impl_dirs`, `each_impl`, `impl_deps`, `install_from_data`, `problem`... |
 | `_hooks.sh` | Default-hook helpers: finding the build file below or above, the package manager, `*_fetch` for dependencies |
-| `_deps.sh`, `_format.sh`, `_audit.sh`, `_outdated.sh` | Helpers for those hooks; `_audit.sh` and `_outdated.sh` hand reports to `audit.py`/`outdated.py`, or the binary's `_audit`/`_outdated` when `HECATRON_BINARY` is set |
+| `_deps.sh`, `_format.sh`, `_audit.sh`, `_outdated.sh`, `_docs.sh`, `_bench.sh` | Helpers for those hooks; `_audit.sh` and `_outdated.sh` hand reports to `audit.py`/`outdated.py`, or the binary's `_audit`/`_outdated` when `HECATRON_BINARY` is set |
 | `_advice.json` | Advisor rule sets several languages share |
 
 ## Elsewhere
