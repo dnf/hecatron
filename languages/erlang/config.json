@@ -29,6 +29,12 @@
       "rebar.lock"
     ]
   },
+  "path": [
+    "~/.local/share/hecatron/bin"
+  ],
+  "version": "=29.1.2",
+  "track": "stable",
+  "releaseLine": 1,
   "installNeedsRoot": [
     "linux"
   ]
