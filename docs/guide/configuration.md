@@ -61,6 +61,7 @@ saves it as `.hecatron/config.json` to commit and adjust.
 | `generated.ci` | The CI systems `hct workflows` generates for: `"github"` (each language's workflow, at `generated.workflows`), `"gitlab"` (`.gitlab-ci.yml`), or both as a list (binary only) | `"github"` |
 | `ci.cache` | Cache toolchains and dependencies in the generated CI ([generated files](generated-files.md); binary only) | `false` |
 | `ci.image` | The image GitLab jobs run in (binary only) | `ubuntu:24.04` |
+| `ci.secrets` | Generate a job running `hct audit secrets`: a GitHub workflow named `secrets` at `generated.workflows`, a `secrets` job in `.gitlab-ci.yml` ([audit.md](audit.md#secrets); binary only) | `false` |
 | `ci.timeoutMinutes` | Each generated CI job's time limit, unless its template sets one ([generated files](generated-files.md)) | `60` |
 | `ci.languages` | Per language, its jobs' time limit (`{"pascal": 120}`) | `{}` |
 | `generated.dependabot` | `true` or a path: `hct workflows` writes Dependabot's configuration ([generated files](generated-files.md); binary only) | none (`.github/dependabot.yml` with `true`) |

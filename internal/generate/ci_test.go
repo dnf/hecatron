@@ -105,6 +105,7 @@ func TestGitLabCI(t *testing.T) {
 	for _, tc := range []struct{ name, extra string }{
 		{"gitlab-ci.yml", ""},
 		{"gitlab-ci-cache.yml", `, "ci": {"cache": true, "image": "debian:13"}`},
+		{"gitlab-ci-secrets.yml", `, "ci": {"secrets": true}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			p := ciFixture(t, strings.Replace(ciConfig, "%s", tc.extra, 1))
@@ -118,6 +119,13 @@ func TestGitLabCI(t *testing.T) {
 			}
 			golden(t, tc.name, got)
 		})
+	}
+}
+
+func TestSecretsWorkflow(t *testing.T) {
+	golden(t, "secrets-workflow.yml", SecretsWorkflow(testVersion))
+	if series := SecretsWorkflow("0.6"); !strings.Contains(series, "dnf/hecatron/main/install.sh | HECATRON_VERSION=v0.6 sh") {
+		t.Errorf("a series installs with main's install.sh:\n%s", series)
 	}
 }
 
@@ -165,7 +173,7 @@ func TestCISettingsProblems(t *testing.T) {
 		`"ci": []`:                                              `"ci" must be an object`,
 		`"ci": {"cache": "yes"}`:                                "ci.cache must be true or false",
 		`"ci": {"image": ""}`:                                   "ci.image must be an image name (ubuntu:24.04)",
-		`"ci": {"timeout": 5}`:                                  "ci.timeout is not a setting (cache, image, timeoutMinutes, languages)",
+		`"ci": {"timeout": 5}`:                                  "ci.timeout is not a setting (cache, image, secrets, timeoutMinutes, languages)",
 		`"ci": {"timeoutMinutes": 0}`:                           "ci.timeoutMinutes must be a whole number of minutes, 1 or more",
 		`"ci": {"timeoutMinutes": 1.5}`:                         "ci.timeoutMinutes must be a whole number of minutes, 1 or more",
 		`"ci": {"languages": [1]}`:                              `ci.languages must be an object of languages to minutes ({"pascal": 120})`,

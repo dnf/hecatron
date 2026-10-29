@@ -188,6 +188,13 @@ func (c *cli) ciFiles() ([]generatedFile, error) {
 		}
 		files = append(files, generatedFile{path, project.PyRelpath(path, p.Root), content})
 	}
+	if github && settings.Secrets {
+		path, err := generate.WorkflowPath(p, generate.SecretsWorkflowName)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, generatedFile{path, project.PyRelpath(path, p.Root), generate.SecretsWorkflow(generate.HecatronVersion(p))})
+	}
 	if contains(settings.Systems, project.CIGitLab) {
 		content, err := generate.GitLabCI(p, settings, generate.HecatronVersion(p))
 		if err != nil {
@@ -573,6 +580,7 @@ func (c *cli) check() (int, bool) {
 	}
 	problems = append(problems, advice...)
 	problems = append(problems, p.LicensesProblems()...)
+	problems = append(problems, p.SecretsProblems()...)
 	var out strings.Builder
 	ok, err := writeGenerated(dockerfiles, true, &out)
 	if err != nil {

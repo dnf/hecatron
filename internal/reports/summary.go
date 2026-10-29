@@ -144,6 +144,9 @@ func AuditSummary(findings []AuditFinding) string {
 		if f.File != "" {
 			where = f.File
 		}
+		if f.IsSecret() {
+			where = fmt.Sprintf("%s:%d", f.File, f.Line)
+		}
 		fmt.Fprintf(&b, "| %s | %s | %s | %s | %s | %s |\n", cell(severity), advisory, cell(f.Package), cell(f.Version), cell(where), cell(f.Title))
 	}
 	b.WriteString("\n")

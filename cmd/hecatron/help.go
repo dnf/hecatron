@@ -207,6 +207,9 @@ func (c *cli) runHelpText() (text string, ok bool) {
 	if c.command == "lint" {
 		out.WriteString("\nTools:\n  shell      shellcheck on every tracked shell script\n")
 	}
+	if c.command == "audit" {
+		out.WriteString("\nTools:\n  secrets    gitleaks: committed credentials in the working tree (with hecatron's binary)\n")
+	}
 	out.WriteString("\nFlags:\n" +
 		"  -j VALUE   Concurrency: integer, percentage (default 50%), or 'unlimited'\n" +
 		"  -s MODE    Display: scroll (default), full, or zoom\n" +
@@ -234,6 +237,9 @@ func (c *cli) runHelpText() (text string, ok bool) {
 		"  --timeout DURATION\n" +
 		"             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);\n" +
 		"             by default 5x its usual time from history.log, at least 10 minutes\n")
+	if c.command == "audit" {
+		out.WriteString("  --history  The secrets scan reads every commit instead of the working tree\n")
+	}
 	if changedActions[c.command] {
 		out.WriteString("  --changed [REF]\n" +
 			"             Only the languages, components and project tasks the files changed\n" +

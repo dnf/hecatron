@@ -51,7 +51,7 @@ streamed. Each job's output is saved to `<logs>/<action>/<target>.log`.
 | `rebuild`, `retest` | Clean, then build or test |
 | `deps` | Fetch dependencies with each ecosystem's tool, held to the lock file |
 | `format` | Rewrite the code with each language's formatter ([format](format.md)) |
-| `audit` | Check dependencies for known vulnerabilities ([audit](audit.md)) |
+| `audit` | Check dependencies for known vulnerabilities, and the files for committed secrets ([audit](audit.md)) |
 | `outdated` | Report direct dependencies with a newer version; passes unless a tool fails ([outdated](outdated.md)) |
 
 Which languages an action covers follows from their hooks: a language with
@@ -86,6 +86,7 @@ hct lint shell            # ShellCheck on every tracked shell script
 hct test codegen          # a project task
 hct format --check        # what the formatters would change
 hct audit --fail-on critical
+hct audit secrets --history   # only the secret scan, over every commit
 hct outdated --json py
 hct test --changed        # only what this branch changed
 hct test --output agent   # a summary line and only the failures
@@ -214,12 +215,14 @@ Install (or repair) toolchains: every language the project has when none
 are named, continuing past failures, then each component's dependencies
 once every toolchain is in. `--plan` only prints what each would install
 and the commands it would run (binary only). Uninstall removes only what
-hecatron installed and no other language needs. See
+hecatron installed and no other language needs. `hct install secrets`
+installs gitleaks, for [the secret scan](audit.md#secrets). See
 [installing toolchains](installing-toolchains.md).
 
 ```bash
 hct install
 hct install --plan zig
+hct install secrets
 hct uninstall haskell
 ```
 

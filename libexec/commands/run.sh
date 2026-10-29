@@ -87,6 +87,9 @@ _usage() {
     if [ "${_action}" = "lint" ]; then
         printf '\nTools:\n  shell      shellcheck on every tracked shell script\n'
     fi
+    if [ "${_action}" = "audit" ]; then
+        printf '\nTools:\n  secrets    gitleaks: committed credentials in the working tree (with hecatron'"'"'s binary)\n'
+    fi
     printf '%s\n' \
         "" \
         "Flags:" \
@@ -119,6 +122,9 @@ _usage() {
         "  --timeout DURATION" \
         "             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);" \
         "             by default 5x its usual time from history.log, at least 10 minutes"
+    if [ "${_action}" = "audit" ]; then
+        printf '%s\n' "  --history  The secrets scan reads every commit instead of the working tree"
+    fi
     case "${_action}" in
         test|lint|build|format|deps|rebuild|retest)
             printf '%s\n' \

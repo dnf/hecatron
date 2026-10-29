@@ -353,7 +353,7 @@ GO_ONLY_SECTIONS = ("ci", "dependabot", "renovate")
 
 # The "ci" settings only the Go core reads; these scripts write the time
 # limits (timeoutMinutes, languages) themselves.
-GO_ONLY_CI_KEYS = ("cache", "image")
+GO_ONLY_CI_KEYS = ("cache", "image", "secrets")
 
 
 def go_only_settings(project) -> list[str]:

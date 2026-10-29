@@ -96,7 +96,9 @@ func PlaceAudit(findings []AuditFinding, workspace string, fallback func(f Audit
 			f.File = fallback(f)
 		}
 		if f.File != "" && inside(workspace, f.File) {
-			f.Line = LineOf(f.File, f.Package)
+			if !f.IsSecret() {
+				f.Line = LineOf(f.File, f.Package)
+			}
 			rel, _ := filepath.Rel(workspace, f.File)
 			f.File = filepath.ToSlash(rel)
 		} else {
