@@ -24,6 +24,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | API docs | `hct docs [lang...]` | The ecosystem's tool (`cargo doc`, Sphinx, Javadoc...) into its own directory; ends with `<lang>: docs: written to <dir>` (JSON: `"docs"`). Only tools the project already has; none: skipped |
 | Benchmarks | `hct bench [lang...]` | `cargo bench`, `go test -bench`, pytest-benchmark, JMH, BenchmarkDotNet...; none: skipped. Not part of `hct test` or CI |
 | Dependency licenses | `hct licenses [lang...]` | Per license and package, unknowns apart; exit 1 when the config's `licenses` policy refuses one; needs OSV-Scanner and the binary |
+| Software bill of materials | `hct sbom [lang...] [-o FILE]` | CycloneDX 1.6 JSON (`--format spdx`: SPDX 2.3); `--no-dev`; `SOURCE_DATE_EPOCH` for reproducible output; needs OSV-Scanner and the binary |
 | Where to start | `HECATRON_OUTPUT=agent hct status` | Each language's directories, toolchain version and whether it's installed, last runs, uncommitted changes, and what to run next; one `git status`, installs nothing |
 | After a pull, rebase or checkout | `hct sync [ref]` | Since where HEAD was (the reflog) or `ref`: runs `hct deps` where lock files changed (`--no-deps`: says so), says the version each changed pin now needs and whether it's installed (installs nothing), runs `hct check` when the config, hooks or generated files changed; never pulls or fetches; exit 1 when deps or check fails. Needs the binary |
 | What the ecosystems recommend | `hct advisor [lang...]` | Lock files, toolchain pins and end of life, linter config, CI coverage; each with why and a link. Reads files only; `--fix` adds pin files; `--fail-on recommended` |
@@ -31,6 +32,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | Is each toolchain working | `hct doctor [lang...]` | Read-only; see Installing |
 | Validate config and generated files | `hct check` | |
 | A language's environment in a shell | `eval "$(hct env LANG)"` | The PATH and variables its commands run with |
+| Run one command with a component's toolchain | `hct exec LANG [-c COMPONENT] -- CMD...` | That environment, in the working directory; exit status is CMD's; needs the binary |
 | A newer hecatron | `hct self update --check` | Exit 3: a newer release exists (`hct status` says so from its daily check). `hct self update` installs it: ask the user first, as a new version can change generated files |
 
 - `--changed [REF]` (`test`, `lint`, `build`, `format`, `deps`): only the

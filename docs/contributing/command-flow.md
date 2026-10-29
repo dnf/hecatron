@@ -27,13 +27,13 @@ implementations. The pieces are in [modules](modules.md).
    | `init`, `install`, `list`, `add`, `check`, `dockerfile`, `workflows`, `banner`... | `libexec/commands/manage.py <command>` |
    | `get-started`, `metadata`, `bootstrap` | `libexec/onboarding/`, `metadata/`, `bootstrap/` |
    | `env`, `parallel` | `project.py env`, or `helpers.sh`; `libexec/runner/run-parallel.sh` |
-   | `status`, `sync`, `advisor`, `licenses`, `skill`, `self update` | a message: these need the binary |
+   | `status`, `sync`, `advisor`, `licenses`, `sbom`, `exec`, `skill`, `self update` | a message: these need the binary |
 
 ## 2. The Go binary: `cmd/hecatron`
 
 1. **Home and PATH** as above (`findHome`, `linksOnPath`).
 2. **Native-only commands** (`status`, `sync`, `advisor`, `licenses`,
-   `skill`, `self`, `plan`, and the hidden `_audit`, `_outdated`, `_install`,
+   `sbom`, `exec`, `skill`, `self`, `plan`, and the hidden `_audit`, `_outdated`, `_install`,
    `_gotest`, `_update-check`, `_write-env`) run at once.
 3. **The project.** Every other command but `init` and `banner` finds the
    project: `project.FindRoot` and `project.Load` in Go; a git repository

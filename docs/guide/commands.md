@@ -20,12 +20,12 @@ doesn't fail a parallel run.
 
 - [Run commands](#run-commands): `test`, `lint`, `build`, `clean`,
   `rebuild`, `retest`, `deps`, `format`, `audit`, `outdated`, `docs`, `bench`
-- [Dependency reports](#dependency-reports): `licenses`
+- [Dependency reports](#dependency-reports): `licenses`, `sbom`
 - [The project at a glance](#the-project-at-a-glance): `status`, `sync`, `advisor`
 - [Setting up](#setting-up): `init`, `doctor`, `install`, `uninstall`, `get-started`, `bootstrap`
 - [Languages](#languages): `list`, `add`, `remove`, `enable`, `disable`
 - [Generated files](#generated-files): `dockerfile`, `workflows`, `check`, `banner`
-- [The project's own scripts](#the-projects-own-scripts): `env`, `parallel`, `version`, `metadata`
+- [The project's own scripts](#the-projects-own-scripts): `env`, `exec`, `parallel`, `version`, `metadata`
 - [Hecatron itself](#hecatron-itself): `self`, `skill`, `help`, `--version`
 
 ## Run commands
@@ -125,6 +125,24 @@ the command. Needs OSV-Scanner and the network. Binary only. See
 ```bash
 hct licenses              # every language
 hct licenses go --json
+```
+
+### sbom
+
+```
+hct sbom [lang...] [-c COMPONENT] [--format cyclonedx|spdx] [-o FILE] [--no-dev]
+```
+
+A software bill of materials for every component of each language (those
+named, or all the project's), from what `hct licenses` reads: each
+package's purl, SPDX license where known, direct or transitive, dev
+dependencies marked. CycloneDX 1.6 JSON by default, or SPDX 2.3 JSON;
+`SOURCE_DATE_EPOCH` makes it reproducible. Needs OSV-Scanner and the
+network. Binary only. See [sbom](sbom.md).
+
+```bash
+hct sbom -o bom.cdx.json
+hct sbom --format spdx --no-dev > sbom.spdx.json
 ```
 
 ## The project at a glance
@@ -362,6 +380,26 @@ as shell exports.
 
 ```bash
 eval "$(hct env java -c age)"
+```
+
+### exec
+
+```
+hct exec LANG [-c COMPONENT] -- CMD [ARGS...]
+```
+
+**Binary only.** Runs CMD with the language's environment for a component,
+what `hct env LANG -c COMPONENT` prints, without changing your shell: handy
+when components use different versions of one toolchain. Without `-c`, the
+component whose directory for the language holds the working directory,
+else the only component in the language. CMD runs in the working directory,
+with your terminal; the exit status is CMD's (127 when it isn't found).
+When the component's version isn't installed, it says so (exit 3): `hct
+install LANG` installs it.
+
+```bash
+hct exec zig -c parser -- zig build
+cd age/python && hct exec python -- python -m pytest -x
 ```
 
 ### parallel

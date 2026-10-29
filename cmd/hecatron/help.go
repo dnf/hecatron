@@ -34,6 +34,7 @@ Run (every component of each language; no languages means all, in parallel):
   audit [lang...]            Check dependencies for known vulnerabilities (--fail-on SEVERITY)
   outdated [lang...]         Report newer versions of dependencies (--json, --fail)
   licenses [lang...]         Every dependency's license, rolled up; fails on the project's policy
+  sbom [lang...]             A software bill of materials (CycloneDX or SPDX JSON) for every component
   deps [lang...]             Fetch dependencies, held to each component's lock file
   format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
   docs [lang...]             Build API documentation with each ecosystem's tool
@@ -57,6 +58,7 @@ Project:
   env LANG [-c COMPONENT]    Print a language's environment (its version's PATH and variables)
                              gives HECATRON_* variables, the language lists and helpers
                              (_name, _check, _dep_available, _lang_grid, _ada_env, ...)
+  exec LANG [-c C] -- CMD    Run CMD with a language's environment, in this directory
   version <version>          Bump versions through each language's version.sh
   metadata                   Update package metadata through metadata.sh hooks
 

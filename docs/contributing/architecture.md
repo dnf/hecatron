@@ -64,7 +64,7 @@ per component.
 | Shared shell helpers | `languages/_common.sh`, `_hooks.sh`, `_deps.sh`, `_format.sh`, `_audit.sh`, `_outdated.sh`, `_docs.sh`, `_bench.sh` | Installer and hook building blocks |
 | Install engine | `internal/install`, `cmd/hecatron/installdata.go` | Carry out a definition's `install.json`: plan, batch packages, guarded steps, release downloads, receipts ([install engine](install-engine.md)) |
 | Generators | `libexec/codegen/`, `manage.py`, `internal/generate` | The Dockerfile, CI workflows, GitLab pipeline, Dependabot and Renovate configuration, DO NOT EDIT banners |
-| Reports | `libexec/lib/audit.py`, `outdated.py`, `internal/deps`, `internal/reports`, `internal/licenses` | Read tools' audit, outdated and license reports; write JUnit, SARIF, Code Quality and job summaries |
+| Reports | `libexec/lib/audit.py`, `outdated.py`, `internal/deps`, `internal/reports`, `internal/licenses`, `internal/sbom` | Read tools' audit, outdated and license reports; write JUnit, SARIF, Code Quality, job summaries and SBOMs |
 | Native-only commands | `internal/status`, `internal/changed`, `internal/advisor`, `internal/selfupdate` | `status`, `sync` and `--changed`, `advisor`, `self update` and the update notice |
 
 Each module in detail: [modules](modules.md). How one command travels

@@ -129,5 +129,6 @@ binary reads the section; `bin/hecatron check` without it doesn't.)
 OSV-Scanner failed. 2: a usage error. 3: OSV-Scanner isn't installed and a
 language needs it.
 
-Not yet: an SBOM (CycloneDX or SPDX) or a third-party notices file from the
-same data; licenses for the ecosystems deps.dev doesn't cover.
+The same data makes a bill of materials: [`hct sbom`](sbom.md). Not yet:
+a third-party notices file; licenses for the ecosystems deps.dev doesn't
+cover.
