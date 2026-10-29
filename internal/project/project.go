@@ -125,6 +125,7 @@ type Project struct {
 	localPath   string
 	implPaths   map[string]string
 	definitions *Definitions
+	tracked     map[string][]string // trackedPathsBelow's, by directory
 
 	cacheMu sync.Mutex
 	cache   versionCache

@@ -188,7 +188,7 @@ hooks, CI templates and config as they were at the split. Default hooks
 | `project` | Name used in banners, Docker image tags and messages | directory name |
 | `components` | Component names, in order | `["."]` (one, unnamed) |
 | `implPath` | Where a component's code in a language lives | `{lang}` with one component, else `{component}/{lang}` |
-| `implPaths` | A language's own `implPath`, for one kept elsewhere (`{"csharp": "dotnet"}`). A directory filled in from `{lang}` is the language's only when none of its `detectUnless` files sit there; one named outright is taken as written | `{}` |
+| `implPaths` | A language's own `implPath`, for one kept elsewhere (`{"csharp": "dotnet"}`). A directory filled in from `{lang}` is the language's only when none of its `detectUnless` files sit there (or another language's `detectYields` gives it back) and its own `detectYields` doesn't give it away; one named outright is taken as written | `{}` |
 | `languages` | Languages the project implements (was `added.json`) | `[]` |
 | `tools` | Non-language dependencies, as `{ "dependency": "<command>" }` | `{}` |
 | `generated.dockerfile` | Where `hecatron dockerfile` writes; omit for none | none |
@@ -340,10 +340,18 @@ tests each test project. CMake and Meson build in `build/`, or `_build/`
 when the project keeps files of its own in `build/` (Zstandard's CMake
 build); a CMake project whose files never set up a test (no `add_test`,
 `enable_testing` or CTest) has nothing to test, and its test hook skips
-after building, while one that does but registered none fails. The C, C++ and
+after building, while one that does but registered none fails, unless
+its build made GoogleTest programs CTest doesn't know of (LightGBM's
+`testlightgbm`, an executable carrying GoogleTest's flags), which then run
+as its tests. The C, C++ and
 Objective-C installers install Meson where a component builds with it; where
 a `meson.build` asks for a newer Meson (`meson_version: '>=1.8.3'`) than the
-distribution has, Linux gets the current release from PyPI as a uv tool. CTest runs
+distribution has, Linux gets the current release from PyPI as a uv tool.
+They also install the common libraries a component's build needs, as
+distribution packages: those a CMake build's `find_package()` and
+`pkg_check_modules()` name, and, for a build without CMake (a Makefile),
+those its sources `#include` (`<zlib.h>` is zlib's) unless the project has
+the header itself. CTest runs
 from the build directory of the subdirectory that calls `enable_testing()`
 when the top level doesn't (Zstandard's `build/cmake/`). A Makefile's test
 hook builds the default target before `make check` or `make test`, which
@@ -367,7 +375,15 @@ there) is built first: its build script, else `napi build --platform` or
 `node-gyp rebuild`. So is its workspace, when any workspace package needs
 it (one the tests import may): `pnpm -r run build`, `npm run build
 --workspaces`, `yarn workspaces foreach --topological run build`, else
-each package in turn.
+each package in turn. pytest also collects `Test*.py` files where no test
+file has its default names (`test_*.py`, `*_test.py`) and the project sets
+no `python_files`, and leaves out the Python projects inside the one it tests
+(`--ignore=pydantic-core`: their environments aren't the outer one's) unless
+the project sets `testpaths`. Where there is no `python`, only `python3`, Python's
+installer links one to it in `~/.local/share/hecatron/python/bin`, a static
+`path` entry of Python's, so the builds of a project's other languages that
+call `python` (a Rust build script, a CMake project's) find it, and nothing
+outside hecatron's hooks does.
 
 **Dependencies.** A `deps` hook fetches a component's dependencies with its
 ecosystem's tool, held to the lock file when there is one (it fails rather
@@ -421,7 +437,17 @@ saves it, as init would. Init itself:
    C's and C++'s `CMakeLists.txt`) counts for the one with the most sources
    beside it or under its `src/` and `include/`. A hit is dropped where one
    of the definition's `detectUnless` files sits beside it (`package.json` is
-   JavaScript unless a `tsconfig.json` makes it TypeScript), and a
+   JavaScript unless a `tsconfig.json` makes it TypeScript), except where
+   the other definition's `detectYields` rule gives it back: a
+   `tsconfig.json` beside more JavaScript than TypeScript files (`.d.ts`
+   declarations aside; tracked files in the directory and below, as
+   detection counts them) is a JavaScript package's, as antlr4's
+   `runtime/JavaScript` with its type declarations is. Committed build
+   output doesn't count, so a TypeScript package that tracks its compiled
+   JavaScript stays TypeScript: `dist/`, `build/`, `out/` and `lib/`
+   directly below, the `compilerOptions.outDir` its `tsconfig.json` names
+   (read with comments and trailing commas), and a `.js` beside a `.ts` of
+   the same name. A
    `package.json` without the definition's `detectScript` npm script doesn't
    count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
    Dotfiles aren't sources (a `.nvim.lua` configures an editor).
@@ -1304,8 +1330,10 @@ express it.
    files (`remove` globs, `keep` directories; no `rm`, so it works on
    Windows), stops with a `skip` or `unknown` reason, or uses steps the
    definition shares between actions (`shared`, e.g. fetching
-   dependencies). Its `if` tests files: `file`, `missing`, `contains`, and
-   `all`, `any`, `not`.
+   dependencies). Its `if` tests files: `file`, `missing`, `contains`,
+   `glob` (a file named like it here or below), and `all`, `any`, `not`. A
+   run step's `args` add arguments where their own `if` holds, once or,
+   with `eachProject`, for each project inside this one (`{dir}`).
 
 2. **Families in Go** for build systems several languages share, whose logic
    is more than a lookup: `jvm` (Maven, Gradle, sbt, wrappers, choosing a JDK

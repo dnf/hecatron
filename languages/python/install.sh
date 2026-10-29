@@ -49,6 +49,7 @@ deps() {
 
 log "Installing Python..."
 "install_${OS}"
+bash "$(dirname "$0")/link-python.sh"
 deps
 # OSV-Scanner, which hecatron licenses reads this language's licenses with.
 osv_scanner_install

@@ -556,6 +556,14 @@ func parityCases() []parityCase {
 		{name: "found from a subdirectory", files: config(`, "languages": ["go"]`), cwd: "a/b/c"},
 		{name: "several components", files: components},
 		{name: "several components from inside one", files: components, cwd: "date/impl"},
+		{name: "a tsconfig.json beside mostly javascript", git: true, files: with(components, map[string]string{
+			"date/impl/javascript/src/a.js": "", "date/impl/javascript/src/b.cjs": "", "date/impl/javascript/a.d.ts": "",
+			"date/impl/javascript/src/c.ts": "", "date/impl/javascript/test/d.js": "", "date/impl/javascript/.x.js": ""})},
+		{name: "a tsconfig.json beside its compiled javascript", git: true, files: with(components, map[string]string{
+			"date/impl/javascript/tsconfig.json": "{\"compilerOptions\": {\"outDir\": \"out2\",}} // x",
+			"date/impl/javascript/src/a.ts":      "", "date/impl/javascript/dist/a.js": "", "date/impl/javascript/dist/b.js": "",
+			"date/impl/javascript/out2/a.js": "", "date/impl/javascript/out2/b.js": "", "date/impl/javascript/src/b.ts": "",
+			"date/impl/javascript/src/b.js": ""})},
 		{name: "project overrides and a project-only language", files: overrides},
 		{name: "local.json disables", files: with(config(`, "languages": ["rust", "go", "python"]`), map[string]string{
 			".hecatron/local.json": `{"disabled": ["rust", "go", "haskell"]}`})},

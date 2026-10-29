@@ -1338,10 +1338,39 @@ cmake_test() {
             run cmake --build "${native_build}" --parallel "$(build_jobs)" --target "${_target}"
             return
         fi
+        cmake_gtest_run "${_part}" && return
         cmake_mentions_tests "$(cmake_source_dir)" ||
             skip "the CMake project defines no tests (no add_test, enable_testing or CTest)"
     fi
     run ctest --test-dir "${_part}" --output-on-failure --no-tests=error
+}
+# GoogleTest programs the build made but CTest doesn't know of (LightGBM's
+# testlightgbm, built with BUILD_CPP_TEST and never add_test()ed): run each,
+# failing if any fails. Returns 1 when there are none.
+cmake_gtest_run() {
+    local _binary _binaries=() _failed=0
+    while IFS= read -r _binary; do _binaries+=("${_binary}"); done < <(cmake_gtest_binaries "$1")
+    [ "${#_binaries[@]}" -gt 0 ] || return 1
+    echo "${HECATRON_LANG:-}: ${_hook_action}: CTest has no tests; running the GoogleTest programs the build made"
+    for _binary in "${_binaries[@]}"; do
+        run "${_binary}" || _failed=1
+    done
+    [ "${_failed}" -eq 0 ] || exit 1
+}
+# The executables in a build directory (outside fetched dependencies and
+# CMake's own checks) and at the top of the source directory, where some
+# projects put them, that carry GoogleTest's command-line flags: read, not
+# run, to tell.
+cmake_gtest_binaries() {
+    local _file
+    # The build's first, then the source directory's, each in a fixed
+    # order whatever the locale; a program found twice runs once.
+    { find "$1" \( -name _deps -o -name CMakeFiles \) -prune -o -type f -perm -u+x -print 2>/dev/null | LC_ALL=C sort
+      find "$(cmake_source_dir)" -maxdepth 1 -type f -perm -u+x -print 2>/dev/null | LC_ALL=C sort; } |
+        grep -Ev '\.(so|dylib|a|sh|py)(\.[0-9.]*)?$' | awk '!seen[$0]++' |
+        while IFS= read -r _file; do
+            if grep -qaF -- '--gtest_list_tests' "${_file}" 2>/dev/null; then echo "${_file}"; fi
+        done
 }
 # The topmost directories below a build directory that CTest runs from
 # (enable_testing() in a subdirectory: Zstandard's build/cmake/), outside

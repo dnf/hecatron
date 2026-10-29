@@ -258,6 +258,44 @@ class InitTest(Fixture):
                                 "typescript": {"detect": ["tsconfig.json"]}})
         self.assertEqual(found, {"javascript": {"js"}, "typescript": {"ts"}})
 
+    def test_a_tsconfig_beside_mostly_javascript_is_a_javascript_package(self):
+        # antlr4's runtime/JavaScript: JavaScript sources, type declarations
+        # and a tsconfig.json for them.
+        found, _ = self.detect({"rt/package.json": "", "rt/tsconfig.json": "", "rt/src/a.js": "",
+                                "rt/src/b.mjs": "", "rt/src/a.d.ts": "", "rt/src/b.d.ts": "", "rt/src/c.ts": "",
+                                "rt/.eslintrc.js": "",
+                                "web/package.json": "", "web/tsconfig.json": "", "web/src/a.ts": "",
+                                "web/vite.config.js": ""},
+                               {"javascript": {"detect": ["package.json"], "detectUnless": ["tsconfig.json"]},
+                                "typescript": {"detect": ["tsconfig.json"],
+                                               "detectYields": {"to": "javascript", "where": ["*.js", "*.mjs"],
+                                                                "outnumber": ["*.ts"], "except": ["*.d.ts"]}}})
+        self.assertEqual(found, {"javascript": {"rt"}, "typescript": {"web"}})
+
+    def test_typescript_with_its_compiled_javascript_tracked_stays_typescript(self):
+        script = '{"scripts": {"test": "x"}}'
+        found, _ = self.detect({
+            # dist/ (and build/, out/, lib/) directly below isn't counted.
+            "dist-pkg/package.json": script, "dist-pkg/tsconfig.json": "{}", "dist-pkg/src/a.ts": "",
+            "dist-pkg/dist/a.js": "", "dist-pkg/dist/b.js": "", "dist-pkg/dist/c.js": "",
+            # Nor is compilerOptions.outDir, read as tsconfig.json is written.
+            "out-pkg/package.json": script, "out-pkg/index.ts": "", "out-pkg/compiled/a.js": "",
+            "out-pkg/compiled/b.js": "",
+            "out-pkg/tsconfig.json": '{\n  // compiled\n  "compilerOptions": {"outDir": "./compiled/",},\n}',
+            # Nor a .js beside its .ts: a compiled twin.
+            "twin-pkg/package.json": script, "twin-pkg/tsconfig.json": "{", "twin-pkg/src/a.ts": "",
+            "twin-pkg/src/a.js": "", "twin-pkg/src/b.tsx": "", "twin-pkg/src/b.js": "", "twin-pkg/src/c.js": "",
+            # A lib/ deeper down is source.
+            "js-pkg/package.json": script, "js-pkg/tsconfig.json": "{}", "js-pkg/src/a.ts": "",
+            "js-pkg/src/lib/x.js": "", "js-pkg/src/lib/y.js": ""}, None)
+        self.assertEqual(found, {"typescript": {"dist-pkg", "out-pkg", "twin-pkg"}, "javascript": {"js-pkg"}})
+
+    def test_a_language_whose_build_files_all_yield_isnt_added(self):
+        found, not_added = self.detect({"package.json": '{"scripts": {"test": "x"}}', "tsconfig.json": "",
+                                        "src/a.js": "", "types/a.d.ts": ""}, None)
+        self.assertEqual(found, {"javascript": {"."}})
+        self.assertEqual(not_added, {"typescript": "its tsconfig.json only sits beside mostly JavaScript"})
+
     def test_a_package_without_a_test_script_isnt_a_language(self):
         # Cucumber messages: jsonschema/package.json is tooling with no tests.
         defs = {"javascript": {"detect": ["package.json"], "detectScript": "test"}}
@@ -516,6 +554,26 @@ class LanguageDirectoryTest(Fixture):
         write(self.path("javascript", "tsconfig.json"), "{}")
         write(self.path("js", "package.json"), "{}")
         self.assertEqual(project.load(self.root).impl_dirs("javascript"), [(".", self.path("js"))])
+
+    def test_a_tsconfig_beside_mostly_javascript_leaves_the_directory_javascripts(self):
+        self.configure(languages=["javascript", "typescript"], implPath="{lang}")
+        for name in ("package.json", "tsconfig.json", "src/a.js", "src/b.js", "src/a.d.ts"):
+            write(self.path("javascript", name), "{}")
+        self.commit()
+        p = project.load(self.root)
+        self.assertEqual(p.impl_dirs("javascript"), [(".", self.path("javascript"))])
+        self.assertEqual(p.impl_dirs("typescript"), [])
+
+    def test_a_tsconfig_beside_its_compiled_javascript_stays_typescripts(self):
+        self.configure(languages=["javascript", "typescript"], implPath="{lang}")
+        write(self.path("javascript", "tsconfig.json"), '{"compilerOptions": {"outDir": "out2",}} // x')
+        for name in ("package.json", "src/a.ts", "src/b.ts", "src/b.js", "dist/a.js", "dist/b.js",
+                     "out2/a.js", "out2/b.js"):
+            write(self.path("javascript", name), "{}")
+        self.commit()
+        p = project.load(self.root)
+        self.assertEqual(p.impl_dirs("javascript"), [])
+        self.assertEqual(p.impl_dirs("typescript"), [(".", self.path("javascript"))])
 
     def test_a_language_whose_only_directory_holds_a_detect_unless_file_has_none(self):
         self.configure(languages=["javascript"], implPath="{lang}")

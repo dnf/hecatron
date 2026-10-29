@@ -161,8 +161,9 @@ func (p *Project) findImplDir(component, lang string) (found, fallback string, e
 	if err != nil {
 		return "", "", err
 	}
+	byName := strings.Contains(template, "{lang}")
 	var unless []string
-	if strings.Contains(template, "{lang}") {
+	if byName {
 		if unless, err = p.definitionStrings(lang, "detectUnless"); err != nil {
 			return "", "", err
 		}
@@ -173,7 +174,7 @@ func (p *Project) findImplDir(component, lang string) (found, fallback string, e
 			fallback = candidate
 		}
 		if found == "" {
-			own, err := isOwnDir(candidate, unless)
+			own, err := p.isOwnDir(lang, candidate, byName, unless)
 			if err != nil {
 				return "", "", err
 			}
@@ -185,7 +186,7 @@ func (p *Project) findImplDir(component, lang string) (found, fallback string, e
 	return found, fallback, nil
 }
 
-func isOwnDir(directory string, unless []string) (bool, error) {
+func (p *Project) isOwnDir(lang, directory string, byName bool, unless []string) (bool, error) {
 	if !isDir(directory) {
 		return false, nil
 	}
@@ -193,18 +194,74 @@ func isOwnDir(directory string, unless []string) (bool, error) {
 	if err != nil {
 		return false, unsupported("%v", err)
 	}
-	for _, entry := range entries {
-		for _, pattern := range unless {
-			matched, err := fnmatch(entry.Name(), pattern)
-			if err != nil {
-				return false, err
-			}
-			if matched {
-				return false, nil
-			}
+	if !byName {
+		return true, nil
+	}
+	listing := make([]string, len(entries))
+	for i, entry := range entries {
+		listing[i] = entry.Name()
+	}
+	if yielded, err := p.yieldsIn(lang, directory, listing); err != nil || yielded {
+		return false, err
+	}
+	excluded := false
+	for _, name := range listing {
+		if excluded, err = matchesAny(name, unless); err != nil {
+			return false, err
+		}
+		if excluded {
+			break
 		}
 	}
-	return true, nil
+	if !excluded {
+		return true, nil
+	}
+	defs, err := p.Definitions()
+	if err != nil {
+		return false, err
+	}
+	for _, other := range defs.Names {
+		raw, present := defs.Get(other).Get("detectYields")
+		rule, err := parseYields(raw, present, other)
+		if err != nil {
+			return false, err
+		}
+		if rule == nil || rule.To != lang {
+			continue
+		}
+		if granted, err := p.yieldsIn(other, directory, listing); err != nil || granted {
+			return granted, err
+		}
+	}
+	return false, nil
+}
+
+// yieldsIn says whether one of a language's build files is in the
+// directory and its "detectYields" rule holds there, as detection decides:
+// the directory is the other language's.
+func (p *Project) yieldsIn(lang, directory string, listing []string) (bool, error) {
+	defs, err := p.Definitions()
+	if err != nil {
+		return false, err
+	}
+	raw, present := defs.Get(lang).Get("detectYields")
+	rule, err := parseYields(raw, present, lang)
+	if err != nil || rule == nil {
+		return false, err
+	}
+	detect, err := p.definitionStrings(lang, "detect")
+	if err != nil {
+		return false, err
+	}
+	buildFile, err := buildFileIn(directory, listing, detect)
+	if err != nil || buildFile == "" {
+		return false, err
+	}
+	paths, err := p.trackedPathsBelow(directory)
+	if err != nil {
+		return false, err
+	}
+	return rule.holds(paths, buildFile)
 }
 
 // ImplDir is where a component's code in a language lives: the template
