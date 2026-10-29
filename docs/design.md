@@ -802,9 +802,9 @@ Settled on 2026-10-26:
 ## 18. Toolchain versions
 
 Status: **accepted**; implemented for Python, Go, Rust, Node.js, Java,
-Ruby, PHP, .NET and Elixir; Gleam, Zig and Erlang (its OTP, on Ubuntu)
-install the one version their definition pins (§19, installs as data).
-Other installers install one
+Ruby, PHP, .NET, Elixir and Zig (a `"managed"` release download, §19,
+installs as data); Gleam and Erlang (its OTP, on Ubuntu) install the one
+version their definition pins. Other installers install one
 version per language, some the latest at install time (Swift, Julia,
 PowerShell, Odin, Crystal).
 
@@ -823,7 +823,8 @@ For a language in a component, the version is the first of:
    `.python-version`, `.nvmrc` or `.node-version`, `rust-toolchain.toml` or
    `rust-toolchain`, `global.json` (`sdk.version`), the `toolchain` line of
    `go.mod`, `.ruby-version`, Gradle's `gradle-daemon-jvm.properties`
-   (`toolchainVersion`, the JDK)... Each definition lists the files it reads
+   (`toolchainVersion`, the JDK), `build.zig.zon`'s
+   `minimum_zig_version`... Each definition lists the files it reads
    in `config.json` (`pinFiles`). Using these means a project declares a
    version once, where its other tools already look.
 2. **`version` in the project's `.hecatron/languages/<lang>/config.json`.**
@@ -883,7 +884,7 @@ release), so resolution stays offline and two machines agree.
 `libexec/maintenance/release_dates.py` writes them from each language's
 release source: nodejs.org, python.org, go.dev's release history, Rust's
 `RELEASES.md`, Adoptium, ruby-lang.org, php.net, Microsoft's .NET release
-metadata and Elixir's GitHub releases. A weekly workflow (`.github/workflows/release-dates.yml`) reruns
+metadata, Elixir's GitHub releases and ziglang.org's index of downloads. A weekly workflow (`.github/workflows/release-dates.yml`) reruns
 it and opens a pull request when there are new releases. A language sharing
 another's toolchain names it in `releasesOf` (JavaScript's Node.js is
 TypeScript's, F#'s and VB.NET's SDK C#'s), and shares its version settings.
@@ -935,7 +936,10 @@ pin on its line (`8.4.0` reads as `8.4`); the `require` constraint on `php`
 isn't, because it is the range a library supports, which the default
 normally satisfies. PHP's doctor checks instead that each component's PHP
 satisfies what its lock file requires. (Owner's decision pending; this is
-the implementation's.)
+the implementation's.) `build.zig.zon`'s `minimum_zig_version` reads the
+other way, as a pin on its line (`0.14.0` reads as `0.14`): Zig breaks
+compatibility between minor releases, so code written for 0.14 needs the
+newest 0.14.x, not a newer line.
 
 ### Version syntax
 
@@ -992,7 +996,9 @@ surprise.
 - **Side by side.** Installers add the resolved version next to any others,
   through the ecosystem's version manager where it has one (uv, rustup,
   ghcup, .NET's side-by-side SDKs, `openjdk-N` or Temurin, Go's toolchain
-  downloads), and never replace a version another project may use.
+  downloads, a `"managed"` release download's homes under hecatron's
+  toolchains directory), and never replace a version another project may
+  use.
 - **What's installed.** A definition's optional `installed.sh` prints one
   `version<TAB>home` line per installed version, offline (each ecosystem
   already keeps a list: `rustup toolchain list`, `dotnet --list-sdks`, uv's,
@@ -1434,7 +1440,7 @@ directory), `command` (on the language's PATH), `run` (exits 0) and
 `platform`; file tests hold when any component's directory satisfies them.
 Anything needing a loop, string parsing or a second command's output is a
 hook or family code, not new syntax. Later stages add `vendor` and `via`
-toolchains, `"managed"` (side by side) downloads, shared tools in
+toolchains (`"managed"` release downloads are in, below), shared tools in
 `languages/_tools.json`,
 `installed` (in place of `installed.sh`), `requires` and `installOf`,
 `hook`, `deps` and `legacy` (old locations to clean up).
@@ -1508,7 +1514,13 @@ in the toolchains directory, Elixir's in `/opt/erlang`.
 
 **Release downloads (stage 2).** A `toolchain.archive` is a release
 download, installed `"versions": "single"` (the definition's default from
-`config.json`) for now:
+`config.json`) or `"managed"`: the default and, side by side, each version
+the project's components resolve to (§18) that `installed.sh` doesn't
+list, a prefix or line as the newest release in the definition's
+`releases.json` it matches, so planning stays offline (a version with none
+fails that language's install and says so). Each version is its own
+toolchain action, checked in its own home; the links point at the
+default.
 
 - `url` is a template (`{version}`, `{os}`, `{arch}`, `{ext}`, with `os`,
   `arch` and `ext` mapping hecatron's names to the publisher's); a
@@ -1518,7 +1530,10 @@ download, installed `"versions": "single"` (the definition's default from
   sidecar such as Gleam's `{url}.sha256`: its first word), or
   `checksumIndex`, a JSON index and the keys leading to it (Zig's
   `index.json`, `["{version}", "{arch}-{os}", "shasum"]`). A definition
-  with none for the platform is declined.
+  with none for the platform is declined. An index's `urlPath` leads to
+  the download's own URL there, which replaces the template: Zig's names
+  changed in 0.14.1 (`zig-linux-x86_64-0.14.0` before), and its index
+  lists them all.
 - `check` is required: what says the unpacked toolchain works
   (`{"run": ["{bin}/zig", "version"]}`, with `{home}` and `{bin}`).
 - The download goes to `~/.cache/hecatron/downloads/<sha256>`, verified
@@ -1538,8 +1553,9 @@ download, installed `"versions": "single"` (the definition's default from
 
 Converted: **Gleam** (GitHub release, sidecar checksum; Erlang/OTP from
 Erlang's `install.sh`, a step, unless the `erl` on PATH is OTP 26 or newer) and **Zig** (ziglang.org,
-checksum from its index; it installed the latest release before, and now
-the version `config.json` pins). Both gain `version`, `track` and
+checksum and URL from its index; it installed the latest release before,
+and now the version `config.json` pins and, `"managed"`, each line a
+component's `build.zig.zon` names). Both gain `version`, `track` and
 `path: ["{home}"]` in `config.json` and an `installed.sh` (the toolchains
 directory, then one on PATH from elsewhere), and their scripts install to
 the same place, on macOS too, checked the same way, so the two ways agree
