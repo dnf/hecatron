@@ -11,7 +11,7 @@
 
 | CI | Release | Languages | License |
 | :-: | :-: | :-: | :-: |
-| [![CI](https://github.com/dnf/hecatron/actions/workflows/ci.yml/badge.svg)](https://github.com/dnf/hecatron/actions/workflows/ci.yml) | [![Latest release](https://img.shields.io/github/v/release/dnf/hecatron?sort=semver)](https://github.com/dnf/hecatron/releases) | [![Languages](https://img.shields.io/badge/languages-54-3B5BFF)](docs/coverage.md) <!-- language-count --> | [![License: MIT](https://img.shields.io/github/license/dnf/hecatron)](LICENSE.md) |
+| [![CI](https://github.com/dnf/hecatron/actions/workflows/ci.yml/badge.svg)](https://github.com/dnf/hecatron/actions/workflows/ci.yml) | [![Latest release](https://img.shields.io/github/v/release/dnf/hecatron?sort=semver)](https://github.com/dnf/hecatron/releases) | [![Languages](https://img.shields.io/badge/languages-54-3B5BFF)](docs/guide/coverage.md) <!-- language-count --> | [![License: MIT](https://img.shields.io/github/license/dnf/hecatron)](LICENSE.md) |
 
 </div>
 
@@ -30,7 +30,7 @@ Dockerfile that cover them in sync.
 
 <p align="center">
   <img alt="hct test running sayable's 51 languages in parallel: a live row per language with its time, swim lanes for the jobs still running, ending in 53/53 passed" src="assets/demo/hct-test.gif" width="720">
-  <br><em><code>hct test</code> on <a href="https://github.com/dnf/sayable">sayable</a>: 51 languages and its own checks in parallel, 4½ minutes at 5× speed (<a href="docs/runner.md">how the runner works</a>).</em>
+  <br><em><code>hct test</code> on <a href="https://github.com/dnf/sayable">sayable</a>: 51 languages and its own checks in parallel, 4½ minutes at 5× speed (<a href="docs/guide/runner.md">how the runner works</a>).</em>
 </p>
 
 ## Why
@@ -52,7 +52,7 @@ agent learns the interface once (`hct help agents`).
 maintaining an implementation in another language cheap, so one person can
 ship the same library natively in a dozen or fifty languages, best kept in
 one repository where a fix lands everywhere in one pull request
-([more](docs/why-one-repository.md)). What's left is the infrastructure, a
+([more](docs/guide/why-one-repository.md)). What's left is the infrastructure, a
 toolchain, commands, CI jobs and Dockerfile lines per language, and with
 fifty languages keeping that working becomes the job. Hecatron does that
 job: it grew up inside [sayable](https://github.com/dnf/sayable), a set of
@@ -119,7 +119,7 @@ options.
   languages use it so far: Gleam and Zig as checksummed release downloads,
   the rest from apt, which isn't cached; caching gets better as more
   languages move to downloaded toolchains
-  ([docs/installers.md](docs/installers.md#installs-as-data)).
+  ([installing toolchains](docs/guide/installing-toolchains.md#installs-as-data)).
 - **The right version for each component.** For Python, Go, Rust, Node.js and
   Java, a pinned default, or the version a component asks for in its
   ecosystem's own file (`.python-version`, `go.mod`, `rust-toolchain.toml`,
@@ -135,7 +135,7 @@ options.
   own dependency auditor (`npm audit`, pip-audit, govulncheck, `composer
   audit`, `dotnet list package --vulnerable`, bundler-audit, OSV-Scanner for
   the rest) and fails at a severity you choose, with accepted risks that
-  expire ([docs/audit.md](docs/audit.md)).
+  expire ([audit](docs/guide/audit.md)).
 - **Dependencies, held to the lock file.** `hct deps` fetches every
   component's dependencies with its ecosystem's tool (`npm ci`, `uv sync
   --locked`, `bundle install` frozen, `composer install`, `dotnet restore
@@ -148,18 +148,18 @@ options.
   (`npm outdated`, `uv tree --outdated`, `go list -u -m`, Cargo, `bundle
   outdated`, `composer outdated`, `dotnet list package --outdated`, Hex,
   pub, Maven's versions plugin), as a table or `--json`; `--fail` makes it
-  a CI check ([docs/outdated.md](docs/outdated.md)).
+  a CI check ([outdated](docs/guide/outdated.md)).
 - **Every dependency's license.** `hct licenses` lists each component's
   dependencies with their SPDX licenses, rolled up per license, unknown ones
   apart, from the lock files (OSV-Scanner and deps.dev; Composer's lock
   file); a policy in the config (allow, deny, accepted packages that
-  expire) makes it a CI check ([docs/licenses.md](docs/licenses.md)).
+  expire) makes it a CI check ([licenses](docs/guide/licenses.md)).
 - **One formatter per language.** `hct format` rewrites each component's
   code with its language's formatter and the project's own configuration
   (gofmt, rustfmt, Ruff, `dotnet format`, `mix format`, `dart format`, and
   the Prettier, RuboCop or Spotless a project already uses); `--check`
   changes nothing and lists what it would, and `hct lint` runs that check
-  ([docs/format.md](docs/format.md)).
+  ([format](docs/guide/format.md)).
 - **Each ecosystem's good practice.** `hct advisor` reads the project and
   recommends what each language's ecosystem asks for: lock files committed
   (and still matching their manifests), toolchains pinned and not past end
@@ -167,7 +167,7 @@ options.
   Gradle's caches, GitHub Actions not pinned to a branch. Each finding says
   why and links to the ecosystem's own documentation; it reads files only,
   and `--fix` makes the safe changes, such as a pin file at the version in
-  use ([docs/advisor.md](docs/advisor.md)).
+  use ([advisor](docs/guide/advisor.md)).
 - **Generated CI and Dockerfile.** `hct workflows` writes one CI workflow per
   language and `hct dockerfile` an image with every toolchain (and, for the
   languages with versions, each version the components use); `hct check`
@@ -185,7 +185,7 @@ It doesn't build anything itself, and it doesn't know what your code does.
   Debian 13 machines (x86_64 and arm64) and on macOS (Apple Silicon and
   Intel): install, doctor and reinstall, then a smoke test that builds and
   runs a small program with the new toolchain.
-  [docs/coverage.md](docs/coverage.md) has the matrix.
+  [docs/guide/coverage.md](docs/guide/coverage.md) has the matrix.
 - **Real projects.** [sayable](https://github.com/dnf/sayable) runs all 51 of
   its languages through hecatron. On a fresh machine,
   [cucumber/tag-expressions](https://github.com/cucumber/tag-expressions)
@@ -196,7 +196,7 @@ It doesn't build anything itself, and it doesn't know what your code does.
 
 ## Hecatron or ad hoc?
 
-For a library in ten languages ([full comparison](docs/hecatron-vs-ad-hoc.md)):
+For a library in ten languages ([full comparison](docs/guide/hecatron-vs-ad-hoc.md)):
 
 | Ad hoc | With hecatron |
 | --- | --- |
@@ -279,7 +279,7 @@ A project can override any default hook with its own
 `.hecatron/languages/<lang>/test.sh` (or `lint.sh`, `build.sh`, `clean.sh`),
 run once per component from that component's directory for the language. It
 can also override any file of a built-in language definition there, or define
-a language hecatron doesn't know. [docs/design.md](docs/design.md) describes
+a language hecatron doesn't know. [Configuration](docs/guide/configuration.md) describes
 the full configuration.
 
 To have teammates and CI run the same hecatron, pin it: `"hecatron": "0.6"`
@@ -298,11 +298,11 @@ Java, JavaScript, Julia, Kotlin, Lua, Mojo, Nim, Objective-C, OCaml, Octave,
 Odin, Pascal, Perl, Pharo, PHP, PowerShell, Prolog, Python, R, Racket, Raku,
 Ruby, Rust, Scala, Swift, Tcl, TypeScript, V, VB.NET, Wren and Zig.
 
-[docs/languages.md](docs/languages.md) has each one with a link to its home,
+[docs/guide/languages.md](docs/guide/languages.md) has each one with a link to its home,
 what it's for, and the build systems, test runners and linters hecatron uses
 for it; it's also a good place to discover a language you haven't tried.
 Adding another is a directory of small scripts; see
-[docs/adding-a-language.md](docs/adding-a-language.md).
+[adding a language](docs/contributing/adding-a-language.md).
 
 ## Status
 
@@ -313,29 +313,34 @@ expect changes before 1.0. Changes are listed in
 - **Platforms:** macOS (Apple Silicon and Intel) and Linux (Debian and
   Ubuntu, x86_64 and arm64).
 - **Next:** a single fast binary written in Go, with native Windows support
-  ([design](docs/design.md#19-a-go-core-and-native-windows),
+  ([design](docs/contributing/design.md#19-a-go-core-and-native-windows),
   [#80](https://github.com/dnf/hecatron/issues/80)); and for CI, a GitHub
   Action, GitLab CI generation, and results every forge shows (JUnit, SARIF,
-  job summaries; [source control backends](docs/design.md#20-source-control-backends)).
+  job summaries; [source control backends](docs/guide/ci.md)).
 
 ## Documentation
 
-| Document | Contents |
-| --- | --- |
-| [docs/runner.md](docs/runner.md) | How `hct test` and friends run every language at once: concurrency, scheduling, the live display |
-| [docs/agents.md](docs/agents.md) | The compact reference for AI coding agents (`hct help agents`) |
-| [docs/why-one-repository.md](docs/why-one-repository.md) | Why one library in many languages belongs in one repository |
-| [docs/design.md](docs/design.md) | How hecatron works and why: concepts, configuration, commands, and the decisions behind them |
-| [docs/languages.md](docs/languages.md) | Every language: its home, what it's for, and how hecatron builds, tests and lints it |
-| [docs/coverage.md](docs/coverage.md) | Which languages install and work on which platforms |
-| [docs/audit.md](docs/audit.md) | `hct audit`: each language's dependency auditor, severities, accepted risks, CI |
-| [docs/outdated.md](docs/outdated.md) | `hct outdated`: each language's report of newer dependency versions, `--json`, `--fail` |
-| [docs/format.md](docs/format.md) | `hct format`: each language's formatter, `--check`, and the format check in `hct lint` |
-| [docs/hecatron-vs-ad-hoc.md](docs/hecatron-vs-ad-hoc.md) | A ten-language library maintained with hecatron and without it |
-| [docs/installers.md](docs/installers.md) | How each language's toolchain is installed on macOS and Linux, and toolchains languages share |
-| [docs/adding-a-language.md](docs/adding-a-language.md) | Writing a language definition |
-| [docs/build-conventions.md](docs/build-conventions.md) | Where each language's build artifacts go |
-| [libexec/runner/README.md](libexec/runner/README.md) | The parallel runner and its live display |
+- **[User guide](docs/guide/README.md):** using hecatron: the
+  [command reference](docs/guide/commands.md),
+  [project configuration](docs/guide/configuration.md),
+  [hooks](docs/guide/hooks.md), [toolchain versions](docs/guide/versions.md),
+  [installing toolchains](docs/guide/installing-toolchains.md),
+  [the parallel runner](docs/guide/runner.md),
+  [generated files](docs/guide/generated-files.md), and each report
+  ([audit](docs/guide/audit.md), [outdated](docs/guide/outdated.md),
+  [licenses](docs/guide/licenses.md), [format](docs/guide/format.md),
+  [advisor](docs/guide/advisor.md)).
+- **[Contributor guide](docs/contributing/README.md):** working on
+  hecatron: [architecture](docs/contributing/architecture.md),
+  [modules](docs/contributing/modules.md),
+  [command flow](docs/contributing/command-flow.md),
+  [the install engine](docs/contributing/install-engine.md),
+  [testing](docs/contributing/testing.md),
+  [releasing](docs/contributing/releasing.md),
+  [adding a language](docs/contributing/adding-a-language.md), and the
+  [design record](docs/contributing/design.md) with the decisions behind it.
+- **[Reference for AI agents](docs/agents.md):** the compact reference
+  `hct help agents` prints.
 
 ## Getting help
 

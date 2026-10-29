@@ -7,7 +7,7 @@ hook (`.hecatron/languages/<lang>/<action>.sh`).
 Generated from each language's `config.json` by
 `libexec/codegen/languages_doc.py`; don't edit by hand.
 [coverage.md](coverage.md) has which platforms each one installs and passes
-on, and [adding-a-language.md](adding-a-language.md) covers adding one.
+on, and [adding-a-language.md](../contributing/adding-a-language.md) covers adding one.
 
 ## Popular languages
 

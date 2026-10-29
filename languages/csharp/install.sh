@@ -105,7 +105,7 @@ _install_runtime() {
 
 # Each SDK's view, <root>-views/<version>: a directory where `dotnet` sees
 # that SDK alone, which installed.sh gives as the SDK's home, so a component
-# runs the SDK its version resolves to (docs/design.md §18) without a
+# runs the SDK its version resolves to (docs/guide/versions.md) without a
 # global.json. Everything else (runtimes, packs, templates, workload
 # manifests) is the shared directory's, linked; the host is copied, since it
 # finds its directory from its own real path. A view whose SDK is gone goes.

@@ -1,8 +1,8 @@
 // Package deps reads the reports of dependency tools: the auditors'
-// findings (hct audit, docs/audit.md) and the outdated reports (hct
-// outdated, docs/outdated.md), as libexec/lib/audit.py and outdated.py do,
+// findings (hct audit, docs/guide/audit.md) and the outdated reports (hct
+// outdated, docs/guide/outdated.md), as libexec/lib/audit.py and outdated.py do,
 // finding for finding and line for line, so the binary prints what the
-// scripts print (docs/design.md §19).
+// scripts print (docs/contributing/design.md §19).
 package deps
 
 import (

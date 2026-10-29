@@ -164,7 +164,7 @@ func TestDetectionMatchesManagePy(t *testing.T) {
 }
 
 // A directory named for a language counts only when it holds the
-// language's files, and hooks/ is tooling (docs/design.md §10).
+// language's files, and hooks/ is tooling (docs/guide/init.md).
 func TestDetectionPlacesARootModuleAndSkipsHooks(t *testing.T) {
 	if _, err := exec.LookPath("git"); err != nil {
 		t.Skip("no git")

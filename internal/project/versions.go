@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Hecatron's version syntax (docs/design.md §18), as libexec/lib/versions.py
+// Hecatron's version syntax (docs/guide/versions.md), as libexec/lib/versions.py
 // has it. A spec is a prefix, "3.12", meaning the newest release whose
 // version begins with those whole components, or exact, "=4.5". A leading
 // "v" and build metadata ("+11") are ignored; a pre-release ("-rc1") is its

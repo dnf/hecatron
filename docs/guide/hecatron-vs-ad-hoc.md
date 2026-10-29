@@ -36,7 +36,7 @@ language. The difference is everything around them.
 | One language | Remember its command | `hct test rust` |
 | Brief an AI agent | Explain each build | Same commands everywhere; `hct doctor` says what's missing |
 | Fails on one machine | Compare toolchains by hand | `hct doctor` on both |
-| Upgrade a toolchain | Update docs, CI and Dockerfile | One `version` setting ([design §18](design.md); rolling out per language) |
+| Upgrade a toolchain | Update docs, CI and Dockerfile | One `version` setting ([toolchain versions](versions.md); rolling out per language) |
 
 ## What breaks
 

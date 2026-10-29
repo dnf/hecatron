@@ -1,4 +1,4 @@
-"""Tests for toolchain versions (docs/design.md §18): the version syntax, pin
+"""Tests for toolchain versions (docs/guide/versions.md): the version syntax, pin
 files, resolution per component and the per-language environment.
 
     python3 -m unittest discover -s tests
@@ -698,8 +698,8 @@ class SdkrootFromXcrunTest(VersionFixture):
 
 
 class DockerfileTest(VersionFixture):
-    """A snippet's each-version block, written once per version (§18,
-    "Generated files")."""
+    """A snippet's each-version block, written once per version (docs/guide/versions.md,
+    "Installing and using a version")."""
 
     def snippet(self, text: str, lang: str = "tool") -> None:
         write(os.path.join(self.builtin, lang, "dockerfile"), text)

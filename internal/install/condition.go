@@ -9,7 +9,7 @@ import (
 )
 
 // Condition is a test an install makes: the hooks' tier-1 vocabulary
-// (file, missing, all, any, not; §19) and what installers test today
+// (file, missing, all, any, not; docs/contributing/design.md §19) and what installers test today
 // (glob, command, run, platform). One test per condition; Because is the
 // reason the doctor gives when a tool it makes needed is missing.
 //

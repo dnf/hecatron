@@ -1,6 +1,6 @@
 // Package actions plans a language's default hooks (test, lint, build,
 // clean...) from its definition: the rules in its config.json, or the Go
-// family it names for build systems several languages share (docs/design.md
+// family it names for build systems several languages share (docs/contributing/design.md
 // §19).
 package actions
 

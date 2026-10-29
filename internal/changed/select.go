@@ -8,7 +8,7 @@ import (
 	"github.com/dnf/hecatron/internal/project"
 )
 
-// What a changed file selects (docs/runner.md, "Only what changed"):
+// What a changed file selects (docs/guide/runner.md, "Only what changed"):
 //
 //   - .hecatron/languages/<lang>/...: that language, every component (its
 //     hooks or definition changed);

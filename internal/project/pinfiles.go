@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 )
 
-// The formats pin and support files are read in (docs/design.md §18), as
+// The formats pin and support files are read in (docs/guide/versions.md), as
 // libexec/lib/versions.py reads them: each turns a file's text into a spec,
 // into "names no version" (a channel like "stable", which only the
 // ecosystem's own tool resolves), or into "doesn't pin this language" (a

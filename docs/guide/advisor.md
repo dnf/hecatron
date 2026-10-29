@@ -103,7 +103,7 @@ Each rule over files has an `id`, `category`, `level`, an optional `scope`
 optional `when` and an `expect` condition, a `message`, a one-sentence
 `why` and a `link` to the ecosystem's own documentation. Where `when` holds
 and `expect` doesn't, the advisor reports the message. Conditions are a
-definition's step conditions (docs/design.md §19): `file`, `missing`,
+definition's step conditions ([design record §19](../contributing/design.md#language-definitions-data-families-scripts)): `file`, `missing`,
 `tracked` (committed to git), `contains` (`[glob, regex]`), with `"up":
 true` to look in each directory up to the root as tools that search upward
 do, and `all`, `any`, `not`. For example:

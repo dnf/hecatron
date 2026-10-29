@@ -14,7 +14,7 @@ import (
 	"github.com/dnf/hecatron/internal/secrets"
 )
 
-// hct audit's secret scan (docs/audit.md, "Secrets"): gitleaks, a job
+// hct audit's secret scan (docs/guide/audit.md, "Secrets"): gitleaks, a job
 // beside the languages' in `hct audit` (as lint's shell is beside lint's),
 // and the target `secrets` alone; `hct install secrets` installs it.
 

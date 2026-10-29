@@ -1,5 +1,5 @@
 // Package reports writes a run's results in the formats CI systems and
-// forges read (docs/design.md §20; docs/runner.md, "Reports"): JUnit XML,
+// forges read (docs/guide/ci.md; docs/guide/runner.md, "Reports"): JUnit XML,
 // SARIF 2.1.0, GitLab Code Quality JSON and a GitHub Actions job summary.
 // They're written with the normal output, not instead of it.
 package reports

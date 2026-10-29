@@ -1,4 +1,4 @@
-// Package secrets is hct audit's secret scan (docs/audit.md, "Secrets"):
+// Package secrets is hct audit's secret scan (docs/guide/audit.md, "Secrets"):
 // gitleaks, pinned and checksummed, run on the working tree (or the git
 // history) with what git ignores and the project's ignored paths left out.
 // A secret never leaves gitleaks: it runs with --redact, and only a
@@ -321,7 +321,7 @@ func Write(w io.Writer, findings []Finding, history bool) {
 	}
 	if len(findings) > 0 {
 		_, _ = fmt.Fprintln(w, "Remove and rotate a real secret. For a false positive, add its fingerprint to .gitleaksignore,")
-		_, _ = fmt.Fprintln(w, `or its path to "audit": {"secrets": {"ignore": [...]}} in .hecatron/config.json (docs/audit.md).`)
+		_, _ = fmt.Fprintln(w, `or its path to "audit": {"secrets": {"ignore": [...]}} in .hecatron/config.json (docs/guide/audit.md).`)
 	}
 }
 

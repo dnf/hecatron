@@ -156,8 +156,8 @@ _classify() {
         examples/*)
             _select test_ubuntu test_macos bash_3_2 ;;
 
-        # Documentation. The Go advisor's tests read docs/advisor.md.
-        docs/advisor.md)
+        # Documentation. The Go advisor's tests read docs/guide/advisor.md.
+        docs/guide/advisor.md)
             _select docs go ;;
         docs/* | changelog.d/* | assets/* | llms.txt)
             _select docs ;;

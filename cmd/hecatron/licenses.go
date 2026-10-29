@@ -26,7 +26,7 @@ for are listed as not covered. With "licenses" in .hecatron/config.json
 (allow, deny, ignore, includeDev), a package the policy doesn't permit
 fails the command (exit 1). Needs OSV-Scanner (hecatron install rust
 installs it, as do the other languages whose audit uses it) and the
-network. See docs/licenses.md.
+network. See docs/guide/licenses.md.
 `
 
 // licenses is `hecatron licenses` (#132). It exists only in the Go core.

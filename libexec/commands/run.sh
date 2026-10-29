@@ -100,7 +100,7 @@ _usage() {
         printf '%s\n' \
             "  --fail-on SEVERITY" \
             "             Fail on a finding at or above critical, high (default), moderate or low;" \
-            "             a project sets its own with \"audit\": {\"failOn\": ...} (docs/audit.md)"
+            "             a project sets its own with \"audit\": {\"failOn\": ...} (docs/guide/audit.md)"
     fi
     if [ "${_action}" = "outdated" ]; then
         printf '%s\n' \
@@ -111,11 +111,11 @@ _usage() {
     if [ "${_action}" = "format" ]; then
         printf '%s\n' \
             "  --check    Change nothing; fail, listing the files the formatter would change" \
-            "             (hecatron lint runs this check too; docs/format.md)"
+            "             (hecatron lint runs this check too; docs/guide/format.md)"
     fi
     printf '%s\n' \
         "" \
-        "With hecatron's binary (install.sh downloads it with a release; docs/runner.md):" \
+        "With hecatron's binary (install.sh downloads it with a release; docs/guide/runner.md):" \
         "  --output FORMAT" \
         "             human, agent, json, ci, junit or sarif (else HECATRON_OUTPUT;" \
         "             agent output for AI agents)" \

@@ -1,4 +1,4 @@
-// Command hecatron (also hct) is the Go core (docs/design.md §19), growing
+// Command hecatron (also hct) is the Go core (docs/contributing/design.md §19), growing
 // in place of bin/hecatron one command at a time. It finds HECATRON_HOME and
 // the project root as bin/hecatron does and sets the same environment; the
 // commands ported so far run here, and every other command runs the

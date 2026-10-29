@@ -4,23 +4,23 @@ A language definition teaches hecatron how to install, check and package a
 language's toolchain. Built-in definitions live in `languages/<lang>/` in this
 repository; a project can add its own (or override any file) in
 `.hecatron/languages/<lang>/` with the same layout. See
-[design.md §7](design.md#7-resolving-a-languages-files) for how the two
+[resolving a language's files](../guide/configuration.md#resolving-a-languages-files) for how the two
 combine.
 
 ## Files
 
 | File | Purpose | Required |
 | --- | --- | --- |
-| `config.json` | `abbreviation`, `dependency` (the command that proves the toolchain is installed), optional `lintDependency`, `detect` (build-file globs `hecatron init` looks for), optional `detectSources` (source globs, used where no build file is found, and to tell whether a directory named for the language holds its code), optional `detectUnless` (files that, beside a hit, mean another language), optional `detectYields` (where a hit's directory and those below hold more tracked files matching `where` than matching `outnumber`, less `except`, the directory is language `to`'s, whatever `to`'s `detectUnless` says: TypeScript's gives a `tsconfig.json` beside mostly `*.js` to JavaScript; build output doesn't count: the directories directly below named in `skipDirs`, the one the build file names at the key path `outputDir`, e.g. `["compilerOptions", "outDir"]`, read with comments and trailing commas, and, with `twins`, a `where` file whose stem an `outnumber` file shares), optional `detectTests` (test-file globs that count inside a `test/` or `tests/` directory for a language with no other hit, placing it at the directory tested, e.g. Bash's `["*.bats"]`), optional `detectScript` (an npm script a `package.json` hit must have, e.g. JavaScript's `"test"`, so a tooling package isn't a language), optional `sharedBuildFiles` (build files other languages use too, such as `CMakeLists.txt`, which count for the language with the most `detectSources` files beside them or under their `src/` and `include/`), optional `dirNames` (other names the language's directory goes by, e.g. `["dotnet", "netstd"]` for C#), optional version keys (`version`, `pinFiles`, `supportFiles`, `floorFiles`; see [design.md §18](design.md), where `floorFiles` raise a pin that is a floor (`global.json`'s `latestMajor`) to the major they need, as .NET's projects' target frameworks do, where a `supportFiles` entry with `"selects": false` says what to install but not what runs, as for .NET, whose `dotnet` runs its newest SDK, and a `pinFiles` or `supportFiles` entry's `"strip"` is a regular expression, in the syntax Python's `re` and Go's `regexp` share, removed from the version the file gives, as `"-otp-[0-9]+$"` reads asdf's Elixir `1.17.3-otp-27` as 1.17.3), optional `path` (toolchain directories to put on PATH for this language, e.g. `["~/.cargo/bin"]`; entries without `{home}` and the like also go on the PATH of the project's other languages, after their own), optional `sdkrootFromXcrun` (on macOS, set `SDKROOT` to the selected Xcode's SDK, `xcrun --show-sdk-path`, when it isn't set: Ada's, since GNAT's gcc links against the Command Line Tools' SDK, which can be newer than the selected Xcode's `ld` knows, where clang asks xcrun),, optional `installNeedsRoot` (the platforms, `linux` and `macos`, where `install.sh` may need root: `hct install` and `doctor --fix` ask for the password up front there; without it, everywhere), optional `unsupported` (platforms with no toolchain upstream, e.g. `["linux-aarch64"]`, shown as ➖ in the [coverage matrix](coverage.md)), optional `cache` (what generated CI caches with `"ci": {"cache": true}`, [design.md §11](design.md#11-generated-files): `toolchain`, the directories the installer puts the toolchain in, keyed on the pin and support files; `dependencies`, where the package manager downloads to, keyed on `lockFiles`; each directory either `~/...` or relative to a component's directory, none inside another, and only ones an unprivileged user can restore, so not apt's or `/opt`'s; e.g. Rust's `{"toolchain": ["~/.rustup", "~/.cargo/bin"], "dependencies": ["~/.cargo/registry", "~/.cargo/git"], "lockFiles": ["Cargo.lock"]}`), optional `dependabot` (the [Dependabot package ecosystem](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#package-ecosystem-) a component's directory is updated as: a name, `"cargo"`, or rules each taking the directory when one of its `files` is there and none of its `unless` is, e.g. Python's `[{"ecosystem": "uv", "files": ["uv.lock"]}, {"ecosystem": "pip", "unless": ["uv.lock"]}]`; package managers only, not toolchain pins), and optional `renovate` (the [Renovate managers](https://docs.renovatebot.com/modules/manager/) for its dependencies, e.g. `["cargo"]`) | Yes |
-| `install.json` | The install as data, which hecatron's binary runs in place of `install.sh` (below; [installers.md](installers.md#installs-as-data)) | No |
+| `config.json` | `abbreviation`, `dependency` (the command that proves the toolchain is installed), optional `lintDependency`, `detect` (build-file globs `hct init` looks for), optional `detectSources` (source globs, used where no build file is found, and to tell whether a directory named for the language holds its code), optional `detectUnless` (files that, beside a hit, mean another language), optional `detectYields` (where a hit's directory and those below hold more tracked files matching `where` than matching `outnumber`, less `except`, the directory is language `to`'s, whatever `to`'s `detectUnless` says: TypeScript's gives a `tsconfig.json` beside mostly `*.js` to JavaScript; build output doesn't count: the directories directly below named in `skipDirs`, the one the build file names at the key path `outputDir`, e.g. `["compilerOptions", "outDir"]`, read with comments and trailing commas, and, with `twins`, a `where` file whose stem an `outnumber` file shares), optional `detectTests` (test-file globs that count inside a `test/` or `tests/` directory for a language with no other hit, placing it at the directory tested, e.g. Bash's `["*.bats"]`), optional `detectScript` (an npm script a `package.json` hit must have, e.g. JavaScript's `"test"`, so a tooling package isn't a language), optional `sharedBuildFiles` (build files other languages use too, such as `CMakeLists.txt`, which count for the language with the most `detectSources` files beside them or under their `src/` and `include/`), optional `dirNames` (other names the language's directory goes by, e.g. `["dotnet", "netstd"]` for C#), optional version keys (`version`, `pinFiles`, `supportFiles`, `floorFiles`; see [toolchain versions](../guide/versions.md), where `floorFiles` raise a pin that is a floor (`global.json`'s `latestMajor`) to the major they need, as .NET's projects' target frameworks do, where a `supportFiles` entry with `"selects": false` says what to install but not what runs, as for .NET, whose `dotnet` runs its newest SDK, and a `pinFiles` or `supportFiles` entry's `"strip"` is a regular expression, in the syntax Python's `re` and Go's `regexp` share, removed from the version the file gives, as `"-otp-[0-9]+$"` reads asdf's Elixir `1.17.3-otp-27` as 1.17.3), optional `path` (toolchain directories to put on PATH for this language, e.g. `["~/.cargo/bin"]`; entries without `{home}` and the like also go on the PATH of the project's other languages, after their own), optional `sdkrootFromXcrun` (on macOS, set `SDKROOT` to the selected Xcode's SDK, `xcrun --show-sdk-path`, when it isn't set: Ada's, since GNAT's gcc links against the Command Line Tools' SDK, which can be newer than the selected Xcode's `ld` knows, where clang asks xcrun),, optional `installNeedsRoot` (the platforms, `linux` and `macos`, where `install.sh` may need root: `hct install` and `doctor --fix` ask for the password up front there; without it, everywhere), optional `unsupported` (platforms with no toolchain upstream, e.g. `["linux-aarch64"]`, shown as ➖ in the [coverage matrix](../guide/coverage.md)), optional `cache` (what generated CI caches with `"ci": {"cache": true}`, [generated files](../guide/generated-files.md): `toolchain`, the directories the installer puts the toolchain in, keyed on the pin and support files; `dependencies`, where the package manager downloads to, keyed on `lockFiles`; each directory either `~/...` or relative to a component's directory, none inside another, and only ones an unprivileged user can restore, so not apt's or `/opt`'s; e.g. Rust's `{"toolchain": ["~/.rustup", "~/.cargo/bin"], "dependencies": ["~/.cargo/registry", "~/.cargo/git"], "lockFiles": ["Cargo.lock"]}`), optional `dependabot` (the [Dependabot package ecosystem](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#package-ecosystem-) a component's directory is updated as: a name, `"cargo"`, or rules each taking the directory when one of its `files` is there and none of its `unless` is, e.g. Python's `[{"ecosystem": "uv", "files": ["uv.lock"]}, {"ecosystem": "pip", "unless": ["uv.lock"]}]`; package managers only, not toolchain pins), and optional `renovate` (the [Renovate managers](https://docs.renovatebot.com/modules/manager/) for its dependencies, e.g. `["cargo"]`) | Yes |
+| `install.json` | The install as data, which hecatron's binary runs in place of `install.sh` (below; [the install engine](install-engine.md)) | No |
 | `install.sh` | Install the toolchain on macOS and Linux; idempotent, and repairs what `doctor.sh` detects | Yes |
 | `uninstall.sh` | Remove the toolchain (a no-op with a message when other languages share it) | Yes |
 | `doctor.sh` | Detect a toolchain that is installed but broken, one `problem` per issue; `note` (a line starting `note: `) says something worth knowing that isn't a problem, such as which runtime a component's toolchain runs on, shown under the language without failing it | No |
-| `installed.sh` | The versions installed on this machine, one `version<TAB>home` line each; offline and fast. The core picks the version a component needs from it ([design.md §18](design.md)) | No |
+| `installed.sh` | The versions installed on this machine, one `version<TAB>home` line each; offline and fast. The core picks the version a component needs from it ([toolchain versions](../guide/versions.md)) | No |
 | `releases.sh` | The language's releases, newest first, as `version<TAB>flags` (`lts`, `eol`); `endoflife_releases <product>` from `_common.sh` covers languages endoflife.date tracks | No |
-| `dockerfile` | Snippet for `hecatron dockerfile`: `# apt:` packages, `# after: <lang>`, `RUN`/`ENV` blocks, an `# each-version` … `# end-each-version` block repeated per version ([design §18](design.md#18-toolchain-versions)). Its `curl` needs no retry options: the generated Dockerfile's curlrc retries ([design §11](design.md#11-generated-files)) | No |
-| `advice.json` | `hct advisor`'s rules for the language: its ecosystem's own guidance on lock files, pins, end of life, linter configuration and CI, each citing that ecosystem's documentation, or `include`s of shared sets in `languages/_advice.json` ([advisor.md](advisor.md)); each rule needs a fixture in `internal/advisor/testdata/rules.json` | No |
-| `hooks/test.sh`, `lint.sh`, `build.sh`, `clean.sh`, `audit.sh`, `format.sh`, `deps.sh`, `outdated.sh` | Default hooks for a conventional layout (design.md §9) | No |
+| `dockerfile` | Snippet for `hct dockerfile`: `# apt:` packages, `# after: <lang>`, `RUN`/`ENV` blocks, an `# each-version` … `# end-each-version` block repeated per version ([toolchain versions](../guide/versions.md#installing-and-using-a-version)). Its `curl` needs no retry options: the generated Dockerfile's curlrc retries ([generated files](../guide/generated-files.md)) | No |
+| `advice.json` | `hct advisor`'s rules for the language: its ecosystem's own guidance on lock files, pins, end of life, linter configuration and CI, each citing that ecosystem's documentation, or `include`s of shared sets in `languages/_advice.json` ([advisor.md](../guide/advisor.md)); each rule needs a fixture in `internal/advisor/testdata/rules.json` | No |
+| `hooks/test.sh`, `lint.sh`, `build.sh`, `clean.sh`, `audit.sh`, `format.sh`, `deps.sh`, `outdated.sh` | Default hooks for a conventional layout ([hooks](../guide/hooks.md)) | No |
 
 `config.json`:
 
@@ -56,14 +56,15 @@ deps
 `each_impl` (run a command in every component's implementation, e.g.
 `each_impl ruby bundle install`), `impl_deps` (a component's dependencies,
 through its deps hook), and `problem`/`doctor_done` for doctor
-scripts. See [installers.md](installers.md) for platform behaviour and shared
-toolchains.
+scripts. See [installing toolchains](../guide/installing-toolchains.md) for platform
+behaviour and shared toolchains, and [installer scripts](installer-scripts.md)
+for every helper.
 
 ## Installs as data
 
 Where the installer only installs system packages (with conditions, and
 commands guarded by checks), write `install.json` as well
-([design.md §19](design.md#installs-as-data-77)): the binary installs from
+([the install engine](install-engine.md)): the binary installs from
 it, batches its packages with other languages', checks and repairs it in
 `hct doctor`, and uninstalls from its receipt. Keep `install.sh`,
 `uninstall.sh` and `doctor.sh` doing the same, for `bin/hecatron` without
@@ -118,7 +119,7 @@ tracked files. `format.sh` rewrites files with the language's formatter, or
 with `HECATRON_FORMAT_CHECK=1` changes nothing and fails listing the files
 it would change (`languages/_format.sh` has the shared helpers); a lint hook
 whose linter already checks formatting calls `checks_format` so `hct lint`
-doesn't check twice ([format.md](format.md)). `deps.sh` fetches the
+doesn't check twice ([format.md](../guide/format.md)). `deps.sh` fetches the
 component's dependencies, held to its lock file; where other hooks install
 missing dependencies too, both call one `*_fetch` function in
 `languages/_hooks.sh` (the rest are in `languages/_deps.sh`).
@@ -126,7 +127,7 @@ missing dependencies too, both call one `*_fetch` function in
 ## Checklist
 
 - [ ] `config.json` with `dependency` and `detect`, and for
-      [languages.md](languages.md) `name`, `homepage`, `summary`,
+      [languages.md](../guide/languages.md) `name`, `homepage`, `summary`,
       `buildSystems`, `testing`, `linting` and (with a format hook)
       `formatting`, each just the tools' names. A condition (only with a
       config file, only when the build applies it) goes in `notes`, keyed by
@@ -140,7 +141,7 @@ missing dependencies too, both call one `*_fetch` function in
 - [ ] `doctor.sh` if the toolchain can be present but broken
 - [ ] `dockerfile` snippet
 - [ ] `advice.json` with the ecosystem's own recommendations, if it has
-      any ([advisor.md](advisor.md))
+      any ([advisor.md](../guide/advisor.md))
 - [ ] `tests/docker/smoke/<lang>.sh`, a smoke test that builds and runs a small
       program and checks its output (and runs the language's linter, where
       hecatron installs one), and `tests/docker/install-test.sh ubuntu:24.04 <lang>`

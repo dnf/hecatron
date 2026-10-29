@@ -13,7 +13,7 @@ import (
 	"github.com/dnf/hecatron/internal/project"
 )
 
-// Installs from data (docs/design.md §19, "Installs as data"): a language
+// Installs from data (docs/contributing/install-engine.md): a language
 // whose install.json this binary can carry out is installed, repaired,
 // checked and uninstalled from it; any other runs its scripts.
 
@@ -119,7 +119,7 @@ func installLanguage(p *project.Project, choice installerChoice, env []string) (
 
 // missingVersions are the exact versions a "managed" toolchain installs
 // besides its default: each one the components resolve to that isn't
-// installed yet (§18), a prefix as the newest release in the definition's
+// installed yet (docs/guide/versions.md), a prefix as the newest release in the definition's
 // releases.json it matches, so planning stays offline.
 func missingVersions(p *project.Project, lang string) ([]string, error) {
 	missing, err := p.MissingVersions(lang)

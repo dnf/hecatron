@@ -26,8 +26,8 @@ def selected(*paths):
 
 class CiJobsTest(unittest.TestCase):
     def test_documentation_runs_only_the_docs_job(self):
-        for path in ("README.md", "CONTRIBUTING.md", "LICENSE.md", "llms.txt", "docs/design.md",
-                     "docs/coverage.md", "changelog.d/ci-select-jobs.md", "changelog.d/README.md",
+        for path in ("README.md", "CONTRIBUTING.md", "LICENSE.md", "llms.txt", "docs/contributing/design.md",
+                     "docs/guide/coverage.md", "changelog.d/ci-select-jobs.md", "changelog.d/README.md",
                      "assets/logo/logo.svg"):
             with self.subTest(path=path):
                 self.assertEqual(selected(path), {"docs"})
@@ -37,7 +37,7 @@ class CiJobsTest(unittest.TestCase):
         self.assertEqual(outputs()["test_os"], "[]")
 
     def test_the_go_advisors_tests_read_its_doc(self):
-        self.assertEqual(selected("docs/advisor.md"), {"docs", "go"})
+        self.assertEqual(selected("docs/guide/advisor.md"), {"docs", "go"})
 
     def test_go_code(self):
         for path in ("cmd/hecatron/main.go", "internal/project/project.go", "internal/generate/ci_test.go"):

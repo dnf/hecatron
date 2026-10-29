@@ -11,7 +11,7 @@ import (
 	"github.com/dnf/hecatron/internal/project"
 )
 
-// The dependency update configuration (docs/design.md §11, §20), which
+// The dependency update configuration (docs/guide/generated-files.md, docs/guide/ci.md), which
 // only the Go core writes: .github/dependabot.yml with an "updates" entry
 // per package ecosystem and directory, and renovate.json enabling the
 // managers of the project's languages for their components' directories.

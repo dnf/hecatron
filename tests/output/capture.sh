@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Recaptures the recorded tool output in tests/output/<tool>/<version>/
-# (docs/design.md, "When a tool's output changes"): each fixture under
+# (docs/contributing/design.md, "When a tool's output changes"): each fixture under
 # fixtures/ fails on purpose, and the log hecatron writes for it is the sample.
 #
 #   tests/output/capture.sh <image> [case...]

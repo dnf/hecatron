@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 )
 
-// Detection (docs/design.md §10): which languages a repository uses and
+// Detection (docs/guide/init.md): which languages a repository uses and
 // where, from its tracked files, as manage.py's detect_languages,
 // infer_layout and detected_config decide it for hecatron init and for a
 // repository read without a config of its own.

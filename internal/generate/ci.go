@@ -11,7 +11,7 @@ import (
 )
 
 // The generated CI beyond each language's GitHub workflow template, which
-// only the Go core writes (docs/design.md §11, §20): a GitLab pipeline with
+// only the Go core writes (docs/guide/generated-files.md, docs/guide/ci.md): a GitLab pipeline with
 // one job per language, and caching of toolchains and dependencies, added
 // to the GitHub workflows and the GitLab jobs when config.json says
 // "ci": {"cache": true}.
@@ -304,7 +304,7 @@ func GitLabCI(p *project.Project, settings project.CISettings, version string) (
 		for _, command := range script {
 			lines = append(lines, "    - "+yamlScalar(command))
 		}
-		// HECATRON_REPORT_DIR's files (docs/runner.md, "Reports"): the
+		// HECATRON_REPORT_DIR's files (docs/guide/runner.md, "Reports"): the
 		// tests for the merge request's test widget, lint's findings for
 		// its code quality widget; kept when the job fails too.
 		lines = append(lines, "  artifacts:", "    when: always", "    reports:",

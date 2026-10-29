@@ -196,13 +196,13 @@ func TestLibrary(t *testing.T) {
 		t.Errorf("only %d data rules", len(rules))
 	}
 	ids := lib.IDs()
-	doc, err := os.ReadFile("../../docs/advisor.md")
+	doc, err := os.ReadFile("../../docs/guide/advisor.md")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, id := range ids {
 		if !strings.Contains(string(doc), "`"+id+"`") {
-			t.Errorf("docs/advisor.md doesn't list %s", id)
+			t.Errorf("docs/guide/advisor.md doesn't list %s", id)
 		}
 	}
 	for _, want := range []string{"go/sum-committed", "node/toolchain-pinned", "python/toolchain-end-of-life", "rust/toolchain-behind", "node/lock-matches-manifest", "ci/configured", "audit/failed"} {
