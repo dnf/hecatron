@@ -24,10 +24,10 @@ _builds="https://builds.hex.pm/builds"
 # knows its own.
 _wrapper_marker="hecatron's default Elixir"
 
-# Erlang through its own installer first: Homebrew's newest erlang and
-# rebar3, or, on Linux, the distribution's with erlang-dev's headers and
-# includes, without which a dependency with a lexer or parser (erlex's .xrl,
-# through leex) can't compile.
+# Erlang through its own installer first (Homebrew's newest erlang and
+# rebar3; on Linux builds.hex.pm's OTP on Ubuntu, else the distribution's
+# with erlang-dev's headers and includes, without which a dependency with a
+# lexer or parser, erlex's .xrl through leex, can't compile).
 install_macos() {
     bash "$(dirname "$0")/../erlang/install.sh"
     _install_default
@@ -61,11 +61,6 @@ _load_elixir_builds() {
 # The OTP majors an Elixir release is built for, newest first.
 _otp_majors() { awk -F'\t' -v version="$1" '$1 == version {print $2}' <<<"${_elixir_builds}" | sort -rn; }
 
-# "major<TAB>root" of an erl: its OTP release and the directory holding it.
-# Not on stdin, which erl reads, and the loops calling this are reading.
-_otp_of() {
-    "$1" -noshell -eval 'io:format("~s\t~s~n", [erlang:system_info(otp_release), code:root_dir()]), halt().' </dev/null 2>/dev/null
-}
 # The erls an Elixir could run on: the one on PATH first, then those
 # installed beside it, newest first.
 _erl_candidates() {
@@ -86,7 +81,7 @@ _find_otp() {
     local majors="$1" erl major root
     while IFS= read -r erl; do
         [ -n "${erl}" ] || continue
-        IFS=$'\t' read -r major root < <(_otp_of "${erl}") || continue
+        IFS=$'\t' read -r major root < <(otp_of "${erl}") || continue
         if grep -qx "${major}" <<<"${majors}"; then
             echo "${root}"
             return
@@ -94,44 +89,10 @@ _find_otp() {
     done < <(_erl_candidates)
 }
 
-# On Ubuntu, builds.hex.pm's OTP build (the ones erlef/setup-beam installs),
-# into /opt/erlang/<version>; prints its root, so what it says goes to stderr. Debian has no builds there, so
-# a Debian machine runs the Elixirs its own Erlang supports.
-_install_otp_linux() {
-    local major="$1" arch builds version sha256 work
-    case "$(uname -m)" in
-        x86_64) arch=amd64 ;;
-        aarch64 | arm64) arch=arm64 ;;
-        *) return 1 ;;
-    esac
-    # shellcheck disable=SC1091 # the running system's, not this repository's
-    . /etc/os-release
-    [ "${ID}" = "ubuntu" ] || return 1
-    builds="${_builds}/otp/${arch}/ubuntu-${VERSION_ID}"
-    read -r version sha256 < <(curl -fsSL "${builds}/builds.txt" 2>/dev/null |
-        awk -v major="${major}" '$1 ~ ("^OTP-" major "(\\.[0-9]+)*$") {print substr($1, 5), $4}' | sort -rV | head -1) || return 1
-    [ -n "${version}" ] || return 1
-    if [ ! -x "${_erlang_root}/${version}/bin/erl" ]; then
-        log "Installing OTP ${version} from builds.hex.pm..." >&2
-        work="$(mktemp -d)"
-        # Called in a command substitution, where set -e doesn't apply.
-        curl -fsSL -o "${work}/otp.tar.gz" "${builds}/OTP-${version}.tar.gz" || return 1
-        if [ "$(sha256_of "${work}/otp.tar.gz")" != "${sha256}" ]; then
-            rm -rf "${work}"
-            echo "error: the OTP ${version} download doesn't match its checksum" >&2
-            return 1
-        fi
-        $SUDO mkdir -p "${_erlang_root}/${version}" &&
-            $SUDO tar -C "${_erlang_root}/${version}" --strip-components 1 -xzf "${work}/otp.tar.gz" &&
-            (cd "${_erlang_root}/${version}" && $SUDO ./Install -minimal "${_erlang_root}/${version}" >/dev/null) || {
-            rm -rf "${work}"
-            $SUDO rm -rf "${_erlang_root:?}/${version}"
-            return 1
-        }
-        rm -rf "${work}"
-    fi
-    echo "${_erlang_root}/${version}"
-}
+# On Ubuntu, builds.hex.pm's OTP build into /opt/erlang/<version>; prints
+# its root, so what it says goes to stderr. Debian has no builds there, so a
+# Debian machine runs the Elixirs its own Erlang supports.
+_install_otp_linux() { otp_install_ubuntu "$1" "${_erlang_root}" "${SUDO}"; }
 # On macOS, Homebrew's erlang@<major>; prints its root, so what it says goes
 # to stderr.
 _install_otp_macos() {
@@ -154,7 +115,7 @@ _otp_for() {
     fi
     if [ -z "${root}" ]; then
         local have
-        have="$(_otp_of "$(command -v erl 2>/dev/null || echo erl)" | cut -f1)"
+        have="$(otp_of "$(command -v erl 2>/dev/null || echo erl)" | cut -f1)"
         echo "error: Elixir ${version} runs on OTP $(sort -n <<<"${majors}" | paste -sd, -), this machine's Erlang is OTP ${have:-none}, and none of those can be installed here" >&2
         return 1
     fi
@@ -173,11 +134,11 @@ _install_elixir() {
     # Installed, on an OTP it still supports: an upgrade (Homebrew's erlang,
     # a distribution release) can leave the link at a newer or missing one.
     if [ -x "${home}/bin/elixir" ] && [ -x "${home}/erlang/bin/erl" ] &&
-        grep -qx "$(_otp_of "${home}/erlang/bin/erl" | cut -f1)" <<<"$(_otp_majors "${version}")"; then
+        grep -qx "$(otp_of "${home}/erlang/bin/erl" | cut -f1)" <<<"$(_otp_majors "${version}")"; then
         return
     fi
     root="$(_otp_for "${version}")" || return 1
-    major="$(_otp_of "${root}/bin/erl" | cut -f1)" || true
+    major="$(otp_of "${root}/bin/erl" | cut -f1)" || true
     if [ -z "${major}" ]; then
         echo "error: the OTP in ${root} doesn't start" >&2
         return 1

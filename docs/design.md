@@ -804,7 +804,8 @@ Settled on 2026-10-26:
 
 Status: **accepted**; implemented for Python, Go, Rust, Node.js, Java,
 Ruby, PHP, .NET, Elixir and Zig (a `"managed"` release download, §19,
-installs as data); Gleam installs the one version its definition pins. Other installers install one
+installs as data); Gleam and Erlang (its OTP, on Ubuntu) install the one
+version their definition pins. Other installers install one
 version per language, some the latest at install time (Swift, Julia,
 PowerShell, Odin, Crystal).
 
@@ -1476,11 +1477,12 @@ installs, through its script. Without the binary, `bin/hecatron` runs the
 scripts, so a converted language keeps its `install.sh`, `uninstall.sh`
 and `doctor.sh` until 1.0 (#79).
 
-Other installers still run some languages' `install.sh` directly (Elixir's
-and Gleam's run Erlang's). A converted language that something calls
-starts its `install.sh` with `install_from_data <lang>` (`_common.sh`): given
-the binary (`HECATRON_BINARY`, set for every installer the binary runs) and
-not forced to the scripts, it runs `hecatron _install <lang>`, which
+Other installers still run some languages' `install.sh` directly
+(Elixir's and Gleam's scripts, and Gleam's data as a step, run Erlang's). A
+converted language that something calls starts its `install.sh` with
+`install_from_data <lang>` (`_common.sh`): given the binary
+(`HECATRON_BINARY`, set for every installer the binary runs) and not
+forced to the scripts, it runs `hecatron _install <lang>`, which
 installs from the data or exits 125 when it wouldn't (a project's own
 `install.sh`, a platform the data doesn't cover), and the script then
 carries on itself. `_install` never runs a script, so the two can't loop.
@@ -1521,10 +1523,14 @@ don't depend on it.
   the scripts, or before hecatron) it removes nothing and says so;
   `HECATRON_INSTALLER=script` runs the old `uninstall.sh`.
 
-**Converted (stage 1):** Bash, COBOL, D, Erlang, Common Lisp, Octave,
-Pascal, Prolog, Racket, Raku and Tcl. Elixir, the twelfth the survey listed
-as packages only, is no longer: its installer now installs builds.hex.pm's
-releases side by side (#164).
+**Converted (stage 1):** Bash, COBOL, D, Common Lisp, Octave, Pascal,
+Prolog, Racket, Raku and Tcl. Elixir and Erlang, which the survey listed as
+packages only, are no longer: Elixir's installer installs builds.hex.pm's
+releases side by side (#164), and Erlang's builds.hex.pm's OTP build on
+Ubuntu, whose own is too old for current libraries (#206), falling back to
+the distribution's on Debian, which builds.hex.pm doesn't build for. The
+OTP install is shared (`otp_install_ubuntu` in `_common.sh`): Erlang's goes
+in the toolchains directory, Elixir's in `/opt/erlang`.
 
 **Release downloads (stage 2).** A `toolchain.archive` is a release
 download, installed `"versions": "single"` (the definition's default from
@@ -1566,7 +1572,7 @@ default.
   (only ever under the toolchains and links directories).
 
 Converted: **Gleam** (GitHub release, sidecar checksum; Erlang/OTP from
-apt or Homebrew unless an `erl` is there) and **Zig** (ziglang.org,
+Erlang's `install.sh`, a step, unless the `erl` on PATH is OTP 26 or newer) and **Zig** (ziglang.org,
 checksum and URL from its index; it installed the latest release before,
 and now the version `config.json` pins and, `"managed"`, each line a
 component's `build.zig.zon` names). Both gain `version`, `track` and

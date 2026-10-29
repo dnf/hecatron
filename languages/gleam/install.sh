@@ -21,5 +21,6 @@ if ! "${_home}/gleam" --version >/dev/null 2>&1; then
     toolchain_release_install gleam "${_version}" "${_url}" "$(curl -fsSL "${_url}.sha256" | cut -d' ' -f1)" 0
 fi
 toolchain_link "${_home}" gleam
-# Gleam compiles to Erlang, and runs (and tests) on the BEAM.
-has erl || bash "$(dirname "$0")/../erlang/install.sh"
+# Gleam compiles to Erlang, and runs (and tests) on the BEAM: an OTP its
+# standard library supports (26 or newer), else Erlang's installer's.
+otp_at_least 26 || bash "$(dirname "$0")/../erlang/install.sh"
