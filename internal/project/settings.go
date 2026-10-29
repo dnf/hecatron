@@ -23,3 +23,25 @@ func (p *Project) Releases(lang string) ([]Release, error) {
 	}
 	return releases, nil
 }
+
+// NewestRelease is the newest release in a language's releases.json that a
+// spec matches, "" for none: a prefix resolved offline, for an installer
+// that installs exact versions.
+func (p *Project) NewestRelease(lang, specText string) (string, error) {
+	wanted, err := parseSpec(specText)
+	if err != nil {
+		return "", err
+	}
+	rows, err := p.releaseDates(lang)
+	if err != nil {
+		return "", err
+	}
+	var matching []string
+	for _, r := range rows {
+		if wanted.matches(r.version) {
+			matching = append(matching, r.version)
+		}
+	}
+	best, _ := newest(matching)
+	return best, nil
+}

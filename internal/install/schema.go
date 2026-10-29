@@ -211,10 +211,14 @@ type Archive struct {
 
 // ChecksumIndex is a JSON document listing downloads' SHA-256s: Path is the
 // keys leading to one, each a template (["{version}", "{arch}-{os}",
-// "shasum"]), since a key can hold dots.
+// "shasum"]), since a key can hold dots. URLPath, when set, leads to the
+// download's own URL in the same index, which then replaces the archive's
+// template: a project that renamed its downloads (Zig's before 0.14.1 are
+// zig-linux-x86_64-*, later ones zig-x86_64-linux-*) still lists them all.
 type ChecksumIndex struct {
-	URL  string   `json:"url"`
-	Path []string `json:"path"`
+	URL     string   `json:"url"`
+	Path    []string `json:"path"`
+	URLPath []string `json:"urlPath,omitempty"`
 }
 
 // Vendor is an installer the toolchain's own project publishes.
@@ -384,8 +388,8 @@ var archiveKeys = []string{"url", "os", "arch", "ext", "sha256", "checksum", "ch
 // unsupported says why this binary can't install the archive on platform.
 func (a *Archive) unsupported(versions string, platform Platform) string {
 	switch {
-	case versions != "single":
-		return `only "versions": "single" release downloads are installed by this binary yet`
+	case versions != "single" && versions != "managed":
+		return `a release download has "versions": "single" or "managed"`
 	case a.Resolver != "":
 		return "its download needs resolver " + a.Resolver + ", which this binary doesn't run yet"
 	case a.OS[platform.OS] == "" || a.Arch[platform.Arch] == "":
