@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check that every external link in hecatron's documentation still works:
 the tracked Markdown files (README, docs/, CHANGELOG...), llms.txt, the
-tool links docs/languages.md is built from, and the documentation each
+tool links docs/guide/languages.md is built from, and the documentation each
 advisor rule cites (languages/*/advice.json, languages/_advice.json).
 
     python3 libexec/maintenance/check_links.py              # report; exit 1 if any is broken

@@ -26,6 +26,7 @@ type fakeSystem struct {
 	served    map[string][]byte   // URLs Fetch answers
 	fetched   []string
 	ran       []string
+	onRun     func(argv []string) // what a command does besides apt's
 }
 
 func (f *fakeSystem) Fetch(url string) (io.ReadCloser, error) {
@@ -80,6 +81,24 @@ func (f *fakeSystem) Run(argv []string, _ string, _ []string) error {
 	}
 	if check, ok := f.effects[line]; ok {
 		f.passing[check] = true
+	}
+	if len(argv) == 6 && argv[0] == "install" && argv[1] == "-D" { // install -D -m 644 SOURCE DEST
+		data, err := os.ReadFile(argv[4])
+		if err == nil {
+			err = os.MkdirAll(filepath.Dir(argv[5]), 0o755)
+		}
+		if err == nil {
+			err = os.WriteFile(argv[5], data, 0o644)
+		}
+		return err
+	}
+	if len(argv) > 2 && argv[0] == "rm" && argv[1] == "-f" {
+		for _, file := range argv[2:] {
+			_ = os.Remove(file)
+		}
+	}
+	if f.onRun != nil {
+		f.onRun(argv)
 	}
 	return nil
 }
@@ -282,7 +301,7 @@ func TestUnsupported(t *testing.T) {
 		`{"schema": 2, "toolchain": {}}`: "schema 2 is newer than this binary reads",
 		`{"schema": 1, "installed": {}, "toolchain": {"versions": "system", "packages": {"apt": ["x"]}}}`:                                                                                                   `it uses "installed", which this binary can't install yet`,
 		`{"schema": 1, "toolchain": {"versions": "system", "packages": {"apt": ["x"]}, "releases": {}}}`:                                                                                                    `it uses "toolchain.releases", which this binary can't install yet`,
-		`{"schema": 1, "toolchain": {"versions": "managed", "archive": {"url": "u"}}}`:                                                                                                                      `only "versions": "single" release downloads are installed by this binary yet`,
+		`{"schema": 1, "toolchain": {"versions": "system", "archive": {"url": "u"}}}`:                                                                                                                       `a release download has "versions": "single" or "managed"`,
 		`{"schema": 1, "toolchain": {"versions": "single", "archive": {"url": "u.tar.gz", "os": {"linux": "l"}, "arch": {"x86_64": "x"}, "check": {"path": "{bin}/x"}}}}`:                                   "its download for linux-x86_64 has no checksum",
 		`{"schema": 1, "toolchain": {"versions": "single", "archive": {"url": "u.tar.gz", "os": {"macos": "m"}, "arch": {"x86_64": "x"}, "sha256": {"macos-x86_64": "a"}, "check": {"path": "x"}}}}`:        "it has no download for linux-x86_64",
 		`{"schema": 1, "toolchain": {"versions": "single", "archive": {"url": "u.7z", "os": {"linux": "l"}, "arch": {"x86_64": "x"}, "checksum": "{url}.sha256", "check": {"path": "x"}}}}`:                 `its download's format "" isn't one this binary unpacks`,
@@ -309,7 +328,7 @@ func TestUnsupported(t *testing.T) {
 // managers, the prototype's archives and installers are declined, and
 // every install.json reads.
 func TestBuiltInDefinitions(t *testing.T) {
-	converted := []string{"bash", "cobol", "d", "erlang", "gleam", "lisp", "octave", "pascal", "prolog", "racket", "raku", "tcl", "zig"}
+	converted := []string{"bash", "cobol", "d", "gleam", "lisp", "octave", "pascal", "prolog", "racket", "raku", "tcl", "zig"}
 	paths, _ := filepath.Glob(filepath.Join("..", "..", "languages", "*", FileName))
 	if len(paths) == 0 {
 		t.Fatal("no install.json")

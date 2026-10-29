@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Parity of the two ways a language installs (docs/installers.md): for each
+# Parity of the two ways a language installs (docs/contributing/install-engine.md): for each
 # language, a fresh container installs it with its scripts
 # (HECATRON_INSTALLER=script) and another from its install.json, both with
 # hecatron's binary built from this checkout; each passes

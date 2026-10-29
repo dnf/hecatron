@@ -17,19 +17,55 @@ import (
 // failed to why.
 func (p *Plan) Apply(w io.Writer, receiptsDir string) map[string]error {
 	failed := map[string]error{}
-	if packages := p.missingPackages(p.Languages); len(packages) > 0 {
+	files := map[string][]string{}
+	refresh := false
+	var added []*Action
+	for _, lp := range p.Languages {
+		for _, action := range pendingSources([]*LanguagePlan{lp}) {
+			written, err := action.Source.add(w, lp.Language.Name, p.Manager)
+			files[lp.Language.Name] = append(files[lp.Language.Name], written...)
+			if err != nil {
+				failed[lp.Language.Name] = err
+				break
+			}
+			if action.Source.unavailable {
+				action.evaluate(lp.Language.Ctx, p.Manager) // no longer applies, upgrades nor replaces
+				continue
+			}
+			added = append(added, action)
+			refresh = true
+		}
+	}
+	if replaced := replacedPackages(added); len(replaced) > 0 {
+		command := p.Manager.RemoveCommand(replaced)
+		_, _ = fmt.Fprintf(w, "==> %s\n", strings.Join(command, " "))
+		if err := p.Manager.system.Run(command, "", p.Manager.env); err != nil {
+			for _, lp := range p.Languages {
+				if len(replacedPackages(pendingSources([]*LanguagePlan{lp}))) > 0 && failed[lp.Language.Name] == nil {
+					failed[lp.Language.Name] = fmt.Errorf("removing %s: %w", strings.Join(replaced, " "), err)
+				}
+			}
+		}
+	}
+	var active []*LanguagePlan // those whose sources were added
+	for _, lp := range p.Languages {
+		if failed[lp.Language.Name] == nil {
+			active = append(active, lp)
+		}
+	}
+	if packages := p.missingPackages(active); len(packages) > 0 {
 		var names []string
-		for _, lp := range p.Languages {
+		for _, lp := range active {
 			if len(p.missingPackages([]*LanguagePlan{lp})) > 0 {
 				names = append(names, lp.Language.Name)
 			}
 		}
 		_, _ = fmt.Fprintf(w, "==> Installing %s for %s\n", strings.Join(packages, " "), strings.Join(names, ", "))
-		if err := p.install(w, packages); err != nil && len(names) > 1 {
+		if err := p.install(w, packages, refresh); err != nil && len(names) > 1 {
 			_, _ = fmt.Fprintf(w, "==> That failed (%v); installing each language's packages alone\n", err)
-			for _, lp := range p.Languages {
+			for _, lp := range active {
 				if alone := p.missingPackages([]*LanguagePlan{lp}); len(alone) > 0 {
-					if err := p.install(w, alone); err != nil {
+					if err := p.install(w, alone, false); err != nil {
 						failed[lp.Language.Name] = fmt.Errorf("installing %s: %w", strings.Join(alone, " "), err)
 					}
 				}
@@ -38,11 +74,11 @@ func (p *Plan) Apply(w io.Writer, receiptsDir string) map[string]error {
 			failed[names[0]] = fmt.Errorf("installing %s: %w", strings.Join(packages, " "), err)
 		}
 	}
-	installedNow := p.Manager.Installed(p.missingPackages(p.Languages))
+	installedNow := p.Manager.Installed(p.missingPackages(active))
 	for _, lp := range p.Languages {
 		lang := lp.Language.Name
-		var did installed
-		for _, name := range p.missingPackages([]*LanguagePlan{lp}) {
+		did := installed{files: files[lang]}
+		for _, name := range p.newPackages(lp) {
 			if installedNow[name] {
 				did.packages = append(did.packages, name)
 			}
@@ -51,7 +87,7 @@ func (p *Plan) Apply(w io.Writer, receiptsDir string) map[string]error {
 			failed[lang] = p.unpackAndLink(w, lp, &did)
 		}
 		if failed[lang] == nil {
-			did.steps, failed[lang] = p.runSteps(w, lp)
+			failed[lang] = p.runSteps(w, lp, &did)
 		}
 		if failed[lang] == nil {
 			failed[lang] = p.verify(lp)
@@ -66,8 +102,21 @@ func (p *Plan) Apply(w io.Writer, receiptsDir string) map[string]error {
 	return failed
 }
 
-func (p *Plan) install(w io.Writer, packages []string) error {
-	for _, command := range p.Manager.InstallCommands(packages) {
+// newPackages are the packages the plan installs for a language that
+// weren't installed at all (not those an apt source upgrades), which its
+// receipt lists.
+func (p *Plan) newPackages(lp *LanguagePlan) []string {
+	var packages []string
+	for _, action := range lp.Actions {
+		if action.Applies && !action.Done && action.Kind != KindStep {
+			packages = append(packages, action.Missing...)
+		}
+	}
+	return packages
+}
+
+func (p *Plan) install(w io.Writer, packages []string, refresh bool) error {
+	for _, command := range p.Manager.InstallCommands(packages, refresh) {
 		_, _ = fmt.Fprintf(w, "==> %s\n", strings.Join(command, " "))
 		if err := p.Manager.system.Run(command, "", p.Manager.env); err != nil {
 			return err
@@ -106,7 +155,7 @@ func (p *Plan) unpackAndLink(w io.Writer, lp *LanguagePlan, did *installed) erro
 			return fmt.Errorf("unpacking %s: %w", action.Download.URL, err)
 		}
 		did.homes = append(did.homes, action.Home)
-		if !action.Check.Holds(ctx) {
+		if !action.Check.Holds(action.context(ctx)) {
 			return fmt.Errorf("%s was unpacked into %s, but its check still fails (%s)", action.Label, action.Home, action.Check)
 		}
 	}
@@ -131,10 +180,10 @@ func makeLink(link [2]string) error {
 }
 
 // runSteps runs a language's steps whose checks fail, each checked again
-// after it runs.
-func (p *Plan) runSteps(w io.Writer, lp *LanguagePlan) ([]string, error) {
+// after it runs: its download fetched and verified first, and what an
+// earlier run of it left in the directory it creates removed.
+func (p *Plan) runSteps(w io.Writer, lp *LanguagePlan, did *installed) error {
 	ctx := lp.Language.Ctx
-	var ran []string
 	for _, action := range lp.Actions {
 		if action.Kind != KindStep {
 			continue
@@ -143,16 +192,44 @@ func (p *Plan) runSteps(w io.Writer, lp *LanguagePlan) ([]string, error) {
 		if !action.Applies || action.Done {
 			continue
 		}
-		_, _ = fmt.Fprintf(w, "==> %s: %s\n", lp.Language.Name, strings.Join(action.Run, " "))
-		if err := ctx.System.Run(action.Run, ctx.Root, ctx.Env); err != nil {
-			return ran, fmt.Errorf("%s: %w", strings.Join(action.Run, " "), err)
+		vars := map[string]string{}
+		for name, value := range ctx.Vars {
+			vars[name] = value
 		}
-		ran = append(ran, action.Label)
+		if action.Fetch != nil {
+			_, _ = fmt.Fprintf(w, "==> %s: downloading %s\n", lp.Language.Name, action.Fetch.describe())
+			file, err := action.Fetch.fetchVerified(ctx.System, DownloadsDir(ctx.Env))
+			if err != nil {
+				return err
+			}
+			vars["file"] = file
+		}
+		if action.Creates != "" {
+			if err := removeCreated(action.Creates, dataDir(ctx.Env)); err != nil {
+				return err
+			}
+			did.paths = append(did.paths, action.Creates)
+		}
+		argv := fill(action.Run, vars)
+		_, _ = fmt.Fprintf(w, "==> %s: %s\n", lp.Language.Name, strings.Join(argv, " "))
+		if err := ctx.System.Run(argv, ctx.Root, ctx.Env); err != nil {
+			return fmt.Errorf("%s: %w", strings.Join(argv, " "), err)
+		}
+		did.steps = append(did.steps, action.Label)
 		if !action.Check.Holds(ctx) {
-			return ran, fmt.Errorf("%s ran, but its check still fails: %s", action.Label, action.Problem)
+			return fmt.Errorf("%s ran, but its check still fails: %s", action.Label, action.Problem)
 		}
 	}
-	return ran, nil
+	return nil
+}
+
+// removeCreated removes a directory a step creates, only ever inside
+// hecatron's data directory.
+func removeCreated(path, data string) error {
+	if !strings.HasPrefix(filepath.Clean(path), filepath.Clean(data)+string(filepath.Separator)) {
+		return fmt.Errorf("%s isn't inside %s; not removing it", path, data)
+	}
+	return os.RemoveAll(path)
 }
 
 // verify checks everything the language's install does again.

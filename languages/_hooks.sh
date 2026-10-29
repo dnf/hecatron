@@ -8,6 +8,9 @@
 set -euo pipefail
 
 _hook_action="$(basename "$0" .sh)"
+# hecatron's own directory, for HECATRON_HOME's helpers when a hook runs
+# without it.
+_hooks_home="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 has() { command -v "$1" &>/dev/null; }
 
@@ -298,8 +301,10 @@ jpm_() { if [ -d jpm_tree ]; then run jpm -l "$@"; else run jpm "$@"; fi; }
 # Common Lisp: ASDF systems on SBCL, found from this directory's .asd files
 # (each a system named after its file; foo-test.asd and foo-tests.asd are
 # left to foo's test-op, unless they are all there is). The test passes when
-# the system's test-op signals no error. The user's init file still loads,
-# so a Quicklisp it sets up finds dependencies.
+# the system's test-op signals no error. Dependencies come from Quicklisp:
+# the one the user's init file sets up, else the one the installer puts in
+# hecatron's data directory, which fetches what the systems here (and their
+# test systems) depend on first (languages/lisp/quickload-deps.lisp).
 asdf_hook() {
     exists '*.asd' || unknown "no .asd file"
     local _asd _system _systems=() _tests=()
@@ -319,9 +324,12 @@ asdf_hook() {
     esac
 }
 asdf_run() {
+    local _setup="${XDG_DATA_HOME:-${HOME}/.local/share}/hecatron/quicklisp/setup.lisp"
     run sbcl --noinform --non-interactive \
         --eval '(require :asdf)' \
+        --eval "(unless (find-package \"QL\") (when (probe-file \"${_setup}\") (load \"${_setup}\")))" \
         --eval '(push (uiop:getcwd) asdf:*central-registry*)' \
+        --eval "(when (find-package \"QL\") (load \"${_hooks_home}/languages/lisp/quickload-deps.lisp\"))" \
         --eval "$1"
 }
 # The fasls compiled in place, and ASDF's cache of this directory's
@@ -551,8 +559,8 @@ dart_deps() {
 }
 
 # Without a package.json here: the packages below that are this language's
-# (TypeScript's have a tsconfig.json, JavaScript's don't, as detection
-# decides) and, for test, have a test script, outside dependencies, tests,
+# as detection decides (TypeScript's have a tsconfig.json, unless the
+# package is mostly JavaScript: typescript's "detectYields") and, for test, have a test script, outside dependencies, tests,
 # examples and vendored code, the outermost of nested ones; the hook runs in
 # each, and exits. Returns when there are none.
 node_below() {
@@ -563,10 +571,20 @@ node_below() {
 # node_below's packages, one per line (a function, not a here-document
 # inside the process substitution, which Bash 3.2 can't parse).
 node_below_dirs() {
-    python3 - "$1" "$2" <<'PY'
+    python3 - "$1" "$2" "${HECATRON_HOME:-${_hooks_home}}" "${HECATRON_ROOT:-}" <<'PY'
 import json, os, sys
 
-action, lang = sys.argv[1], sys.argv[2]
+action, lang, home, root = sys.argv[1:5]
+sys.path.insert(0, os.path.join(home, "libexec", "lib"))
+import project  # noqa: E402
+
+typescript = project.read_definition("typescript", root or None)
+
+
+def is_typescript(directory, files):
+    return "tsconfig.json" in files and not project.yields_in(typescript, directory, files)
+
+
 skipped = {"node_modules", "benchmarks", "demo", "demos", "doc", "docs", "example", "examples", "external",
            "fixtures", "playground", "sample", "samples", "test", "tests", "testdata", "third_party", "tools",
            "tutorial", "tutorials", "vendor", "__tests__", "spec"}
@@ -576,7 +594,7 @@ for top, dirs, files in os.walk("."):
     dirs[:] = sorted(d for d in dirs if d not in skipped and not d.startswith(".") and depth < 4)
     if top == "." or "package.json" not in files or any(top.startswith(f + os.sep) for f in found):
         continue
-    if lang == "typescript" and "tsconfig.json" not in files or lang == "javascript" and "tsconfig.json" in files:
+    if lang in ("typescript", "javascript") and is_typescript(top, files) != (lang == "typescript"):
         continue
     try:
         scripts = json.load(open(os.path.join(top, "package.json"))).get("scripts") or {}
@@ -1338,10 +1356,39 @@ cmake_test() {
             run cmake --build "${native_build}" --parallel "$(build_jobs)" --target "${_target}"
             return
         fi
+        cmake_gtest_run "${_part}" && return
         cmake_mentions_tests "$(cmake_source_dir)" ||
             skip "the CMake project defines no tests (no add_test, enable_testing or CTest)"
     fi
     run ctest --test-dir "${_part}" --output-on-failure --no-tests=error
+}
+# GoogleTest programs the build made but CTest doesn't know of (LightGBM's
+# testlightgbm, built with BUILD_CPP_TEST and never add_test()ed): run each,
+# failing if any fails. Returns 1 when there are none.
+cmake_gtest_run() {
+    local _binary _binaries=() _failed=0
+    while IFS= read -r _binary; do _binaries+=("${_binary}"); done < <(cmake_gtest_binaries "$1")
+    [ "${#_binaries[@]}" -gt 0 ] || return 1
+    echo "${HECATRON_LANG:-}: ${_hook_action}: CTest has no tests; running the GoogleTest programs the build made"
+    for _binary in "${_binaries[@]}"; do
+        run "${_binary}" || _failed=1
+    done
+    [ "${_failed}" -eq 0 ] || exit 1
+}
+# The executables in a build directory (outside fetched dependencies and
+# CMake's own checks) and at the top of the source directory, where some
+# projects put them, that carry GoogleTest's command-line flags: read, not
+# run, to tell.
+cmake_gtest_binaries() {
+    local _file
+    # The build's first, then the source directory's, each in a fixed
+    # order whatever the locale; a program found twice runs once.
+    { find "$1" \( -name _deps -o -name CMakeFiles \) -prune -o -type f -perm -u+x -print 2>/dev/null | LC_ALL=C sort
+      find "$(cmake_source_dir)" -maxdepth 1 -type f -perm -u+x -print 2>/dev/null | LC_ALL=C sort; } |
+        grep -Ev '\.(so|dylib|a|sh|py)(\.[0-9.]*)?$' | awk '!seen[$0]++' |
+        while IFS= read -r _file; do
+            if grep -qaF -- '--gtest_list_tests' "${_file}" 2>/dev/null; then echo "${_file}"; fi
+        done
 }
 # The topmost directories below a build directory that CTest runs from
 # (enable_testing() in a subdirectory: Zstandard's build/cmake/), outside

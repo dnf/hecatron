@@ -9,7 +9,7 @@ type Release struct {
 	LTS     bool
 }
 
-// Releases are a language's release dates (docs/design.md §18), from its
+// Releases are a language's release dates (docs/guide/versions.md), from its
 // definition's releases.json or that of the language its "releasesOf"
 // names, oldest first as the table lists them; none when it has no table.
 func (p *Project) Releases(lang string) ([]Release, error) {
@@ -22,4 +22,26 @@ func (p *Project) Releases(lang string) ([]Release, error) {
 		releases = append(releases, Release{r.version, r.date, r.lts})
 	}
 	return releases, nil
+}
+
+// NewestRelease is the newest release in a language's releases.json that a
+// spec matches, "" for none: a prefix resolved offline, for an installer
+// that installs exact versions.
+func (p *Project) NewestRelease(lang, specText string) (string, error) {
+	wanted, err := parseSpec(specText)
+	if err != nil {
+		return "", err
+	}
+	rows, err := p.releaseDates(lang)
+	if err != nil {
+		return "", err
+	}
+	var matching []string
+	for _, r := range rows {
+		if wanted.matches(r.version) {
+			matching = append(matching, r.version)
+		}
+	}
+	best, _ := newest(matching)
+	return best, nil
 }

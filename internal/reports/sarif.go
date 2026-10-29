@@ -253,7 +253,18 @@ type AuditFinding struct {
 	Accepted  bool     `json:"accepted,omitempty"`
 	Reason    string   `json:"reason,omitempty"`
 	Until     string   `json:"until,omitempty"`
+	// A possible secret's (Format SecretsFormat, ID its rule): the commit
+	// it was found in (scanning the history) and gitleaks' fingerprint.
+	// Nothing of the secret itself.
+	Commit      string `json:"commit,omitempty"`
+	Fingerprint string `json:"fingerprint,omitempty"`
 }
+
+// SecretsFormat is the Format of audit's secret scan's findings.
+const SecretsFormat = "gitleaks"
+
+// IsSecret says whether a finding is a possible secret.
+func (f AuditFinding) IsSecret() bool { return f.Format == SecretsFormat }
 
 // severityRank orders severities, unrated as high (as the threshold does).
 func severityRank(severity string) int {
@@ -302,9 +313,13 @@ func WriteAuditSARIF(w io.Writer, version string, findings []AuditFinding) error
 			if title == "" {
 				title = f.ID
 			}
+			kind := "dependency"
+			if f.IsSecret() {
+				kind = "secret"
+			}
 			rule := sarifRule{ID: f.ID, ShortDescription: sarifMessage{Text: title}, HelpURI: f.URL,
 				Default:    &sarifRuleLevel{Level: sarifLevel(f.Severity)},
-				Properties: &sarifRuleProps{Tags: []string{"security", "dependency"}, SecuritySeverity: securitySeverity(f.Severity)}}
+				Properties: &sarifRuleProps{Tags: []string{"security", kind}, SecuritySeverity: securitySeverity(f.Severity)}}
 			if len(f.Aliases) > 0 {
 				rule.FullDescription = &sarifMessage{Text: title + " (also " + strings.Join(f.Aliases, ", ") + ")"}
 			}
@@ -317,6 +332,13 @@ func WriteAuditSARIF(w io.Writer, version string, findings []AuditFinding) error
 		result := sarifResult{RuleID: f.ID, RuleIndex: i, Level: sarifLevel(f.Severity),
 			Message:    sarifMessage{Text: fmt.Sprintf("%s %s is affected by %s (%s): %s", f.Package, f.Version, f.ID, severity, f.Title)},
 			Properties: map[string]string{"package": f.Package, "version": f.Version, "language": f.Lang, "component": f.Component}}
+		if f.IsSecret() {
+			result.Message.Text = fmt.Sprintf("Possible secret (%s); fingerprint %s", f.ID, f.Fingerprint)
+			result.Properties = map[string]string{"fingerprint": f.Fingerprint}
+			if f.Commit != "" {
+				result.Properties["commit"] = f.Commit
+			}
+		}
 		if f.File != "" {
 			result.Locations = location(f.File, f.Line, 0)
 		}

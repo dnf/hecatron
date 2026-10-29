@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 )
 
-// The formats pin and support files are read in (docs/design.md §18), as
+// The formats pin and support files are read in (docs/guide/versions.md), as
 // libexec/lib/versions.py reads them: each turns a file's text into a spec,
 // into "names no version" (a channel like "stable", which only the
 // ecosystem's own tool resolves), or into "doesn't pin this language" (a
@@ -52,6 +52,7 @@ func init() {
 		"rust-toolchain-toml": rustToolchainTOML,
 		"global-json":         globalJSON,
 		"go-mod-toolchain":    goModToolchain,
+		"build-zig-zon":       buildZigZon,
 		"gradle-daemon-jvm":   gradleDaemonJVM,
 		"tool-versions":       toolVersions,
 		"mise":                mise,
@@ -397,7 +398,26 @@ func composerJSON(text string, _ pinKey) (pinned, error) {
 var (
 	goModToolchainLine  = pyRegexp(`(?m)^\s*toolchain\s+go(\S+)\s*$`)
 	gradleToolchainLine = pyRegexp(`(?m)^\s*toolchainVersion\s*=\s*(\S+)\s*$`)
+	minimumZigVersion   = pyRegexp(`(?m)^[^/\n]*?\.minimum_zig_version\s*=\s*"([^"]*)"`)
+	preOrBuild          = regexp.MustCompile(`[-+]`)
 )
+
+// buildZigZon reads minimum_zig_version as its release line: Zig breaks
+// compatibility between minor releases (0.14 code doesn't build with
+// 0.15), so it names the line whose newest release the build works with,
+// not a floor the default meets.
+func buildZigZon(text string, _ pinKey) (pinned, error) {
+	match := minimumZigVersion.FindStringSubmatch(text)
+	if match == nil {
+		return notPinned, nil
+	}
+	result := plain(match[1], false)
+	if result.spec == "" {
+		return noVersion, nil
+	}
+	release := preOrBuild.Split(result.spec, 2)[0]
+	return pinnedSpec(strings.Join(prefixStrings(strings.Split(release, "."), 2), ".")), nil
+}
 
 func goModToolchain(text string, _ pinKey) (pinned, error) {
 	if match := goModToolchainLine.FindStringSubmatch(text); match != nil {

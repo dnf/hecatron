@@ -78,6 +78,22 @@ class NativeHookTest(Fixture):
         result = self.run_hook("test")
         self.assertIn("ctest --test-dir build --output-on-failure --no-tests=error", result.stdout)
 
+    def test_googletest_programs_ctest_doesnt_know_run_themselves(self):
+        # LightGBM's testlightgbm: built with BUILD_CPP_TEST, never add_test()ed.
+        write(self.path("CMakeLists.txt"), "project(x)\nif(BUILD_CPP_TEST)\n  add_executable(testx t.cpp)\nendif()\n")
+        gtest = '#!/bin/sh\n# --gtest_list_tests\necho "ran $(basename "$0")"\nexit ${FAKE_GTEST_EXIT:-0}\n'
+        write(self.path("build", "tests", "testx"), gtest, 0o755)
+        write(self.path("testtop"), gtest, 0o755)
+        write(self.path("build", "tool"), "#!/bin/sh\necho ran tool\n", 0o755)
+        write(self.path("build", "CMakeFiles", "a.out"), gtest, 0o755)
+        write(self.path("build", "libx.so"), gtest, 0o755)
+        result = self.run_hook("test")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        ran = [line for line in result.stdout.splitlines() if line.startswith("ran ")]
+        self.assertEqual(ran, ["ran testx", "ran testtop"])
+        self.assertNotIn("--no-tests=error", result.stdout)
+        self.assertEqual(self.run_hook("test", FAKE_GTEST_EXIT="1").returncode, 1)
+
     def test_tests_set_up_in_a_subdirectory_run_from_there(self):
         # enable_testing() in sub/, not at the top (Zstandard's build/cmake/):
         # CTest finds the tests only from that subdirectory's build tree.

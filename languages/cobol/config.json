@@ -15,5 +15,8 @@
     "make"
   ],
   "testing": "CTest, make check",
-  "linting": null
+  "linting": null,
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

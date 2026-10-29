@@ -1,7 +1,7 @@
 // Package project is the read-only hecatron project model: finding the
 // project, its config.json and local.json, components, language definitions
-// and file resolution (docs/design.md §6-§7), and toolchain versions and
-// each component's environment (§18). It is a port of
+// and file resolution (docs/guide/configuration.md), and toolchain versions and
+// each component's environment (docs/guide/versions.md). It is a port of
 // libexec/lib/project.py and versions.py and must agree with them: tests run both on the same
 // projects.
 //
@@ -125,6 +125,7 @@ type Project struct {
 	localPath   string
 	implPaths   map[string]string
 	definitions *Definitions
+	tracked     map[string][]string // trackedPathsBelow's, by directory
 
 	cacheMu sync.Mutex
 	cache   versionCache

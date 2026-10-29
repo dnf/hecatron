@@ -30,6 +30,8 @@ type download struct {
 	Index   *ChecksumIndex // filled in
 	Format  string
 	Strip   int
+
+	indexBody any // the index, once fetched
 }
 
 // resolveDownload fills an archive's templates for a version on platform.
@@ -47,6 +49,9 @@ func (a *Archive) resolveDownload(version string, platform Platform) (*download,
 	}
 	if d.SHA256 == "" && d.Sidecar == "" && a.ChecksumIndex != nil {
 		d.Index = &ChecksumIndex{URL: fillOne(a.ChecksumIndex.URL, values), Path: fill(a.ChecksumIndex.Path, values)}
+		if len(a.ChecksumIndex.URLPath) > 0 {
+			d.Index.URLPath = fill(a.ChecksumIndex.URLPath, values)
+		}
 	}
 	return d, nil
 }
@@ -58,8 +63,50 @@ func (d *download) describe() string {
 		return d.URL + " (sha256 " + d.SHA256[:min(12, len(d.SHA256))] + "…)"
 	case d.Sidecar != "":
 		return d.URL + " (sha256 from " + d.Sidecar + ")"
+	case len(d.Index.URLPath) > 0:
+		return "the URL at " + strings.Join(d.Index.URLPath, " → ") + " in " + d.Index.URL + " (sha256 from it too)"
 	}
 	return d.URL + " (sha256 from " + d.Index.URL + ")"
+}
+
+// indexString is the string at path in the download's index, fetched once.
+func (d *download) indexString(system System, path []string) (string, error) {
+	if d.indexBody == nil {
+		body, err := fetchText(system, d.Index.URL)
+		if err != nil {
+			return "", err
+		}
+		if err := json.Unmarshal([]byte(body), &d.indexBody); err != nil {
+			return "", fmt.Errorf("%s: %w", d.Index.URL, err)
+		}
+	}
+	value := d.indexBody
+	for _, key := range path {
+		object, ok := value.(map[string]any)
+		if !ok {
+			return "", fmt.Errorf("%s: no %s in it", d.Index.URL, strings.Join(path, " → "))
+		}
+		value = object[key]
+	}
+	text, _ := value.(string)
+	return text, nil
+}
+
+// resolveURL replaces the download's URL with the one its index lists,
+// when the archive says to read it there.
+func (d *download) resolveURL(system System) error {
+	if d.Index == nil || len(d.Index.URLPath) == 0 {
+		return nil
+	}
+	url, err := d.indexString(system, d.Index.URLPath)
+	if err != nil {
+		return err
+	}
+	if !strings.HasPrefix(url, "https://") {
+		return fmt.Errorf("%s: no https URL at %s", d.Index.URL, strings.Join(d.Index.URLPath, " → "))
+	}
+	d.URL = url
+	return nil
 }
 
 var hexSHA256 = regexp.MustCompile(`^[0-9a-fA-F]{64}$`)
@@ -81,22 +128,10 @@ func (d *download) checksum(system System) (string, error) {
 		}
 		return strings.ToLower(fields[0]), nil
 	}
-	body, err := fetchText(system, d.Index.URL)
+	sum, err := d.indexString(system, d.Index.Path)
 	if err != nil {
 		return "", err
 	}
-	var value any
-	if err := json.Unmarshal([]byte(body), &value); err != nil {
-		return "", fmt.Errorf("%s: %w", d.Index.URL, err)
-	}
-	for _, key := range d.Index.Path {
-		object, ok := value.(map[string]any)
-		if !ok {
-			return "", fmt.Errorf("%s: no %s in it", d.Index.URL, strings.Join(d.Index.Path, " → "))
-		}
-		value = object[key]
-	}
-	sum, _ := value.(string)
 	if !hexSHA256.MatchString(sum) {
 		return "", fmt.Errorf("%s: no SHA-256 at %s", d.Index.URL, strings.Join(d.Index.Path, " → "))
 	}
@@ -125,6 +160,9 @@ func (d *download) fetchVerified(system System, cacheDir string) (string, error)
 		return path, nil
 	}
 	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
+		return "", err
+	}
+	if err := d.resolveURL(system); err != nil {
 		return "", err
 	}
 	body, err := system.Fetch(d.URL)

@@ -4,7 +4,7 @@
     matrix.py collect --commit SHA LOG...   add the "### coverage {json}" lines
                                             tests/install/check.sh printed in
                                             LOGs to results.json (newest wins)
-    matrix.py render                        write docs/coverage.md from it
+    matrix.py render                        write docs/guide/coverage.md from it
 
 results.json holds one result per language and platform. "evidence" says how
 it was obtained: "fresh" is check.sh on a fresh machine or container;
@@ -22,7 +22,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 RESULTS = os.path.join(HERE, "results.json")
-DOC = os.path.join(ROOT, "docs", "coverage.md")
+DOC = os.path.join(ROOT, "docs", "guide", "coverage.md")
 
 PLATFORMS = [
     ("linux-x86_64-ubuntu24.04", "Ubuntu 24.04 x86_64"),
@@ -97,7 +97,7 @@ def checked_at(results: dict[str, dict], platform: str) -> str:
 
 
 def render_text(results: dict[str, dict]) -> str:
-    """docs/coverage.md for these results."""
+    """docs/guide/coverage.md for these results."""
     languages = sorted(
         d for d in os.listdir(os.path.join(ROOT, "languages"))
         if os.path.isdir(os.path.join(ROOT, "languages", d)) and not d.startswith("_")

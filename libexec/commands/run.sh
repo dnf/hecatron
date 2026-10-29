@@ -87,6 +87,9 @@ _usage() {
     if [ "${_action}" = "lint" ]; then
         printf '\nTools:\n  shell      shellcheck on every tracked shell script\n'
     fi
+    if [ "${_action}" = "audit" ]; then
+        printf '\nTools:\n  secrets    gitleaks: committed credentials in the working tree (with hecatron'"'"'s binary)\n'
+    fi
     printf '%s\n' \
         "" \
         "Flags:" \
@@ -97,7 +100,7 @@ _usage() {
         printf '%s\n' \
             "  --fail-on SEVERITY" \
             "             Fail on a finding at or above critical, high (default), moderate or low;" \
-            "             a project sets its own with \"audit\": {\"failOn\": ...} (docs/audit.md)"
+            "             a project sets its own with \"audit\": {\"failOn\": ...} (docs/guide/audit.md)"
     fi
     if [ "${_action}" = "outdated" ]; then
         printf '%s\n' \
@@ -108,17 +111,20 @@ _usage() {
     if [ "${_action}" = "format" ]; then
         printf '%s\n' \
             "  --check    Change nothing; fail, listing the files the formatter would change" \
-            "             (hecatron lint runs this check too; docs/format.md)"
+            "             (hecatron lint runs this check too; docs/guide/format.md)"
     fi
     printf '%s\n' \
         "" \
-        "With hecatron's binary (install.sh downloads it with a release; docs/runner.md):" \
+        "With hecatron's binary (install.sh downloads it with a release; docs/guide/runner.md):" \
         "  --output FORMAT" \
         "             human, agent, json, ci, junit or sarif (else HECATRON_OUTPUT;" \
         "             agent output for AI agents)" \
         "  --timeout DURATION" \
         "             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);" \
         "             by default 5x its usual time from history.log, at least 10 minutes"
+    if [ "${_action}" = "audit" ]; then
+        printf '%s\n' "  --history  The secrets scan reads every commit instead of the working tree"
+    fi
     case "${_action}" in
         test|lint|build|format|deps|rebuild|retest)
             printf '%s\n' \

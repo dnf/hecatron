@@ -8,15 +8,18 @@ GOOSE_VERSION="v2026.3"
 # only the language prints "goose runtime" from `goose version`.
 has_goose_language() { grep -q '^goose runtime' <<<"$(goose version 2>/dev/null)"; }
 
+# Into hecatron's toolchains directory, linked into its bin directory (no
+# root).
 install_release() {
-    local platform="$1"
-    local archive="goose-${GOOSE_VERSION}-${platform}.tar.gz"
-    curl -fsSL "https://github.com/aardappel/goose/releases/download/${GOOSE_VERSION}/${archive}" -o "/tmp/${archive}"
-    ${SUDO} rm -rf /opt/goose
-    ${SUDO} mkdir -p /opt/goose
-    ${SUDO} tar -xzf "/tmp/${archive}" -C /opt/goose --strip-components=1
-    rm "/tmp/${archive}"
-    ${SUDO} ln -sf /opt/goose/goose /usr/local/bin/goose
+    local platform="$1" home work
+    home="$(toolchain_home goose "${GOOSE_VERSION#v}")"
+    work="$(mktemp -d)"
+    curl -fsSL "https://github.com/aardappel/goose/releases/download/${GOOSE_VERSION}/goose-${GOOSE_VERSION}-${platform}.tar.gz" |
+        tar -xz -C "${work}" --strip-components=1
+    rm -rf "${home}"
+    mkdir -p "$(dirname "${home}")"
+    mv "${work}" "${home}"
+    toolchain_link "${home}" goose
 }
 
 install_macos() {

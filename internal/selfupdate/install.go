@@ -58,6 +58,13 @@ func IsReleaseBinary(home, exe string) bool {
 	return isCommit(commit) && head == commit
 }
 
+// IsDevBuild is whether home is a checkout whose binary hct self build
+// built (its commit "dev"), for any commit: its VERSION is the last
+// release's, whatever the checkout holds.
+func IsDevBuild(home string) bool {
+	return readFile(filepath.Join(home, commitPath)) == "dev"
+}
+
 // Inspect is the installation at home, which exe (this binary) belongs
 // to, if self update can replace it; else a *Refusal saying why.
 func Inspect(home, exe string) (*Install, error) {

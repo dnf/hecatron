@@ -3,16 +3,17 @@ package project
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 )
 
 // Hooks are the files that resolve to a built-in definition's hooks/
-// directory rather than its top level (docs/design.md §9).
+// directory rather than its top level (docs/guide/hooks.md).
 var Hooks = []string{"test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh", "format.sh", "deps.sh", "outdated.sh"}
 
 // Definitions are every known language's config.json: the built-in keys
-// with the project's on top (docs/design.md §7).
+// with the project's on top (docs/guide/configuration.md).
 type Definitions struct {
 	Names  []string // sorted
 	byName map[string]*Object
@@ -101,6 +102,24 @@ func (p *Project) Resolve(lang, filename string) string {
 	return ""
 }
 
+// ScriptNeedsRoot is whether lang's install.sh may need root on osName
+// ("linux", "macos"): where its definition's "installNeedsRoot" says. A
+// project's own install.sh, or a definition that doesn't say, may anywhere.
+func (p *Project) ScriptNeedsRoot(lang, osName string) (bool, error) {
+	if isFile(pyJoin(p.projectLanguages(), lang, "install.sh")) {
+		return true, nil
+	}
+	defs, err := p.Definitions()
+	if err != nil {
+		return false, err
+	}
+	if _, ok := defs.Get(lang).Get("installNeedsRoot"); !ok {
+		return true, nil
+	}
+	platforms, err := p.definitionStrings(lang, "installNeedsRoot")
+	return slices.Contains(platforms, osName), err
+}
+
 // definitionStrings is a definition's list-of-strings key (dirNames,
 // detectUnless, path): empty when missing.
 func (p *Project) definitionStrings(lang, key string) ([]string, error) {
@@ -142,8 +161,9 @@ func (p *Project) findImplDir(component, lang string) (found, fallback string, e
 	if err != nil {
 		return "", "", err
 	}
+	byName := strings.Contains(template, "{lang}")
 	var unless []string
-	if strings.Contains(template, "{lang}") {
+	if byName {
 		if unless, err = p.definitionStrings(lang, "detectUnless"); err != nil {
 			return "", "", err
 		}
@@ -154,7 +174,7 @@ func (p *Project) findImplDir(component, lang string) (found, fallback string, e
 			fallback = candidate
 		}
 		if found == "" {
-			own, err := isOwnDir(candidate, unless)
+			own, err := p.isOwnDir(lang, candidate, byName, unless)
 			if err != nil {
 				return "", "", err
 			}
@@ -166,7 +186,7 @@ func (p *Project) findImplDir(component, lang string) (found, fallback string, e
 	return found, fallback, nil
 }
 
-func isOwnDir(directory string, unless []string) (bool, error) {
+func (p *Project) isOwnDir(lang, directory string, byName bool, unless []string) (bool, error) {
 	if !isDir(directory) {
 		return false, nil
 	}
@@ -174,18 +194,74 @@ func isOwnDir(directory string, unless []string) (bool, error) {
 	if err != nil {
 		return false, unsupported("%v", err)
 	}
-	for _, entry := range entries {
-		for _, pattern := range unless {
-			matched, err := fnmatch(entry.Name(), pattern)
-			if err != nil {
-				return false, err
-			}
-			if matched {
-				return false, nil
-			}
+	if !byName {
+		return true, nil
+	}
+	listing := make([]string, len(entries))
+	for i, entry := range entries {
+		listing[i] = entry.Name()
+	}
+	if yielded, err := p.yieldsIn(lang, directory, listing); err != nil || yielded {
+		return false, err
+	}
+	excluded := false
+	for _, name := range listing {
+		if excluded, err = matchesAny(name, unless); err != nil {
+			return false, err
+		}
+		if excluded {
+			break
 		}
 	}
-	return true, nil
+	if !excluded {
+		return true, nil
+	}
+	defs, err := p.Definitions()
+	if err != nil {
+		return false, err
+	}
+	for _, other := range defs.Names {
+		raw, present := defs.Get(other).Get("detectYields")
+		rule, err := parseYields(raw, present, other)
+		if err != nil {
+			return false, err
+		}
+		if rule == nil || rule.To != lang {
+			continue
+		}
+		if granted, err := p.yieldsIn(other, directory, listing); err != nil || granted {
+			return granted, err
+		}
+	}
+	return false, nil
+}
+
+// yieldsIn says whether one of a language's build files is in the
+// directory and its "detectYields" rule holds there, as detection decides:
+// the directory is the other language's.
+func (p *Project) yieldsIn(lang, directory string, listing []string) (bool, error) {
+	defs, err := p.Definitions()
+	if err != nil {
+		return false, err
+	}
+	raw, present := defs.Get(lang).Get("detectYields")
+	rule, err := parseYields(raw, present, lang)
+	if err != nil || rule == nil {
+		return false, err
+	}
+	detect, err := p.definitionStrings(lang, "detect")
+	if err != nil {
+		return false, err
+	}
+	buildFile, err := buildFileIn(directory, listing, detect)
+	if err != nil || buildFile == "" {
+		return false, err
+	}
+	paths, err := p.trackedPathsBelow(directory)
+	if err != nil {
+		return false, err
+	}
+	return rule.holds(paths, buildFile)
 }
 
 // ImplDir is where a component's code in a language lives: the template

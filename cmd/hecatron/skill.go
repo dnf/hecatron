@@ -29,7 +29,7 @@ Code, /plugin install hecatron --marketplace dnf/hecatron installs it as a
 plugin instead, updated with each release.
 `
 
-// The skill inside hecatron (docs/design.md §19 and plugins/hecatron/).
+// The skill inside hecatron (docs/contributing/design.md §19 and plugins/hecatron/).
 const skillSource = "plugins/hecatron/skills/hecatron"
 
 // skill is `hecatron skill`. It exists only in the Go core.

@@ -15,6 +15,7 @@ import argparse
 import fnmatch
 import json
 import os
+import posixpath
 import subprocess
 import sys
 import tempfile
@@ -55,7 +56,7 @@ def resolve_all(project: projectlib.Project, names: list[str], *, added_only: bo
 
 
 def hook_env(project: projectlib.Project) -> dict[str, str]:
-    """The environment installers and hooks see (docs/design.md §9)."""
+    """The environment installers and hooks see (docs/guide/hooks.md)."""
     env = dict(os.environ)
     env.update({
         "HECATRON_HOME": HOME,
@@ -345,14 +346,14 @@ def with_timeouts(body: str, minutes: int) -> str:
     return "\n".join(lines)
 
 
-# Settings for generated files only the Go core writes (docs/design.md §11).
+# Settings for generated files only the Go core writes (docs/guide/generated-files.md).
 GO_ONLY_GENERATED = ("ci", "dependabot", "renovate")
 GO_ONLY_SECTIONS = ("ci", "dependabot", "renovate")
 
 
 # The "ci" settings only the Go core reads; these scripts write the time
 # limits (timeoutMinutes, languages) themselves.
-GO_ONLY_CI_KEYS = ("cache", "image")
+GO_ONLY_CI_KEYS = ("cache", "image", "secrets")
 
 
 def go_only_settings(project) -> list[str]:
@@ -451,15 +452,10 @@ def cmd_banner(args) -> int:
 # -- init -----------------------------------------------------------------------
 
 
-# Trees holding code that isn't the project's own implementation: vendored
-# dependencies, samples, tests and test data, docs, tooling (hooks/: git
-# hooks, build hooks) and a generator's templates, whatever their case
-# (Examples/), and hidden directories (.jenkins/, .github/). A language found
-# only there isn't added, and no language's directory is placed there.
-SKIPPED_DIRS = {"android", "benchmarks", "buildsrc", "demo", "demos", "doc", "docs", "example", "examples",
-                "external", "fixtures", "hooks", "node_modules", "playground", "sample", "samples", "templates", "test",
-                "test-data", "test_data", "testdata", "tests", "tests_data", "third_party", "tools", "tutorial",
-                "tutorials", "vendor", "vendored"}
+# Trees holding code that isn't the project's own implementation
+# (project.SKIPPED_DIRS). A language found only there isn't added, and no
+# language's directory is placed there.
+SKIPPED_DIRS = projectlib.SKIPPED_DIRS
 
 # Where projects keep per-language code; when layouts disagree, one under
 # these (or at the root) beats one covering more languages (Beam's sdks/{lang}
@@ -559,7 +555,10 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
       sources sit in it or under its src/ or include/.
     - A hit is dropped where one of the language's "detectUnless" files sits
       beside it (package.json is JavaScript unless a tsconfig.json says
-      TypeScript), and, for a language with a "detectScript", where its
+      TypeScript), and where its "detectYields" rule holds, which makes it
+      the other language's even beside that one's "detectUnless" files
+      (a tsconfig.json beside mostly JavaScript is a JavaScript package's),
+      and, for a language with a "detectScript", where its
       package.json has no such npm script (Cucumber's jsonschema/, tooling
       with no test script).
     - Nothing under SKIPPED_DIRS counts, except a language's "detectTests"
@@ -608,12 +607,32 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
         return {directory for directory, counts in shared_counts.items()
                 if counts.get(lang) == max(counts.values())}
 
+    # A hit a language's "detectYields" rule holds for is the other
+    # language's, whose "detectUnless" doesn't keep it out there (a
+    # tsconfig.json beside mostly JavaScript).
+    yielded: dict[str, set[str]] = {}
+    granted: dict[str, set[str]] = {}
+    for lang, d in defs.items():
+        rule = d.get("detectYields")
+        if not rule:
+            continue
+        for directory in hits(by_dir, d.get("detect", []), d.get("detectUnless", [])):
+            paths = [posixpath.join(posixpath.relpath(sub, directory), name)
+                     for sub, inside in by_dir.items() if directory == "." or _under(sub, directory)
+                     for name in inside]
+            build_file = projectlib.build_file_in(os.path.join(root, directory), by_dir[directory], d.get("detect", []))
+            if projectlib.yields(rule, [posixpath.normpath(path) for path in paths], build_file):
+                yielded.setdefault(lang, set()).add(directory)
+                granted.setdefault(rule["to"], set()).add(directory)
+
     found: dict[str, set[str]] = {}
     from_sources: set[str] = set()
     not_added: dict[str, str] = {}
     for lang, d in defs.items():
         unless, sources = d.get("detectUnless", []), d.get("detectSources", [])
-        directories = hits(by_dir, d.get("detect", []), unless) | shared_hits(lang)
+        directories = (hits(by_dir, d.get("detect", []), unless) - yielded.get(lang, set())
+                       | hits(by_dir, d.get("detect", []), []) & granted.get(lang, set())
+                       | shared_hits(lang))
         script = d.get("detectScript")
         if script and directories:
             directories = {directory for directory in directories if _has_npm_script(root, directory, script)}
@@ -628,6 +647,10 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
             directories.discard(None)
         if directories:
             found[lang] = directories
+        elif lang in yielded:
+            other = d["detectYields"]["to"]
+            not_added[lang] = f"its {', '.join(d.get('detect', []))} only sits beside mostly " \
+                              f"{defs.get(other, {}).get('name', other)}"
         elif hits(skipped_dirs, d.get("detect", []) + sources, unless):
             not_added[lang] = "found only in examples, tests or vendored code"
 

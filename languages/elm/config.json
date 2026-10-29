@@ -25,5 +25,8 @@
       "elm.json"
     ]
   },
-  "dependabot": "elm"
+  "dependabot": "elm",
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

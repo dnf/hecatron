@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Recaptures the tools' own test reports hecatron merges into its JUnit
-# (docs/runner.md, "Reports") in tests/reports/<tool>/<version>/: from the
+# (docs/guide/runner.md, "Reports") in tests/reports/<tool>/<version>/: from the
 # failing fixtures in tests/output/fixtures/, go test -json's events,
 # pytest's --junitxml, and the TEST-*.xml Maven's Surefire and Gradle
 # write. internal/reports' tests read them.

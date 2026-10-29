@@ -60,6 +60,7 @@ Project:
 
 Hecatron itself:
   self update [--check]      Update hecatron to the latest release (install.sh's installs)
+  self uninstall [--all]     Remove hecatron (and with --all the toolchains it unpacked)
   self test                  Check hecatron's own code: shellcheck and the unit tests
   self build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
@@ -74,14 +75,15 @@ const selfUsageText = `Usage: hecatron self <command>     (or: hct self <command
 
 Manage hecatron itself:
   update [--check]     Update hecatron to the latest release (install.sh's installs)
+  uninstall [--all]    Remove hecatron (and with --all the toolchains it unpacked)
   test                 Check hecatron's own code: shellcheck and the unit tests
   build                Build the Go binary from this checkout, for working on hecatron
 
-Run 'hecatron self update help' for its options.
+Run 'hecatron self update help' or 'hecatron self uninstall help' for their options.
 `
 
 // self is `hecatron self <command>`: managing hecatron itself, as rustup
-// self and uv self do (docs/design.md §8). self-test and self-build, the
+// self and uv self do (docs/contributing/design.md §8). self-test and self-build, the
 // earlier names, still work.
 func (c *cli) self() int {
 	command := "help"
@@ -94,6 +96,8 @@ func (c *cli) self() int {
 		return 0
 	case "update":
 		return c.selfUpdate()
+	case "uninstall":
+		return c.selfUninstall()
 	case "test":
 		return c.delegate(bashScript("libexec/commands/self-test.sh"))
 	case "build":
@@ -203,6 +207,9 @@ func (c *cli) runHelpText() (text string, ok bool) {
 	if c.command == "lint" {
 		out.WriteString("\nTools:\n  shell      shellcheck on every tracked shell script\n")
 	}
+	if c.command == "audit" {
+		out.WriteString("\nTools:\n  secrets    gitleaks: committed credentials in the working tree (with hecatron's binary)\n")
+	}
 	out.WriteString("\nFlags:\n" +
 		"  -j VALUE   Concurrency: integer, percentage (default 50%), or 'unlimited'\n" +
 		"  -s MODE    Display: scroll (default), full, or zoom\n" +
@@ -210,7 +217,7 @@ func (c *cli) runHelpText() (text string, ok bool) {
 	if c.command == "audit" {
 		out.WriteString("  --fail-on SEVERITY\n" +
 			"             Fail on a finding at or above critical, high (default), moderate or low;\n" +
-			"             a project sets its own with \"audit\": {\"failOn\": ...} (docs/audit.md)\n")
+			"             a project sets its own with \"audit\": {\"failOn\": ...} (docs/guide/audit.md)\n")
 	}
 	if c.command == "outdated" {
 		out.WriteString("  --json     Print one JSON array of every outdated dependency (component, language,\n" +
@@ -219,17 +226,20 @@ func (c *cli) runHelpText() (text string, ok bool) {
 	}
 	if c.command == "format" {
 		out.WriteString("  --check    Change nothing; fail, listing the files the formatter would change\n" +
-			"             (hecatron lint runs this check too; docs/format.md)\n")
+			"             (hecatron lint runs this check too; docs/guide/format.md)\n")
 	}
 	// The binary's own flags, listed by run.sh too (saying they need the
 	// binary), so the help is the same either way.
-	out.WriteString("\nWith hecatron's binary (install.sh downloads it with a release; docs/runner.md):\n" +
+	out.WriteString("\nWith hecatron's binary (install.sh downloads it with a release; docs/guide/runner.md):\n" +
 		"  --output FORMAT\n" +
 		"             human, agent, json, ci, junit or sarif (else HECATRON_OUTPUT;\n" +
 		"             agent output for AI agents)\n" +
 		"  --timeout DURATION\n" +
 		"             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);\n" +
 		"             by default 5x its usual time from history.log, at least 10 minutes\n")
+	if c.command == "audit" {
+		out.WriteString("  --history  The secrets scan reads every commit instead of the working tree\n")
+	}
 	if changedActions[c.command] {
 		out.WriteString("  --changed [REF]\n" +
 			"             Only the languages, components and project tasks the files changed\n" +

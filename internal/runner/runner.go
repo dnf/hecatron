@@ -1,7 +1,7 @@
 // Package runner runs a command's jobs (a language's hook for its
 // components, a project task) in parallel, as libexec/runner/run-parallel.sh
 // does, and describes each finished job as a Result for the renderers
-// (docs/design.md §19, "Output").
+// (docs/contributing/design.md §19, "Output").
 //
 // Scheduling is run-parallel.sh's: with fewer slots than jobs, the queue is
 // ordered by predicted duration (the median of the last five runs in

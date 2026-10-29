@@ -72,5 +72,8 @@
   ],
   "renovate": [
     "conan"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/dnf/hecatron/internal/project"
 )
 
-// Installs from data (docs/design.md §19, "Installs as data"): a language
+// Installs from data (docs/contributing/install-engine.md): a language
 // whose install.json this binary can carry out is installed, repaired,
 // checked and uninstalled from it; any other runs its scripts.
 
@@ -95,6 +95,11 @@ func installLanguage(p *project.Project, choice installerChoice, env []string) (
 	if version, err := p.DefaultVersion(choice.lang); err == nil {
 		language.Version = strings.TrimPrefix(version, "=")
 	}
+	if choice.def.Toolchain.Versions == "managed" {
+		if language.Versions, err = missingVersions(p, choice.lang); err != nil {
+			return nil, err
+		}
+	}
 	languageEnv, err := p.LanguageEnv(choice.lang, "")
 	if err != nil {
 		return nil, err
@@ -110,6 +115,34 @@ func installLanguage(p *project.Project, choice installerChoice, env []string) (
 		}
 	}
 	return language, nil
+}
+
+// missingVersions are the exact versions a "managed" toolchain installs
+// besides its default: each one the components resolve to that isn't
+// installed yet (docs/guide/versions.md), a prefix as the newest release in the definition's
+// releases.json it matches, so planning stays offline.
+func missingVersions(p *project.Project, lang string) ([]string, error) {
+	missing, err := p.MissingVersions(lang)
+	if err != nil {
+		return nil, err
+	}
+	var versions []string
+	for _, m := range missing {
+		version := strings.TrimPrefix(m.Spec, "=")
+		if version == m.Spec {
+			if version, err = p.NewestRelease(lang, m.Spec); err != nil {
+				return nil, err
+			}
+		}
+		if version == "" {
+			return nil, &project.Error{Message: fmt.Sprintf("%s: no %s release matches %s (from %s) in its releases.json",
+				m.Component, lang, m.Spec, m.Source)}
+		}
+		if !contains(versions, version) {
+			versions = append(versions, version)
+		}
+	}
+	return versions, nil
 }
 
 // applyData installs languages from their definitions in one plan (one

@@ -16,6 +16,20 @@ if [ "$(id -u)" -ne 0 ]; then
     SUDO="sudo"
 fi
 
+# hecatron's own bin directory (~/.local/share/hecatron/bin), where
+# installers put and link the tools they install without root; first on
+# PATH, as install.sh's env and hecatron put it, so they find them too.
+_hecatron_bin="${XDG_DATA_HOME:-${HOME}/.local/share}/hecatron/bin"
+case ":${PATH}:" in
+    *":${_hecatron_bin}:"*) ;;
+    *) export PATH="${_hecatron_bin}:${PATH}" ;;
+esac
+
+# Homebrew asks before each install by default since 2025; hct install and
+# doctor --fix are the request. Hints about its environment variables are
+# noise in an installer's output.
+export HOMEBREW_NO_ASK=1 HOMEBREW_NO_ENV_HINTS=1
+
 # The project being worked on (bin/hecatron exports HECATRON_ROOT), else the
 # repository the current directory is in.
 ROOT="${HECATRON_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
@@ -76,7 +90,7 @@ each_impl() {
     done < <(impl_dirs "${_lang}")
 }
 # each_impl with each component's own toolchain version (its "path" and "env",
-# docs/design.md §18), for dependencies built for one version: a bundle's
+# docs/guide/versions.md), for dependencies built for one version: a bundle's
 # native extensions, a Composer lock resolved for the running PHP.
 each_impl_versioned() {
     local _lang="$1" _component _dir
@@ -137,7 +151,7 @@ has() { command -v "$1" &>/dev/null; }
 
 # For uninstall.sh: a tool another language's installer also installs (CMake,
 # Node.js, the .NET SDK, a JDK...) stays when one of them is uninstalled
-# (docs/installers.md, "Shared toolchains"), and the uninstaller says so.
+# (docs/guide/installing-toolchains.md, "Shared toolchains"), and the uninstaller says so.
 left_shared() { echo "Left $1 installed: $2"; }
 leave_cmake() {
     if has cmake; then left_shared CMake "C, C++, Objective-C, COBOL and Fortran share it."; fi
@@ -197,7 +211,61 @@ apt_has() {
     [[ "${policy}" == *"Candidate: "[!\(]* ]]
 }
 
-# Toolchain versions (docs/design.md §18). For an installer: each version the
+# A signed apt repository, as the binary adds an install.json's "aptSources"
+# entry: on DISTRO only (/etc/os-release's ID), its key in
+# /etc/apt/keyrings/hecatron-NAME.asc (its primary key's fingerprint checked
+# when gpg is there), the repository for this release in
+# /etc/apt/sources.list.d/hecatron-NAME.sources, then fresh package lists.
+# Returns 1 without adding it on another distribution, or for a release the
+# repository doesn't have, which then installs the distribution's packages.
+# Usage: apt_source NAME DISTRO URI KEY-URL FINGERPRINT COMPONENTS
+apt_source() {
+    local _name="$1" _distro="$2" _uri="$3" _key_url="$4" _fingerprint="$5" _components="$6"
+    local _id _codename _keyring _sources _content _work _found
+    _id="$(. /etc/os-release 2>/dev/null && echo "${ID:-}")"
+    _codename="$(. /etc/os-release 2>/dev/null && echo "${VERSION_CODENAME:-}")"
+    [ "${_id}" = "${_distro}" ] && [ -n "${_codename}" ] || return 1
+    _keyring="/etc/apt/keyrings/hecatron-${_name}.asc"
+    _sources="$(apt_source_file "${_name}")"
+    _content="$(printf 'Types: deb\nURIs: %s\nSuites: %s\nComponents: %s\nSigned-By: %s' \
+        "${_uri}" "${_codename}" "${_components}" "${_keyring}")"
+    if [ -f "${_keyring}" ] && [ "$(cat "${_sources}" 2>/dev/null)" = "${_content}" ]; then
+        return 0
+    fi
+    if ! curl -fsSL -o /dev/null "${_uri}/dists/${_codename}/InRelease"; then
+        log "${_uri} has no ${_codename}; using the distribution's packages"
+        return 1
+    fi
+    _work="$(mktemp -d)"
+    curl -fsSL -o "${_work}/key" "${_key_url}"
+    if has gpg; then
+        mkdir -m 700 "${_work}/gnupg"
+        _found="$(GNUPGHOME="${_work}/gnupg" gpg --show-keys --with-colons "${_work}/key" 2>/dev/null |
+            awk -F: '$1 == "pub" { primary = 1; next } primary && $1 == "fpr" { print $10; primary = 0 }')"
+        if [ "${_found}" != "${_fingerprint}" ]; then
+            rm -rf "${_work}"
+            echo "error: the key of apt source ${_name} (${_key_url}) is ${_found:-unreadable}, want ${_fingerprint}" >&2
+            exit 1
+        fi
+    fi
+    log "Adding apt source ${_name} (${_uri} ${_codename})..."
+    printf '%s\n' "${_content}" >"${_work}/sources"
+    $SUDO install -D -m 644 "${_work}/key" "${_keyring}"
+    $SUDO install -D -m 644 "${_work}/sources" "${_sources}"
+    rm -rf "${_work}"
+    $SUDO apt-get -o Acquire::Retries=3 update -qq
+}
+apt_source_file() { echo "/etc/apt/sources.list.d/hecatron-$1.sources"; }
+# Whether apt_source would add NAME's repository here and hasn't (the
+# doctor's check): on DISTRO, without its sources file.
+apt_source_missing() {
+    [ "$(. /etc/os-release 2>/dev/null && echo "${ID:-}")" = "$2" ] && [ ! -f "$(apt_source_file "$1")" ]
+}
+apt_source_remove() {
+    $SUDO rm -f "/etc/apt/keyrings/hecatron-$1.asc" "$(apt_source_file "$1")"
+}
+
+# Toolchain versions (docs/guide/versions.md). For an installer: each version the
 # project's components resolve to that isn't installed yet, one spec per line
 # ("1.22" or "=1.22.5"); nothing outside a hecatron run.
 missing_versions() {
@@ -352,8 +420,9 @@ dotnet_runtimes_missing() {
 }
 
 # For the native languages' installers (C, C++, Objective-C): the libraries a
-# component's CMake build looks for, as distribution packages, for the common
-# ones. A name is a find_package() name, or a pkg-config module (from
+# component's CMake build looks for (or, without CMake, its sources include:
+# native_include_packages), as distribution packages, for the common ones. A
+# name is a find_package() name, or a pkg-config module (from
 # pkg_check_modules() or pkg_search_module()) as "pkg-config:<module>". A name
 # not in the table is left to the project (its README, or a vcpkg or Conan
 # manifest), except that on Debian and Ubuntu a pkg-config module <name> is
@@ -393,6 +462,7 @@ _cmake_package() {
             BISON) echo bison ;;
             PCRE2 | libpcre2-8) echo pcre2 ;;
             cJSON | libcjson) echo cjson ;;
+            PNG | libpng) echo libpng ;;
         esac
     else
         case "${_name}" in
@@ -425,6 +495,10 @@ _cmake_package() {
             BISON) echo bison ;;
             PCRE2 | libpcre2-8) echo libpcre2-dev ;;
             cJSON | libcjson) echo libcjson-dev ;;
+            Curses) echo libncurses-dev ;;
+            SQLite3 | sqlite3) echo libsqlite3-dev ;;
+            PNG | libpng) echo libpng-dev ;;
+            EXPAT | expat) echo libexpat1-dev ;;
             Threads) ;;
             liblzma | LibLZMA) echo liblzma-dev ;;
             lib*) if [ "$1" != "${_name}" ]; then echo "${_name}-dev"; fi ;;
@@ -496,11 +570,62 @@ while paths:
 print("\n".join(sorted(names)))
 '
 }
+# What a language's components that don't build with CMake (a Makefile,
+# autotools, Meson) include from the common libraries, one name per line, as
+# cmake_find_packages names them: CobolCraft's C++ includes <zlib.h> (ZLIB).
+# Only headers in the table count, and not one the project has itself.
+native_include_packages() {
+    local _dir
+    while IFS= read -r _dir; do
+        _native_builds_with_cmake "${_dir}" && continue
+        find "${_dir}" -mindepth 1 -maxdepth 4 \( -type d \( -name '.?*' -o -name third_party -o -name third-party \
+            -o -name external -o -name vendor -o -name deps -o -name node_modules -o -name build \) -prune \) -o \
+            \( -name '*.c' -o -name '*.h' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' -o -name '*.hh' \
+            -o -name '*.hpp' -o -name '*.hxx' -o -name '*.m' -o -name '*.mm' \) -type f -print 2>/dev/null
+    done < <(impl_dirs "$1") | sort -u | python3 -c '
+import re, sys
+HEADERS = [(r"zlib\.h", "ZLIB"), (r"bzlib\.h", "BZip2"), (r"lzma\.h", "LibLZMA"), (r"zstd\.h", "zstd"),
+           (r"lz4\.h", "lz4"), (r"openssl/.+", "OpenSSL"), (r"curl/curl\.h", "CURL"), (r"yaml-cpp/.+", "yaml-cpp"),
+           (r"nlohmann/json\.hpp", "nlohmann_json"), (r"boost/.+", "Boost"), (r"fmt/.+", "fmt"),
+           (r"spdlog/.+", "spdlog"), (r"gtest/.+", "GTest"), (r"gmock/.+", "GMock"), (r"re2/re2\.h", "re2"),
+           (r"unicode/\w+\.h", "ICU"), (r"google/protobuf/.+", "Protobuf"), (r"(glib|gio)(-object)?\.h|glib/.+", "GLIB"),
+           (r"jansson\.h", "jansson"), (r"snappy\.h", "Snappy"), (r"event2/.+", "Libevent"), (r"json/json\.h", "JsonCpp"),
+           (r"uv\.h", "libuv"), (r"pcre2\.h", "PCRE2"), (r"cjson/cJSON\.h", "cJSON"), (r"sasl/sasl\.h", "CyrusSASL"),
+           (r"catch2/.+", "Catch2"), (r"doctest/doctest\.h", "doctest"), (r"benchmark/benchmark\.h", "benchmark"),
+           (r"n?curses\.h", "Curses"), (r"sqlite3\.h", "SQLite3"), (r"png\.h", "PNG"), (r"expat\.h", "EXPAT")]
+paths = sys.stdin.read().splitlines()
+own = set()
+for path in paths:
+    parts = path.split("/")
+    own.update("/".join(parts[i:]) for i in range(len(parts)))
+names = set()
+for path in paths:
+    try:
+        text = open(path, errors="replace").read()
+    except OSError:
+        continue
+    for header in re.findall(r"^[ \t]*#[ \t]*include[ \t]*<([^>\s]+)>", text, re.M):
+        if header in own:
+            continue
+        names.update(name for pattern, name in HEADERS if re.fullmatch(pattern, header))
+print("\n".join(sorted(names)))
+'
+}
+# Whether a component builds with CMake: a CMakeLists.txt in its directory
+# or above it in the project, which cmake_find_packages reads instead.
+_native_builds_with_cmake() {
+    local _dir="$1"
+    while :; do
+        [ ! -f "${_dir}/CMakeLists.txt" ] || return 0
+        if [ "${_dir}" = "${ROOT}" ] || [ "${_dir}" = / ]; then return 1; fi
+        _dir="$(dirname "${_dir}")"
+    done
+}
 cmake_dependencies() {
     local _name _package _packages=""
     while IFS= read -r _name; do
         [ -n "${_name}" ] && _packages="${_packages} $(_cmake_package "${_name}")"
-    done < <(cmake_find_packages "$1")
+    done < <(cmake_find_packages "$1"; native_include_packages "$1")
     _packages="$(echo "${_packages}" | xargs -n1 2>/dev/null | sort -u | xargs 2>/dev/null)"
     # Distributions name and split packages differently, and a lib<name>-dev
     # guess may name none: install the ones there are.
@@ -512,7 +637,7 @@ cmake_dependencies() {
         _packages="${_available# }"
     fi
     [ -n "${_packages}" ] || return 0
-    log "Installing the libraries the CMake builds look for: ${_packages}"
+    log "Installing the libraries the builds look for: ${_packages}"
     # shellcheck disable=SC2086 # one word per package
     if [ "${OS}" = "macos" ]; then brew_install ${_packages}; else apt_install ${_packages}; fi
 }
@@ -865,8 +990,8 @@ uv_install() {
 
 sha256_of() { if has sha256sum; then sha256sum "$1"; else shasum -a 256 "$1"; fi | cut -d' ' -f1; }
 
-# A tool's release download, checked against its checksum, into
-# /usr/local/bin: the binary itself, or the file at a path inside a .zip or
+# A tool's release download, checked against its checksum, into hecatron's
+# bin directory (no root): the binary itself, or the file at a path inside a .zip or
 # .tar.gz. Usage: release_binary_install NAME URL SHA256 [PATH-IN-ARCHIVE]
 release_binary_install() {
     local _name="$1" _url="$2" _sha256="$3" _member="${4:-$1}" _work
@@ -882,7 +1007,8 @@ release_binary_install() {
         *.tar.gz | *.tgz) tar -C "${_work}" -xzf "${_work}/download" ;;
         *) mv "${_work}/download" "${_work}/${_member}" ;;
     esac
-    $SUDO install -m 0755 "${_work}/${_member}" "/usr/local/bin/${_name}"
+    mkdir -p "$(hecatron_bin)"
+    install -m 0755 "${_work}/${_member}" "$(hecatron_bin)/${_name}"
     rm -rf "${_work}"
 }
 
@@ -914,25 +1040,42 @@ toolchain_release_install() {
 
 # hecatron's own data directory, and a version's directory in it.
 hecatron_data() { echo "${XDG_DATA_HOME:-${HOME}/.local/share}/hecatron"; }
+hecatron_bin() { echo "$(hecatron_data)/bin"; }
 toolchain_home() { echo "$(hecatron_data)/toolchains/$1/$2"; }
 
-# Link commands from a toolchain directory into ~/.local/share/hecatron/bin.
+# Link commands from a toolchain directory into hecatron's bin directory.
 # Usage: toolchain_link HOME COMMAND...
 toolchain_link() {
     local _home="$1" _command _bin
     shift
-    _bin="$(hecatron_data)/bin"
+    _bin="$(hecatron_bin)"
     mkdir -p "${_bin}"
     for _command in "$@"; do
         ln -sfn "${_home}/${_command}" "${_bin}/${_command}"
     done
 }
 
+# Remove the links into DIR that hecatron's bin directory and, from versions
+# before it used one, /usr/local/bin hold. Usage: unlink_into DIR
+unlink_into() {
+    local _link
+    for _link in "$(hecatron_bin)"/* /usr/local/bin/*; do
+        case "$(readlink "${_link}" 2>/dev/null)" in
+            "$1"/*)
+                case "${_link}" in
+                    /usr/local/bin/*) $SUDO rm -f "${_link}" ;;
+                    *) rm -f "${_link}" ;;
+                esac ;;
+        esac
+    done
+    return 0
+}
+
 # Remove a language's toolchains directory and the links into it.
 toolchain_uninstall() {
     local _dir _link
     _dir="$(hecatron_data)/toolchains/$1"
-    for _link in "$(hecatron_data)"/bin/*; do
+    for _link in "$(hecatron_bin)"/*; do
         case "$(readlink "${_link}" 2>/dev/null)" in
             "${_dir}"/*) rm -f "${_link}" ;;
         esac
@@ -950,10 +1093,87 @@ toolchain_installed() {
     return 0
 }
 
+# Erlang/OTP, shared by Erlang's, Elixir's and Gleam's installers.
+# "major<TAB>root" of an erl: its OTP release and the directory holding it.
+# Not on stdin, which erl reads, and the loops calling this are reading.
+otp_of() {
+    "$1" -noshell -eval 'io:format("~s\t~s~n", [erlang:system_info(otp_release), code:root_dir()]), halt().' </dev/null 2>/dev/null
+}
+# Whether the erl on PATH is OTP MAJOR or newer (Gleam's standard library,
+# and current libraries, need 26).
+otp_at_least() {
+    local _major
+    _major="$(otp_of "$(command -v erl 2>/dev/null || echo erl)" | cut -f1)"
+    [ -n "${_major}" ] && [ "${_major}" -ge "$1" ]
+}
+# Where builds.hex.pm keeps its OTP builds for this machine (the ones
+# erlef/setup-beam installs): Ubuntu only, by release and architecture.
+otp_builds_url() {
+    local _arch _id _version
+    case "$(uname -m)" in
+        x86_64) _arch=amd64 ;;
+        aarch64 | arm64) _arch=arm64 ;;
+        *) return 1 ;;
+    esac
+    [ -r /etc/os-release ] || return 1
+    # shellcheck disable=SC1091 # the running system's, not this repository's
+    _id="$(. /etc/os-release && echo "${ID}")"
+    # shellcheck disable=SC1091 # the running system's, not this repository's
+    _version="$(. /etc/os-release && echo "${VERSION_ID:-}")"
+    [ "${_id}" = "ubuntu" ] || return 1
+    echo "https://builds.hex.pm/builds/otp/${_arch}/ubuntu-${_version}"
+}
+# The newest build in a builds.hex.pm builds.txt (stdin) that SPEC names, as
+# "version sha256": "28", the newest 28.x final release (28.4.1, not
+# 29.0-rc1); "=29.1.2", exactly that one.
+otp_build_matching() {
+    awk -v spec="$1" '{
+        name = substr($1, 5)
+        if (substr($1, 1, 4) != "OTP-") next
+        if (spec ~ /^=/) { if (name != substr(spec, 2)) next }
+        else if (index(name, spec) != 1 || substr(name, length(spec) + 1) !~ /^(\.[0-9]+)*$/) next
+        print name, $4
+    }' | sort -rV | head -1
+}
+# builds.hex.pm's OTP build that SPEC names (otp_build_matching), checked
+# against builds.txt's SHA-256, into DIR/<version> (with SUDO, the command a
+# root-owned DIR needs, or none); prints that directory, so what it says
+# goes to stderr. Fails where there's no such build: off Ubuntu (Debian has
+# none there), or a version it doesn't have.
+# Usage: otp_install_ubuntu SPEC DIR [SUDO]
+otp_install_ubuntu() {
+    local _spec="$1" _root="$2" _sudo="${3:-}" _builds _version _sha256 _work
+    _builds="$(otp_builds_url)" || return 1
+    read -r _version _sha256 < <(curl -fsSL "${_builds}/builds.txt" 2>/dev/null |
+        otp_build_matching "${_spec}") || return 1
+    [ -n "${_version}" ] || return 1
+    if [ ! -x "${_root}/${_version}/bin/erl" ]; then
+        log "Installing OTP ${_version} from builds.hex.pm..." >&2
+        _work="$(mktemp -d)"
+        # Called in a command substitution, where set -e doesn't apply.
+        curl -fsSL -o "${_work}/otp.tar.gz" "${_builds}/OTP-${_version}.tar.gz" || return 1
+        if [ "$(sha256_of "${_work}/otp.tar.gz")" != "${_sha256}" ]; then
+            rm -rf "${_work}"
+            echo "error: the OTP ${_version} download doesn't match its checksum" >&2
+            return 1
+        fi
+        ${_sudo} mkdir -p "${_root}/${_version}" &&
+            ${_sudo} tar -C "${_root}/${_version}" --strip-components 1 -xzf "${_work}/otp.tar.gz" &&
+            (cd "${_root}/${_version}" && ${_sudo} ./Install -minimal "${_root}/${_version}" >/dev/null) || {
+            rm -rf "${_work}"
+            ${_sudo} rm -rf "${_root:?}/${_version}"
+            return 1
+        }
+        rm -rf "${_work}"
+    fi
+    echo "${_root}/${_version}"
+}
+
 # For the install.sh of a language installed from its install.json
-# (docs/installers.md), which other installers still run directly (Elixir's
-# and Gleam's run Erlang's): install from the data through hecatron's binary,
-# as `hecatron install` would, and exit with its status. The script carries
+# (docs/contributing/install-engine.md) that other installers run directly (none now:
+# Erlang's, which Elixir's and Gleam's run, is a script again): install from
+# the data through hecatron's binary, as `hecatron install` would, and exit
+# with its status. The script carries
 # on itself without the binary (HECATRON_BINARY, which the binary gives the
 # installers it runs), under HECATRON_INSTALLER=script, or when the binary
 # declines the language (status 125: a project's own install.sh, a platform
@@ -969,9 +1189,9 @@ install_from_data() {
 }
 
 # OSV-Scanner (Google's), the dependency auditor `hecatron audit` uses for
-# ecosystems without one of their own (docs/audit.md), and what `hecatron
-# licenses` reads licenses with (docs/licenses.md): its release binary,
-# pinned and checked against its checksum, into /usr/local/bin.
+# ecosystems without one of their own (docs/guide/audit.md), and what `hecatron
+# licenses` reads licenses with (docs/guide/licenses.md): its release binary,
+# pinned and checked against its checksum, into hecatron's bin directory.
 _OSV_SCANNER_VERSION="2.7.0"
 osv_scanner_install() {
     local _platform _sha256 _binary
@@ -994,7 +1214,8 @@ osv_scanner_install() {
         echo "error: the OSV-Scanner download doesn't match its checksum" >&2
         return 1
     fi
-    $SUDO install -m 0755 "${_binary}" /usr/local/bin/osv-scanner
+    mkdir -p "$(hecatron_bin)"
+    install -m 0755 "${_binary}" "$(hecatron_bin)/osv-scanner"
     rm -f "${_binary}"
 }
 

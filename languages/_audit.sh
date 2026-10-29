@@ -3,7 +3,7 @@
 # JSON mode and hands the report to libexec/lib/audit.py (or hecatron's
 # binary, which reads it alike: audit_reader), which prints the
 # findings and a summary, applies the project's accepted risks and fails at
-# the threshold (docs/audit.md). Auditors read advisory databases online.
+# the threshold (docs/guide/audit.md). Auditors read advisory databases online.
 # shellcheck shell=bash
 # shellcheck disable=SC2154 # build_dir is set by find_build in _hooks.sh
 

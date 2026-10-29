@@ -64,6 +64,9 @@ class GeneratedCITest(unittest.TestCase):
                 jobs = {name: job for name, job in pipeline.items() if name not in ("variables", "default")}
                 self.assertTrue(jobs)
                 for name, job in jobs.items():
+                    if name == "secrets":
+                        self.assertEqual(job["script"][-2:], ["hct install secrets", "hct audit secrets"])
+                        continue
                     self.assertEqual(job["script"][-3:], [f"hct install {name}", f"hct test {name}", f"hct lint {name}"])
                     for cache in job.get("cache", []):
                         self.assertLessEqual(len(cache["key"].get("files", [])) if isinstance(cache["key"], dict) else 0, 10)

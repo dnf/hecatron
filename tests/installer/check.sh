@@ -19,6 +19,10 @@ check ".bashrc sources env" 'grep -qF ".hecatron/env" ~/.bashrc'
 check "new login bash finds hct" 'bash -lc "command -v hct" | grep -q .hecatron/bin'
 check "new interactive bash finds hct" 'bash -ic "command -v hct" 2>/dev/null | grep -q .hecatron/bin'
 check "fish finds hct" 'fish -c "command -v hct" | grep -q .hecatron/bin'
+echo "== 1b. curl | sh where sh is bash (macOS)"
+out="$(bash < /hecatron/install.sh 2>&1)"
+check "says how to use it in this shell" 'echo "$out" | grep -q "New shells have it"'
+check "doesn't claim it's ready" '! echo "$out" | grep -q "Ready:"'
 echo "== 2. rerun"
 sh < /hecatron/install.sh >/dev/null 2>&1
 check "one line in ~/.profile" '[ "$(grep -cF ".hecatron/env" ~/.profile)" = 1 ]'
@@ -49,4 +53,11 @@ cp ~/.profile ~/.profile.before
 HECATRON_NO_MODIFY_PATH=1 HECATRON_INSTALL_DIR=~/other sh < /hecatron/install.sh >/dev/null 2>&1
 check "profile untouched" 'cmp -s ~/.profile ~/.profile.before'
 check "still installed" '[ -x ~/other/bin/hecatron ]'
+echo "== 8. HECATRON_VERSION: a release, a series"
+HECATRON_NO_MODIFY_PATH=1 HECATRON_INSTALL_DIR=~/release HECATRON_VERSION=v0.4.0 sh < /hecatron/install.sh >/dev/null 2>&1
+check "the release" '[ "$(cat ~/release/VERSION)" = 0.4.0 ]'
+HECATRON_NO_MODIFY_PATH=1 HECATRON_INSTALL_DIR=~/series HECATRON_VERSION=v0.5 sh < /hecatron/install.sh >/dev/null 2>&1
+check "the series' latest" '[ "$(cat ~/series/VERSION)" = 0.5.0 ]'
+out="$(HECATRON_NO_MODIFY_PATH=1 HECATRON_INSTALL_DIR=~/none HECATRON_VERSION=v0.99 sh < /hecatron/install.sh 2>&1)"
+check "no release in the series" 'echo "$out" | grep -q "no release of hecatron matches v0.99" && [ ! -e ~/none ]'
 exit "${_failed}"

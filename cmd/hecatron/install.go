@@ -35,6 +35,15 @@ func (c *cli) install() (int, bool) {
 	if status := c.requirePython(); status != 0 {
 		return status, true
 	}
+	positionals, withSecrets := c.withoutSecretsTarget(args.positionals)
+	if withSecrets && len(positionals) == 0 {
+		if args.flags["--plan"] {
+			printSecretsPlan(c.environment(nil))
+			return 0, true
+		}
+		return installSecrets(c.environment(nil)), true
+	}
+	args.positionals = positionals
 	installAll := len(args.positionals) == 0
 	langs := c.project.Languages
 	if !installAll {
@@ -66,8 +75,17 @@ func (c *cli) install() (int, bool) {
 	}
 	if args.flags["--plan"] {
 		printInstallPlan(os.Stdout, c.project, choices, env, manager)
+		if withSecrets {
+			printSecretsPlan(env)
+		}
 		return 0, true
 	}
+	stopSudo, ok := adminRights(needRoot(c.project, choices, env, manager))
+	if !ok {
+		fmt.Fprintln(os.Stderr, "hecatron: nothing installed (no administrator rights)")
+		return 1, true
+	}
+	defer stopSudo()
 	// Every language installed from data first, in one plan: its system
 	// packages in one package-manager call (none of them needs a script's).
 	failed := applyData(c.project, data, env, manager)
@@ -95,6 +113,9 @@ func (c *cli) install() (int, bool) {
 			}
 			failed = append(failed, step.lang)
 		}
+	}
+	if withSecrets && installSecrets(env) != 0 {
+		return 1, true
 	}
 	listed, _ := os.ReadFile(deferred.Name())
 	var depsFailed []string

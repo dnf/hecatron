@@ -16,7 +16,8 @@
   ],
   "path": [
     "{home}/bin",
-    "~/.local/bin"
+    "~/.local/bin",
+    "~/.local/share/hecatron/python/bin"
   ],
   "version": "=3.15.1",
   "track": "stable",
@@ -103,7 +104,113 @@
                 "file": "setup.cfg"
               }
             ]
-          }
+          },
+          "args": [
+            {
+              "if": {
+                "all": [
+                  {
+                    "not": {
+                      "any": [
+                        {
+                          "contains": [
+                            "pytest.ini",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            ".pytest.ini",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "pyproject.toml",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "setup.cfg",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "tox.ini",
+                            "python_files"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "glob": "Test*.py"
+                  },
+                  {
+                    "not": {
+                      "glob": "test_*.py"
+                    }
+                  },
+                  {
+                    "not": {
+                      "glob": "*_test.py"
+                    }
+                  }
+                ]
+              },
+              "add": [
+                "-o",
+                "python_files=test_*.py *_test.py Test*.py"
+              ]
+            },
+            {
+              "if": {
+                "not": {
+                  "any": [
+                    {
+                      "contains": [
+                        "pytest.ini",
+                        "testpaths"
+                      ]
+                    },
+                    {
+                      "contains": [
+                        ".pytest.ini",
+                        "testpaths"
+                      ]
+                    },
+                    {
+                      "contains": [
+                        "pyproject.toml",
+                        "testpaths"
+                      ]
+                    },
+                    {
+                      "contains": [
+                        "setup.cfg",
+                        "testpaths"
+                      ]
+                    },
+                    {
+                      "contains": [
+                        "tox.ini",
+                        "testpaths"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "eachProject": [
+                "pyproject.toml",
+                "setup.py"
+              ],
+              "add": [
+                "--ignore={dir}"
+              ]
+            }
+          ]
         },
         {
           "run": [
@@ -127,7 +234,68 @@
                 }
               ]
             }
-          }
+          },
+          "args": [
+            {
+              "if": {
+                "all": [
+                  {
+                    "not": {
+                      "any": [
+                        {
+                          "contains": [
+                            "pytest.ini",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            ".pytest.ini",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "pyproject.toml",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "setup.cfg",
+                            "python_files"
+                          ]
+                        },
+                        {
+                          "contains": [
+                            "tox.ini",
+                            "python_files"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "glob": "Test*.py"
+                  },
+                  {
+                    "not": {
+                      "glob": "test_*.py"
+                    }
+                  },
+                  {
+                    "not": {
+                      "glob": "*_test.py"
+                    }
+                  }
+                ]
+              },
+              "add": [
+                "-o",
+                "python_files=test_*.py *_test.py Test*.py"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -246,5 +414,8 @@
     "setup-cfg",
     "pipenv",
     "poetry"
+  ],
+  "installNeedsRoot": [
+    "linux"
   ]
 }

@@ -159,6 +159,21 @@ class NodeTestHookTest(Fixture):
                     "crates/wasm/package.json": package(test="node --test"), "crates/wasm/node_modules/.keep": ""})
         self.assertEqual(self.ran(self.test("javascript")), ["npm run test in wasm"])
 
+    def test_a_mostly_javascript_package_with_a_tsconfig_is_javascripts(self):
+        # As detection decides (typescript's "detectYields"): type
+        # declarations beside JavaScript sources are JavaScript's, and a
+        # TypeScript package whose compiled JavaScript is committed (twins,
+        # dist/) stays TypeScript's.
+        self.files({"runtime/js/package.json": package(test="jasmine"), "runtime/js/tsconfig.json": "{}",
+                    "runtime/js/node_modules/.keep": "", "runtime/js/src/a.js": "", "runtime/js/src/b.js": "",
+                    "runtime/js/src/a.d.ts": "",
+                    "napi/package.json": package(test="ava"), "napi/tsconfig.json": "{}",
+                    "napi/node_modules/.keep": "", "napi/index.ts": "", "napi/index.js": "",
+                    "napi/dist/a.js": "", "napi/dist/b.js": ""})
+        self.commit()
+        self.assertEqual(self.ran(self.test("javascript")), ["npm run test in js"])
+        self.assertEqual(self.ran(self.test("typescript")), ["npm run test in napi"])
+
     def test_a_workspace_root_without_a_test_script_runs_its_packages(self):
         self.files({"package.json": json.dumps({"workspaces": ["packages/*", "!packages/skipped"]}),
                     "node_modules/.keep": "", "yarn.lock": "",

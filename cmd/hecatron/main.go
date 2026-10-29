@@ -1,4 +1,4 @@
-// Command hecatron (also hct) is the Go core (docs/design.md §19), growing
+// Command hecatron (also hct) is the Go core (docs/contributing/design.md §19), growing
 // in place of bin/hecatron one command at a time. It finds HECATRON_HOME and
 // the project root as bin/hecatron does and sets the same environment; the
 // commands ported so far run here, and every other command runs the
@@ -22,8 +22,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"slices"
 	"strings"
 
+	"github.com/dnf/hecatron/internal/install"
 	"github.com/dnf/hecatron/internal/project"
 )
 
@@ -46,6 +49,7 @@ type cli struct {
 }
 
 func run(argv []string) int {
+	linksOnPath()
 	c := &cli{home: project.NewHome(findHome()), command: "help"}
 	if len(argv) > 0 {
 		c.command, c.args = argv[0], argv[1:]
@@ -54,6 +58,18 @@ func run(argv []string) int {
 	status := c.dispatch()
 	c.showUpdateNotice()
 	return status
+}
+
+// linksOnPath puts hecatron's bin directory (install.LinksDir), where the
+// installers put the tools they install without root, first on PATH, as
+// install.sh's env and bin/hecatron do: what hecatron runs, and
+// finds, includes them where no shell sourced the env (a git hook a GUI
+// runs, CI).
+func linksOnPath() {
+	links, path := install.LinksDir(os.Environ()), os.Getenv("PATH")
+	if !slices.Contains(filepath.SplitList(path), links) {
+		_ = os.Setenv("PATH", links+string(os.PathListSeparator)+path)
+	}
 }
 
 func (c *cli) dispatch() int {
@@ -151,20 +167,18 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 // findProject finds the project (like git). A git repository with no
 // config of its own is read as detected, which only project.py does: the
 // root then comes from it, and the Go model reads what it detected from
-// its cache (or the command is delegated).
+// its cache (or the command is delegated). A hecatron the project doesn't
+// pin is warned about.
 func (c *cli) findProject() int {
-	if c.locateProject(false) {
-		return 0
+	if !c.locateProject(false) && !c.detectProject() {
+		if !c.rootFromPython(true) {
+			return 1
+		}
+		if p, err := project.LoadDetected(c.root, c.home); err == nil {
+			c.project = p
+		}
 	}
-	if c.detectProject() {
-		return 0
-	}
-	if !c.rootFromPython(true) {
-		return 1
-	}
-	if p, err := project.LoadDetected(c.root, c.home); err == nil {
-		c.project = p
-	}
+	c.warnPin()
 	return 0
 }
 

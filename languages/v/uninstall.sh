@@ -2,14 +2,12 @@
 # Uninstall V
 source "$(dirname "$0")/../_common.sh"
 
-uninstall_macos() {
-    $SUDO rm -f /usr/local/bin/v
+uninstall() {
+    unlink_into "$HOME/v"
     rm -rf ~/v
 }
-uninstall_linux() {
-    $SUDO rm -f /usr/local/bin/v
-    rm -rf ~/v
-}
+uninstall_macos() { uninstall; }
+uninstall_linux() { uninstall; }
 
 log "Uninstalling V..."
 "uninstall_${OS}"

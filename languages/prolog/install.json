@@ -10,5 +10,24 @@
         "swi-prolog"
       ]
     }
-  }
+  },
+  "aptSources": [
+    {
+      "name": "swi-prolog",
+      "distro": "ubuntu",
+      "uri": "https://ppa.launchpadcontent.net/swi-prolog/stable/ubuntu",
+      "components": [
+        "main"
+      ],
+      "key": "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE8B739E3753FF4A12360BA6A4AB3A5F60EA9AEB3",
+      "fingerprint": "E8B739E3753FF4A12360BA6A4AB3A5F60EA9AEB3",
+      "packages": [
+        "swi-prolog"
+      ],
+      "replaces": [
+        "swi-prolog-core",
+        "swi-prolog-core-packages"
+      ]
+    }
+  ]
 }

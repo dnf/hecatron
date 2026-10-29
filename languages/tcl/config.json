@@ -15,5 +15,8 @@
     "TEA (make)"
   ],
   "testing": "tcltest",
-  "linting": null
+  "linting": null,
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

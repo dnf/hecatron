@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # hecatron: toolchains, tests and CI for polyglot repositories (also `hct`).
-# See docs/design.md for the commands and the project configuration.
+# See docs/guide/commands.md for the commands and docs/guide/configuration.md
+# for the project configuration.
 set -euo pipefail
 
 # The install directory: this script's real location, one level up from bin/.
@@ -17,7 +18,16 @@ _resolve_home() {
 HECATRON_HOME="${HECATRON_HOME:-$(_resolve_home)}"
 export HECATRON_HOME
 
-# The Go binary (docs/design.md §19), when install.sh downloaded one for the
+# hecatron's bin directory, where the installers put the tools they install
+# without root, first on PATH, as install.sh's env does: what hecatron runs
+# finds them where no shell sourced the env (a git hook a GUI runs, CI).
+_links="${XDG_DATA_HOME:-${HOME:-}/.local/share}/hecatron/bin"
+case ":${PATH}:" in
+    *":${_links}:"*) ;;
+    *) export PATH="${_links}:${PATH}" ;;
+esac
+
+# The Go binary (docs/contributing/design.md §19), when install.sh downloaded one for the
 # commit this install is at: it starts faster and has none of bash 3.2's
 # limits, and runs the commands it hasn't ported through the scripts here.
 # Anything else (a branch, a platform with no binary, a failed download)
@@ -84,6 +94,7 @@ Project:
 
 Hecatron itself:
   self update [--check]      Update hecatron to the latest release (install.sh's installs)
+  self uninstall [--all]     Remove hecatron (and with --all the toolchains it unpacked)
   self test                  Check hecatron's own code: shellcheck and the unit tests
   self build                 Build the Go binary from this checkout, for working on hecatron
   skill install|path         Install hecatron's Agent Skill for AI coding agents
@@ -129,10 +140,11 @@ Usage: hecatron self <command>     (or: hct self <command>)
 
 Manage hecatron itself:
   update [--check]     Update hecatron to the latest release (install.sh's installs)
+  uninstall [--all]    Remove hecatron (and with --all the toolchains it unpacked)
   test                 Check hecatron's own code: shellcheck and the unit tests
   build                Build the Go binary from this checkout, for working on hecatron
 
-Run 'hecatron self update help' for its options.
+Run 'hecatron self update help' or 'hecatron self uninstall help' for their options.
 EOF
 }
 
@@ -145,8 +157,11 @@ if [ "${_command}" = "self" ]; then
         self-help|self--h|self---help) _self_usage; exit 0 ;;
         self-test|self-build) ;;
         self-update)
-            # Native in the Go core only (docs/design.md §19).
+            # Native in the Go core only (docs/contributing/design.md §19).
             echo "hecatron: self update needs hecatron's binary, which install.sh downloads with a release; a checkout updates with git pull" >&2
+            exit 1 ;;
+        self-uninstall)
+            echo "hecatron: self uninstall needs hecatron's binary, which install.sh downloads with a release; delete a checkout yourself, and the lines ending '# hecatron' in your shell's startup files" >&2
             exit 1 ;;
         *)
             echo "hecatron: self: unknown command '${_command#self-}' (try 'hecatron self help')" >&2
@@ -194,7 +209,7 @@ case "${_command}" in
     env)
         _project
         # With a language: that language's environment for one component
-        # (docs/design.md §18), e.g. eval "$(hecatron env java -c age)".
+        # (docs/guide/versions.md), e.g. eval "$(hecatron env java -c age)".
         if [ "$#" -gt 0 ]; then
             _lang="$1"; shift
             _component=()
@@ -218,23 +233,23 @@ case "${_command}" in
         _project
         exec bash "${HECATRON_HOME}/libexec/commands/version.sh" "$@" ;;
     skill)
-        # Native in the Go core only (docs/design.md §19).
+        # Native in the Go core only (docs/contributing/design.md §19).
         echo "hecatron: skill needs hecatron's binary, which install.sh downloads with a release; the skill itself is in ${HECATRON_HOME}/plugins/hecatron/skills/hecatron" >&2
         exit 1 ;;
     status)
-        # Native in the Go core only (docs/design.md §19).
+        # Native in the Go core only (docs/contributing/design.md §19).
         echo "hecatron: status needs hecatron's binary, which install.sh downloads with a release; without it, hct list and hct doctor say most of it" >&2
         exit 1 ;;
     sync)
-        # Native in the Go core only (docs/design.md §19).
+        # Native in the Go core only (docs/contributing/design.md §19).
         echo "hecatron: sync needs hecatron's binary, which install.sh downloads with a release" >&2
         exit 1 ;;
     advisor)
-        # Native in the Go core only (docs/design.md §19).
+        # Native in the Go core only (docs/contributing/design.md §19).
         echo "hecatron: advisor needs hecatron's binary, which install.sh downloads with a release" >&2
         exit 1 ;;
     licenses)
-        # Native in the Go core only (docs/design.md §19).
+        # Native in the Go core only (docs/contributing/design.md §19).
         echo "hecatron: licenses needs hecatron's binary, which install.sh downloads with a release" >&2
         exit 1 ;;
     init|banner)

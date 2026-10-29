@@ -10,5 +10,30 @@
         "sbcl"
       ]
     }
-  }
+  },
+  "steps": [
+    {
+      "name": "Quicklisp",
+      "download": {
+        "url": "https://beta.quicklisp.org/quicklisp.lisp",
+        "sha256": "4a7a5c2aebe0716417047854267397e24a44d0cce096127411e9ce9ccfeb2c17"
+      },
+      "run": [
+        "sbcl",
+        "--noinform",
+        "--non-interactive",
+        "--no-sysinit",
+        "--no-userinit",
+        "--load",
+        "{file}",
+        "--eval",
+        "(quicklisp-quickstart:install :path \"{data}/quicklisp/\")"
+      ],
+      "check": {
+        "path": "{data}/quicklisp/setup.lisp"
+      },
+      "problem": "Quicklisp not installed (the hooks fetch a system's dependencies with it)",
+      "creates": "{data}/quicklisp"
+    }
+  ]
 }

@@ -1,4 +1,4 @@
-"""Toolchain versions (docs/design.md §18): hecatron's version syntax, how
+"""Toolchain versions (docs/guide/versions.md): hecatron's version syntax, how
 versions compare, and the ecosystem pin files a project can choose one with.
 
 A spec is either a prefix, "3.12", meaning the newest release whose version
@@ -224,6 +224,17 @@ def _go_mod_toolchain(text, key):
     return _plain(match.group(1), exact=True) if match else NOT_PINNED
 
 
+def _build_zig_zon(text, key):
+    # Zig breaks compatibility between minor releases (0.14 code doesn't
+    # build with 0.15), so minimum_zig_version names its release line, the
+    # newest of which the build works with, not a floor the default meets.
+    match = re.search(r'^[^/\n]*?\.minimum_zig_version\s*=\s*"([^"]*)"', text, re.MULTILINE)
+    if not match:
+        return NOT_PINNED
+    spec = _plain(match.group(1))
+    return ".".join(re.split(r"[-+]", spec, maxsplit=1)[0].split(".")[:2]) if spec else None
+
+
 def _gradle_daemon_jvm(text, key):
     match = re.search(r"^\s*toolchainVersion\s*=\s*(\S+)\s*$", text, re.MULTILINE)
     return _plain(match.group(1)) if match else NOT_PINNED
@@ -256,7 +267,7 @@ def _sdkmanrc(text, key):
 def _python_classifiers(text, key):
     # The trove classifiers a pyproject.toml, setup.cfg or setup.py lists
     # ("Programming Language :: Python :: 3.14"): the newest Python the
-    # project says it supports, a line (3.14), not a pin (docs/design.md §18).
+    # project says it supports, a line (3.14), not a pin (docs/guide/versions.md).
     found = re.findall(r"Programming Language :: Python :: (\d+\.\d+)\b", text)
     return _plain(newest(found)) if found else NOT_PINNED
 
@@ -345,6 +356,7 @@ FORMATS = {
     "rust-toolchain-toml": _rust_toolchain_toml,
     "global-json": _global_json,
     "go-mod-toolchain": _go_mod_toolchain,
+    "build-zig-zon": _build_zig_zon,
     "gradle-daemon-jvm": _gradle_daemon_jvm,
     "tool-versions": _tool_versions,
     "mise": _mise,

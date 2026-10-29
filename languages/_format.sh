@@ -3,7 +3,7 @@
 # language's formatter, using the project's own configuration; with
 # HECATRON_FORMAT_CHECK=1 (hecatron format --check, and hecatron lint) it
 # changes nothing and fails, listing the files the formatter would change
-# (docs/format.md).
+# (docs/guide/format.md).
 # shellcheck shell=bash
 # shellcheck disable=SC2154 # build_dir is set by find_build in _hooks.sh
 

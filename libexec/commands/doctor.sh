@@ -63,7 +63,7 @@ _problems() (
     if [ -n "${_lint}" ] && ! command -v "${_lint}" >/dev/null 2>&1; then
         echo "lint tool ${_lint} not found"
     fi
-    # Each component's version (docs/design.md §18), where the definition
+    # Each component's version (docs/guide/versions.md), where the definition
     # can list what's installed.
     python3 "${HECATRON_HOME}/libexec/lib/project.py" missing-versions "${_lang}" |
         while IFS=$'\t' read -r _component _spec _source; do
@@ -102,7 +102,7 @@ for _lang in "${_langs[@]}"; do
         printf '%s\n' "${_notes}" | sed 's/^/          /'
     fi
     # A component whose version comes from what it supports or its commit's
-    # date (docs/design.md §18), so nobody wonders where the version came from.
+    # date (docs/guide/versions.md), so nobody wonders where the version came from.
     python3 "${HECATRON_HOME}/libexec/lib/project.py" version-notes "${_lang}" |
         while IFS=$'\t' read -r _component _note; do
             printf '          %s: %s %s\n' "${_component}" "${_lang}" "${_note}"

@@ -1,4 +1,4 @@
-"""docs/languages.md matches the language definitions, and every definition
+"""docs/guide/languages.md matches the language definitions, and every definition
 has what the table shows: a name, a homepage and a summary."""
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ class LanguagesDocTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_every_language_is_listed_once(self):
-        with open(os.path.join(ROOT, "docs", "languages.md"), encoding="utf-8") as f:
+        with open(os.path.join(ROOT, "docs", "guide", "languages.md"), encoding="utf-8") as f:
             text = f.read()
         popular, additional = text.split("## Popular languages")[1].split("## Additional languages")
         rows = [line for section in (popular, additional) for line in section.splitlines() if line.startswith("| [")]
@@ -31,7 +31,7 @@ class LanguagesDocTest(unittest.TestCase):
     def test_every_tool_link_is_used_and_https(self):
         with open(os.path.join(ROOT, "libexec", "codegen", "tool-links.json"), encoding="utf-8") as f:
             links = json.load(f)
-        with open(os.path.join(ROOT, "docs", "languages.md"), encoding="utf-8") as f:
+        with open(os.path.join(ROOT, "docs", "guide", "languages.md"), encoding="utf-8") as f:
             text = f.read()
         for name, url in links.items():
             with self.subTest(tool=name):

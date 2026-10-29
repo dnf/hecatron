@@ -1,4 +1,4 @@
-"""docs/coverage.md, the coverage matrix (tests/coverage/matrix.py)."""
+"""docs/guide/coverage.md, the coverage matrix (tests/coverage/matrix.py)."""
 
 import os
 import sys
@@ -38,7 +38,7 @@ class DocTest(unittest.TestCase):
     def test_coverage_md_is_generated_from_the_results(self):
         with open(matrix.DOC, encoding="utf-8") as f:
             self.assertEqual(f.read(), matrix.render_text(matrix.load()),
-                             "docs/coverage.md is out of date: python3 tests/coverage/matrix.py render")
+                             "docs/guide/coverage.md is out of date: python3 tests/coverage/matrix.py render")
 
 
 if __name__ == "__main__":

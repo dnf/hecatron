@@ -10,7 +10,7 @@ import (
 )
 
 // Condition tests files, with the vocabulary of a definition's step
-// conditions (docs/design.md §19): exactly one of
+// conditions (docs/contributing/design.md §19): exactly one of
 //
 //	{"file": GLOB}               a file or directory matches, in the directory
 //	{"missing": GLOB}            nothing matches

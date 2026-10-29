@@ -14,7 +14,7 @@ import (
 // those matching its language's error patterns (config.json
 // "errorPatterns"), else the generic ones below, else the last lines of the
 // log with colour codes, progress and download noise taken out
-// (docs/design.md §19, "When a tool's output changes"). An excerpt never
+// (docs/contributing/design.md §19, "When a tool's output changes"). An excerpt never
 // fails a run: a pattern that doesn't compile is skipped.
 
 // ExcerptLines and TailLines size an excerpt.

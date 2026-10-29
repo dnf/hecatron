@@ -20,16 +20,18 @@ type Receipt struct {
 	Steps    []string            `json:"steps,omitempty"`    // steps it ran, for the record
 	Homes    []string            `json:"homes,omitempty"`    // toolchain directories it unpacked
 	Links    []string            `json:"links,omitempty"`    // links it made in LinksDir
+	Paths    []string            `json:"paths,omitempty"`    // directories steps made in the data directory
+	Files    []string            `json:"files,omitempty"`    // apt sources and their keyrings it added
 	Updated  string              `json:"updated"`
 }
 
 // installed is what one install did, for the receipt.
 type installed struct {
-	packages, steps, homes, links []string
+	packages, steps, homes, links, paths, files []string
 }
 
 func (i installed) empty() bool {
-	return len(i.packages)+len(i.steps)+len(i.homes)+len(i.links) == 0
+	return len(i.packages)+len(i.steps)+len(i.homes)+len(i.links)+len(i.paths)+len(i.files) == 0
 }
 
 // dataDir is hecatron's own data directory: $XDG_DATA_HOME/hecatron, else
@@ -124,6 +126,8 @@ func record(dir, lang, manager string, did installed) error {
 	receipt.Steps = union(receipt.Steps, did.steps)
 	receipt.Homes = union(receipt.Homes, did.homes)
 	receipt.Links = union(receipt.Links, did.links)
+	receipt.Paths = union(receipt.Paths, did.paths)
+	receipt.Files = union(receipt.Files, did.files)
 	receipt.Updated = time.Now().UTC().Format(time.RFC3339)
 	return writeReceipt(dir, receipt)
 }

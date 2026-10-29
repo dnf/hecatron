@@ -29,7 +29,7 @@ _uv_python_install() {
 }
 
 # Every Python version the project's components resolve to (pin files, the
-# project's config, else the default; docs/design.md §18), through uv, which
+# project's config, else the default; docs/guide/versions.md), through uv, which
 # takes a prefix ("3.12") or an exact version.
 _install_versions() {
     [ -n "${HECATRON_HOME:-}" ] || return 0
@@ -49,6 +49,7 @@ deps() {
 
 log "Installing Python..."
 "install_${OS}"
+bash "$(dirname "$0")/link-python.sh"
 deps
 # OSV-Scanner, which hecatron licenses reads this language's licenses with.
 osv_scanner_install

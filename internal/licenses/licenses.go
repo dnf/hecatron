@@ -1,4 +1,4 @@
-// Package licenses is hct licenses (docs/licenses.md): every dependency's
+// Package licenses is hct licenses (docs/guide/licenses.md): every dependency's
 // license, in every language and component, from OSV-Scanner's report on
 // the lock files (its licenses come from deps.dev) and, where that has
 // none, the lock file itself (Composer's); normalised to SPDX expressions,

@@ -7,5 +7,5 @@
 
 ## Optional
 
-- [Languages](https://raw.githubusercontent.com/dnf/hecatron/main/docs/languages.md): every supported language and its default tools
-- [Design](https://raw.githubusercontent.com/dnf/hecatron/main/docs/design.md): configuration, version resolution, hooks, the Go core
+- [Languages](https://raw.githubusercontent.com/dnf/hecatron/main/docs/guide/languages.md): every supported language and its default tools
+- [Design](https://raw.githubusercontent.com/dnf/hecatron/main/docs/contributing/design.md): configuration, version resolution, hooks, the Go core

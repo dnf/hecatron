@@ -1,7 +1,7 @@
 // Package spdx reads SPDX license expressions ("MIT", "Apache-2.0 OR
 // MIT", "GPL-2.0-only WITH Classpath-exception-2.0") into a canonical form
 // and decides whether a set of allowed or denied licenses permits one, for
-// hct licenses (docs/licenses.md).
+// hct licenses (docs/guide/licenses.md).
 package spdx
 
 import (

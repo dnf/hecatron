@@ -8,8 +8,13 @@ language and component (or everything in parallel), and keeps generated CI
 workflows and a Dockerfile in sync.
 
 It was split out of [dnf/sayable](https://github.com/dnf/sayable), where it
-lived as `.hecatron/`. The design is [`docs/design.md`](docs/design.md); read
-it before changing structure, and keep it current when a decision changes.
+lived as `.hecatron/`. The docs are in two sets: the
+[user guide](docs/guide/README.md) (commands, configuration, behaviour) and
+the [contributor guide](docs/contributing/README.md) (architecture, modules,
+command flow, testing, releasing, and the
+[design record](docs/contributing/design.md) with the owner's decisions).
+Read the contributor guide before changing structure; keep the user guide
+current when behaviour changes, and the design record when a decision does.
 
 ## Layout
 
@@ -26,9 +31,11 @@ libexec/{metadata,onboarding,bootstrap,lint}/
 languages/<lang>/        # built-in definitions: config.json, install.sh, uninstall.sh, doctor.sh, dockerfile,
                          # advice.json (hct advisor's rules; languages/_advice.json: shared sets)
 tests/                   # python3 -m unittest discover -s tests
-docs/                    # design.md (keep current), installers.md, adding-a-language.md, build-conventions.md
+docs/guide/              # the user guide: commands.md, configuration.md, hooks.md, versions.md, ... (keep current)
+docs/contributing/       # the contributor guide: architecture.md, modules.md, command-flow.md, design.md, ...
+docs/agents.md           # the reference for AI agents (hct help agents; path is fixed: llms.txt and advisor links)
 examples/sayable/        # sayable's hooks, workflow templates and config at the split (reference only)
-cmd/hecatron/            # the Go core's entry point (docs/design.md §19): ports commands, delegates the rest
+cmd/hecatron/            # the Go core's entry point (docs/contributing/design.md §19): ports commands, delegates the rest
 internal/                # Go packages: project (the model and version resolution, a port of project.py and
                          # versions.py, and detection), generate (Dockerfile, workflows), runner (jobs, output),
                          # status (hct status), deps (audit and outdated reports), licenses and spdx

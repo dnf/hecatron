@@ -1,4 +1,4 @@
-"""bin/hecatron's launcher: which binary it runs (docs/design.md §19)."""
+"""bin/hecatron's launcher: which binary it runs (docs/contributing/design.md §19)."""
 
 import os
 import shutil

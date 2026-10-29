@@ -11,5 +11,8 @@
   ],
   "buildSystems": [],
   "testing": "Bats",
-  "linting": "ShellCheck"
+  "linting": "ShellCheck",
+  "installNeedsRoot": [
+    "linux"
+  ]
 }

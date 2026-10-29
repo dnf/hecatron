@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// Format is how a run is shown (docs/design.md §19, "Output").
+// Format is how a run is shown (docs/contributing/design.md §19, "Output").
 type Format string
 
 const (

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Write each versioned language's release dates (languages/<lang>/releases.json),
 which version resolution reads to give an old checkout the toolchain that was
-current when it was written (docs/design.md §18). Run it when defaults are
+current when it was written (docs/guide/versions.md). Run it when defaults are
 updated; resolution itself stays offline.
 
     python3 libexec/maintenance/release_dates.py            # every language
@@ -144,6 +144,13 @@ def elixir():
         page += 1
 
 
+def zig():
+    # Every release with its date; "master" is the nightly build.
+    for version, release in json.loads(fetch("https://ziglang.org/download/index.json")).items():
+        if FINAL.match(version) and release.get("date"):
+            yield version, release["date"], False
+
+
 SOURCES = {
     "typescript": (node, "https://nodejs.org/dist/index.json"),
     "python": (python, "https://www.python.org/api/v2/downloads/release/"),
@@ -154,6 +161,7 @@ SOURCES = {
     "php": (php, "https://www.php.net/releases/"),
     "elixir": (elixir, "https://github.com/elixir-lang/elixir/releases"),
     "csharp": (dotnet, "https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json"),
+    "zig": (zig, "https://ziglang.org/download/index.json"),
 }
 ALIASES = {"node": "typescript", "dotnet": "csharp"}
 

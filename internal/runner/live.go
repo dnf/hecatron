@@ -101,6 +101,15 @@ func (l *Live) Stop() {
 	<-l.stopped
 }
 
+// Erase clears the last frame, after Stop, for a command that prints its
+// own report in its place (hct doctor).
+func (l *Live) Erase() {
+	if l.drawn > 0 {
+		_, _ = fmt.Fprintf(l.out, "\x1b[%dA\r\x1b[J", l.drawn)
+		l.drawn = 0
+	}
+}
+
 const spinner = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
 
 func (l *Live) colorize(code, text string) string {
