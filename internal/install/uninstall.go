@@ -106,8 +106,30 @@ func (r *Removal) Apply(w io.Writer, manager *Manager, receiptsDir string) error
 			}
 		}
 	}
+	data := filepath.Dir(receiptsDir)
+	for _, path := range r.Receipt.Paths {
+		if _, err := os.Lstat(path); err == nil {
+			_, _ = fmt.Fprintf(w, "==> rm -r %s\n", path)
+			if err := removeCreated(path, data); err != nil {
+				return err
+			}
+		}
+	}
 	if len(r.Remove) > 0 {
 		command := manager.RemoveCommand(r.Remove)
+		_, _ = fmt.Fprintf(w, "==> %s\n", strings.Join(command, " "))
+		if err := manager.system.Run(command, "", manager.env); err != nil {
+			return err
+		}
+	}
+	var files []string
+	for _, file := range r.Receipt.Files {
+		if _, err := os.Lstat(file); err == nil && isAptSourceFile(file) {
+			files = append(files, file)
+		}
+	}
+	if len(files) > 0 {
+		command := manager.sudo(append([]string{"rm", "-f"}, files...)...)
 		_, _ = fmt.Fprintf(w, "==> %s\n", strings.Join(command, " "))
 		if err := manager.system.Run(command, "", manager.env); err != nil {
 			return err

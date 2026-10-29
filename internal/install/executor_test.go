@@ -26,6 +26,7 @@ type fakeSystem struct {
 	served    map[string][]byte   // URLs Fetch answers
 	fetched   []string
 	ran       []string
+	onRun     func(argv []string) // what a command does besides apt's
 }
 
 func (f *fakeSystem) Fetch(url string) (io.ReadCloser, error) {
@@ -80,6 +81,24 @@ func (f *fakeSystem) Run(argv []string, _ string, _ []string) error {
 	}
 	if check, ok := f.effects[line]; ok {
 		f.passing[check] = true
+	}
+	if len(argv) == 6 && argv[0] == "install" && argv[1] == "-D" { // install -D -m 644 SOURCE DEST
+		data, err := os.ReadFile(argv[4])
+		if err == nil {
+			err = os.MkdirAll(filepath.Dir(argv[5]), 0o755)
+		}
+		if err == nil {
+			err = os.WriteFile(argv[5], data, 0o644)
+		}
+		return err
+	}
+	if len(argv) > 2 && argv[0] == "rm" && argv[1] == "-f" {
+		for _, file := range argv[2:] {
+			_ = os.Remove(file)
+		}
+	}
+	if f.onRun != nil {
+		f.onRun(argv)
 	}
 	return nil
 }

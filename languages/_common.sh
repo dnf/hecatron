@@ -211,6 +211,60 @@ apt_has() {
     [[ "${policy}" == *"Candidate: "[!\(]* ]]
 }
 
+# A signed apt repository, as the binary adds an install.json's "aptSources"
+# entry: on DISTRO only (/etc/os-release's ID), its key in
+# /etc/apt/keyrings/hecatron-NAME.asc (its primary key's fingerprint checked
+# when gpg is there), the repository for this release in
+# /etc/apt/sources.list.d/hecatron-NAME.sources, then fresh package lists.
+# Returns 1 without adding it on another distribution, or for a release the
+# repository doesn't have, which then installs the distribution's packages.
+# Usage: apt_source NAME DISTRO URI KEY-URL FINGERPRINT COMPONENTS
+apt_source() {
+    local _name="$1" _distro="$2" _uri="$3" _key_url="$4" _fingerprint="$5" _components="$6"
+    local _id _codename _keyring _sources _content _work _found
+    _id="$(. /etc/os-release 2>/dev/null && echo "${ID:-}")"
+    _codename="$(. /etc/os-release 2>/dev/null && echo "${VERSION_CODENAME:-}")"
+    [ "${_id}" = "${_distro}" ] && [ -n "${_codename}" ] || return 1
+    _keyring="/etc/apt/keyrings/hecatron-${_name}.asc"
+    _sources="$(apt_source_file "${_name}")"
+    _content="$(printf 'Types: deb\nURIs: %s\nSuites: %s\nComponents: %s\nSigned-By: %s' \
+        "${_uri}" "${_codename}" "${_components}" "${_keyring}")"
+    if [ -f "${_keyring}" ] && [ "$(cat "${_sources}" 2>/dev/null)" = "${_content}" ]; then
+        return 0
+    fi
+    if ! curl -fsSL -o /dev/null "${_uri}/dists/${_codename}/InRelease"; then
+        log "${_uri} has no ${_codename}; using the distribution's packages"
+        return 1
+    fi
+    _work="$(mktemp -d)"
+    curl -fsSL -o "${_work}/key" "${_key_url}"
+    if has gpg; then
+        mkdir -m 700 "${_work}/gnupg"
+        _found="$(GNUPGHOME="${_work}/gnupg" gpg --show-keys --with-colons "${_work}/key" 2>/dev/null |
+            awk -F: '$1 == "pub" { primary = 1; next } primary && $1 == "fpr" { print $10; primary = 0 }')"
+        if [ "${_found}" != "${_fingerprint}" ]; then
+            rm -rf "${_work}"
+            echo "error: the key of apt source ${_name} (${_key_url}) is ${_found:-unreadable}, want ${_fingerprint}" >&2
+            exit 1
+        fi
+    fi
+    log "Adding apt source ${_name} (${_uri} ${_codename})..."
+    printf '%s\n' "${_content}" >"${_work}/sources"
+    $SUDO install -D -m 644 "${_work}/key" "${_keyring}"
+    $SUDO install -D -m 644 "${_work}/sources" "${_sources}"
+    rm -rf "${_work}"
+    $SUDO apt-get -o Acquire::Retries=3 update -qq
+}
+apt_source_file() { echo "/etc/apt/sources.list.d/hecatron-$1.sources"; }
+# Whether apt_source would add NAME's repository here and hasn't (the
+# doctor's check): on DISTRO, without its sources file.
+apt_source_missing() {
+    [ "$(. /etc/os-release 2>/dev/null && echo "${ID:-}")" = "$2" ] && [ ! -f "$(apt_source_file "$1")" ]
+}
+apt_source_remove() {
+    $SUDO rm -f "/etc/apt/keyrings/hecatron-$1.asc" "$(apt_source_file "$1")"
+}
+
 # Toolchain versions (docs/design.md §18). For an installer: each version the
 # project's components resolve to that isn't installed yet, one spec per line
 # ("1.22" or "=1.22.5"); nothing outside a hecatron run.

@@ -41,6 +41,9 @@ type Definition struct {
 	Tools     []Tool     `json:"tools,omitempty"`
 	Steps     []RunStep  `json:"steps,omitempty"`
 	Uninstall Uninstall  `json:"uninstall,omitempty"`
+	// AptSources are signed apt repositories the packages come from on a
+	// distribution whose own are too old (aptsource.go).
+	AptSources []AptSource `json:"aptSources,omitempty"`
 	// Links are the default version's commands, linked into hecatron's bin
 	// directory (LinksDir) for interactive shells.
 	Links []string `json:"links,omitempty"`
@@ -151,12 +154,27 @@ type Tool struct {
 
 // RunStep is a command run after the packages are in, when "when" holds
 // and its check fails; problem is what the doctor says while it fails.
+// Its run and check may use {data}, hecatron's data directory, and its run
+// {file}, its download.
 type RunStep struct {
 	Name    string     `json:"name,omitempty"`
 	Run     []string   `json:"run"`
 	When    *Condition `json:"when,omitempty"`
 	Check   *Condition `json:"check"`
 	Problem string     `json:"problem"`
+	// Download is a file the step runs (an installer script), fetched into
+	// the downloads cache and verified against its SHA-256.
+	Download *StepDownload `json:"download,omitempty"`
+	// Creates is the directory the step makes, inside hecatron's data
+	// directory: removed before the step runs again (an interrupted run's
+	// leftovers) and by uninstall.
+	Creates string `json:"creates,omitempty"`
+}
+
+// StepDownload is a step's file: its URL and its mandatory SHA-256.
+type StepDownload struct {
+	URL    string `json:"url"`
+	SHA256 string `json:"sha256"`
 }
 
 // Uninstall adjusts what uninstall derives from the receipts.
@@ -261,6 +279,17 @@ func (d *Definition) validate() error {
 		if len(step.Run) == 0 || step.Check == nil || step.Problem == "" {
 			return fmt.Errorf(`steps[%d]: a step needs "run", "check" and "problem"`, i)
 		}
+		if step.Download != nil && (step.Download.URL == "" || !hexSHA256.MatchString(step.Download.SHA256)) {
+			return fmt.Errorf(`steps[%d]: a download needs a "url" and its "sha256"`, i)
+		}
+		if step.Creates != "" && !strings.HasPrefix(step.Creates, "{data}/") {
+			return fmt.Errorf(`steps[%d]: "creates" must be inside {data}`, i)
+		}
+	}
+	for i := range d.AptSources {
+		if err := d.AptSources[i].validate(); err != nil {
+			return fmt.Errorf("aptSources[%d]: %w", i, err)
+		}
 	}
 	conditions := []*Condition{}
 	for i := range d.Packages {
@@ -286,7 +315,7 @@ func (d *Definition) validate() error {
 // supportedKeys are the install.json keys this binary carries out. The
 // others ("family", "links", "installed", "deps", "hook", "installOf"...)
 // belong to later stages.
-var supportedKeys = []string{"schema", "toolchain", "packages", "tools", "steps", "uninstall", "links"}
+var supportedKeys = []string{"schema", "toolchain", "packages", "tools", "steps", "uninstall", "links", "aptSources"}
 
 // Unsupported says why this binary can't carry out the definition on
 // manager's platform ("" when it can): a newer schema, a key or install
@@ -402,9 +431,10 @@ func (a *Archive) format(platform Platform) (string, error) {
 // nestedKeys are the keys this binary reads inside the toolchain, a tool
 // and a step.
 var nestedKeys = map[string][]string{
-	"toolchain": {"versions", "packages", "archive", "vendor", "via", "platforms"},
-	"tools":     {"name", "use", "version", "when", "packages", "archive", "check"},
-	"steps":     {"name", "run", "when", "check", "problem"},
+	"toolchain":  {"versions", "packages", "archive", "vendor", "via", "platforms"},
+	"tools":      {"name", "use", "version", "when", "packages", "archive", "check"},
+	"steps":      {"name", "run", "when", "check", "problem", "download", "creates"},
+	"aptSources": {"name", "distro", "uri", "suite", "components", "key", "fingerprint", "packages", "replaces"},
 }
 
 func (d *Definition) unknownNestedKeys() []string {

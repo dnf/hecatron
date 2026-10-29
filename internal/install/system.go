@@ -159,12 +159,13 @@ func (m *Manager) Missing(packages []string) []string {
 const aptListsMaxAge = time.Hour
 
 // InstallCommands are the commands installing packages: for apt, a refresh
-// of old package lists first.
-func (m *Manager) InstallCommands(packages []string) [][]string {
+// of old package lists first, or of any after adding an apt source
+// (refresh).
+func (m *Manager) InstallCommands(packages []string, refresh bool) [][]string {
 	switch m.Name {
 	case "apt":
 		var commands [][]string
-		if age, ok := m.system.AptListsAge(); !ok || age > aptListsMaxAge {
+		if age, ok := m.system.AptListsAge(); refresh || !ok || age > aptListsMaxAge {
 			commands = append(commands, m.sudo("apt-get", "-o", "Acquire::Retries=3", "update", "-qq"))
 		}
 		return append(commands, m.sudo(append([]string{"apt-get", "-o", "Acquire::Retries=3", "install", "-y"}, packages...)...))
