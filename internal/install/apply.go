@@ -106,7 +106,7 @@ func (p *Plan) unpackAndLink(w io.Writer, lp *LanguagePlan, did *installed) erro
 			return fmt.Errorf("unpacking %s: %w", action.Download.URL, err)
 		}
 		did.homes = append(did.homes, action.Home)
-		if !action.Check.Holds(ctx) {
+		if !action.Check.Holds(action.context(ctx)) {
 			return fmt.Errorf("%s was unpacked into %s, but its check still fails (%s)", action.Label, action.Home, action.Check)
 		}
 	}

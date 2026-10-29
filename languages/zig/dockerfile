@@ -1,11 +1,16 @@
-# Zig: the version config.json pins (each-version: there is one), checked
-# against ziglang.org's index of downloads
+# Zig: the version config.json pins, then each other version the components
+# use (a line as its newest release), side by side in /opt/zig/<version>,
+# where installed.sh finds them, each checked against ziglang.org's index of
+# downloads (which also names each download: Zig renamed them in 0.14.1).
+# The first block, the default, is linked into /usr/local/bin.
 # apt: python3 xz-utils
 # each-version
-RUN V="{version}" && A="$(uname -m)-linux" && \
-    S="$(curl -fsSL https://ziglang.org/download/index.json | python3 -c 'import json, sys; print(json.load(sys.stdin)[sys.argv[1]][sys.argv[2]]["shasum"])' "${V}" "${A}")" && \
-    curl -fsSL -o /tmp/zig.tar.xz "https://ziglang.org/download/${V}/zig-${A}-${V}.tar.xz" && \
-    echo "${S}  /tmp/zig.tar.xz" | sha256sum -c - >/dev/null && \
-    mkdir -p /opt/zig && tar -C /opt/zig --strip-components=1 -xJf /tmp/zig.tar.xz && rm /tmp/zig.tar.xz && \
-    ln -sf /opt/zig/zig /usr/local/bin/zig
+RUN V="{version}" && A="$(uname -m)-linux" && I="$(curl -fsSL https://ziglang.org/download/index.json)" && \
+    if [ -z "{exact}" ]; then V="$(printf '%s' "${I}" | python3 -c 'import json, sys; p = sys.argv[1].split("."); vs = [v for v in json.load(sys.stdin) if v != "master" and v.split(".")[:len(p)] == p]; print(max(vs, key=lambda v: [int(x) for x in v.split(".")]))' "${V}")"; fi && \
+    if [ ! -x "/opt/zig/${V}/zig" ]; then \
+      set -- $(printf '%s' "${I}" | python3 -c 'import json, sys; d = json.load(sys.stdin)[sys.argv[1]][sys.argv[2]]; print(d["tarball"], d["shasum"])' "${V}" "${A}") && \
+      curl -fsSL -o /tmp/zig.tar.xz "$1" && echo "$2  /tmp/zig.tar.xz" | sha256sum -c - >/dev/null && \
+      mkdir -p "/opt/zig/${V}" && tar -C "/opt/zig/${V}" --strip-components=1 -xJf /tmp/zig.tar.xz && rm /tmp/zig.tar.xz; \
+    fi && \
+    if [ ! -e /usr/local/bin/zig ]; then ln -s "/opt/zig/${V}/zig" /usr/local/bin/zig; fi
 # end-each-version
