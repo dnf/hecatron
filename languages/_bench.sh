@@ -14,9 +14,14 @@ _bench_skipped=(.git target node_modules vendor _build build dist-newstyle .stac
 # Whether a file below this directory (or the one given) matches the
 # extended regular expression, among the files named like the glob.
 bench_grep() {
-    local _pattern="$1" _glob="$2" _dir="${3:-.}" _excludes=() _skip
-    for _skip in "${_bench_skipped[@]}"; do _excludes+=(--exclude-dir="${_skip}"); done
-    grep -rqsE "${_excludes[@]}" --include="${_glob}" -- "${_pattern}" "${_dir}"
+    local _pattern="$1" _glob="$2" _dir="${3:-.}" _prune=() _skip _file
+    # find, not grep's --include and --exclude-dir: BusyBox's grep (the
+    # bash:3.2 image's) has neither.
+    for _skip in "${_bench_skipped[@]}"; do _prune+=(-o -name "${_skip}"); done
+    while IFS= read -r _file; do
+        if grep -qsE -- "${_pattern}" "${_file}"; then return 0; fi
+    done < <(find "${_dir}" \( -name .git "${_prune[@]}" \) -prune -o -type f -name "${_glob}" -print 2>/dev/null)
+    return 1
 }
 
 # Rust: cargo bench, where the package or workspace has benchmarks (benches/,

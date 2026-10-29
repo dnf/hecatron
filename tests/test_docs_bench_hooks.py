@@ -211,6 +211,7 @@ class BenchHookTest(HookTest):
         self.fake("npm")
         self.assertIn("npm run benchmark", self.passes(self.hook("javascript", "bench")))
 
+    @unittest.skipUnless(shutil.which("make"), "make isn't installed")
     def test_makefile_bench_target(self):
         write(self.path("Makefile"), "all:\n\ttrue\nbench:\n\ttrue\n")
         self.assertIn("+ make bench", self.passes(self.hook("c", "bench")))
