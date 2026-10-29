@@ -2,6 +2,9 @@
  "schemaVersion": 1,
  "results": [
   {
+   "actions": [
+    "test"
+   ],
    "repo": "aardappel/goose",
    "date": "2026-10-28",
    "commit": "cce94b919d27458856ae2685974049eac78debcf",
@@ -210,6 +213,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -223,6 +227,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -256,6 +264,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cmake"
      ],
@@ -287,6 +299,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -325,6 +341,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -351,6 +371,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "alire-project/alire",
    "date": "2026-10-28",
    "commit": "c349e3813d94db218601f50f164410c0739edc57",
@@ -487,6 +510,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "ada",
@@ -500,6 +524,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "alr"
@@ -533,6 +561,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -558,6 +590,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "antlr/antlr4",
    "date": "2026-10-28",
    "commit": "7d5770395bb7b02eb56e7c62662cb1d7c08f42a3",
@@ -932,6 +967,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -945,6 +981,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -986,6 +1026,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -1017,6 +1061,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dart"
@@ -1056,6 +1104,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -1089,6 +1141,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -1142,6 +1198,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -1179,6 +1239,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -1195,7 +1259,7 @@
        "seconds": 2,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "no-tests",
         "excerpt": [
          "error: python: test failed in runtime/Python3"
         ]
@@ -1216,6 +1280,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "swift"
      ],
@@ -1232,7 +1300,7 @@
        "seconds": 10,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "build",
         "excerpt": [
          "error: SwiftCompile normal x86_64 failed with a nonzero exit code. Command line:     cd /home/dev",
          "/home/dev/antlr_antlr4/runtime/Swift/Tests/Antlr4Tests/VisitorTests.swift:22:21: error: cannot find 'VisitorBasicLexer' in scope",
@@ -1264,6 +1332,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -1278,11 +1350,7 @@
       "test": {
        "rc": 1,
        "seconds": 23,
-       "counts": {
-        "tool": "go (packages)",
-        "passed": 0,
-        "failed": 6
-       },
+       "counts": null,
        "failure": {
         "category": "build",
         "excerpt": [
@@ -1296,6 +1364,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apache/arrow",
    "date": "2026-10-28",
    "commit": "fc390cd3442ba8f2a1db964dee735c6f1234c4e1",
@@ -1533,6 +1604,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -1546,6 +1618,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -1564,7 +1640,7 @@
        "seconds": 319,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "CMake Error at build/_deps/boost-src/libs/headers/CMakeLists.txt:11 (add_library):"
         ]
@@ -1585,6 +1661,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cmake"
      ],
@@ -1601,7 +1681,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "-- Detecting C compile features - done",
          "-- Detecting CXX compiler ABI info",
@@ -1633,6 +1713,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -1649,7 +1733,7 @@
        "seconds": 2,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "error: Failed to build `pyarrow @ file:///home/dev/apache_arrow/python`"
         ]
@@ -1670,6 +1754,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "Rscript"
      ],
@@ -1686,7 +1774,7 @@
        "seconds": 133,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "ERROR: compilation failed for package ‘arrow’"
         ]
@@ -1708,6 +1796,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "bundle"
@@ -1736,6 +1828,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apache/arrow-adbc",
    "date": "2026-10-28",
    "commit": "c22f6b3f820375abce41473da30ecdff3ce8d436",
@@ -2129,6 +2224,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -2142,6 +2238,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -2180,6 +2280,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -2221,6 +2325,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -2243,7 +2351,7 @@
         "total": 1065
        },
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "at Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Helpers.DotnetHostHelper.GetMonoPath() in /_/src/vstest/src/Microsoft.TestPlatform.CoreUtilities/Helpers/DotnetHostHelper.cs:line 100",
          "at Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Hosting.DefaultTestHostManager.GetTestHostProcessStartInfo(IEnumerable`1 sources, IDictionary`2 environmentVariables, TestRunnerConnectionInfo connectionInfo) in /_/src/vstest/src/Micr…",
@@ -2269,6 +2377,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -2286,7 +2398,7 @@
        "counts": {
         "tool": "go (packages)",
         "passed": 4,
-        "failed": 3
+        "failed": 2
        },
        "failure": {
         "category": "tests",
@@ -2316,6 +2428,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -2356,6 +2472,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -2408,6 +2528,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "Rscript"
      ],
@@ -2447,6 +2571,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -2463,7 +2591,7 @@
        "seconds": 3,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "'block in Bundler::ParallelInstaller#worker_pool'",
          "/opt/ruby/4.0.9/lib/ruby/4.0.0/bundler/worker.rb:70:in",
@@ -2494,6 +2622,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -2548,6 +2680,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -2579,6 +2715,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apache/avro",
    "date": "2026-10-28",
    "commit": "3a207fa6e87c535b95eafca4cf5a6ef524d77df2",
@@ -2932,6 +3071,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -2945,6 +3085,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -2983,6 +3127,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -3023,6 +3171,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -3072,6 +3224,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mvn"
      ],
@@ -3112,6 +3268,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -3147,6 +3307,10 @@
        }
       ],
       "state": "installed"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -3186,6 +3350,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "phpunit"
@@ -3241,6 +3409,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -3292,6 +3464,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -3306,7 +3482,13 @@
       "test": {
        "rc": 0,
        "seconds": 2,
-       "counts": null,
+       "counts": {
+        "tool": "test-unit",
+        "failed": 0,
+        "skipped": 0,
+        "total": 193,
+        "passed": 193
+       },
        "failure": null
       }
      }
@@ -3314,6 +3496,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apache/beam",
    "date": "2026-10-28",
    "commit": "cba73417cd23a9bde511bdfc1ed54b82f5978e48",
@@ -3625,6 +3810,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "dart",
@@ -3638,6 +3824,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
      },
      "buildSystems": [
       "flutter"
@@ -3685,6 +3875,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -3702,7 +3896,7 @@
        "counts": {
         "tool": "go (packages)",
         "passed": 116,
-        "failed": 2
+        "failed": 1
        },
        "failure": {
         "category": "tests",
@@ -3728,6 +3922,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "gradlew"
@@ -3763,6 +3961,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "gradlew"
      ],
@@ -3779,7 +3981,7 @@
        "seconds": 138,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "./generate-sources.sh: line 40: rsync: command not found",
          "Execution failed for task ':sdks:java:maven-archetypes:examples:generateSources'."
@@ -3800,6 +4002,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "gradlew"
@@ -3834,6 +4040,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -3874,6 +4084,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -3900,6 +4114,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apache/fory",
    "date": "2026-10-28",
    "commit": "8e936331b6fa5c4b28ba356a10a518ea72b20ba4",
@@ -4320,6 +4537,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -4333,6 +4551,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -4374,6 +4596,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -4411,6 +4637,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dart"
@@ -4450,6 +4680,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -4487,6 +4721,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -4528,6 +4766,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -4568,6 +4810,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "uv"
      ],
@@ -4584,7 +4830,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "File \"<string>\", line 14, in <module>",
          "File \"/home/dev/.cache/uv/builds-v0/.tmpp04CMH/lib/python3.14/site-packages/setuptools/build_meta.py\", line 481, in get_requires_for_build_editable",
@@ -4615,6 +4861,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -4653,6 +4903,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "sbt"
      ],
@@ -4667,7 +4921,12 @@
       "test": {
        "rc": 0,
        "seconds": 61,
-       "counts": null,
+       "counts": {
+        "tool": "scalatest",
+        "passed": 200,
+        "failed": 0,
+        "skipped": 2
+       },
        "failure": null
       }
      }
@@ -4684,6 +4943,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "swift"
@@ -4724,6 +4987,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -4752,6 +5019,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apache/kafka",
    "date": "2026-10-28",
    "commit": "1224f3d4b24e3cff7df7815b472ab12240421266",
@@ -4893,6 +5163,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "java",
@@ -4908,6 +5179,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -4941,6 +5216,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [],
      "steps": {
@@ -4958,6 +5237,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apache/opendal",
    "date": "2026-10-28",
    "commit": "451bc73c1f53b421b9e04685fc77f11e444a00a6",
@@ -5568,6 +5850,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -5581,6 +5864,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -5621,6 +5908,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -5674,6 +5965,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dub"
      ],
@@ -5705,6 +6000,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -5743,6 +6042,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -5778,6 +6081,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cabal"
@@ -5817,6 +6124,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvnw"
@@ -5858,6 +6169,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "pnpm"
      ],
@@ -5872,7 +6187,11 @@
       "test": {
        "rc": 0,
        "seconds": 2,
-       "counts": null,
+       "counts": {
+        "tool": "node:test",
+        "passed": 3,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -5889,6 +6208,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -5925,6 +6248,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dune"
      ],
@@ -5939,7 +6266,12 @@
       "test": {
        "rc": 0,
        "seconds": 137,
-       "counts": null,
+       "counts": {
+        "tool": "ounit",
+        "failed": 0,
+        "total": 16,
+        "passed": 16
+       },
        "failure": null
       }
      }
@@ -5959,6 +6291,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "composer"
      ],
@@ -5975,7 +6311,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "#2 /home/dev/apache_opendal/bindings/php/tests/Feature/BasicIOTest.php(23): describe()",
          "#3 /home/dev/apache_opendal/bindings/php/vendor/pestphp/pest/overrides/Runner/TestSuiteLoader.php(89): include_once('...')",
@@ -6006,6 +6342,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -6046,6 +6386,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -6079,6 +6423,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -6117,6 +6465,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "swift"
      ],
@@ -6133,7 +6485,7 @@
        "seconds": 5,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "error: SwiftCompile normal x86_64 failed with a nonzero exit code. Command line:     cd /home/dev/apache_opendal/bindings/swift",
          "/home/dev/apache_opendal/bindings/swift/OpenDAL/Sources/COpenDAL/module.modulemap:19:12: error: header 'include/opendal.h' not found",
@@ -6160,6 +6512,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "pnpm"
@@ -6200,6 +6556,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "zig"
      ],
@@ -6216,7 +6576,7 @@
        "seconds": 101,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "toolchain-version",
         "excerpt": [
          "build.zig:35:10: error: no field named 'use_clang' in struct 'Build.Step.TranslateC.Options'"
         ]
@@ -6227,6 +6587,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apache/qpid-proton",
    "date": "2026-10-28",
    "commit": "3f263156a9a4ea3fd3c2eb78dbd796314958fd0b",
@@ -6422,6 +6785,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -6435,6 +6799,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -6481,6 +6849,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [],
      "steps": {
@@ -6510,6 +6882,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -6527,10 +6903,10 @@
        "counts": {
         "tool": "go (packages)",
         "passed": 0,
-        "failed": 8
+        "failed": 6
        },
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "pkg/amqp/marshal.go:22:11: fatal error: proton/codec.h: No such file or directory",
          "../pkg/amqp/marshal.go:22:11: fatal error: proton/codec.h: No such file or directory",
@@ -6562,6 +6938,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "uv"
      ],
@@ -6590,6 +6970,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apache/thrift",
    "date": "2026-10-28",
    "commit": "e69f8c08fa1581c41f7543a87938a98c2aca2206",
@@ -7253,6 +7636,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -7266,6 +7650,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -7319,6 +7707,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -7375,6 +7767,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -7391,7 +7787,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "To trust the certificate, run 'dotnet dev-certs https --trust'",
          "Learn about HTTPS: https://aka.ms/dotnet-https",
@@ -7420,6 +7816,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -7455,6 +7855,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dart"
@@ -7492,6 +7896,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "rebar3"
      ],
@@ -7508,7 +7916,7 @@
        "seconds": 4,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "+ rebar3 eunit",
          "===> Fetching erlfmt v1.5.0",
@@ -7539,6 +7947,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -7576,6 +7988,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -7612,6 +8028,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "gradle"
@@ -7652,6 +8072,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -7686,6 +8110,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -7722,6 +8150,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "fpc"
      ],
@@ -7738,7 +8170,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "build",
         "excerpt": [
          "Fatal: Compilation aborted",
          "Error: /usr/bin/ppcx64 returned an error exitcode"
@@ -7759,6 +8191,10 @@
        }
       ],
       "state": "installed"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -7811,6 +8247,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -7848,6 +8288,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "phpunit"
      ],
@@ -7862,7 +8306,13 @@
       "test": {
        "rc": 1,
        "seconds": 36,
-       "counts": null,
+       "counts": {
+        "tool": "phpunit",
+        "failed": 4,
+        "skipped": 5,
+        "total": 783,
+        "passed": 774
+       },
        "failure": {
         "category": "tests",
         "excerpt": [
@@ -7893,6 +8343,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -7945,6 +8399,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -7966,7 +8424,7 @@
         "passed": 0
        },
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "# ./spec/spec_helper.rb:36:in '<top (required)>'",
          "# ./spec/unix_socket_spec.rb:21:in 'Kernel#require'",
@@ -7997,6 +8455,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -8037,6 +8499,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -8062,6 +8528,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "App-vNext/Polly",
    "date": "2026-10-28",
    "commit": "1fc5d119f0e7445563229bd144ba271e907d89f2",
@@ -8179,6 +8648,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "csharp",
@@ -8194,6 +8664,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -8223,6 +8697,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apple/swift-algorithms",
    "date": "2026-10-28",
    "commit": "5b7143f8e291dee0e14c118fd0212487f0b37af5",
@@ -8329,6 +8806,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "swift",
@@ -8342,6 +8820,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "swift"
@@ -8370,6 +8852,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "apple/swift-argument-parser",
    "date": "2026-10-28",
    "commit": "38ca4eceb349155836701b88da3e0986eb9d1e1c",
@@ -8476,6 +8961,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "swift",
@@ -8489,6 +8975,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "swift"
@@ -8531,6 +9021,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "ast-grep/ast-grep",
    "date": "2026-10-28",
    "commit": "461e7d35ae4d18cb09de63fe43ecc0215ae99c04",
@@ -8735,6 +9228,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -8750,6 +9244,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "yarn"
@@ -8767,7 +9265,7 @@
        "seconds": 3,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "/bin/sh: 1: wasm-pack: not found",
          "error: javascript: test failed in crates/wasm"
@@ -8790,6 +9288,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -8840,6 +9342,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -8879,6 +9385,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "yarn"
      ],
@@ -8893,7 +9403,11 @@
       "test": {
        "rc": 0,
        "seconds": 93,
-       "counts": null,
+       "counts": {
+        "tool": "ava",
+        "passed": 44,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -8901,6 +9415,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "atilaneves/unit-threaded",
    "date": "2026-10-28",
    "commit": "ae1cbb77353ba6e9441eced6cbd6c11cde96490d",
@@ -9007,6 +9524,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "d",
@@ -9020,6 +9538,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dub"
@@ -9035,7 +9557,12 @@
       "test": {
        "rc": 0,
        "seconds": 15,
-       "counts": null,
+       "counts": {
+        "tool": "unit-threaded",
+        "failed": 0,
+        "total": 35,
+        "passed": 35
+       },
        "failure": null
       }
      }
@@ -9043,6 +9570,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "aws/jsii",
    "date": "2026-10-28",
    "commit": "51ed90703f503850176c4b737349b21d5deb43c2",
@@ -9292,6 +9822,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "csharp",
@@ -9307,6 +9838,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -9324,7 +9859,7 @@
        "seconds": 4,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "build",
         "excerpt": [
          "/home/dev/aws_jsii/packages/@jsii/dotnet-runtime/src/Amazon.JSII.Runtime/Amazon.JSII.Runtime.csproj(2,3): error MSB4019: The imported project \"/home/dev/aws_jsii/packages/@jsii/dotnet-runtime/src/NuGet.Metadata.props\" was not found. Confir…",
          "/home/dev/aws_jsii/packages/@jsii/dotnet-runtime/src/Amazon.JSII.JsonModel/Amazon.JSII.JsonModel.csproj(2,3): error MSB4019: The imported project \"/home/dev/aws_jsii/packages/@jsii/dotnet-runtime/src/NuGet.Metadata.props\" was not found. Co…",
@@ -9349,6 +9884,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -9366,7 +9905,7 @@
        "counts": {
         "tool": "go (packages)",
         "passed": 0,
-        "failed": 17
+        "failed": 15
        },
        "failure": {
         "category": "tests",
@@ -9401,6 +9940,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "yarn"
      ],
@@ -9417,7 +9960,7 @@
        "seconds": 3,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "./generate.sh: line 12: rsync: command not found"
         ]
@@ -9439,6 +9982,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -9490,6 +10037,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "yarn"
      ],
@@ -9506,7 +10057,7 @@
        "seconds": 3,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "./generate.sh: line 12: rsync: command not found"
         ]
@@ -9517,6 +10068,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "Badgerati/Pode",
    "date": "2026-10-28",
    "commit": "0a67d2d228767ae0114af7374ee1d9e546af98e3",
@@ -9660,6 +10214,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "csharp",
@@ -9675,6 +10230,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -9708,6 +10267,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "pwsh"
      ],
@@ -9722,9 +10285,14 @@
       "test": {
        "rc": 1,
        "seconds": 176,
-       "counts": null,
+       "counts": {
+        "tool": "pester",
+        "passed": 5393,
+        "failed": 87,
+        "skipped": 0
+       },
        "failure": {
-        "category": "other",
+        "category": "tests",
         "excerpt": [
          "- /home/dev/Badgerati_Pode/tests/unit/Mappers.Tests.ps1",
          "- /home/dev/Badgerati_Pode/tests/unit/Metrics.Tests.ps1",
@@ -9744,6 +10312,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "Bash-it/bash-it",
    "date": "2026-10-28",
    "commit": "72ea9e285fe1828977d1cd2bc596b901bcc57440",
@@ -9846,6 +10417,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "bash",
@@ -9860,6 +10432,10 @@
       ],
       "state": "installed"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -9872,9 +10448,13 @@
       "test": {
        "rc": 1,
        "seconds": 3,
-       "counts": null,
+       "counts": {
+        "tool": "tap",
+        "passed": 0,
+        "failed": 24
+       },
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "# (in test file test/themes/base.theme.bats, line 3)",
          "#   `load \"${MAIN_BASH_IT_DIR?}/test/test_helper.bash\"' failed with status 0",
@@ -9894,6 +10474,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "bats-core/bats-core",
    "date": "2026-10-28",
    "commit": "5b61d8f22b46abf001e218cdd63f2938c356fa93",
@@ -10027,6 +10610,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "bash",
@@ -10041,6 +10625,10 @@
       ],
       "state": "installed"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -10054,9 +10642,9 @@
        "rc": 1,
        "seconds": 114,
        "counts": {
-        "tool": "go (packages)",
+        "tool": "tap",
         "passed": 437,
-        "failed": 0
+        "failed": 80
        },
        "failure": {
         "category": "tests",
@@ -10082,6 +10670,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -10097,9 +10689,9 @@
        "rc": 1,
        "seconds": 108,
        "counts": {
-        "tool": "go (packages)",
+        "tool": "tap",
         "passed": 501,
-        "failed": 0
+        "failed": 16
        },
        "failure": {
         "category": "tests",
@@ -10122,6 +10714,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "benoitc/hackney",
    "date": "2026-10-28",
    "commit": "69d7e7adbbf3d4ec26b5f05543793ca576f65a00",
@@ -10228,6 +10823,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "erlang",
@@ -10241,6 +10837,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "rebar3"
@@ -10258,7 +10858,7 @@
        "seconds": 2,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "toolchain-version",
         "excerpt": [
          "+ rebar3 eunit",
          "===> Fetching rebar3_ex_doc v0.3.0",
@@ -10278,6 +10878,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "Bogdanp/deta",
    "date": "2026-10-28",
    "commit": "fecbcf2db4d701ee67461847345cfdc1a274be91",
@@ -10384,6 +10987,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "racket",
@@ -10397,6 +11001,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "raco"
@@ -10412,9 +11020,14 @@
       "test": {
        "rc": 1,
        "seconds": 68,
-       "counts": null,
+       "counts": {
+        "tool": "raco",
+        "failed": 1,
+        "total": 276,
+        "passed": 275
+       },
        "failure": {
-        "category": "other",
+        "category": "tests",
         "excerpt": [
          "/usr/share/racket/pkgs/db-lib/db/private/postgresql/main.rkt:48:6",
          "/usr/share/racket/pkgs/db-lib/db/private/postgresql/main.rkt:13:0: postgresql-connect",
@@ -10434,6 +11047,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "BurntSushi/ripgrep",
    "date": "2026-10-28",
    "commit": "91f5d22ef48bde459d90a8c7dbeab416e97d0f2b",
@@ -10542,6 +11158,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "rust",
@@ -10557,6 +11174,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -10585,6 +11206,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "bytecodealliance/wasmtime",
    "date": "2026-10-28",
    "commit": "b34fad65f3b74cb6d81decbebbe4c297590b8fef",
@@ -10738,6 +11362,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -10753,6 +11378,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -10792,6 +11421,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -10819,6 +11452,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "bytecodealliance/wit-bindgen",
    "date": "2026-10-28",
    "commit": "9d4895e31d8df38137a583335c4fc96d6e12f216",
@@ -10931,6 +11567,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "rust",
@@ -10946,6 +11583,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -10974,6 +11615,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "ccgus/fmdb",
    "date": "2026-10-28",
    "commit": "d3abf748a2788471535993286603322ccdd02c3d",
@@ -11110,6 +11754,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "objectivec",
@@ -11123,6 +11768,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -11159,6 +11808,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -11179,6 +11832,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "CodeNarc/CodeNarc",
    "date": "2026-10-28",
    "commit": "b67624343d129fc7767b855a9259f5fb875db410",
@@ -11312,6 +11968,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "groovy",
@@ -11325,6 +11982,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "gradlew"
@@ -11360,6 +12021,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "gradlew"
      ],
@@ -11382,6 +12047,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "colinhacks/zod",
    "date": "2026-10-28",
    "commit": "afdac65e0f80c0ccf9e8909da97c411567908b57",
@@ -11495,6 +12163,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "typescript",
@@ -11511,6 +12180,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [],
      "components": [
       {
@@ -11525,7 +12198,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "toolchain",
         "excerpt": [
          "/hecatron/languages/typescript/hooks/../../_hooks.sh: line 44: nub: command not found"
         ]
@@ -11536,6 +12209,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "com-lihaoyi/os-lib",
    "date": "2026-10-28",
    "commit": "8871ab0bda9bbcc4edbef9b1a402eb4c47ef9398",
@@ -11677,6 +12353,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "java",
@@ -11692,6 +12369,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -11728,6 +12409,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mill"
      ],
@@ -11744,7 +12429,7 @@
        "seconds": 523,
        "counts": null,
        "failure": {
-        "category": "tests",
+        "category": "system",
         "excerpt": [
          "scala.scalanative.build.Discover$.discover(Discover.scala:284)",
          "scala.scalanative.build.Discover$.clang(Discover.scala:46)",
@@ -11764,6 +12449,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "cucumber/ci-environment",
    "date": "2026-10-28",
    "commit": "0cfe26001eba59bb88e5ff07ae0bd0ff0d9a9fc0",
@@ -11995,6 +12683,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "go",
@@ -12010,6 +12699,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -12048,6 +12741,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -12089,6 +12786,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -12127,6 +12828,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "bundle"
@@ -12167,6 +12872,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -12193,6 +12902,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "cucumber/cucumber-expressions",
    "date": "2026-10-28",
    "commit": "669501ebb72eafb3bb74b9286d6cf560a653f66c",
@@ -12516,6 +13228,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -12529,6 +13242,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -12570,6 +13287,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -12607,6 +13328,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dart"
@@ -12646,6 +13371,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -12683,6 +13412,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -12724,6 +13457,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -12761,6 +13498,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "bundle"
@@ -12802,6 +13543,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -12828,6 +13573,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "cucumber/gherkin",
    "date": "2026-10-28",
    "commit": "cc87328b8d0869e45f0074d0d91f21253eac8dee",
@@ -13270,6 +14018,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -13283,6 +14032,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -13322,6 +14075,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cmake"
      ],
@@ -13338,7 +14095,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "CMake Error at CMakeLists.txt:65 (find_package):"
         ]
@@ -13360,6 +14117,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -13399,6 +14160,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dart"
      ],
@@ -13437,6 +14202,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mix"
      ],
@@ -13470,6 +14239,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -13509,6 +14282,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mvn"
      ],
@@ -13546,6 +14323,10 @@
        }
       ],
       "state": "installed"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -13586,6 +14367,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "phpunit"
      ],
@@ -13600,7 +14385,12 @@
       "test": {
        "rc": 0,
        "seconds": 0,
-       "counts": null,
+       "counts": {
+        "tool": "phpunit",
+        "failed": 0,
+        "total": 130,
+        "passed": 130
+       },
        "failure": null
       }
      }
@@ -13619,6 +14409,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -13657,6 +14451,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "bundle"
@@ -13697,6 +14495,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -13723,6 +14525,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "cucumber/html-formatter",
    "date": "2026-10-28",
    "commit": "7ef5ff74f342003e59194f4788662ddd6b8e430f",
@@ -13922,6 +14727,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "csharp",
@@ -13937,6 +14743,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -13992,6 +14802,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mvn"
      ],
@@ -14046,6 +14860,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -14099,6 +14917,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -14125,6 +14947,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "cucumber/messages",
    "date": "2026-10-28",
    "commit": "3d5cd9fa232bfc165d1758b77603606161bba52e",
@@ -14542,6 +15367,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -14555,6 +15381,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -14596,6 +15426,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -14633,6 +15467,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dart"
@@ -14672,6 +15510,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mix"
      ],
@@ -14705,6 +15547,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -14744,6 +15590,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mvn"
      ],
@@ -14781,6 +15631,10 @@
        }
       ],
       "state": "installed"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "prove"
@@ -14821,6 +15675,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "phpunit"
      ],
@@ -14860,6 +15718,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -14897,6 +15759,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "bundle"
@@ -14937,6 +15803,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -14963,6 +15833,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "cucumber/query",
    "date": "2026-10-28",
    "commit": "85eb4edd51f2c9e123e461dfc5d2dd9dd2d8d5ee",
@@ -15197,6 +16070,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -15210,6 +16084,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -15227,7 +16105,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "CMake Error at CMakeLists.txt:66 (find_package):"
         ]
@@ -15249,6 +16127,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -15290,6 +16172,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mvn"
      ],
@@ -15330,6 +16216,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -15369,6 +16259,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -15395,6 +16289,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "cucumber/tag-expressions",
    "date": "2026-10-28",
    "commit": "dee750467ee3d5cef3729b4ea1e23e6307f8e621",
@@ -15745,6 +16642,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -15758,6 +16656,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -15799,6 +16701,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -15839,6 +16745,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -15877,6 +16787,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mvn"
      ],
@@ -15914,6 +16828,10 @@
        }
       ],
       "state": "installed"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -15954,6 +16872,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "phpunit"
      ],
@@ -15992,6 +16914,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -16032,6 +16958,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -16071,6 +17001,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -16097,6 +17031,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "dart-lang/shelf",
    "date": "2026-10-28",
    "commit": "e023ed6e62163103f89e0893b555ffa09a39bb06",
@@ -16203,6 +17140,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "dart",
@@ -16216,6 +17154,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dart"
@@ -16249,6 +17191,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "DaveGamble/cJSON",
    "date": "2026-10-28",
    "commit": "6d9f2443ab071f86e5d9b43025a40929ec41c46c",
@@ -16360,6 +17305,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -16373,6 +17319,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -16402,6 +17352,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "denoland/deno",
    "date": "2026-10-28",
    "commit": "e7b39ebd55c85aaf6a29290c1f5a99e2e21e09dd",
@@ -16556,6 +17509,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "rust",
@@ -16571,6 +17525,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -16618,6 +17576,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -16643,6 +17605,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "dfinke/ImportExcel",
    "date": "2026-10-28",
    "commit": "5387c061461c811d106b125588f064c4739342cb",
@@ -16749,6 +17714,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "powershell",
@@ -16762,6 +17728,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "pwsh"
@@ -16777,9 +17747,14 @@
       "test": {
        "rc": 1,
        "seconds": 35,
-       "counts": null,
+       "counts": {
+        "tool": "pester",
+        "passed": 261,
+        "failed": 7,
+        "skipped": 17
+       },
        "failure": {
-        "category": "other",
+        "category": "tests",
         "excerpt": [
          "[!] Should return 1 result with a value of 1 1ms",
          "Context Sheet2$A1",
@@ -16799,6 +17774,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "dmlc/xgboost",
    "date": "2026-10-28",
    "commit": "894ed804b5ba90f97853c46d066ecf6efd8b5120",
@@ -17008,6 +17986,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -17021,6 +18000,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -17062,6 +18045,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mvn"
      ],
@@ -17076,9 +18063,14 @@
       "test": {
        "rc": 1,
        "seconds": 161,
-       "counts": null,
+       "counts": {
+        "tool": "scalatest",
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+       },
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "error: java: test failed in jvm-packages"
         ]
@@ -17101,6 +18093,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -17117,7 +18113,7 @@
        "seconds": 22,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "no-tests",
         "excerpt": [
          "error: python: test failed in python-package"
         ]
@@ -17137,6 +18133,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "Rscript"
@@ -17165,6 +18165,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "duckdb/duckdb",
    "date": "2026-10-28",
    "commit": "8482a57cba609afefaecf96e53dd06314dcb0541",
@@ -17308,6 +18311,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -17321,6 +18325,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -17339,7 +18347,7 @@
        "seconds": 1168,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "no-tests",
         "excerpt": [
          "[ 98%] Linking CXX shared library libduckdb.so",
          "[ 98%] Building C object tools/shell/CMakeFiles/shell.dir/shell_static_extension_loader.c.o",
@@ -17371,6 +18379,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -17387,7 +18399,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "no-tests",
         "excerpt": [
          "error: python: test failed in api_spec"
         ]
@@ -17398,6 +18410,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "edicl/cl-ppcre",
    "date": "2026-10-28",
    "commit": "a2ea581c23fdc184168423adbd4b4c1f48d42743",
@@ -17504,6 +18519,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "lisp",
@@ -17517,6 +18533,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -17532,7 +18552,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "dependencies",
         "excerpt": [
          "39: ((LAMBDA NIL :IN ASDF/OPERATE:OPERATE))",
          "40: ((:METHOD ASDF/OPERATE:OPERATE :AROUND (T T)) ASDF/LISP-ACTION:TEST-OP \"cl-ppcre-unicode\") [fast-method]",
@@ -17552,6 +18572,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "elixir-plug/plug",
    "date": "2026-10-28",
    "commit": "9f5edc1962e443cabba1b7617d0a29eda0637a5e",
@@ -17660,6 +18683,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "elixir",
@@ -17675,6 +18699,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mix"
@@ -17703,6 +18731,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "ethereum/c-kzg-4844",
    "date": "2026-10-28",
    "commit": "a751e2d92abcd63b01d1400789789f5ea289a8b0",
@@ -18104,6 +19135,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -18117,6 +19149,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -18152,6 +19188,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -18191,6 +19231,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -18246,6 +19290,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mix"
      ],
@@ -18262,7 +19310,7 @@
        "seconds": 10,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "/bin/sh: 1: clang: not found"
         ]
@@ -18284,6 +19332,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -18320,6 +19372,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -18358,6 +19414,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -18374,7 +19434,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "no-tests",
         "excerpt": [
          "+ uv run --all-extras --all-groups --with pytest pytest",
          "warning: `--all-extras` has no effect when used outside of a project",
@@ -18403,6 +19463,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -18443,6 +19507,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "npx"
      ],
@@ -18459,7 +19527,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "../src/kzg.cxx:1:10: fatal error: blst.h: No such file or directory"
         ]
@@ -18481,6 +19549,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -18507,6 +19579,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "exercism/wren",
    "date": "2026-10-28",
    "commit": "783e54509af9cf69857193d3c17fe84aa8922635",
@@ -18613,6 +19688,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "wren",
@@ -18626,6 +19702,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -18652,6 +19732,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "expressjs/express",
    "date": "2026-10-28",
    "commit": "1c6f1b0fe4000977b9a7b4f34097e4d527dd9824",
@@ -18760,6 +19843,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -18775,6 +19859,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "npm"
@@ -18802,6 +19890,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "facebook/flow",
    "date": "2026-10-28",
    "commit": "ec18e5aeb68f78ea261a271e0f0cf1124db9edf3",
@@ -19006,6 +20097,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -19021,6 +20113,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "yarn"
@@ -19056,6 +20152,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -19072,7 +20172,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "toolchain-version",
         "excerpt": [
          "error: ruby: test failed in website"
         ]
@@ -19094,6 +20194,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -19138,6 +20242,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "yarn"
      ],
@@ -19160,6 +20268,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "facebook/zstd",
    "date": "2026-10-28",
    "commit": "49cf51799ea051457f57243527aa2058f999f005",
@@ -19326,6 +20437,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -19339,6 +20451,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -19378,6 +20494,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cmake",
       "ctest"
@@ -19416,6 +20536,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -19436,6 +20560,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "faker-ruby/faker",
    "date": "2026-10-28",
    "commit": "577447c403c67c92200bca045390c3dfdb6d643b",
@@ -19544,6 +20671,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "ruby",
@@ -19559,6 +20687,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "bundle"
@@ -19588,6 +20720,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "FluentValidation/FluentValidation",
    "date": "2026-10-28",
    "commit": "f95dbd5c8166a10e38f7a8bca4d752abd641a453",
@@ -19696,6 +20831,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "csharp",
@@ -19711,6 +20847,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -19740,6 +20880,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "fmtlib/fmt",
    "date": "2026-10-28",
    "commit": "f87a75e15262614ce8aa0e6a0664df9d0823fb92",
@@ -19851,6 +20994,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -19864,6 +21008,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -19893,6 +21041,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "fortran-lang/fpm",
    "date": "2026-10-28",
    "commit": "3635bdd5aad0b1ab43f87ac48215e83a8ff4f00f",
@@ -20033,6 +21184,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -20046,6 +21198,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -20082,6 +21238,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "fpm"
      ],
@@ -20104,6 +21264,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "gabime/spdlog",
    "date": "2026-10-28",
    "commit": "6d9805df3f588402b17073dcd13eb569ceda864d",
@@ -20210,6 +21373,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -20223,6 +21387,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -20252,6 +21420,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "giraffe-fsharp/Giraffe",
    "date": "2026-10-28",
    "commit": "9826d17fd69e35b58ae0686201e35042f50ce855",
@@ -20360,6 +21531,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "fsharp",
@@ -20375,6 +21547,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -20404,6 +21580,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "gleam-lang/stdlib",
    "date": "2026-10-28",
    "commit": "13359e53d6256c4f1ccf1a60e62dbfa3f1de2d57",
@@ -20512,6 +21691,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "gleam",
@@ -20527,6 +21707,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "gleam"
@@ -20569,6 +21753,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "gnu-octave/statistics",
    "date": "2026-10-28",
    "commit": "5d52259b0c1a3053a4fa54e4895194738cb3fac8",
@@ -20710,6 +21897,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -20723,6 +21911,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -20759,6 +21951,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -20784,6 +21980,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "google/brotli",
    "date": "2026-10-28",
    "commit": "d89c4b1c52e25ddafe047bc78bbee5c1e24b1809",
@@ -21061,6 +22260,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -21074,6 +22274,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -21112,6 +22316,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -21153,6 +22361,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -21193,6 +22405,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -21210,10 +22426,10 @@
        "counts": {
         "tool": "go (packages)",
         "passed": 0,
-        "failed": 4
+        "failed": 2
        },
        "failure": {
-        "category": "tests",
+        "category": "system",
         "excerpt": [
          "brotli_test.go:16:2: no required module provides package github.com/google/brotli/go/cbrotli; to add it:",
          "FAIL\tgithub.com/google/brotli/go/brotli [setup failed]",
@@ -21237,6 +22453,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -21278,6 +22498,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -21312,6 +22536,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "google/flatbuffers",
    "date": "2026-10-28",
    "commit": "f58d5768f1fd0df9f71aa6ae5f63645e2637c31f",
@@ -21831,6 +23058,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -21844,6 +23072,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -21885,6 +23117,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -21916,6 +23152,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dart"
@@ -21954,6 +23194,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -21995,6 +23239,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "pnpm"
      ],
@@ -22011,7 +23259,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "dependencies",
         "excerpt": [
          "Error: ERR_PNPM_IGNORED_BUILDS"
         ]
@@ -22031,6 +23279,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "gradlew"
@@ -22070,6 +23322,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -22105,6 +23361,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "nimble"
      ],
@@ -22136,6 +23396,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -22177,6 +23441,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -22214,6 +23482,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -22230,7 +23502,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "no-tests",
         "excerpt": [
          "+ uv run --all-extras --all-groups --with pytest pytest",
          "warning: `--all-extras` has no effect when used outside of a project",
@@ -22259,6 +23531,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -22308,6 +23584,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "swift"
      ],
@@ -22347,6 +23627,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "pnpm"
      ],
@@ -22363,7 +23647,7 @@
        "seconds": 2,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "dependencies",
         "excerpt": [
          "Error: ERR_PNPM_IGNORED_BUILDS"
         ]
@@ -22374,6 +23658,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "google/gson",
    "date": "2026-10-28",
    "commit": "57731049da3e415be3d5d34db1ca3b80f3c73810",
@@ -22482,6 +23769,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "java",
@@ -22497,6 +23785,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -22526,6 +23818,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "google/json_serializable.dart",
    "date": "2026-10-28",
    "commit": "c2c5c92f8f1b42e019e2f93a39399a8f9fa3dfba",
@@ -22632,6 +23927,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "dart",
@@ -22645,6 +23941,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dart"
@@ -22673,6 +23973,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "google/jsonnet",
    "date": "2026-10-28",
    "commit": "2ef32abf3d5b83c24863949e8413b810d54c7f2a",
@@ -22882,6 +24185,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -22895,6 +24199,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -22933,6 +24241,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -22974,6 +24286,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -23011,6 +24327,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -23042,6 +24362,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "google/libphonenumber",
    "date": "2026-10-28",
    "commit": "1ae0d623301b302f828628dfc368c983e8d27141",
@@ -23180,6 +24503,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -23193,6 +24517,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -23208,7 +24536,11 @@
       "test": {
        "rc": 0,
        "seconds": 71,
-       "counts": null,
+       "counts": {
+        "tool": "gtest",
+        "passed": 329,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -23227,6 +24559,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -23256,6 +24592,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "google/magika",
    "date": "2026-10-28",
    "commit": "2e7f88f03e04f9885aa51d60a339488817fb788c",
@@ -23476,6 +24815,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "go",
@@ -23491,6 +24831,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -23529,6 +24873,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -23573,6 +24921,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -23612,6 +24964,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "yarn"
      ],
@@ -23639,6 +24995,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "google/or-tools",
    "date": "2026-10-28",
    "commit": "100f66e6242ab8bf8d32feb8f3bf086db66ae2b5",
@@ -23880,6 +25239,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -23893,6 +25253,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -23910,7 +25274,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "CMake Error at cmake/system_deps.cmake:34 (find_package):"
         ]
@@ -23933,6 +25297,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -23949,7 +25317,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "/opt/dotnet/sdk/10.0.403/NuGet.targets(521,5): error MSB3202: The project file \"/home/dev/google_or-tools/ortools/dotnet/Google.OrTools/Google.OrTools.csproj\" was not found. [/home/dev/google_or-tools/ortools/dotnet/Google.OrTools.sln]",
          "/opt/dotnet/sdk/10.0.403/NuGet.targets(521,5): error MSB3202: The project file \"/home/dev/google_or-tools/ortools/dotnet/Google.OrTools.runtime.win-x64/Google.OrTools.runtime.win-x64.csproj\" was not found. [/home/dev/google_or-tools/ortool…",
@@ -23975,6 +25343,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "go"
      ],
@@ -23991,7 +25363,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "+ go test ./...",
          "go: downloading github.com/golang/glog v1.2.4",
@@ -24018,6 +25390,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -24051,6 +25427,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -24076,6 +25456,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "google/re2",
    "date": "2026-10-28",
    "commit": "2da0056814cf180480a19f5cf811e7e1c054bf6d",
@@ -24250,6 +25633,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -24263,6 +25647,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -24280,7 +25668,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "CMake Error at CMakeLists.txt:94 (find_package):"
         ]
@@ -24302,6 +25690,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -24346,6 +25738,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -24371,6 +25767,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "grpc/grpc",
    "date": "2026-10-28",
    "commit": "8ed6d4e59d71980bfb17b7dbc00b25ca317723d5",
@@ -24712,6 +26111,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -24725,6 +26125,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [],
@@ -24752,6 +26156,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [],
@@ -24782,6 +26190,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [],
      "steps": {}
@@ -24798,6 +26210,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [],
@@ -24818,6 +26234,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [],
      "steps": {}
@@ -24836,6 +26256,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [],
@@ -24856,6 +26280,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [],
      "steps": {}
@@ -24873,6 +26301,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [],
      "steps": {}
@@ -24880,6 +26312,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "guzzle/guzzle",
    "date": "2026-10-28",
    "commit": "7d9b1f430bb65ac664e120af227bf9a795ad6333",
@@ -24988,6 +26423,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "php",
@@ -25003,6 +26439,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "phpunit"
@@ -25020,7 +26460,7 @@
        "seconds": 5,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "+ vendor/bin/phpunit",
          "PHPUnit 9.6.38 by Sebastian Bergmann and contributors.",
@@ -25040,6 +26480,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "haskell/aeson",
    "date": "2026-10-28",
    "commit": "1dd465c115ccface4cbb5f17f038c5843d4d4ed9",
@@ -25146,6 +26589,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "haskell",
@@ -25159,6 +26603,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cabal"
@@ -25186,6 +26634,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "haxetink/tink_core",
    "date": "2026-10-28",
    "commit": "95c0d300494307278fdfb4e02729679c437c2e24",
@@ -25297,6 +26748,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "haxe",
@@ -25310,6 +26762,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "haxelib",
@@ -25328,7 +26784,7 @@
        "seconds": 30,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "build",
         "excerpt": [
          "Done",
          "Current version is now 2.1.1",
@@ -25348,6 +26804,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "huggingface/tokenizers",
    "date": "2026-10-28",
    "commit": "d9a5e8af4b5898aff65981ab472d5466a43698bc",
@@ -25524,6 +26983,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "python",
@@ -25539,6 +26999,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -25593,6 +27057,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -25632,6 +27100,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "yarn"
      ],
@@ -25646,9 +27118,13 @@
       "test": {
        "rc": 1,
        "seconds": 54,
-       "counts": null,
+       "counts": {
+        "tool": "node:test",
+        "passed": 0,
+        "failed": 22
+       },
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "✖ fromFile reads a legacy tokenizer.json (0.943553ms)",
          "✖ encode returns a Uint32Array of ids (0.120568ms)",
@@ -25668,6 +27144,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "immerjs/immer",
    "date": "2026-10-28",
    "commit": "75a290e44ba14bd723c8ef8546b6559c8ef3ae88",
@@ -25781,6 +27260,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "typescript",
@@ -25796,6 +27276,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "yarn"
@@ -25825,6 +27309,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "jacobwilliams/json-fortran",
    "date": "2026-10-28",
    "commit": "d9ed2e4ee53745f4ed98d7536e17bee5198aa3b0",
@@ -25931,6 +27418,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "fortran",
@@ -25944,6 +27432,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "fpm"
@@ -25967,6 +27459,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "jamesnvc/lsp_server",
    "date": "2026-10-28",
    "commit": "d5f30d69c151494c24feef6bff06e60a4f919fc7",
@@ -26078,6 +27573,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "prolog",
@@ -26091,6 +27587,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "swipl"
@@ -26106,9 +27606,13 @@
       "test": {
        "rc": 1,
        "seconds": 2,
-       "counts": null,
+       "counts": {
+        "tool": "plunit",
+        "passed": 25,
+        "failed": 6
+       },
        "failure": {
-        "category": "other",
+        "category": "tests",
         "excerpt": [
          "ERROR: /home/dev/jamesnvc_lsp_server/test/checking_input1.pl:1:",
          "ERROR:    source_sink `library(does_not_exist)' does not exist",
@@ -26128,6 +27632,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "janet-lang/spork",
    "date": "2026-10-28",
    "commit": "328240916032ec3834a1fb56b81ca398df80f084",
@@ -26269,6 +27776,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -26282,6 +27790,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -26318,6 +27830,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "jpm"
      ],
@@ -26334,7 +27850,7 @@
        "seconds": 16,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "error: could not find module spork/test:",
          "error: could not find module spork/misc:",
@@ -26347,6 +27863,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "jhy/jsoup",
    "date": "2026-10-28",
    "commit": "0c508f17a52d294aa846f4cbca312b2e65e9f94f",
@@ -26455,6 +27974,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "java",
@@ -26470,6 +27990,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvn"
@@ -26499,6 +28023,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "JuliaCollections/DataStructures.jl",
    "date": "2026-10-28",
    "commit": "b9ff23435fa6a5bb86486c4ab43eda17987f729f",
@@ -26605,6 +28132,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "julia",
@@ -26618,6 +28146,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "julia"
@@ -26633,7 +28165,12 @@
       "test": {
        "rc": 0,
        "seconds": 106,
-       "counts": null,
+       "counts": {
+        "tool": "julia",
+        "passed": 290238,
+        "failed": 0,
+        "total": 290238
+       },
        "failure": null
       }
      }
@@ -26641,6 +28178,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "kemalcr/kemal",
    "date": "2026-10-28",
    "commit": "3d847ee37fe81f45be0c92e4504c5ea8c3da77f2",
@@ -26747,6 +28287,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "crystal",
@@ -26760,6 +28301,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "crystal"
@@ -26788,6 +28333,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "kikito/inspect.lua",
    "date": "2026-10-28",
    "commit": "a8ca3120dfec48801036eaeff9335ab7a096dd24",
@@ -26894,6 +28442,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "lua",
@@ -26907,6 +28456,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "busted"
@@ -26935,6 +28488,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "Kotlin/kotlinx.coroutines",
    "date": "2026-10-28",
    "commit": "7e0d1b3e9ca83652427ae00dda7d1673f058a743",
@@ -27076,6 +28632,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "java",
@@ -27091,6 +28648,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "gradlew"
@@ -27129,6 +28690,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "gradlew"
      ],
@@ -27156,6 +28721,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "lance-format/lance",
    "date": "2026-10-28",
    "commit": "54bed1982f63a82f7834988b95b2043ee050b489",
@@ -27332,6 +28900,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "java",
@@ -27347,6 +28916,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mvnw"
@@ -27364,7 +28937,7 @@
        "seconds": 33,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "toolchain-version",
         "excerpt": [
          "java.lang.NoSuchMethodError: 'java.util.Queue com.sun.tools.javac.util.Log$DeferredDiagnosticHandler.getDiagnostics()'"
         ]
@@ -27386,6 +28959,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -27434,6 +29011,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [],
      "steps": {
@@ -27451,6 +29032,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "laytan/odin-http",
    "date": "2026-10-28",
    "commit": "fac113fbd828aad3d71479a534b5de4358b6a07b",
@@ -27619,6 +29203,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "odin",
@@ -27632,6 +29217,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "odin"
@@ -27666,6 +29255,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -27707,6 +29300,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -27732,6 +29329,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "libuv/libuv",
    "date": "2026-10-28",
    "commit": "338ac6ac0714e6d8043a2826c9b3bc78e85bb961",
@@ -27838,6 +29438,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -27851,6 +29452,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -27880,6 +29485,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "lightgbm-org/LightGBM",
    "date": "2026-10-28",
    "commit": "5d84f3f222b41409a6983d2ac90513ad9702fa9e",
@@ -28048,6 +29656,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -28061,6 +29670,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -28084,7 +29697,7 @@
         "passed": 0
        },
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "CMake Error at external_libs/nanoarrow/CMakeLists.txt:576 (find_package):"
         ]
@@ -28107,6 +29720,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -28123,7 +29740,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "build",
         "excerpt": [
          "error: Failed to build `lightgbm @ file:///home/dev/lightgbm-org_LightGBM/python-package`",
          "error: python: test failed in python-package"
@@ -28144,6 +29761,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "Rscript"
@@ -28173,6 +29794,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "lunarmodules/Penlight",
    "date": "2026-10-28",
    "commit": "7f3351f226c2f643aaa1d3afa8d7293dd8a1d985",
@@ -28279,6 +29903,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "lua",
@@ -28292,6 +29917,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "busted"
@@ -28307,7 +29936,11 @@
       "test": {
        "rc": 0,
        "seconds": 1,
-       "counts": null,
+       "counts": {
+        "tool": "gtest",
+        "passed": 256,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -28315,6 +29948,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "mdgriffith/elm-ui",
    "date": "2026-10-28",
    "commit": "acae8857a02e600cc4b4737ca2f70607228b4489",
@@ -28453,6 +30089,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "elm",
@@ -28466,6 +30103,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "npx"
@@ -28481,7 +30122,11 @@
       "test": {
        "rc": 0,
        "seconds": 5,
-       "counts": null,
+       "counts": {
+        "tool": "elm-test",
+        "passed": 3,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -28500,6 +30145,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
      },
      "buildSystems": [
       "yarn"
@@ -28536,6 +30185,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "meyfa/CobolCraft",
    "date": "2026-10-28",
    "commit": "e8c420df7a901b51b10c70bc08b56af7310d00f2",
@@ -28675,6 +30327,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cobol",
@@ -28688,6 +30341,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -28705,7 +30362,7 @@
        "seconds": 22,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "cpp/cobolcraft_util.cpp:10:10: fatal error: zlib.h: No such file or directory"
         ]
@@ -28725,6 +30382,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -28751,6 +30412,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "michaelbull/kotlin-result",
    "date": "2026-10-28",
    "commit": "aed7438b2bd92adc704b5022e64cddf263e38800",
@@ -28851,6 +30515,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "kotlin",
@@ -28864,6 +30529,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "gradlew"
@@ -28887,6 +30556,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "michalmuskala/jason",
    "date": "2026-10-28",
    "commit": "4ede42858eb19f80ec9e863aab52df466eab8608",
@@ -28995,6 +30667,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "elixir",
@@ -29011,6 +30684,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mix"
      ],
@@ -29025,7 +30702,12 @@
       "test": {
        "rc": 0,
        "seconds": 6,
-       "counts": null,
+       "counts": {
+        "tool": "exunit",
+        "failed": 0,
+        "total": 410,
+        "passed": 410
+       },
        "failure": null
       }
      }
@@ -29033,6 +30715,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "microsoft/TypeChat",
    "date": "2026-10-28",
    "commit": "3a4907ea54aca5068a715f6e040cb6c8a5b9ef9e",
@@ -29203,6 +30888,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -29219,6 +30905,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -29233,7 +30923,11 @@
       "test": {
        "rc": 0,
        "seconds": 4,
-       "counts": null,
+       "counts": {
+        "tool": "node:test",
+        "passed": 177,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -29252,6 +30946,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -29291,6 +30989,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -29305,7 +31007,11 @@
       "test": {
        "rc": 0,
        "seconds": 4,
-       "counts": null,
+       "counts": {
+        "tool": "node:test",
+        "passed": 177,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -29313,6 +31019,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "mirage/ocaml-cohttp",
    "date": "2026-10-28",
    "commit": "1193aaeef7dcb9590e999ea9ed455c3649d7bc15",
@@ -29424,6 +31133,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "ocaml",
@@ -29437,6 +31147,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dune"
@@ -29452,7 +31166,11 @@
       "test": {
        "rc": 1,
        "seconds": 9,
-       "counts": null,
+       "counts": {
+        "tool": "alcotest",
+        "passed": 194,
+        "failed": 0
+       },
        "failure": {
         "category": "other",
         "excerpt": [
@@ -29474,6 +31192,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "mlpack/mlpack",
    "date": "2026-10-28",
    "commit": "9767815cb73a924300535b09c5d08a3a8cc33f57",
@@ -29652,6 +31373,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -29665,6 +31387,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -29682,7 +31408,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "CMake Error at CMake/mlpack.cmake:885 (message):"
         ]
@@ -29704,6 +31430,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -29739,6 +31469,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -29771,6 +31505,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "Mojo-Numerics-and-Algorithms-group/NuMojo",
    "date": "2026-10-28",
    "commit": "dcbeeb5a6155bd6223ea69a1f18f9f8be17ad62d",
@@ -29877,6 +31614,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "mojo",
@@ -29890,6 +31628,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "mojo"
@@ -29907,7 +31649,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "build",
         "excerpt": [
          "/home/dev/Mojo-Numerics-and-Algorithms-group_NuMojo/./numojo/core/accelerator_ndarray.mojo:1062:3: error: function effect 'raises' was already specified",
          "/home/dev/Mojo-Numerics-and-Algorithms-group_NuMojo/./numojo/core/accelerator/device.mojo:241:42: error: cannot call raising function in alias initializer",
@@ -29927,6 +31669,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "mojolicious/mojo",
    "date": "2026-10-28",
    "commit": "4146e4024939cfbe39d159b5e908c36f6ad6188a",
@@ -30027,6 +31772,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "perl",
@@ -30040,6 +31786,10 @@
        }
       ],
       "state": "installed"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -30068,6 +31818,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "moment/luxon",
    "date": "2026-10-28",
    "commit": "f427515a38f6a671f8de663e6bcc040ed81f114e",
@@ -30176,6 +31929,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -30191,6 +31945,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "npm"
@@ -30233,6 +31991,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "mozilla/uniffi-rs",
    "date": "2026-10-28",
    "commit": "19fff7c12f76225dd25434fee1bd8d561f2a673c",
@@ -30350,6 +32111,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "rust",
@@ -30365,6 +32127,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -30399,6 +32165,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "napi-rs/napi-rs",
    "date": "2026-10-28",
    "commit": "e9de9024337af056b79010d3f9024fdc88965572",
@@ -30577,6 +32346,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -30593,6 +32363,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "yarn"
      ],
@@ -30607,7 +32381,11 @@
       "test": {
        "rc": 0,
        "seconds": 190,
-       "counts": null,
+       "counts": {
+        "tool": "node:test",
+        "passed": 71,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -30626,6 +32404,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -30666,6 +32448,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "yarn"
      ],
@@ -30680,7 +32466,11 @@
       "test": {
        "rc": 0,
        "seconds": 141,
-       "counts": null,
+       "counts": {
+        "tool": "node:test",
+        "passed": 71,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -30688,6 +32478,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "neovim/neovim",
    "date": "2026-10-28",
    "commit": "61e71ccf8aa17a2fb6fe5caa115daf21a0b3e9fa",
@@ -30860,6 +32653,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -30873,6 +32667,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -30890,7 +32688,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "CMake Error at /usr/share/cmake-3.28/Modules/FindPackageHandleStandardArgs.cmake:230 (message):"
         ]
@@ -30910,6 +32708,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -30948,6 +32750,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "zig"
      ],
@@ -30964,7 +32770,7 @@
        "seconds": 73,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "toolchain-version",
         "excerpt": [
          "build.zig:87:27: error: no field named 'ReleaseSafe' in enum 'lang.Optimize'"
         ]
@@ -30975,6 +32781,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "numpy/numpy",
    "date": "2026-10-28",
    "commit": "b833c1b9bf6712cc8a03bb301b77c48984a2373d",
@@ -31147,6 +32956,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -31160,6 +32970,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "meson"
@@ -31177,7 +32991,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "Version: 1.12.1",
          "Source dir: /home/dev/numpy_numpy",
@@ -31207,6 +33021,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "meson"
      ],
@@ -31223,7 +33041,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "Version: 1.12.1",
          "Source dir: /home/dev/numpy_numpy",
@@ -31255,6 +33073,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "uv"
      ],
@@ -31282,6 +33104,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "ocaml-community/yojson",
    "date": "2026-10-28",
    "commit": "df9e87cdef7c0fcddf7fa7d4e8e6d8a45c95bcab",
@@ -31388,6 +33213,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "ocaml",
@@ -31401,6 +33227,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dune"
@@ -31416,7 +33246,11 @@
       "test": {
        "rc": 0,
        "seconds": 3,
-       "counts": null,
+       "counts": {
+        "tool": "alcotest",
+        "passed": 86,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -31424,6 +33258,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "open-telemetry/opentelemetry-demo",
    "date": "2026-10-28",
    "commit": "841adc0194e98804798248632bfe8711284e62ac",
@@ -31832,6 +33669,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -31845,6 +33683,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -31885,6 +33727,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -31919,6 +33765,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mix"
      ],
@@ -31952,6 +33802,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -31991,6 +33845,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "gradlew"
      ],
@@ -32022,6 +33880,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "gradlew"
@@ -32064,6 +33926,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -32100,6 +33966,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
      },
      "buildSystems": [
       "bundle"
@@ -32141,6 +34011,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -32180,6 +34054,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -32205,6 +34083,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "pact-foundation/pact-reference",
    "date": "2026-10-28",
    "commit": "f0474775543516a837ce336ef90ff6ab5cb00ff7",
@@ -32344,6 +34225,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -32357,6 +34239,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -32374,7 +34260,7 @@
        "seconds": 3,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "CMake Error at CMakeLists.txt:85 (find_program):",
          "CMake Error at CMakeLists.txt:33 (find_package):"
@@ -32397,6 +34283,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -32425,6 +34315,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "pallets/click",
    "date": "2026-10-28",
    "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
@@ -32533,6 +34426,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "python",
@@ -32548,6 +34442,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -32590,6 +34488,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "pola-rs/polars",
    "date": "2026-10-28",
    "commit": "6f12f77432f1378406114e7fb0ec5474e41c8b22",
@@ -32729,6 +34630,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "python",
@@ -32744,6 +34646,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -32784,6 +34690,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -32826,6 +34736,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "prometheus/prometheus",
    "date": "2026-10-28",
    "commit": "54b414d5b9fbfc10f0aed6d05b26df6b6240cb3b",
@@ -32998,6 +34911,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "go",
@@ -33013,6 +34927,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -33051,6 +34969,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "pnpm"
@@ -33091,6 +35013,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "pnpm"
      ],
@@ -33118,6 +35044,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "protocolbuffers/protobuf",
    "date": "2026-10-28",
    "commit": "a03560b0352b8574e03c9b9f045f3c0c2a596e33",
@@ -33523,6 +35452,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -33536,6 +35466,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -33574,6 +35508,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -33614,6 +35552,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -33657,6 +35599,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mvn"
      ],
@@ -33673,7 +35619,7 @@
        "seconds": 2,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "[ERROR] Child module /home/dev/protocolbuffers_protobuf/java/kotlin-lite/pom.xml of /home/dev/protocolbuffers_protobuf/java/pom.xml does not exist @",
          "@",
@@ -33702,6 +35648,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -33737,6 +35687,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -33778,6 +35732,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "composer",
       "bazel"
@@ -33795,7 +35753,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "./generate_test_protos.sh: line 11: bazel: command not found"
         ]
@@ -33818,6 +35776,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "uv"
      ],
@@ -33834,7 +35796,7 @@
        "seconds": 2,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "no-tests",
         "excerpt": [
          "error: python: test failed in protobuf_distutils"
         ]
@@ -33857,6 +35819,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -33873,7 +35839,7 @@
        "seconds": 3,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "../../../../ext/google/protobuf_c/ruby-upb.h:20427:10: fatal error: utf8_range.h: No such file or directory"
         ]
@@ -33896,6 +35862,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -33912,7 +35882,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "error: failed to load manifest for workspace member `/home/dev/protocolbuffers_protobuf/rust/release_crates/protobuf`",
          "error: rust: test failed in release_crates"
@@ -33924,6 +35894,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "psf/requests",
    "date": "2026-10-28",
    "commit": "3c7baaa05ab4aa49cc819ce3a819d260de19c157",
@@ -34032,6 +36005,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "python",
@@ -34047,6 +36021,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -34075,6 +36053,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "pulumi/pulumi",
    "date": "2026-10-28",
    "commit": "ba1a534c84ecfd420beccb066f711875880e694b",
@@ -34286,6 +36267,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "go",
@@ -34301,6 +36283,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -34319,7 +36305,7 @@
        "counts": {
         "tool": "go (packages)",
         "passed": 64,
-        "failed": 2
+        "failed": 1
        },
        "failure": {
         "category": "tests",
@@ -34353,6 +36339,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "npm"
@@ -34391,6 +36381,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -34445,6 +36439,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -34470,6 +36468,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "pydantic/pydantic",
    "date": "2026-10-28",
    "commit": "b0bf19f2be812f7a348ded86ffe7dd4887d1f01a",
@@ -34610,6 +36611,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "python",
@@ -34625,6 +36627,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -34665,6 +36671,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -34692,6 +36702,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "PyO3/pyo3",
    "date": "2026-10-28",
    "commit": "26f9ec8be637d24d0dee18d51e129cc1a99f3a7c",
@@ -34837,6 +36850,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "python",
@@ -34852,6 +36866,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
      },
      "buildSystems": [
       "uv"
@@ -34869,7 +36887,7 @@
        "seconds": 3,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "toolchain-version",
         "excerpt": [
          "error: Failed to build `test-results-parser==0.6.1`",
          "error: failed to run custom build command for `pyo3-ffi v0.27.1`",
@@ -34894,6 +36912,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -34922,6 +36944,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "python-pillow/Pillow",
    "date": "2026-10-28",
    "commit": "cb77e1bfaa02449b2a61486ce02f509438c801a5",
@@ -35060,6 +37085,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -35073,6 +37099,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -35113,6 +37143,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "uv"
      ],
@@ -35129,7 +37163,7 @@
        "seconds": 2,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "File \"<string>\", line 1105, in <module>",
          "File \"/home/dev/.cache/uv/builds-v0/.tmpx9hbyV/lib/python3.15/site-packages/setuptools/__init__.py\", line 117, in setup",
@@ -35149,6 +37183,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "rack/rack",
    "date": "2026-10-28",
    "commit": "412b7e5250612e8b23095eee65ee3268addb4776",
@@ -35257,6 +37294,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "ruby",
@@ -35272,6 +37310,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "bundle"
@@ -35301,6 +37343,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "rails/rails",
    "date": "2026-10-28",
    "commit": "0be3285ca748db2ae1b05a3535d8ae194ffe9e6b",
@@ -35441,6 +37486,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -35456,6 +37502,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "yarn"
@@ -35473,7 +37523,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "dependencies",
         "excerpt": [
          "error: javascript: test failed in actioncable"
         ]
@@ -35496,6 +37546,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -35512,7 +37566,7 @@
        "seconds": 77,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "/home/dev/.local/share/gem/ruby/4.0.0/gems/bundler-4.0.12/lib/bundler/installer/parallel_installer.rb:134:in",
          "'block in Bundler::ParallelInstaller#worker_pool'",
@@ -35532,6 +37586,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "redis/redis",
    "date": "2026-10-28",
    "commit": "157e3f3bb7009051fa59a5d457e99f8bd872a16e",
@@ -35677,6 +37734,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -35690,6 +37748,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -35723,6 +37785,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "make"
      ],
@@ -35745,6 +37811,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "rerun-io/rerun",
    "date": "2026-10-28",
    "commit": "61f1c1862e985b5f449971383cc3be22e2688c84",
@@ -35956,6 +38025,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -35969,6 +38039,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -36004,6 +38078,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "uv"
      ],
@@ -36020,7 +38098,7 @@
        "seconds": 12,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "error: Failed to build `rerun-sdk @ file:///home/dev/rerun-io_rerun/rerun_py`",
          "error: failed to run custom build command for `pyo3-build-config v0.28.3`",
@@ -36046,6 +38124,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -36062,7 +38144,7 @@
        "seconds": 81,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "error: failed to run custom build command for `pyo3-build-config v0.28.3`"
         ]
@@ -36085,6 +38167,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -36101,7 +38187,7 @@
        "seconds": 3,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "/bin/sh: 1: python: not found",
          "index.js(1,34): error TS2307: Cannot find module 'react' or its corresponding type declarations.",
@@ -36118,6 +38204,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "safetensors/safetensors",
    "date": "2026-10-28",
    "commit": "e246a2560645b7525f5775669ed816eb57c5bcc8",
@@ -36256,6 +38345,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "python",
@@ -36271,6 +38361,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
      },
      "buildSystems": [
       "uv"
@@ -36288,7 +38382,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "dependencies",
         "excerpt": [
          "error: Extras `pinned-tf`, `tensorflow`, and `tf-nightly` are incompatible with the declared conflicts: {`safetensors[pinned-tf]`, `safetensors[tensorflow]`, `safetensors[tf-nightly]`}"
         ]
@@ -36310,6 +38404,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -36338,6 +38436,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "scipy/scipy",
    "date": "2026-10-28",
    "commit": "881af30732bd66517ea829b5c102e224cae1f51e",
@@ -36515,6 +38616,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -36528,6 +38630,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "meson"
@@ -36545,7 +38651,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "Version: 1.12.1",
          "Source dir: /home/dev/scipy_scipy",
@@ -36575,6 +38681,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "meson"
      ],
@@ -36591,7 +38701,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "Version: 1.12.1",
          "Source dir: /home/dev/scipy_scipy",
@@ -36623,6 +38733,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": true
+     },
      "buildSystems": [
       "uv"
      ],
@@ -36639,7 +38753,7 @@
        "seconds": 6,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "error: Failed to build `scipy @ file:///home/dev/scipy_scipy`"
         ]
@@ -36650,6 +38764,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "scopt/scopt",
    "date": "2026-10-28",
    "commit": "270222e9ba8f32d2d71509fd9ceeaa9c35054347",
@@ -36756,6 +38873,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "scala",
@@ -36769,6 +38887,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "sbt"
@@ -36784,9 +38906,14 @@
       "test": {
        "rc": 1,
        "seconds": 80,
-       "counts": null,
+       "counts": {
+        "tool": "sbt",
+        "passed": 121,
+        "failed": 0,
+        "total": 121
+       },
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "Error: Missing value after --foo",
          "Error: Option --foo expects a number but was given 'bar'",
@@ -36806,6 +38933,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "Seldaek/monolog",
    "date": "2026-10-28",
    "commit": "3bed304b1905fed5c30d172872f4d890cbb03c6a",
@@ -36914,6 +39044,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "php",
@@ -36930,6 +39061,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "composer"
      ],
@@ -36944,7 +39079,13 @@
       "test": {
        "rc": 1,
        "seconds": 16,
-       "counts": null,
+       "counts": {
+        "tool": "phpunit",
+        "failed": 1,
+        "skipped": 23,
+        "total": 1307,
+        "passed": 1283
+       },
        "failure": {
         "category": "tests",
         "excerpt": [
@@ -36966,6 +39107,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "semgrep/semgrep",
    "date": "2026-10-28",
    "commit": "087e93b3a1fdf44f97bc92b5b9c2ba221cb2488b",
@@ -37217,6 +39361,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -37230,6 +39375,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -37266,6 +39415,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -37301,6 +39454,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dune"
      ],
@@ -37315,9 +39472,13 @@
       "test": {
        "rc": 1,
        "seconds": 165,
-       "counts": null,
+       "counts": {
+        "tool": "alcotest",
+        "passed": 48,
+        "failed": 0
+       },
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "Error: Library \"qcheck-alcotest\" not found.",
          "bindings.c:6:10: fatal error: tree_sitter/api.h: No such file or directory",
@@ -37341,6 +39502,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -37375,6 +39540,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "serde-rs/json",
    "date": "2026-10-28",
    "commit": "8c535a260ce561eaab4111aafc29038eb9f77ff3",
@@ -37483,6 +39651,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "rust",
@@ -37498,6 +39667,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -37526,6 +39699,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "snowballstem/snowball",
    "date": "2026-10-28",
    "commit": "6389c79f91cd67ed2de3ebdcf84ec8c2d2d23c11",
@@ -37851,6 +40027,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "ada",
@@ -37864,6 +40041,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -37900,6 +40081,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "make"
      ],
@@ -37914,11 +40099,7 @@
       "test": {
        "rc": 1,
        "seconds": 14,
-       "counts": {
-        "tool": "go (packages)",
-        "passed": 23,
-        "failed": 0
-       },
+       "counts": null,
        "failure": {
         "category": "build",
         "excerpt": [
@@ -37940,6 +40121,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -37979,6 +40164,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -38015,6 +40204,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -38062,6 +40255,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -38099,6 +40296,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -38115,7 +40316,7 @@
        "seconds": 1,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "no-tests",
         "excerpt": [
          "+ uv run --all-extras --all-groups --with pytest pytest",
          "warning: No `requires-python` value found in the workspace. Defaulting to `>=3.14`.",
@@ -38145,6 +40346,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -38172,6 +40377,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "sparklemotion/nokogiri",
    "date": "2026-10-28",
    "commit": "1d89c17cef552c69585e5e6f9501535459ff7477",
@@ -38351,6 +40559,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -38364,6 +40573,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -38381,7 +40594,7 @@
        "seconds": 2,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "test/attribute.cc:22:10: fatal error: gtest/gtest.h: No such file or directory",
          "make: *** [Makefile:56: build/test/attribute.o] Error 1"
@@ -38404,6 +40617,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -38442,6 +40659,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "bundle"
      ],
@@ -38470,6 +40691,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "spf13/cobra",
    "date": "2026-10-28",
    "commit": "adbc8813901bba65827259daa8e22ff94ec1f30e",
@@ -38578,6 +40802,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "go",
@@ -38593,6 +40818,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -38620,6 +40849,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "square/moshi",
    "date": "2026-10-28",
    "commit": "889013ec2edb8d8034902662a1dc8c4f3b3f8111",
@@ -38756,6 +40988,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "java",
@@ -38771,6 +41004,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "gradlew"
@@ -38804,6 +41041,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "gradlew"
      ],
@@ -38826,6 +41067,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "stretchr/testify",
    "date": "2026-10-28",
    "commit": "87a7b9d57689f6579db2da795ab8deeab29cb724",
@@ -38934,6 +41178,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "go",
@@ -38949,6 +41194,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -38967,7 +41216,7 @@
        "counts": {
         "tool": "go (packages)",
         "passed": 7,
-        "failed": 2
+        "failed": 1
        },
        "failure": {
         "category": "tests",
@@ -38990,6 +41239,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "supranational/blst",
    "date": "2026-10-28",
    "commit": "a7493a8cc61b603fb5100b1130b59f0348e4b080",
@@ -39325,6 +41577,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -39338,6 +41591,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -39373,6 +41630,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -39411,6 +41672,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "dotnet"
      ],
@@ -39444,6 +41709,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -39483,6 +41752,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -39519,6 +41792,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -39559,6 +41836,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -39596,6 +41877,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -39621,6 +41906,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "svenvc/NeoJSON",
    "date": "2026-10-28",
    "commit": "11e274dd96dc9636cab90929937b7cd09719de7c",
@@ -39727,6 +42015,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "pharo",
@@ -39741,6 +42030,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -39753,7 +42046,12 @@
       "test": {
        "rc": 0,
        "seconds": 6,
-       "counts": null,
+       "counts": {
+        "tool": "pharo",
+        "passed": 116,
+        "failed": 0,
+        "total": 116
+       },
        "failure": null
       }
      }
@@ -39761,6 +42059,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "swc-project/swc",
    "date": "2026-10-28",
    "commit": "ce4860f43ccf9b87096861903988c58f179ab8cf",
@@ -39934,6 +42235,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -39949,6 +42251,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "pnpm"
@@ -39990,6 +42296,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -40037,6 +42347,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "pnpm"
      ],
@@ -40067,6 +42381,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "swig/swig",
    "date": "2026-10-28",
    "commit": "46bd9846c7feae7d62995a5ab22281c4958eb8f3",
@@ -40224,6 +42541,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -40237,6 +42555,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake",
@@ -40276,6 +42598,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cmake",
       "ctest"
@@ -40304,6 +42630,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "tauri-apps/tauri",
    "date": "2026-10-28",
    "commit": "548a3692f59405aeb239c5b63fa589824eee51e8",
@@ -40518,6 +42847,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -40533,6 +42863,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "pnpm"
@@ -40550,7 +42884,7 @@
        "seconds": 2,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "build",
         "excerpt": [
          "Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL"
         ]
@@ -40572,6 +42906,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -40610,6 +42948,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "swift"
      ],
@@ -40626,7 +42968,7 @@
        "seconds": 5,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "build",
         "excerpt": [
          "error: SwiftCompile normal x86_64 failed with a nonzero exit code. Command line:     cd /home/dev/tauri-apps_tauri/crates/tauri/mobile",
          "/home/dev/tauri-apps_tauri/crates/tauri/mobile/ios-api/.build/checkouts/swift-rs/src-swift/lib.swift:85:13: error: global function cannot be marked '@_cdecl' because its result type cannot be represented in Objective-C",
@@ -40653,6 +42995,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "pnpm"
      ],
@@ -40669,7 +43015,7 @@
        "seconds": 3,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "build",
         "excerpt": [
          "Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL"
         ]
@@ -40680,6 +43026,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "tcltk/tcllib",
    "date": "2026-10-28",
    "commit": "a0f8da869ea3f8dc0dee583d18316edc435dbc64",
@@ -40795,6 +43144,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "tcl",
@@ -40808,6 +43158,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "make"
@@ -40845,6 +43199,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "temporalio/features",
    "date": "2026-10-28",
    "commit": "42d78dc5e37523ffaf1abf2fac178923658b2fb5",
@@ -41182,6 +43539,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "csharp",
@@ -41197,6 +43555,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"
@@ -41231,6 +43593,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -41270,6 +43636,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "gradlew"
      ],
@@ -41303,6 +43673,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -41341,6 +43715,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "uv"
      ],
@@ -41357,7 +43735,7 @@
        "seconds": 2,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "no-tests",
         "excerpt": [
          "+ uv run --all-extras --all-groups --with pytest pytest",
          "============================= test session starts ==============================",
@@ -41385,6 +43763,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -41422,6 +43804,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -41462,6 +43848,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -41487,6 +43877,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "tidyverse/stringr",
    "date": "2026-10-28",
    "commit": "7e1a4cf9c221954218ed3903bafbf4d133e91141",
@@ -41593,6 +43986,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "r",
@@ -41606,6 +44000,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "Rscript"
@@ -41634,6 +44032,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "tree-sitter/tree-sitter",
    "date": "2026-10-28",
    "commit": "ad067fddf76a32c3071f8f3a31e8719d348e2737",
@@ -41831,6 +44232,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "rust",
@@ -41846,6 +44248,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -41900,6 +44306,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -41916,7 +44326,7 @@
        "seconds": 33,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "error: typescript: test failed in lib/binding_web"
         ]
@@ -41939,6 +44349,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "zig"
      ],
@@ -41955,7 +44369,7 @@
        "seconds": 78,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "toolchain-version",
         "excerpt": [
          "build.zig:134:21: error: no field named 'build_root' in struct 'Build'"
         ]
@@ -41966,6 +44380,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "tree-sitter/tree-sitter-json",
    "date": "2026-10-28",
    "commit": "254c42a6476413b776221e03982ac8ae159eeb72",
@@ -42260,6 +44677,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -42273,6 +44691,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -42305,6 +44727,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -42339,6 +44765,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -42378,6 +44808,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -42392,7 +44826,11 @@
       "test": {
        "rc": 1,
        "seconds": 0,
-       "counts": null,
+       "counts": {
+        "tool": "node:test",
+        "passed": 0,
+        "failed": 1
+       },
        "failure": {
         "category": "build",
         "excerpt": [
@@ -42419,6 +44857,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -42458,6 +44900,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -42495,6 +44941,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "swift"
      ],
@@ -42522,6 +44972,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "tree-sitter/tree-sitter-python",
    "date": "2026-10-28",
    "commit": "26855eabccb19c6abf499fbc5b8dc7cc9ab8bc64",
@@ -42816,6 +45269,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -42829,6 +45283,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -42861,6 +45319,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -42895,6 +45357,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -42934,6 +45400,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -42971,6 +45441,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -43010,6 +45484,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -43047,6 +45525,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "swift"
      ],
@@ -43074,6 +45556,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "tree-sitter/tree-sitter-rust",
    "date": "2026-10-28",
    "commit": "77a3747266f4d621d0757825e6b11edcbf991ca5",
@@ -43368,6 +45853,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "c",
@@ -43381,6 +45867,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -43413,6 +45903,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cmake"
@@ -43447,6 +45941,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -43486,6 +45984,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -43500,7 +46002,11 @@
       "test": {
        "rc": 1,
        "seconds": 0,
-       "counts": null,
+       "counts": {
+        "tool": "node:test",
+        "passed": 0,
+        "failed": 1
+       },
        "failure": {
         "category": "build",
         "excerpt": [
@@ -43527,6 +46033,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -43566,6 +46076,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "cargo"
      ],
@@ -43603,6 +46117,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "swift"
      ],
@@ -43630,6 +46148,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "treeform/jsony",
    "date": "2026-10-28",
    "commit": "c5874fb71435e3ced8ee0025822e15f5d0e8e622",
@@ -43735,6 +46256,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "nim",
@@ -43748,6 +46270,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "nimble"
@@ -43771,6 +46297,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "ugexe/zef",
    "date": "2026-10-28",
    "commit": "a5289115b669adfe8afd2bea52d031320fed5d78",
@@ -43877,6 +46406,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "raku",
@@ -43890,6 +46420,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "zef"
@@ -43913,6 +46447,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "unicode-org/icu4x",
    "date": "2026-10-28",
    "commit": "96296840c9234404c4c38888de63f92b4b3e7fa0",
@@ -44164,6 +46701,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "cpp",
@@ -44177,6 +46715,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -44212,6 +46754,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dart"
@@ -44251,6 +46797,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "mvn"
      ],
@@ -44265,9 +46815,15 @@
       "test": {
        "rc": 1,
        "seconds": 43,
-       "counts": null,
+       "counts": {
+        "tool": "maven",
+        "failed": 2,
+        "skipped": 0,
+        "total": 2,
+        "passed": 0
+       },
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "java.lang.NoClassDefFoundError: Could not initialize class org.unicode.icu4x.Locale"
         ]
@@ -44289,6 +46845,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -44336,6 +46896,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -44350,7 +46914,11 @@
       "test": {
        "rc": 0,
        "seconds": 2,
-       "counts": null,
+       "counts": {
+        "tool": "ava",
+        "passed": 7,
+        "failed": 0
+       },
        "failure": null
       }
      }
@@ -44358,6 +46926,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "valkey-io/valkey-glide",
    "date": "2026-10-28",
    "commit": "876916f2b3c277141f736317e52b26511dadaf13",
@@ -44616,6 +47187,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "go",
@@ -44631,6 +47203,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "go"
@@ -44648,7 +47224,7 @@
        "seconds": 0,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "setup",
         "excerpt": [
          "config/ClientSideCache.go:9:2: no required module provides package github.com/valkey-io/valkey-glide/go/v2/internal/protobuf; to add it:"
         ]
@@ -44671,6 +47247,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm",
       "pnpm"
@@ -44688,7 +47268,7 @@
        "seconds": 143,
        "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "Error: Cannot find module '/home/dev/valkey-io_valkey-glide/node/hybrid-node-tests/commonjs-test/node_modules/@valkey/valkey-glide/build-ts/index.js'",
          "Error: Cannot find module '/home/dev/valkey-io_valkey-glide/node/hybrid-node-tests/pnpm-pubsub-test/node_modules/@valkey/valkey-glide/build-ts/index.js'",
@@ -44713,6 +47293,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "uv"
@@ -44752,6 +47336,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -44805,6 +47393,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "npm"
      ],
@@ -44821,7 +47413,7 @@
        "seconds": 136,
        "counts": null,
        "failure": {
-        "category": "other",
+        "category": "system",
         "excerpt": [
          "error: failed to run custom build command for `glide-core v0.1.1 (/home/dev/valkey-io_valkey-glide/glide-core)`",
          "error: typescript: test failed in node"
@@ -44833,6 +47425,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "vercel/turborepo",
    "date": "2026-10-28",
    "commit": "edace46216977186c109f26c9dd6137179d4a704",
@@ -45009,6 +47604,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "javascript",
@@ -45024,6 +47620,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -45061,6 +47661,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "cargo"
@@ -45101,6 +47705,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [],
      "components": [
       {
@@ -45126,6 +47734,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "vlang/vsl",
    "date": "2026-10-28",
    "commit": "608ff6adb438ddfc67c539acffeb356d73876160",
@@ -45237,6 +47848,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "v",
@@ -45250,6 +47862,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "v"
@@ -45265,13 +47881,9 @@
       "test": {
        "rc": 1,
        "seconds": 299,
-       "counts": {
-        "tool": "go (packages)",
-        "passed": 0,
-        "failed": 98
-       },
+       "counts": null,
        "failure": {
-        "category": "build",
+        "category": "system",
         "excerpt": [
          "FAIL  [  1/119] C: 6765.368 ms, R:     0.000 ms /home/dev/vlang_vsl/blas/blas64/dgemv_test.v",
          "FAIL  [  2/119] C: 6762.244 ms, R:     0.000 ms /home/dev/vlang_vsl/blas/blas64/level1f64_test.v",
@@ -45291,6 +47903,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "weavejester/medley",
    "date": "2026-10-28",
    "commit": "5dd8b6848be90c73312b09baeee693a53536e719",
@@ -45397,6 +48012,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "clojure",
@@ -45410,6 +48026,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "lein"
@@ -45425,7 +48045,12 @@
       "test": {
        "rc": 0,
        "seconds": 7,
-       "counts": null,
+       "counts": {
+        "tool": "clojure.test",
+        "failed": 0,
+        "total": 55,
+        "passed": 55
+       },
        "failure": null
       }
      }
@@ -45433,6 +48058,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "Xor-el/HashLib4Pascal",
    "date": "2026-10-28",
    "commit": "72fba2fca7e85fc5c79ec2531984e4c0a13789d5",
@@ -45548,6 +48176,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "pascal",
@@ -45561,6 +48190,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [],
      "components": [
@@ -45587,6 +48220,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "zigtools/zls",
    "date": "2026-10-28",
    "commit": "00d0776d6ee15fdcbf71e13d53b81b2f8383f4d3",
@@ -45695,6 +48331,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "zig",
@@ -45711,6 +48348,10 @@
       ],
       "state": "missing"
      },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
+     },
      "buildSystems": [
       "zig"
      ],
@@ -45725,7 +48366,13 @@
       "test": {
        "rc": 0,
        "seconds": 107,
-       "counts": null,
+       "counts": {
+        "tool": "zig",
+        "passed": 583,
+        "failed": 0,
+        "skipped": 11,
+        "total": 594
+       },
        "failure": null
       }
      }
@@ -45733,6 +48380,9 @@
    ]
   },
   {
+   "actions": [
+    "test"
+   ],
    "repo": "zoppa-software/ZoppaLibrary",
    "date": "2026-10-28",
    "commit": "0945115417fe6f6639eaa35fe715ad4a62d008af",
@@ -45841,6 +48491,7 @@
     ],
     "update": null
    },
+   "disk": null,
    "languages": [
     {
      "language": "vbnet",
@@ -45856,6 +48507,10 @@
        }
       ],
       "state": "missing"
+     },
+     "install": {
+      "toolchainFailed": false,
+      "depsFailed": false
      },
      "buildSystems": [
       "dotnet"

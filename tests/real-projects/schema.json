@@ -103,6 +103,7 @@
       "type": "object",
       "required": ["repo", "date", "commit", "hecatron", "runner", "wallSeconds", "complete", "clone", "init", "install", "doctor", "status", "languages"],
       "properties": {
+        "actions": {"description": "The actions run for each language (run.sh --actions), in order: test, and lint or build when asked for.", "type": "array", "items": {"enum": ["test", "lint", "build"]}},
         "repo": {"$ref": "#/$defs/repo"},
         "date": {"$ref": "#/$defs/date"},
         "commit": {"description": "The project's commit tested (its default branch's head at the time).", "type": ["string", "null"]},
@@ -172,6 +173,25 @@
         "install": {"anyOf": [{"$ref": "#/$defs/step"}, {"type": "null"}]},
         "doctor": {"anyOf": [{"$ref": "#/$defs/step"}, {"type": "null"}]},
         "status": {"description": "hct status --output json after init, as printed.", "type": ["object", "null"]},
+        "disk": {
+          "description": "Free space on the disk holding the workspace (df), sampled at the start, after each step and at the end; null in runs from before it was recorded.",
+          "anyOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "required": ["sizeKB", "freeBeforeKB", "freeAfterKB", "minFreeKB", "minFreeAfter", "low"],
+              "properties": {
+                "sizeKB": {"type": ["integer", "null"], "minimum": 0},
+                "freeBeforeKB": {"type": "integer", "minimum": 0},
+                "freeAfterKB": {"type": "integer", "minimum": 0},
+                "minFreeKB": {"type": "integer", "minimum": 0},
+                "minFreeAfter": {"description": "The sample with the least free space: start, a step's name (install, test:go...) or end.", "type": "string"},
+                "low": {"description": "Whether the free space fell under 2 GB: close to running out.", "type": "boolean"}
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
         "languages": {"type": "array", "items": {"$ref": "#/$defs/languageResult"}}
       },
       "additionalProperties": false
@@ -204,6 +224,13 @@
           },
           "additionalProperties": false
         },
+        "install": {
+          "description": "What hct install said it couldn't do for the language: install its toolchain, or fetch its dependencies. Absent in runs recorded before it was.",
+          "type": "object",
+          "required": ["toolchainFailed", "depsFailed"],
+          "properties": {"toolchainFailed": {"type": "boolean"}, "depsFailed": {"type": "boolean"}},
+          "additionalProperties": false
+        },
         "buildSystems": {"description": "The tools the language's hooks ran (from the log's '+ <command>' lines).", "type": "array", "items": {"type": "string"}},
         "components": {
           "type": "array",
@@ -223,11 +250,12 @@
       "additionalProperties": false
     },
     "result": {
-      "description": "pass: the action exited 0. fail: it didn't. not-run: the run ended (time limit) before it.",
+      "description": "pass: the test step (every step, when the run didn't test) exited 0. fail: it didn't. not-run: the run ended (time limit) before it.",
       "enum": ["pass", "fail", "not-run"]
     },
     "failureCategory": {
-      "enum": ["toolchain", "dependencies", "build", "tests", "no-command", "timeout", "other"]
+      "description": "Why a step failed, from its exit code, its counts and its output (report.py's FAILURE_PATTERNS). toolchain: not installed or not found; toolchain-version: too new or too old for the project; system: a system tool or library missing; network; disk: out of space; dependencies: fetching or resolving them failed; setup: the project needs a step of its own first (generated code, a service, a native library); build: a compile error; no-tests: none found; tests: tests failed; lint: the linter reported problems; no-command: no command for the layout; timeout.",
+      "enum": ["toolchain", "toolchain-version", "system", "network", "disk", "dependencies", "setup", "build", "no-tests", "tests", "lint", "no-command", "timeout", "other"]
     },
     "actionResult": {
       "type": "object",
@@ -236,7 +264,7 @@
         "rc": {"type": "integer"},
         "seconds": {"$ref": "#/$defs/seconds"},
         "counts": {
-          "description": "The test runner's own summary, where the harness could parse it.",
+          "description": "The test runner's own summary, where the harness could parse it; tool junit-xml: totalled from the JUnit XML reports the step wrote (Gradle's, which prints no counts when tests pass).",
           "anyOf": [
             {"type": "null"},
             {
@@ -293,7 +321,8 @@
               "failureCategory": {"anyOf": [{"$ref": "#/$defs/failureCategory"}, {"type": "null"}]},
               "commit": {"type": ["string", "null"]},
               "date": {"anyOf": [{"$ref": "#/$defs/date"}, {"type": "null"}]},
-              "hecatronVersion": {"type": ["string", "null"]}
+              "hecatronVersion": {"type": ["string", "null"]},
+              "actions": {"description": "The other actions' results (lint, build), when the run asked for them.", "type": "object", "additionalProperties": {"enum": ["pass", "fail"]}}
             },
             "additionalProperties": false
           }

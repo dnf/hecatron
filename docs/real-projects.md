@@ -40,12 +40,17 @@ detected (➖) is listed with its project but not in these counts.
 
 | Cause | Languages |
 | --- | --: |
-| Other | 70 |
-| Build or compile error | 61 |
-| No test command for the layout | 55 |
-| Tests failed | 43 |
-| Fetching dependencies failed | 6 |
+| No command for the layout | 55 |
+| Build or compile error | 46 |
+| Tests failed | 45 |
+| A system tool or library missing | 44 |
+| Needs a setup step of the project's own (generated code, a service, a native library) | 16 |
+| Fetching or resolving dependencies failed | 11 |
+| No tests found | 9 |
+| Toolchain too new or too old for the project | 7 |
 | Timed out | 5 |
+| Other | 1 |
+| Toolchain not installed or not found | 1 |
 
 Run on 2026-10-28.
 Backlog verified against the GitHub API on 2026-10-28.

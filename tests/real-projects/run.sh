@@ -4,7 +4,10 @@
 # language init found, with no configuration. Each step is timed between
 # "### step NAME" and "### done NAME rc=N secs=N" lines, and "### json NAME
 # {...}" lines carry hecatron's own JSON (init's config, hct status, each
-# test run's --output json); tests/real-projects/report.py reads them.
+# test run's --output json); "### disk NAME {...}" lines the free space on
+# the workspace's disk at the start, after each step and at the end, and
+# "### junit NAME {...}" lines the totals of the JUnit XML reports a step
+# wrote. tests/real-projects/report.py reads them.
 #
 #   run.sh [options] OWNER/REPO          here (a fresh container or CI runner)
 #   run.sh --docker IMAGE [options] OWNER/REPO
@@ -14,7 +17,8 @@
 #
 # Options:
 #   --ref REF          test REF instead of the default branch
-#   --actions LIST     comma-separated actions per language (default: test)
+#   --actions LIST     comma-separated actions per language, of test, lint
+#                      and build (default: test)
 #   --budget SECS      stop starting steps after SECS in all (default 3300)
 #   --host TEXT        where this runs, for the record (e.g. a runner label)
 #   --run-url URL      the CI run, for the record
@@ -43,8 +47,8 @@ while [ "$#" -gt 1 ]; do
         *) break ;;
     esac
 done
-if [ "$#" -ne 1 ] || [[ "$1" != */* ]]; then
-    sed -n '9,23p' "${BASH_SOURCE[0]}" >&2
+if [ "$#" -ne 1 ] || [[ "$1" != */* ]] || [[ ! ",${_actions}" =~ ^(,(test|lint|build))+$ ]]; then
+    sed -n '12,27p' "${BASH_SOURCE[0]}" >&2
     exit 2
 fi
 _repo="$1"
@@ -64,6 +68,40 @@ export PATH="${_home}/bin:${PATH}"
 # A JSON string, for the few values this script records itself.
 _json_string() {
     python3 -c 'import json, sys; print(json.dumps(sys.argv[1]))' "$1"
+}
+
+# Free and total space on the workspace's disk, in KB.
+_disk() {
+    df -Pk "${HOME}" 2>/dev/null | awk -v name="$1" 'NR == 2 { printf "### disk %s {\"freeKB\": %.0f, \"sizeKB\": %.0f}\n", name, $4, $2 }'
+}
+
+# The totals of the JUnit XML reports (TEST-*.xml: Gradle's, Maven's,
+# sbt's) written since the file MARK: Gradle prints no test counts when its
+# tests pass.
+_junit() {
+    local name="$1" mark="$2"
+    find . \( -name .git -o -name node_modules \) -prune -o -name 'TEST-*.xml' -newer "${mark}" -print 2>/dev/null |
+        python3 -c '
+import json, sys
+import xml.etree.ElementTree as ET
+keys = ("tests", "failures", "errors", "skipped")
+total = dict.fromkeys(keys, 0)
+files = 0
+for path in sys.stdin.read().splitlines():
+    try:
+        root = ET.parse(path).getroot()
+    except (ET.ParseError, OSError):
+        continue
+    files += 1
+    for suite in [root] if root.tag == "testsuite" else root.iter("testsuite"):
+        for key in keys:
+            try:
+                total[key] += int(float(suite.get(key) or 0))
+            except ValueError:
+                pass
+if files:
+    print("### junit %s %s" % (sys.argv[1], json.dumps({"files": files, **total})))
+' "${name}"
 }
 
 _remaining() {
@@ -87,6 +125,7 @@ _step() {
     timeout --kill-after 30 "${cap}" "$@" </dev/null
     local rc=$?
     echo "### done ${name} rc=${rc} secs=$((SECONDS - begin))"
+    _disk "${name}"
     return "${rc}"
 }
 
@@ -99,11 +138,13 @@ echo "### meta {\"repo\": $(_json_string "${_repo}"), \"date\": \"$(date -u +%Y-
     "\"hecatron\": {\"version\": \"$(cat "${_home}/VERSION")\", \"commit\": $(_json_string "${_hecatron_commit}"), \"runner\": \"${_hecatron_runner}\"}," \
     "\"runner\": {\"os\": $(_json_string "${_os}"), \"arch\": \"$(uname -m)\", \"image\": $(_json_string "${_image}"), \"host\": $(_json_string "${_host}"), \"runUrl\": $(_json_string "${_run_url}")}," \
     "\"actions\": $(_json_string "${_actions}")}"
+_disk start
 
 _work="${HOME}/$(echo "${_repo}" | tr '/' '_')"
 _clone=(git clone --quiet --depth 1 --recurse-submodules --shallow-submodules)
 [ -n "${_ref}" ] && _clone+=(--branch "${_ref}")
 _end() {
+    _disk end
     echo "### end {\"wallSeconds\": $((SECONDS - _start))}"
 }
 if ! _step clone 900 "${_clone[@]}" "https://github.com/${_repo}.git" "${_work}" || ! cd "${_work}"; then
@@ -126,8 +167,10 @@ _step doctor 300 hct doctor
 _languages="$(python3 -c 'import json; print(" ".join(json.load(open(".hecatron/config.json"))["languages"]))' 2>/dev/null)"
 _logs="$(python3 -c 'import json; print(json.load(open(".hecatron/config.json")).get("logs") or ".logs")' 2>/dev/null || echo .logs)"
 _out="$(mktemp)"
+_mark="$(mktemp)"
 for _lang in ${_languages}; do
     for _action in ${_actions//,/ }; do
+        touch "${_mark}"
         if [ "${_hecatron_runner}" = binary ]; then
             # The JSON goes to a file; the tool's output is in the job's log,
             # printed inside the step so its test counts can be read.
@@ -137,7 +180,8 @@ for _lang in ${_languages}; do
         else
             _step "${_action}:${_lang}" 1800 hct "${_action}" "${_lang}"
         fi
+        _junit "${_action}:${_lang}" "${_mark}"
     done
 done
-rm -f "${_out}"
+rm -f "${_out}" "${_mark}"
 _end
