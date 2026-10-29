@@ -5,6 +5,12 @@ name: Real projects
 # doctor and test for each language, as a newcomer would. Monthly, and on
 # demand for some projects. A full run on main opens, or updates, a pull
 # request with the results (docs/real-projects.md and the data files).
+#
+# Jobs share each language's toolchain install through actions/cache
+# (tests/real-projects/cache.py): a job testing one language saves its
+# install, and later jobs with that language restore it. Every third
+# scheduled run, and a dispatch asking for it, uses no cache, to show the
+# installs still work from scratch.
 
 on:
   # Retesting fixes before this workflow is on main: a push to a
@@ -20,6 +26,14 @@ on:
         description: "Projects to test, space-separated OWNER/REPO (empty: every project in tests/real-projects/projects.json)"
         required: false
         default: ""
+      cache:
+        description: "Restore and save the toolchain caches (off: install everything from scratch)"
+        type: boolean
+        default: true
+      parallel:
+        description: "Most projects tested at once"
+        type: string
+        default: "12"
 
 permissions:
   contents: read
@@ -35,8 +49,21 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       list: ${{ steps.list.outputs.list }}
+      cache: ${{ steps.cache.outputs.cache }}
     steps:
       - uses: actions/checkout@v4
+      - id: cache
+        env:
+          WANTED: ${{ inputs.cache }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          cache=true
+          if [ "${WANTED}" = false ]; then
+            cache=false
+          elif [ "${GITHUB_EVENT_NAME}" = schedule ] && [ $((RUN_NUMBER % 3)) -eq 0 ]; then
+            cache=false
+          fi
+          echo "cache=${cache}" >> "${GITHUB_OUTPUT}"
       - id: list
         env:
           REQUESTED: ${{ inputs.repos }}
@@ -47,7 +74,7 @@ jobs:
           if [ -n "${REQUESTED}" ]; then
             list="$(printf '%s\n' ${REQUESTED} | python3 -c 'import json, sys; print(json.dumps(sys.stdin.read().split()))')"
           else
-            list="$(python3 -c 'import json; print(json.dumps([p["repo"] for p in json.load(open("tests/real-projects/projects.json"))["projects"]]))')"
+            list="$(python3 tests/real-projects/cache.py order)"
           fi
           echo "list=${list}" >> "${GITHUB_OUTPUT}"
 
@@ -76,8 +103,9 @@ jobs:
     needs: [projects, binary]
     strategy:
       fail-fast: false
-      # Leaves room for CI on other pull requests: an account runs 20 jobs at once.
-      max-parallel: 12
+      # An account runs 20 jobs at once: a dispatched run leaves room for CI
+      # on other pull requests; the monthly one, at night, takes them all.
+      max-parallel: ${{ github.event_name == 'schedule' && 20 || fromJSON(inputs.parallel || '12') }}
       matrix:
         repo: ${{ fromJSON(needs.projects.outputs.list) }}
     runs-on: ubuntu-24.04
@@ -103,15 +131,85 @@ jobs:
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift
           df -h /
+      # The caches of the languages the project is likely to have (at most
+      # eight; tests/real-projects/cache.py).
+      - id: plan
+        if: needs.projects.outputs.cache == 'true'
+        env:
+          REPO: ${{ matrix.repo }}
+        run: python3 tests/real-projects/cache.py plan "${REPO}" | tee -a "${GITHUB_OUTPUT}"
+      - name: Restore ${{ steps.plan.outputs.lang1 }}'s toolchain
+        if: steps.plan.outputs.key1 != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/real-projects-cache/${{ steps.plan.outputs.lang1 }}
+          key: ${{ steps.plan.outputs.key1 }}
+      - name: Restore ${{ steps.plan.outputs.lang2 }}'s toolchain
+        if: steps.plan.outputs.key2 != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/real-projects-cache/${{ steps.plan.outputs.lang2 }}
+          key: ${{ steps.plan.outputs.key2 }}
+      - name: Restore ${{ steps.plan.outputs.lang3 }}'s toolchain
+        if: steps.plan.outputs.key3 != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/real-projects-cache/${{ steps.plan.outputs.lang3 }}
+          key: ${{ steps.plan.outputs.key3 }}
+      - name: Restore ${{ steps.plan.outputs.lang4 }}'s toolchain
+        if: steps.plan.outputs.key4 != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/real-projects-cache/${{ steps.plan.outputs.lang4 }}
+          key: ${{ steps.plan.outputs.key4 }}
+      - name: Restore ${{ steps.plan.outputs.lang5 }}'s toolchain
+        if: steps.plan.outputs.key5 != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/real-projects-cache/${{ steps.plan.outputs.lang5 }}
+          key: ${{ steps.plan.outputs.key5 }}
+      - name: Restore ${{ steps.plan.outputs.lang6 }}'s toolchain
+        if: steps.plan.outputs.key6 != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/real-projects-cache/${{ steps.plan.outputs.lang6 }}
+          key: ${{ steps.plan.outputs.key6 }}
+      - name: Restore ${{ steps.plan.outputs.lang7 }}'s toolchain
+        if: steps.plan.outputs.key7 != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/real-projects-cache/${{ steps.plan.outputs.lang7 }}
+          key: ${{ steps.plan.outputs.key7 }}
+      - name: Restore ${{ steps.plan.outputs.lang8 }}'s toolchain
+        if: steps.plan.outputs.key8 != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/real-projects-cache/${{ steps.plan.outputs.lang8 }}
+          key: ${{ steps.plan.outputs.key8 }}
       - name: Test ${{ matrix.repo }}
         env:
           REPO: ${{ matrix.repo }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          CACHE: ${{ needs.projects.outputs.cache }}
         run: |
-          tests/real-projects/run.sh --docker ubuntu:24.04 --budget 3300 \
+          if [ "${CACHE}" = true ]; then
+            # Made here, not by docker, so the container's user owns it.
+            export HECATRON_TEST_CACHE="${RUNNER_TEMP}/real-projects-cache"
+            mkdir -p "${HECATRON_TEST_CACHE}"
+          fi
+          tests/docker/run.sh ubuntu:24.04 python3 /hecatron/tests/real-projects/cache.py run --image ubuntu:24.04 --budget 3300 \
             --host "GitHub Actions ubuntu-24.04 (${ImageVersion:-unknown image version})" --run-url "${RUN_URL}" \
             "${REPO}" 2>&1 | tee run.log || true
           python3 tests/real-projects/report.py summary run.log >> "${GITHUB_STEP_SUMMARY}" || true
+      - id: saved
+        if: needs.projects.outputs.cache == 'true'
+        run: cat "${RUNNER_TEMP}/real-projects-cache/saved" >> "${GITHUB_OUTPUT}" 2>/dev/null || true
+      - name: Save ${{ steps.saved.outputs.lang }}'s toolchain
+        if: steps.saved.outputs.key != ''
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/real-projects-cache/${{ steps.saved.outputs.lang }}
+          key: ${{ steps.saved.outputs.key }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:

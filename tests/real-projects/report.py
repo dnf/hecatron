@@ -40,7 +40,7 @@ PAGE_URL = f"{REPO_URL}/blob/main/docs/real-projects.md"
 ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")
 STEP = re.compile(r"^### step (\S+): .*?\n(.*?)^### done \1 rc=(-?\d+) secs=(\d+)\n?", re.M | re.S)
 JSON_LINE = re.compile(r"^### json (\S+) (.*)$", re.M)
-MARKER = re.compile(r"^### (meta|project|end) (\{.*\})$", re.M)
+MARKER = re.compile(r"^### (meta|project|cache|end) (\{.*\})$", re.M)
 NOT_ADDED = re.compile(r"^\s*not added: (\S+) \((.*)\)\s*$", re.M)
 
 # The tools a hook runs, as its "+ <command>" lines name them: anything else
@@ -288,6 +288,7 @@ def parse_log(text: str) -> dict | None:
         "hecatron": meta["hecatron"],
         "runner": meta["runner"],
         "wallSeconds": (end or {}).get("wallSeconds", sum(int(m.group(4)) for m in steps.values())),
+        "cache": markers.get("cache"),
         "complete": end is not None,
         "clone": _step(steps["clone"]) if "clone" in steps else None,
         "init": init,
@@ -669,7 +670,8 @@ def summary(path: str) -> str:
         return f"{path}: no run in it\n"
     out = [f"### {run['repo']} at {(run['commit'] or '?')[:7]}", "",
            f"init {_minutes(run['init'])}, install {_minutes(run['install'])}, doctor {_minutes(run['doctor'])}"
-           + ("" if run["complete"] else " (incomplete)"), "",
+           + ("" if run["complete"] else " (incomplete)")
+           + (f" (restored from the cache: {', '.join(run['cache']['restored'])})" if (run["cache"] or {}).get("restored") else ""), "",
            "| Language | Result | Seconds | Tests | Failure |", "| --- | :-: | --: | --- | --- |"]
     for lang in run["languages"]:
         test = lang["steps"].get("test") or {}
