@@ -83,7 +83,7 @@ Run 'hecatron self update help' or 'hecatron self uninstall help' for their opti
 `
 
 // self is `hecatron self <command>`: managing hecatron itself, as rustup
-// self and uv self do (docs/design.md §8). self-test and self-build, the
+// self and uv self do (docs/contributing/design.md §8). self-test and self-build, the
 // earlier names, still work.
 func (c *cli) self() int {
 	command := "help"
@@ -214,7 +214,7 @@ func (c *cli) runHelpText() (text string, ok bool) {
 	if c.command == "audit" {
 		out.WriteString("  --fail-on SEVERITY\n" +
 			"             Fail on a finding at or above critical, high (default), moderate or low;\n" +
-			"             a project sets its own with \"audit\": {\"failOn\": ...} (docs/audit.md)\n")
+			"             a project sets its own with \"audit\": {\"failOn\": ...} (docs/guide/audit.md)\n")
 	}
 	if c.command == "outdated" {
 		out.WriteString("  --json     Print one JSON array of every outdated dependency (component, language,\n" +
@@ -223,11 +223,11 @@ func (c *cli) runHelpText() (text string, ok bool) {
 	}
 	if c.command == "format" {
 		out.WriteString("  --check    Change nothing; fail, listing the files the formatter would change\n" +
-			"             (hecatron lint runs this check too; docs/format.md)\n")
+			"             (hecatron lint runs this check too; docs/guide/format.md)\n")
 	}
 	// The binary's own flags, listed by run.sh too (saying they need the
 	// binary), so the help is the same either way.
-	out.WriteString("\nWith hecatron's binary (install.sh downloads it with a release; docs/runner.md):\n" +
+	out.WriteString("\nWith hecatron's binary (install.sh downloads it with a release; docs/guide/runner.md):\n" +
 		"  --output FORMAT\n" +
 		"             human, agent, json, ci, junit or sarif (else HECATRON_OUTPUT;\n" +
 		"             agent output for AI agents)\n" +

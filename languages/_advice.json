@@ -1,5 +1,5 @@
 {
-  "$comment": "Advice sets language definitions share (their advice.json's \"include\"), and \"repo\", rules for the whole repository. Schema: docs/advisor.md.",
+  "$comment": "Advice sets language definitions share (their advice.json's \"include\"), and \"repo\", rules for the whole repository. Schema: docs/guide/advisor.md.",
   "sets": {
     "repo": {
       "rules": [

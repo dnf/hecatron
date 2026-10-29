@@ -1,5 +1,5 @@
 // Package generate writes the files hecatron generates for a project
-// (docs/design.md §11): its Dockerfile, from each language's dockerfile
+// (docs/guide/generated-files.md): its Dockerfile, from each language's dockerfile
 // snippet, and its CI workflows, from each language's workflow.yml, each
 // under a DO NOT EDIT banner. It is a port of libexec/codegen/dockerfile.py,
 // banner.py and manage.py's workflow code and must write what they write,

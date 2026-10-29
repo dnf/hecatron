@@ -9,11 +9,11 @@ import (
 )
 
 // Hooks are the files that resolve to a built-in definition's hooks/
-// directory rather than its top level (docs/design.md §9).
+// directory rather than its top level (docs/guide/hooks.md).
 var Hooks = []string{"test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh", "format.sh", "deps.sh", "outdated.sh"}
 
 // Definitions are every known language's config.json: the built-in keys
-// with the project's on top (docs/design.md §7).
+// with the project's on top (docs/guide/configuration.md).
 type Definitions struct {
 	Names  []string // sorted
 	byName map[string]*Object

@@ -1,4 +1,4 @@
-"""Toolchain versions (docs/design.md §18): hecatron's version syntax, how
+"""Toolchain versions (docs/guide/versions.md): hecatron's version syntax, how
 versions compare, and the ecosystem pin files a project can choose one with.
 
 A spec is either a prefix, "3.12", meaning the newest release whose version
@@ -267,7 +267,7 @@ def _sdkmanrc(text, key):
 def _python_classifiers(text, key):
     # The trove classifiers a pyproject.toml, setup.cfg or setup.py lists
     # ("Programming Language :: Python :: 3.14"): the newest Python the
-    # project says it supports, a line (3.14), not a pin (docs/design.md §18).
+    # project says it supports, a line (3.14), not a pin (docs/guide/versions.md).
     found = re.findall(r"Programming Language :: Python :: (\d+\.\d+)\b", text)
     return _plain(newest(found)) if found else NOT_PINNED
 

@@ -9,7 +9,7 @@ type Release struct {
 	LTS     bool
 }
 
-// Releases are a language's release dates (docs/design.md §18), from its
+// Releases are a language's release dates (docs/guide/versions.md), from its
 // definition's releases.json or that of the language its "releasesOf"
 // names, oldest first as the table lists them; none when it has no table.
 func (p *Project) Releases(lang string) ([]Release, error) {

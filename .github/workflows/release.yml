@@ -1,6 +1,6 @@
 name: Release binaries
 
-# Build the Go binary (docs/design.md §19) for every platform and attach it,
+# Build the Go binary (docs/contributing/design.md §19) for every platform and attach it,
 # with SHA256SUMS, to a published release; install.sh downloads the one for
 # its machine. The Agent Skill goes with it as hecatron-skill.zip. On
 # demand, for a release that's already published.

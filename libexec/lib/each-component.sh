@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Run one of a language's hooks (test, lint, build, clean, audit, format, deps
 # or outdated) for every component, or the ones named. Lint also runs the
-# format hook's check (docs/format.md).
+# format hook's check (docs/guide/format.md).
 #
 # Usage: each-component.sh <action> <lang> [component ...]
 #
 # The hook is .hecatron/languages/<lang>/<action>.sh in the project, else
-# hecatron's built-in default (docs/design.md §7, §9). It runs from inside the
+# hecatron's built-in default (docs/guide/configuration.md, docs/guide/hooks.md). It runs from inside the
 # component's directory (config.json "implPath") with the component name as
 # $1, and with HECATRON_ROOT, HECATRON_COMPONENT and HECATRON_LANG set. Every
 # component runs even after one fails, so one run reports all of them.
@@ -44,7 +44,7 @@ while IFS=$'\t' read -r _component _dir; do
     _ran=$((_ran + 1))
     echo "=== ${_action} ${_component} (${_lang}) ==="
     # The language's environment for this component's version (config.json
-    # "path" and "env", docs/design.md §7, §18), for its hooks only.
+    # "path" and "env", docs/guide/configuration.md, docs/guide/versions.md), for its hooks only.
     if ! _env="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" env "${_lang}" "${_component}" </dev/null)"; then
         _failed+=("${_component}")
         continue

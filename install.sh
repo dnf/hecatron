@@ -164,7 +164,7 @@ _hecatron_fetch() {
         git -C "${_hecatron_dir}" checkout --quiet --force FETCH_HEAD
 }
 
-# The Go binary for this machine (docs/design.md §19) from the release the
+# The Go binary for this machine (docs/contributing/design.md §19) from the release the
 # install is at, checksum-verified, with the commit it belongs to; bin/hecatron
 # runs it at that commit only. Not at a release (a branch, a clone), an
 # unsupported platform, or a failed download: none, and bin/hecatron runs as
@@ -207,7 +207,7 @@ _hecatron_binary() {
 
 # ~/.hecatron/env (sh, bash, zsh) and env.fish: put bin/ on PATH once, and
 # after it the links to each language's default toolchain that hecatron
-# installs itself (~/.local/share/hecatron/bin, docs/installers.md).
+# installs itself (~/.local/share/hecatron/bin, docs/guide/installing-toolchains.md).
 _hecatron_write_env() {
     _hecatron_bin="$1/bin"
     _hecatron_links="${XDG_DATA_HOME:-${HOME}/.local/share}/hecatron/bin"

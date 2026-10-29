@@ -90,7 +90,7 @@ each_impl() {
     done < <(impl_dirs "${_lang}")
 }
 # each_impl with each component's own toolchain version (its "path" and "env",
-# docs/design.md §18), for dependencies built for one version: a bundle's
+# docs/guide/versions.md), for dependencies built for one version: a bundle's
 # native extensions, a Composer lock resolved for the running PHP.
 each_impl_versioned() {
     local _lang="$1" _component _dir
@@ -151,7 +151,7 @@ has() { command -v "$1" &>/dev/null; }
 
 # For uninstall.sh: a tool another language's installer also installs (CMake,
 # Node.js, the .NET SDK, a JDK...) stays when one of them is uninstalled
-# (docs/installers.md, "Shared toolchains"), and the uninstaller says so.
+# (docs/guide/installing-toolchains.md, "Shared toolchains"), and the uninstaller says so.
 left_shared() { echo "Left $1 installed: $2"; }
 leave_cmake() {
     if has cmake; then left_shared CMake "C, C++, Objective-C, COBOL and Fortran share it."; fi
@@ -265,7 +265,7 @@ apt_source_remove() {
     $SUDO rm -f "/etc/apt/keyrings/hecatron-$1.asc" "$(apt_source_file "$1")"
 }
 
-# Toolchain versions (docs/design.md §18). For an installer: each version the
+# Toolchain versions (docs/guide/versions.md). For an installer: each version the
 # project's components resolve to that isn't installed yet, one spec per line
 # ("1.22" or "=1.22.5"); nothing outside a hecatron run.
 missing_versions() {
@@ -1170,7 +1170,7 @@ otp_install_ubuntu() {
 }
 
 # For the install.sh of a language installed from its install.json
-# (docs/installers.md) that other installers run directly (none now:
+# (docs/contributing/install-engine.md) that other installers run directly (none now:
 # Erlang's, which Elixir's and Gleam's run, is a script again): install from
 # the data through hecatron's binary, as `hecatron install` would, and exit
 # with its status. The script carries
@@ -1189,8 +1189,8 @@ install_from_data() {
 }
 
 # OSV-Scanner (Google's), the dependency auditor `hecatron audit` uses for
-# ecosystems without one of their own (docs/audit.md), and what `hecatron
-# licenses` reads licenses with (docs/licenses.md): its release binary,
+# ecosystems without one of their own (docs/guide/audit.md), and what `hecatron
+# licenses` reads licenses with (docs/guide/licenses.md): its release binary,
 # pinned and checked against its checksum, into hecatron's bin directory.
 _OSV_SCANNER_VERSION="2.7.0"
 osv_scanner_install() {

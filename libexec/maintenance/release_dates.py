@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Write each versioned language's release dates (languages/<lang>/releases.json),
 which version resolution reads to give an old checkout the toolchain that was
-current when it was written (docs/design.md §18). Run it when defaults are
+current when it was written (docs/guide/versions.md). Run it when defaults are
 updated; resolution itself stays offline.
 
     python3 libexec/maintenance/release_dates.py            # every language

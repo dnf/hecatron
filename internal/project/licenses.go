@@ -7,7 +7,7 @@ import (
 )
 
 // LicensePolicy is config.json's "licenses" section (hct licenses,
-// docs/licenses.md): the licenses allowed (none listed: any) and denied,
+// docs/guide/licenses.md): the licenses allowed (none listed: any) and denied,
 // accepted packages, and whether dev and test dependencies count.
 type LicensePolicy struct {
 	Allow, Deny []string // canonical SPDX identifiers

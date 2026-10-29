@@ -1,16 +1,24 @@
 # Hecatron design
 
-Status: **accepted** (decisions in §17); phase 2 of §15 (the standalone CLI) is implemented, and §18 (toolchain versions) is accepted but not yet implemented. This repository was split out of
+Status: **accepted** (decisions in §17); phase 2 of §15 (the standalone CLI) is implemented, and §18 (toolchain versions) is accepted and implemented for the languages it lists. This repository was split out of
 [dnf/sayable](https://github.com/dnf/sayable), where hecatron grew up as its
-`.hecatron/` directory. This document is the design of the tool you install
-once and use in any repository (`hct` is a short alias for `hecatron`):
+`.hecatron/` directory. This document is the design record of the tool you
+install once and use in any repository (`hct` is a short alias for
+`hecatron`):
 
 ```bash
 brew install dnf/tap/hecatron  # later, from homebrew-core: brew install hecatron
-hecatron init                  # set up the current repository
-hecatron doctor --fix          # install and repair the toolchains it needs
-hecatron test                  # every language's suites, in parallel
+hct init                       # set up the current repository
+hct doctor --fix               # install and repair the toolchains it needs
+hct test                       # every language's suites, in parallel
 ```
+
+What hecatron does for a user (configuration, hooks, detection, generated
+files, toolchain versions, output) is described in the
+[user guide](../guide/README.md); the sections that described it here moved
+there, and keep their numbers below as pointers, so older references still
+resolve. This record keeps the goals, the decisions and their history, and
+the plans.
 
 ## 1. What hecatron is
 
@@ -138,148 +146,35 @@ This layout is in place: `bin/hecatron` (and the `hct` link), `libexec/`
 `commands/run.sh` the action runner, `commands/manage.py` the configuration
 commands), `languages/`, `tests/`, and `examples/sayable/` with sayable's
 hooks, CI templates and config as they were at the split. Default hooks
-(`languages/<lang>/hooks/`) come in phase 4.
+(`languages/<lang>/hooks/`) come in phase 4. The repository as it is now,
+with the Go core: [architecture](architecture.md) and [modules](modules.md).
 
 ### A project using hecatron
 
-```
-.hecatron/
-  config.json                # project configuration (§6), committed
-  local.json                 # per-developer settings (disabled languages), gitignored
-  languages/<lang>/          # project hooks and overrides, committed
-    test.sh lint.sh build.sh clean.sh   # override the built-in default hooks
-    workflow.yml             # this language's CI workflow template
-    version.sh metadata.sh   # optional: update versions and package metadata
-    install.sh doctor.sh ... # optional: override a built-in definition file
-```
+Moved to the user guide: [configuration](../guide/configuration.md#the-hecatron-directory).
 
 ## 6. Project configuration
 
-`.hecatron/config.json` (JSON, read with the Python standard library):
-
-```json
-{
-  "schema": 1,
-  "hecatron": ">=0.1.0",
-  "project": "sayable",
-  "components": ["age", "date", "duration", "time"],
-  "implPath": "{component}/impl/{lang}",
-  "languages": ["ada", "bash", "c", "..."],
-  "tools": {
-    "cli": { "dependency": "cmake" },
-    "shell": { "dependency": "shellcheck" }
-  },
-  "generated": {
-    "dockerfile": "age/Dockerfile",
-    "workflows": ".github/workflows/{lang}.yml"
-  },
-  "tasks": {
-    "test": { "codegen": "cd age && python3 -m unittest codegen.test_locale_groups" }
-  },
-  "metadata": "age/config/metadata.json",
-  "logs": ".logs"
-}
-```
-
-| Key | Meaning | Default |
-| --- | --- | --- |
-| `schema` | Config format version; hecatron refuses formats it doesn't know | required |
-| `hecatron` | The hecatron the project uses: `"0.6"` (any 0.6.x) or `"0.6.1"` pins it (binary only; §13), `">=0.6.0"` sets a minimum | none |
-| `project` | Name used in banners, Docker image tags and messages | directory name |
-| `components` | Component names, in order | `["."]` (one, unnamed) |
-| `implPath` | Where a component's code in a language lives | `{lang}` with one component, else `{component}/{lang}` |
-| `implPaths` | A language's own `implPath`, for one kept elsewhere (`{"csharp": "dotnet"}`). A directory filled in from `{lang}` is the language's only when none of its `detectUnless` files sit there (or another language's `detectYields` gives it back) and its own `detectYields` doesn't give it away; one named outright is taken as written | `{}` |
-| `languages` | Languages the project implements (was `added.json`) | `[]` |
-| `tools` | Non-language dependencies, as `{ "dependency": "<command>" }` | `{}` |
-| `generated.dockerfile` | Where `hecatron dockerfile` writes; omit for none | none |
-| `generated.workflows` | Where `hecatron workflows` writes each language's CI workflow | none |
-| `generated.ci` | The CI systems `hecatron workflows` generates for: `"github"` (each language's workflow, at `generated.workflows`), `"gitlab"` (`.gitlab-ci.yml`), or both as a list (binary only) | `"github"` |
-| `ci.cache` | Cache toolchains and dependencies in the generated CI (§11; binary only) | `false` |
-| `ci.image` | The image GitLab jobs run in (binary only) | `ubuntu:24.04` |
-| `ci.timeoutMinutes` | Each generated CI job's time limit, unless its template sets one (§11) | `60` |
-| `ci.languages` | Per language, its jobs' time limit (`{"pascal": 120}`) | `{}` |
-| `generated.dependabot` | `true` or a path: `hecatron workflows` writes Dependabot's configuration (§11; binary only) | none (`.github/dependabot.yml` with `true`) |
-| `generated.renovate` | `true` or a path: `hecatron workflows` writes Renovate's configuration (binary only) | none (`renovate.json` with `true`) |
-| `dependabot` | Settings for every Dependabot `updates` entry (`schedule`, `groups`, `open-pull-requests-limit`...), and per package ecosystem under `ecosystems` (`{"npm": {...}}`) | `{"schedule": {"interval": "weekly"}}` |
-| `renovate` | Settings at the top of `renovate.json` (`extends`, `schedule`, `packageRules`...) | `{}` |
-| `lint.format` | Whether `hecatron lint` runs each language's format check: `false`, or per language (`{"haskell": false}`) | `true` |
-| `format.exclude` | Paths `hecatron format` and its check leave alone, relative to the root (`"tests/fixtures/"`, `"*.pb.go"`), where hecatron gives the formatter its files | `[]` |
-| `tasks` | Extra named jobs per action (`test`, `lint`, ...): shell commands run from the root, in parallel with the languages and by name (`hecatron test codegen`) | `{}` |
-| `metadata` | JSON file `hecatron metadata` reads (name, description, author, license, repository) | none |
-| `logs` | Log directory for runs | `.logs` |
-
-`.hecatron/local.json` holds per-developer state, currently only
-`{"disabled": ["haskell"]}` (was `disabled.json`). `hecatron init` adds it to
-`.gitignore`.
+Moved to the user guide: [configuration](../guide/configuration.md#configjson).
 
 ## 7. Resolving a language's files
 
-For language `L`, a file `F` (e.g. `install.sh`, `test.sh`) resolves to the
-first of:
-
-1. `.hecatron/languages/L/F` in the project,
-2. `$HECATRON_HOME/languages/L/F` (hooks under `hooks/`).
-
-`config.json` is merged instead: built-in keys, then the project's keys on top.
-`install.json` (§19, installs as data) is replaced whole, like the scripts.
-
-A definition's optional `path` lists toolchain directories that aren't on PATH
-in every shell (`~/.cargo/bin` from rustup, `~/.local/bin` from uv,
-`~/.local/share/alire/toolchains/*/bin` for Ada's GNAT), with `~` expanded and
-globs allowed; an entry can also name the installed version's directory,
-`{home}/bin` (§18). Existing entries go on PATH only for that language's own
-work (its hooks, doctor checks and the re-check after `--fix`, install and
-uninstall, and dependency detection), and are expanded each time, so a
-directory an installer just created counts. They are never added globally:
-Alire's GNAT directory also holds gcc and g++, which would shadow the system
-compilers other languages build with. (Agreed with the Linux portability work,
-2026-10-26.)
-A project can add a language hecatron doesn't know by giving it a complete
-directory. `hecatron list languages --all` shows where each file comes from.
+Moved to the user guide: [configuration](../guide/configuration.md#resolving-a-languages-files).
 
 ## 8. Command line
 
-Every command accepts `help` / `--help`, resolves language abbreviations
-(`ts`, `rs`, `c++`) and suggests the nearest name on a typo, as the just
-recipes do today. Output of single-language runs streams and is also saved to
-`<logs>/<command>/<lang>.log`.
+Moved to the user guide: the [command reference](../guide/commands.md). The
+commands and the sayable `just` recipes or scripts they replaced:
 
-| Command | What it does | From |
-| --- | --- | --- |
-| `hecatron init [dir]` | Set up a repository (§10) | new |
-| `hecatron test [lang...]` | Run `test` for every component of each language; no languages means every language in parallel, plus project checks | `just test` |
-| `hecatron lint [lang...\|shell]` | Same for `lint`; languages without a lint hook rely on warnings-as-errors builds; `shell` runs shellcheck on every tracked shell script | `just lint` |
-| `hecatron build [lang...]`, `hecatron clean [lang...]` | Same for `build`/`clean` | `just build`, `just clean` |
-| `hecatron outdated [--json] [--fail] [lang...]` | Same for `outdated`: each component's direct dependencies with a newer version, from the ecosystem's own report; report-only unless `--fail` ([outdated.md](outdated.md)) | new |
-| `hecatron deps [lang...]` | Same for `deps`: fetch each component's dependencies with its ecosystem's tool, held to its lock file | new |
-| `hecatron format [--check] [lang...]` | Same for `format`: rewrite the code with the language's formatter; `--check` changes nothing and fails listing what would change ([format.md](format.md)) | new |
-| `hecatron rebuild`, `hecatron retest` | clean then build/test | same |
-| `hecatron install [lang...]`, `uninstall` | Run definition installers; all languages when none are named, continuing past failures | `just install` |
-| `hecatron doctor [--fix] [lang...]` | Check toolchains; `--fix` runs installers and re-checks | `just doctor` |
-| `hecatron add`, `remove`, `enable`, `disable` | Edit `languages` / `local.json`; add and remove also sync the workflow and Dockerfile | same |
-| `hecatron list languages [--all]` | Show languages, status and file origins | `just list` |
-| `hecatron dockerfile [--check]` | Generate the Dockerfile from definition snippets | `just dockerfile` |
-| `hecatron workflows [--check]` | Copy each language's `workflow.yml` to the workflow path, with a banner | `sync_workflows.py` |
-| `hecatron check` | Every `--check` hecatron owns: Dockerfile, workflows, each workflow covers every component | part of `just check` |
-| `hecatron metadata` | Interactive package-metadata update through `metadata.sh` hooks | `just metadata` |
-| `hecatron version <ver> [component]` | Version bump through `version.sh` hooks | `just version` (age only today) |
-| `hecatron get-started` | Onboarding status table and install menu | `just get-started` |
-| `hecatron banner ...` | Print a DO NOT EDIT banner for a generator to embed | `codegen/util.py` |
-| `hecatron env` | Shell code for a project's own scripts: `eval "$(hecatron env)"` loads the language lists and helpers | `source helpers.sh` |
-| `hecatron parallel <name> "job"...` | Run a project's own job list (just recipes by default) with the parallel display and logs | `run-parallel.sh` |
-| `hecatron --version` | Hecatron's own version | new |
-| `hecatron self update\|uninstall\|test\|build` | Manage hecatron itself: update to a release (§13), remove it, its own checks, build its binary from a checkout | new |
-
-Flags shared by the run commands: `-j N|P%|unlimited` (concurrency) and
-`-s scroll|full|zoom` (display) for parallel runs, as today, and `-c
-COMPONENT` (repeatable) to run a language on some components only
-(`hecatron test go -c age`).
-
-Which languages an action covers follows from their hooks: a language with a
-`build.sh` (project or default) is built, one with `lint.sh` is linted, and
-so on, so `config.json` needs no `compiled`/`hasLint` flags. `hecatron
-bootstrap` sets up a fresh machine for the project (base packages, then
-`hecatron install`).
+| Command | From |
+| --- | --- |
+| `init`, `outdated`, `deps`, `format`, `--version`, `self` | new |
+| `test`, `lint`, `build`, `clean`, `rebuild`, `retest` | `just test`, `just lint`, `just build`, `just clean`, same |
+| `install`, `uninstall`, `doctor` | `just install`, `just doctor` |
+| `add`, `remove`, `enable`, `disable`, `list languages` | the same recipes, `just list` |
+| `dockerfile`, `workflows`, `check` | `just dockerfile`, `sync_workflows.py`, part of `just check` |
+| `metadata`, `version`, `get-started` | `just metadata`, `just version` (age only then), `just get-started` |
+| `banner`, `env`, `parallel` | `codegen/util.py`, `source helpers.sh`, `run-parallel.sh` |
 
 **Commands about hecatron itself go under `hct self` (decided
 2026-10-28),** with a space, as package managers do (`rustup self update`,
@@ -287,336 +182,21 @@ bootstrap` sets up a fresh machine for the project (base packages, then
 self-management command. `hct self` lists them. `self-test` and
 `self-build`, their earlier names, still work, unlisted.
 
-Exit status: 0 when everything run passed, 1 when anything failed, 2 for a
-usage error. A language whose toolchain is missing is reported as "not
-installed" and doesn't fail a parallel run, as today.
-
 ## 9. Hooks
 
-A hook is a bash script run once per component, from inside
-`implPath` for that component and language, with the component name as `$1`.
-It builds or installs whatever it needs and exits non-zero on failure. This is
-the contract sayable's `test.sh`, `lint.sh`, `build.sh` and `clean.sh` already
-follow; `each-library.sh` becomes hecatron's dispatcher.
-
-Rules carried over from sayable:
-
-- Every component runs even after one fails, and the summary names the
-  failures.
-- `clean` removes build artifacts only, never installed dependencies or
-  tracked files.
-- A language-specific command acts on every component of that language.
-
-**Default hooks.** Many hooks are the language's standard command (`go test
-./...`, `cargo test`, `cargo clippy --all-targets -- -D warnings`, `dotnet
-test`). Hecatron ships these as defaults under `languages/<lang>/hooks/`, so a
-conventional project needs no hook files at all. Sayable's hooks, kept in
-`examples/sayable/`, are the starting point for the defaults; where they name
-sayable's files (`test_format_${1}.wren`), the default uses a convention and
-the project overrides.
-
-**Where the build is.** A language's directory isn't always where its build
-file is. When it has none, a default hook looks below it (up to three levels,
-skipping vendored code, test data and build output) and runs itself in each
-of the shallowest directories that have one, failing if any fails (several
-crates under `rust/`, a solution in `csharp/src/`); else it uses the nearest
-build file above it, never outside the project (`sdk/go` in `sdk/go.mod`, a
-root `Package.swift` or CMake project that builds `swift/` or `src/cpp`).
-Where the tool itself finds its build file upward (go, cargo, Bundler and
-Rake, a Gradle settings file), above comes first and the tool runs from the
-directory, scoped to it as far as the tool allows; elsewhere the hook acts
-where the build file is (`swift --package-path`, the CMake project's
-`build/`). A CMake or Meson file counts only when it declares a `project()`,
-and a root Makefile only through a target named for the directory or language
-(`check_cxx` for `cxx/`). A directory inside a Gradle build that isn't
-one of its projects runs Gradle from the project it belongs to: the one
-whose sources it holds (`moshi` for `moshi/src/main/java`), or the root of a
-build of one project. JVM tests run Maven's package phase in a
-multi-module build (its modules can need each other's jars), Gradle's
-`jvmTest`, else `allTests`, in a Kotlin Multiplatform build (no `test`
-task), and Mill's `__.test` where the build is `build.mill`; .NET tests roll forward to the
-installed runtime, and a directory with several projects and no solution
-tests each test project. CMake and Meson build in `build/`, or `_build/`
-when the project keeps files of its own in `build/` (Zstandard's CMake
-build); a CMake project whose files never set up a test (no `add_test`,
-`enable_testing` or CTest) has nothing to test, and its test hook skips
-after building, while one that does but registered none fails, unless
-its build made GoogleTest programs CTest doesn't know of (LightGBM's
-`testlightgbm`, an executable carrying GoogleTest's flags), which then run
-as its tests. The C, C++ and
-Objective-C installers install Meson where a component builds with it; where
-a `meson.build` asks for a newer Meson (`meson_version: '>=1.8.3'`) than the
-distribution has, Linux gets the current release from PyPI as a uv tool.
-They also install the common libraries a component's build needs, as
-distribution packages: those a CMake build's `find_package()` and
-`pkg_check_modules()` name, and, for a build without CMake (a Makefile),
-those its sources `#include` (`<zlib.h>` is zlib's) unless the project has
-the header itself. CTest runs
-from the build directory of the subdirectory that calls `enable_testing()`
-when the top level doesn't (Zstandard's `build/cmake/`). A Makefile's test
-hook builds the default target before `make check` or `make test`, which
-needn't depend on everything the tests run (Redis's). Node.js hooks and installers use the package manager
-the package declares (`packageManager`, else its lockfile, here or in the
-workspace above; pnpm and Yarn through Corepack, with Corepack's shim on
-PATH for scripts that call the package manager by name: in
-`~/.cache/hecatron/corepack-shims`, a static `path` entry of both Node.js
-languages, so other languages' hooks have it too), installing Corepack
-or Bun only when a component needs them. The Node.js test hook runs the
-package's `test` script; a workspace root without one runs its packages'
-(`workspaces`, `pnpm-workspace.yaml`); a package without one runs its
-configured runner (`vitest.config.*`, `jest.config.*`, `.mocharc.*`); else,
-and in a directory without a `package.json`, it tests the language's
-packages below (TypeScript's have a `tsconfig.json`, but for one beside
-mostly JavaScript, which is JavaScript's: detection's `detectYields`, the
-same rule through `project.py`). It sets `CI=true` (unless it's set) so watching test
-runners run once. A package its tests need built (a native addon, from a `napi`
-key, a `binding.gyp` or a build script running napi or node-gyp, whose
-`*.node` isn't built; or a `main` or `exports` entry point that isn't
-there) is built first: its build script, else `napi build --platform` or
-`node-gyp rebuild`. So is its workspace, when any workspace package needs
-it (one the tests import may): `pnpm -r run build`, `npm run build
---workspaces`, `yarn workspaces foreach --topological run build`, else
-each package in turn. pytest also collects `Test*.py` files where no test
-file has its default names (`test_*.py`, `*_test.py`) and the project sets
-no `python_files`, and leaves out the Python projects inside the one it tests
-(`--ignore=pydantic-core`: their environments aren't the outer one's) unless
-the project sets `testpaths`. Where there is no `python`, only `python3`, Python's
-installer links one to it in `~/.local/share/hecatron/python/bin`, a static
-`path` entry of Python's, so the builds of a project's other languages that
-call `python` (a Rust build script, a CMake project's) find it, and nothing
-outside hecatron's hooks does.
-
-**Dependencies.** A `deps` hook fetches a component's dependencies with its
-ecosystem's tool, held to the lock file when there is one (it fails rather
-than change it). Hooks that need dependencies installed (Node.js's
-`node_modules`, Bundler's bundle, Composer's `vendor/`, Mix's, pub's,
-Shards') install them when they're missing through the same function
-(`node_fetch`, `bundle_fetch`... in `languages/_hooks.sh`), so `deps` is
-never a required first step; where the build tool fetches by itself (go,
-cargo, dotnet, `uv run`, SwiftPM, Maven, Gradle) the hooks leave it to the
-tool. Installers install each component's dependencies by running
-`hecatron deps`, so a project's own `deps.sh` applies there too.
-
-**Formatting.** A `format` hook rewrites files with the language's
-formatter, or with `HECATRON_FORMAT_CHECK=1` only checks. `lint` runs that
-check after the lint hook, for each component, unless the project turns it
-off (`lint.format`) or the lint hook checked formatting itself (it calls
-`checks_format`), so a project overriding `lint.sh` still gets it. A
-formatter runs by default only where it ships with the toolchain or nearly
-all of the language's code follows it (gofmt, rustfmt, `dotnet format`);
-elsewhere only where the project configures one (Prettier, clang-format,
-Spotless), since a default would rewrite every file of a project that
-doesn't use it. (Owner's brief, 2026-10-27; the per-formatter choices are
-the implementation's, in [format.md](format.md).)
-
-Environment for hooks: `HECATRON_ROOT` (project root), `HECATRON_COMPONENT`,
-`HECATRON_LANG`, `HECATRON_HOME`, and `_common.sh` helpers available by
-sourcing `$HECATRON_HOME/languages/_common.sh`.
+Moved to the user guide: [hooks](../guide/hooks.md).
 
 ## 10. `hecatron init`
 
-`hecatron init [dir]` sets up an existing repository (default: the current
-directory). Without it, a git repository is still a project: with no
-`.hecatron/config.json` above, its root is the repository's top level and its
-configuration what init would write, detected and cached in
-`.git/hecatron/detected.json`, keyed on the commit, git's index and
-hecatron's version, so a command pays for detection only after the tracked
-files change (about 17 µs a file: 4 ms for 100 files, 0.8 s for 47,000), and
-nothing appears in the working tree or `git status`. Logs and `local.json`
-go in `.git/hecatron/` too. Changing the configuration (`add`, `remove`)
-saves it, as init would. Init itself:
-
-1. Refuses if `dir` isn't inside a git repository, and is a no-op on an
-   already initialised project unless `--force`.
-2. Detects languages from their build files: `go.mod` → go, `Cargo.toml` →
-   rust, `tsconfig.json` → typescript, `pyproject.toml` → python, `*.cabal` →
-   haskell, and so on (a definition's `detect` globs). A language with no
-   build file is detected from its sources (`detectSources`, such as `*.c`),
-   keeping only the directories outside every other language's: C files in
-   `python/ext/` are Python's extension, and C found only inside `cpp/` isn't
-   added. A build file several languages share (`sharedBuildFiles`, such as
-   C's and C++'s `CMakeLists.txt`) counts for the one with the most sources
-   beside it or under its `src/` and `include/`. A hit is dropped where one
-   of the definition's `detectUnless` files sits beside it (`package.json` is
-   JavaScript unless a `tsconfig.json` makes it TypeScript), except where
-   the other definition's `detectYields` rule gives it back: a
-   `tsconfig.json` beside more JavaScript than TypeScript files (`.d.ts`
-   declarations aside; tracked files in the directory and below, as
-   detection counts them) is a JavaScript package's, as antlr4's
-   `runtime/JavaScript` with its type declarations is. Committed build
-   output doesn't count, so a TypeScript package that tracks its compiled
-   JavaScript stays TypeScript: `dist/`, `build/`, `out/` and `lib/`
-   directly below, the `compilerOptions.outDir` its `tsconfig.json` names
-   (read with comments and trailing commas), and a `.js` beside a `.ts` of
-   the same name. A
-   `package.json` without the definition's `detectScript` npm script doesn't
-   count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
-   Dotfiles aren't sources (a `.nvim.lua` configures an editor).
-   Examples, tests and test data, docs, tools, hooks, a generator's
-   templates and vendored code (`examples/`, `tests/`, `tests_data/`,
-   `tools/`, `hooks/`, `templates/`, `fixtures/`, `android/`,
-   `third_party/`, `vendor/`, `vendored/`, `node_modules/` and the like, in any case:
-   `Examples/`) and hidden directories (`.jenkins/`) are skipped, except a
-   definition's `detectTests` files (Bash's `*.bats`) in a `test/` or
-   `tests/` directory, which, for a language not otherwise found, make it
-   the language of the directory tested (bats-core, Bash-it). A language
-   left out is listed with the reason.
-3. Detects the layout. A language's directory may carry any of its
-   definition's `dirNames` (C#'s `dotnet/` or `netstd/`, Ruby's `rb/`). If
-   the directories share a pattern with one part varying (`age/impl/go`,
-   `date/impl/go`) and every language has a directory named for it, it
-   proposes `components` and `implPath`; otherwise one
-   component, at the pattern under `sdks/`, `sdk/`, `lib/`, `lang/`,
-   `bindings/`, `ffi/`, `packages/` or the root if there is one, else the
-   pattern covering most languages. A language whose directory doesn't fit
-   gets its own entry in `implPaths`. A directory the pattern names fits
-   without the language's build file only if it holds the language's code:
-   one of its `detect` or `detectSources` files, or, for a definition without
-   `detectSources`, any file when it sits at the root or under one of the
-   parents above (`lib/`, `sdks/`...: Thrift's `lib/go`, whose `go.mod` is at
-   the root). So a build file at the root keeps a language there beside a
-   `languages/go/` holding no Go. A build file more than three levels below
-   a directory doesn't count, since the hooks look no deeper: with only such
-   build files the directory doesn't fit, and the language gets the
-   directory holding them (antlr4's `runtime/Go/antlr/v4`, not the root). A directory another language was found in
-   doesn't fit (Cucumber's `javascript/` is TypeScript's, so JavaScript found
-   in `jsonschema/` gets `implPaths` `jsonschema`). `--components` and
-   `--impl-path` set the layout explicitly.
-4. Writes `.hecatron/config.json`, adds `.hecatron/local.json` and the log
-   directory to `.gitignore`.
-5. Writes no hooks: defaults apply until the project adds its own. `--hooks`
-   copies the defaults in for editing.
-6. With `--justfile`, writes `.hecatron/hecatron.just` with recipes that
-   delegate to `hecatron` (`test *args: hecatron test {{args}}`) for a project
-   justfile to `import`.
-7. Writes a short section for AI coding agents into `AGENTS.md` (the file
-   most agents read), between `<!-- hecatron:begin -->` and
-   `<!-- hecatron:end -->` so a later init replaces only it, and adds
-   `@AGENTS.md` to an existing `CLAUDE.md` (Claude Code reads that instead).
-   The section is generic (no languages, which would go stale) and points
-   to `hecatron help agents`, which prints `docs/agents.md`, the compact
-   reference for the installed version. `--no-agents` skips this. Only an
-   explicit init writes it: a detected project writes nothing.
-8. Prints what it found and the next step: `hecatron doctor`.
-
-It never installs anything or touches CI by itself; `hecatron workflows` and
-`hecatron dockerfile` are separate, explicit steps.
+Moved to the user guide: [init and detection](../guide/init.md).
 
 ## 11. Generated files
 
-Hecatron generates two kinds of project files, each with the 9-line
-DO NOT EDIT banner naming the generator and its source:
-
-- **Dockerfile** (`generated.dockerfile`): collected from each language's
-  `dockerfile` snippet (`# apt:` lines deduplicated into one `apt-get
-  install`, `# after:` ordering, literal `RUN`/`ENV` blocks, and a block
-  repeated per toolchain version; see §18). Before any snippet it writes a
-  curlrc (`/etc/hecatron-curl/.curlrc`, found through `ENV CURL_HOME`, so it
-  applies whatever the user) with the installers' retry policy (`retry 4`,
-  `retry-delay 3`, `retry-connrefused`, `connect-timeout 30`, `speed-limit
-  1024` over `speed-time 60`) plus `retry-all-errors`, so every `curl` in the
-  build, including those inside piped install scripts, retries transient
-  failures such as a dropped TLS connection. It stays in the image; a `RUN`
-  that wants curl's defaults passes `-q` first. No snippet uses wget.
-- **CI workflows** (`generated.workflows`): each language's project
-  `workflow.yml`, with a banner. `hecatron check` verifies that each workflow
-  mentions every component, generalising sayable's
-  `check_workflow_components.py`. Each job under `jobs:` that has a
-  `runs-on` and no `timeout-minutes` gets one, after its `runs-on`: 60
-  minutes, or config.json's `ci.timeoutMinutes`, or the language's
-  `ci.languages` entry. GitHub's own limit is 6 hours, so a hung job (a
-  stalled download, a test waiting on input) would hold every merge that
-  long; 60 is above every language's slowest run so far. A job calling a
-  reusable workflow (`uses:`, no `runs-on`) can't have one and gets none,
-  and the rest of the template stays as written. `hecatron check` reports
-  a time limit that isn't a whole number of minutes, and `hecatron workflows`
-  refuses to generate until it's fixed.
-
-- **GitLab pipeline** (`generated.ci: "gitlab"`, or `hecatron workflows
-  --ci gitlab`): `.gitlab-ci.yml`, written from the project's languages
-  rather than a template: one job per language that installs hecatron with
-  install.sh (`HECATRON_VERSION`: the project's pinned version, §13, else
-  the generating one) and runs `hct install`, `hct test` and `hct lint`
-  for the language, which cover every component. The job's image is
-  `ci.image`, and its `timeout` the same limit a GitHub job gets (`60m`, or `ci.timeoutMinutes`, or the
-  language's `ci.languages` entry).
-- **Caching** (`"ci": {"cache": true}`, off by default so that turning it
-  on is what changes existing projects' files): each definition's `cache`
-  names the directories its installer puts the toolchain in and its package
-  manager downloads to (`~/...`, or relative to each component's
-  directory), and its lock files. The toolchain cache is keyed on hecatron's
-  version, the project's `config.json`, the language's definition in the
-  project, and the definition's pin and support files; the dependency
-  cache on the lock files, both matched anywhere in the repository (`**/`),
-  so adding a component changes nothing. GitHub workflows get an
-  `actions/cache` step per cache after each job's `actions/checkout`, with
-  the key's prefix as `restore-keys`; GitLab jobs get `cache:key:files`
-  with the same files and a prefix. GitLab caches only paths in the
-  project, so each job links every home directory it caches to one under
-  `.hecatron-cache/<lang>/` before installing. Toolchains installed by apt
-  or into `/opt` and `/usr/local` (most JVM languages', Node.js, .NET and
-  Ruby on Linux) aren't cached: restoring them needs root. A toolchain
-  hecatron's executor downloads from its `install.json` (§19, installs as
-  data) goes to `~/.local/share/hecatron/toolchains/<lang>` instead (Gleam,
-  Zig), which needs no root, and that directory is the language's toolchain cache,
-  keyed on the language, the platform (`runner.os`, `runner.arch`), a hash
-  of the built-in `install.json` and default version (written into the
-  key, so a hecatron with different data writes a new one), and the
-  project's own `install.json`, config and pin files. A restored toolchain
-  passes the executor's checks, so the install does nothing; a partial or
-  corrupt one fails them and is installed again. Most languages converted
-  so far install system packages, which aren't cached; each language moved
-  to a download makes the cache cover more. Since the
-  toolchain key names hecatron's version, upgrading hecatron makes `hecatron
-  check` ask for the files to be regenerated.
-
-- **Dependency update configuration** (`generated.dependabot`,
-  `generated.renovate`), written by `hecatron workflows` alongside the CI:
-  `.github/dependabot.yml` with one `updates` entry per package ecosystem
-  and component directory, each with the project's `dependabot` settings
-  (and its ecosystem's under `dependabot.ecosystems`), and
-  `renovate.json` with the project's `renovate` settings, `enabledManagers`
-  for its languages and `includePaths` for their directories (none when a
-  component sits at the root). Each definition names its Dependabot
-  ecosystems (`"dependabot"`, a name or rules choosing by the files in the
-  directory: uv where there's a `uv.lock`, else pip; Maven, Gradle or sbt
-  by build file) and its Renovate managers (`"renovate"`). GitHub Actions
-  is covered at the root when the project has GitHub workflows (bumps to a
-  generated workflow then belong in its template, which `hecatron check`
-  enforces). Toolchain pins (`rust-toolchain`, `dotnet-sdk`, `.nvmrc`)
-  aren't updated by the bots: hecatron resolves toolchain versions itself
-  (§18), and `hecatron check` would flag a pin that disagrees. Because the
-  file lists every directory, adding a language or component makes `hecatron
-  check` fail until it is regenerated.
-
-The GitLab pipeline, caching and dependency update configuration are
-written only by the Go binary
-(§19); the scripts say so when a project's config asks for them.
-
-Generators for the project's own code (sayable's locale codegen) stay in the
-project. They can embed the same banner with `hecatron banner --generator
-<path> --source <path> --prefix '# '`, so they don't import hecatron's Python
-modules by path.
+Moved to the user guide: [generated files](../guide/generated-files.md).
 
 ## 12. Doctor and repair
 
-Unchanged from sayable's design, now shared: `doctor` checks each language's
-`dependency` and `lintDependency` commands from `config.json`, then runs the
-optional `doctor.sh`, which reports one `problem` per line. A line starting
-`note: ` (`note` in `_common.sh`) is shown under the language, like the
-version notes, but isn't a problem: a language with only notes is healthy,
-and `--fix` repairs only problems. Installers are
-idempotent and repair what their doctor detects (a linter built with an older
-Go, luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula).
-`doctor --fix` runs the installer of each unhealthy language and checks
-again. With the binary, a language installed from its `install.json` (§19,
-installs as data) gets its checks from that instead of `doctor.sh`, and
-`--fix` runs only the steps whose checks fail. Installers that install project dependencies (`bundle install`, `uv
-sync`) do so in every component by running `hecatron deps` (`impl_deps` in
-`_common.sh`; §9). `hecatron install` with no languages named runs those
-once every toolchain is in, since one language's dependencies can need
-another's toolchain (cucumber/messages' `npm ci` runs a generator needing
-Ruby); a failure there fails the install and names the language.
+Moved to the user guide: [installing toolchains](../guide/installing-toolchains.md#doctor-and-repair).
 
 ## 13. Distribution
 
@@ -641,84 +221,10 @@ tarball; a release workflow updates the tap formula's URL and checksum. A
 project's `"hecatron": ">=x.y.z"` makes older installs fail with a clear
 message instead of misbehaving.
 
-**Updates: notify and self update, never auto-update (decided
-2026-10-28).** Hecatron generates CI workflows and a Dockerfile, so a
-silent version change would change a project's generated files under it.
-So it only says a release is out and updates when asked, as `gh` does:
-
-- `hct self update` (`internal/selfupdate`; binary only) updates an
-  installation install.sh made (a clone at a release tag, with
-  `bin/.hecatron-go` at that commit and `env`) to the latest release, or
-  `--version X.Y.Z`. It finds the release through GitHub's releases API
-  (`GITHUB_TOKEN` when set; `HECATRON_UPDATE_URL` replaces the API
-  address, for tests), downloads the machine's binary and `SHA256SUMS`
-  and refuses a mismatch or a short download, fetches the tag into the
-  installation's clone, clones that beside the installation with the
-  binary and the installation's untracked files (the cache, the skill
-  record), writes `env` and `env.fish` as the release's install.sh would
-  (a Go port of its writer, held to install.sh's output byte for byte by
-  a parity test, and the new binary's own `hct _write-env` when it has
-  one), so new PATH entries reach shells, and swaps the two directories
-  by renaming, undoing the first rename if the second fails. It refuses a dev build (`hct
-  self build`'s or `go build`'s), a checkout on a branch or with changes
-  ("update with git pull"), a directory install.sh didn't make, and one it
-  can't write. It then refreshes the skill copies `hct skill install`
-  made (`--user`, and each `--dir`, recorded in `.skill-installs`).
-  `--check` only reports: exit 0 up to date, 3 a newer release, 1 the
-  check failed.
-- **`hct self uninstall`** (binary only) removes an installation
-  install.sh made, its lines in the startup files (each line ending
-  `  # hecatron`, as install.sh replaces them), fish's conf.d file and the
-  skill copies, lines first, so a failure never leaves a shell sourcing a
-  file that's gone. Run from a checkout it keeps the checkout. It refuses
-  an installation with changes to its own files. Toolchains stay: they're
-  the projects', and `hct uninstall <language>` knows what each installed;
-  `--all` adds the data directory (unpacked toolchains, receipts, links)
-  and the download cache. It asks first, and without a terminal needs
-  `--yes`.
-- **The notice.** A release binary (not a dev build) reads
-  `.update-check.json` in the installation (the latest version and when it
-  was checked) before each command. Once it is 24 hours old, it writes the
-  time and starts `hct _update-check` on its own, which asks the API with a
-  10-second timeout and caches the answer, so no command waits on the
-  network. A newer release than this one is said in one line on stderr
-  after the command (before a delegated one), only with stderr a terminal
-  and human output: never in CI (`CI` set), with `--output` or
-  `HECATRON_OUTPUT` naming another format, in an agent's session, in
-  GitHub Actions, or with `HECATRON_NO_UPDATE_CHECK=1`, which also stops
-  the check. `hct status` reports the cached newer release in every format
-  (`update` in JSON) and suggests `hct self update`, asking the user
-  first; it never checks itself.
-
-**A project pins its hecatron (decided 2026-10-28).** Teammates and CI
-should run the hecatron a project was set up with, as Go's `toolchain`
-line, Gradle's wrapper and mise do; auto-update was ruled out above. So
-config.json's `hecatron` takes a version as well as a minimum: `"0.6"`
-pins a series (any 0.6.x, matched on dot boundaries, so not 0.60.0),
-`"0.6.1"` a release, and `">=0.6.0"` stays a minimum. A version older than
-the pin is refused as a minimum is, by both implementations; the rest is
-the binary's only (`internal/project/pin.go`):
-
-- **A warning.** Every command that finds the project says once on stderr
-  `hecatron: warning: this project pins hecatron 0.6, but this is 0.7.0
-  (hct self update --version 0.6.N installs one that matches)`, but not
-  `hct help`, `--version`, `self`, `version` or the hidden commands; the
-  hct commands it runs (tasks, hooks) don't repeat it
-  (`HECATRON_PIN_WARNED`).
-- **`hct check` fails** on the mismatch, so CI catches drift, and on a
-  `hecatron` that is neither a version nor a minimum. A dev build (`hct self
-  build`'s, `bin/.hecatron-go.commit` saying `dev`) only warns: its VERSION
-  is the last release's whatever the checkout holds, so the pin can't tell
-  whether it matches.
-- **Generated CI installs the pin.** The GitLab pipeline's
-  `HECATRON_VERSION` is the pinned version (else the generating one, as
-  before), and toolchain cache keys carry it. A release is installed by its
-  own install.sh; a series (`v0.6`) by main's, which resolves it to the
-  series' latest tag. The Dockerfile doesn't install hecatron, and GitHub
-  workflows are the project's own templates, so neither changes.
-- **Later:** hct fetching and running the pinned version itself, as Go
-  does with `GOTOOLCHAIN`, from `hct self update`'s download and checksum
-  code.
+The updates decision (notify and `hct self update`, never auto-update,
+2026-10-28) and the project pin (2026-10-28) moved to the user guide:
+[installing hecatron](../guide/installing-hecatron.md). The release process is in
+[releasing](releasing.md).
 
 ## 14. Implementation and testing
 
@@ -726,15 +232,7 @@ the binary's only (`internal/project/pin.go`):
 Python 3 (standard library only) for config handling and generators, until
 the Go core (§19) replaces them.
 
-**Testing hecatron.**
-
-- shellcheck on every script; Python `unittest` for config, resolution and
-  generators.
-- Fixture projects under `tests/fixtures/` (one component, several
-  components, a language override) driven by command-level tests.
-- A downstream job that checks out sayable and runs `hecatron check` and
-  `hecatron test go python` against it, so a hecatron change that breaks the
-  project it came from fails hecatron's CI.
+**Testing hecatron** moved to [testing](testing.md).
 
 ## 15. Migration of sayable
 
@@ -758,13 +256,7 @@ the Go core (§19) replaces them.
 
 ## 16. Security
 
-Installers run with the user's privileges and some pipe a downloaded script
-into bash (Homebrew, Pharo's zeroconf, rustup). Hecatron only runs an
-installer when asked (`install`, `doctor --fix`) and names each one before it
-runs. Hooks are project code: running `hecatron test` in a repository runs
-that repository's scripts, exactly like running its justfile or Makefile, so
-the same trust applies. Hecatron never runs hooks on its own (no shell
-integration, no git hooks).
+Moved to the user guide: [hooks](../guide/hooks.md#trust).
 
 ## 17. Decisions
 
@@ -800,186 +292,30 @@ Settled on 2026-10-26:
    hecatron bin directory on PATH, with no shim. (Owner's decision,
    2026-10-28.)
 
+Decided since, and recorded where the behaviour is described:
+
+- **Commands about hecatron itself go under `hct self`** (2026-10-28; §8).
+- **Updates: notify and self update, never auto-update** (2026-10-28;
+  [installing hecatron](../guide/installing-hecatron.md#updating-and-removing)).
+- **A project pins its hecatron** (2026-10-28;
+  [installing hecatron](../guide/installing-hecatron.md#pinning-a-projects-hecatron)).
+- **Root is asked for once** (2026-10-28; §19).
+- **New features are Go only** (2026-10-27; §19, Migration).
+- **Install data, macOS downloads and the links directory** (2026-10-28;
+  [the install engine](install-engine.md)).
+- **Formatting defaults** (owner's brief, 2026-10-27; [hooks](../guide/hooks.md#formatting)).
+- **Toolchain directories on PATH only for their own language** (2026-10-26;
+  [configuration](../guide/configuration.md#resolving-a-languages-files)).
+- **An old checkout gets the toolchains of its day, automatically**, and
+  defaults match their release line when running (owner's decisions;
+  [toolchain versions](../guide/versions.md)).
+
 ## 18. Toolchain versions
 
-Status: **accepted**; implemented for Python, Go, Rust, Node.js, Java,
-Ruby, PHP, .NET, Elixir and Zig (a `"managed"` release download, §19,
-installs as data); Gleam and Erlang (its OTP, on Ubuntu) install the one
-version their definition pins. Other installers install one
-version per language, some the latest at install time (Swift, Julia,
-PowerShell, Odin, Crystal).
+Moved to the user guide: [toolchain versions](../guide/versions.md). What's left
+of the plan:
 
-A project can need an older or newer version of a language than the
-newest one, and two projects on the same machine can need different ones. So
-a language's version is data: hecatron has a default, and a project can
-choose another.
-
-### Choosing a version
-
-For a language in a component, the version is the first of:
-
-1. **The ecosystem's own pin file**, nearest first from the language's
-   implementation directory (`implPath`) up to the project root, as the
-   ecosystems' own tools search, read with that ecosystem's meaning:
-   `.python-version`, `.nvmrc` or `.node-version`, `rust-toolchain.toml` or
-   `rust-toolchain`, `global.json` (`sdk.version`), the `toolchain` line of
-   `go.mod`, `.ruby-version`, Gradle's `gradle-daemon-jvm.properties`
-   (`toolchainVersion`, the JDK), `build.zig.zon`'s
-   `minimum_zig_version`... Each definition lists the files it reads
-   in `config.json` (`pinFiles`). Using these means a project declares a
-   version once, where its other tools already look.
-2. **`version` in the project's `.hecatron/languages/<lang>/config.json`.**
-3. **The definition's default `version`**, unless the component says it
-   supports only older lines: then the newest release of the newest line it
-   supports. A definition lists the files saying so in `supportFiles`, read
-   like pin files (an entry may name a pattern, and then the newest version
-   any matching file gives counts). This only holds a component back, never
-   ahead of the default, and the doctor says when it applies:
-   - **Python's trove classifiers** (`Programming Language :: Python ::
-     3.14`) in `pyproject.toml`, `setup.cfg` or `setup.py`. The newest
-     Python often breaks projects for months while compiled dependencies
-     catch up, and a project's classifiers already say how far it has.
-     `requires-python` isn't read: it almost never has an upper bound.
-   - **The project's CI workflows**: the version inputs of GitHub Actions'
-     setup steps (`node-version`, `java-version`, `dotnet-version`,
-     `go-version`, `python-version`, `ruby-version`, `php-version`) in
-     `.github/workflows/`, inline, as a list, or through a matrix variable,
-     the newest across all workflows. What CI runs a language on is what the
-     project has tested. A value with no usable version (`lts/*`, `stable`,
-     Python's `3.x`) is skipped. For .NET it says what to install, not what
-     runs (the entry's `"selects": false`): `setup-dotnet` installs those
-     SDKs beside the runner's own, and `dotnet` runs the newest SDK it has
-     unless a `global.json` picks one, so a project's CI builds with the
-     newest (Gherkin's source generator needs SDK 10's compiler although its
-     workflows name 8.0 and 9.0). The SDK is installed, the component runs
-     what one on the default would, and the doctor says both.
-   - **A Maven build's source level** (`maven.compiler.source`, `<source>`,
-     `<target>`, `<release>`): javac dropped level 6 in JDK 12 and 7 in JDK
-     20, so a build at 6 or below gets JDK 11 at the newest, and one at 7
-     JDK 19.
-
-   A supported line older than the installer can install is raised to the
-   definition's `oldestInstallable` (below).
-4. **In an old checkout, the release current at its last commit.** When the
-   repository's last commit is over a year old, every version above short
-   of an exact one (a prefix pin, a supported line, the default) becomes
-   the newest release then that it matches; the default becomes the newest
-   release then on its track (LTS for an LTS track). Old code was built and
-   tested with the toolchains of its day, and today's can reject it: a
-   newer javac drops the source level it targets, a newer Node.js breaks
-   the `ts-node` its lock file pins (Node.js 16.17 did, so even the newest
-   16 is too new for a 2021 checkout). An exact version is the project's
-   own choice and stands. `HECATRON_AS_OF=YYYY-MM-DD` sets the date, and
-   `HECATRON_AS_OF=off` turns this off. (Owner's decision: automatic.)
-
-Components can resolve to different versions; installers install each one.
-When a pin file and the project's `version` both apply and disagree, the pin
-file wins and `hecatron check` reports the disagreement: two sources for one
-version are almost always a mistake.
-
-### Release dates and what can be installed
-
-The dates come from tables shipped with each definition
-(`languages/<lang>/releases.json`: version, date, and whether it was an LTS
-release), so resolution stays offline and two machines agree.
-`libexec/maintenance/release_dates.py` writes them from each language's
-release source: nodejs.org, python.org, go.dev's release history, Rust's
-`RELEASES.md`, Adoptium, ruby-lang.org, php.net, Microsoft's .NET release
-metadata, Elixir's GitHub releases and ziglang.org's index of downloads. A weekly workflow (`.github/workflows/release-dates.yml`) reruns
-it and opens a pull request when there are new releases. A language sharing
-another's toolchain names it in `releasesOf` (JavaScript's Node.js is
-TypeScript's, F#'s and VB.NET's SDK C#'s), and shares its version settings.
-
-A dated version is exact where the installer can install any release (a
-Node.js build, a Go toolchain, a rustup toolchain, a Temurin JDK, a
-ruby-build Ruby, a .NET SDK) and a line where it can't (`asOfPrecision`
-`"line"`: uv has only some patch releases of each Python, and a PHP package
-is the newest of its line). A definition's `oldestInstallable` is the oldest
-version its installer installs and runs on the supported platforms, checked
-in an Ubuntu 24.04 container: Python 3.8 (uv has nothing older), Java 11
-(Temurin's Java 8 releases are named differently, and its dates start in
-2021), .NET 6.0 (older runtimes need OpenSSL 1.1). Node.js back to 10, Go
-toolchains back to 1.18, Rust back to 1.40, Ruby back to 2.7 (ruby-build
-builds OpenSSL 1.1 for it) and PHP back to 5.6 install, so those have none.
-A dated release older than that is raised to the newest release then of the
-oldest line it can install, and the doctor says so; a pin stands as written.
-
-### Reading pin files
-
-Each `pinFiles` entry names a file and the format that reads it
-(`{"file": ".nvmrc", "format": "nvmrc"}`); the formats live in
-`libexec/lib/` with the rest of resolution, so a definition only chooses
-among them. A format turns the file's contents into hecatron's version syntax
-(below): `.python-version`'s `3.12` becomes the prefix `3.12`, a
-`rust-toolchain.toml` channel of `1.80.1` becomes `=1.80.1`. An entry's `strip`,
-a regular expression, is removed from the version first: asdf and mise
-write Elixir as `1.17.3-otp-27`, the release and the OTP it was built for,
-and an entry stripping `-otp-[0-9]+$` reads 1.17.3. A value with no
-version in it (`stable`, `lts/*`, `nightly`) is left to the ecosystem's own
-tool: hecatron neither installs nor checks that language's version for that
-component, and the doctor says so.
-
-Some files name a floor rather than a version, and a format keeps the part
-the ecosystem holds fixed: `global.json`'s `rollForward` decides how far the
-.NET SDK may move from `sdk.version`, so `latestFeature` from 8.0.100 reads as
-`8.0` and `latestMinor` as `8`, the newest release of which always qualifies;
-`disable` is exact, and `patch`, the default, keeps the version as written,
-since its scope, a feature band (8.0.1xx), isn't a prefix. `latestMajor` is a
-floor and nothing more, as .NET treats it (decided): the default when it is
-that version or later, else the newest release of the floor's major, raised
-to the newest major the component's `floorFiles` need. Those are a
-definition's files read in the component's directory and up to three levels
-below it (not build output): for .NET, the projects' `TargetFramework(s)`, so
-a `global.json` asking for 8.0.100 or later in a repository whose projects
-target `net10.0` gets SDK 10. In
-`composer.json`, `config.platform.php` (the PHP Composer resolves for) is a
-pin on its line (`8.4.0` reads as `8.4`); the `require` constraint on `php`
-isn't, because it is the range a library supports, which the default
-normally satisfies. PHP's doctor checks instead that each component's PHP
-satisfies what its lock file requires. (Owner's decision pending; this is
-the implementation's.) `build.zig.zon`'s `minimum_zig_version` reads the
-other way, as a pin on its line (`0.14.0` reads as `0.14`): Zig breaks
-compatibility between minor releases, so code written for 0.14 needs the
-newest 0.14.x, not a newer line.
-
-### Version syntax
-
-In hecatron's configuration:
-
-| Written | Means |
-| --- | --- |
-| `"3.12"` | The newest release whose version begins with the components 3.12: 3.12, 3.12.7... but not 3.120 |
-| `"=4.5"` | Exactly the release named 4.5 and never anything else, even if the language later publishes 4.5.1 |
-
-A prefix follows new patch releases, and a project that doesn't want that
-writes `=`. Without the marker, a project pinning `"4.5"` would silently move
-to 4.5.x once upstream added a level of versioning, which is outside the
-project's control. Hecatron's own defaults are always exact.
-
-A prefix is resolved in two places: installing resolves it to the newest
-matching release upstream, and running (a hook's environment, the doctor)
-resolves it to the newest matching version installed on the machine, so
-running never needs the network.
-
-A default is exact for installing (an installer, the Dockerfile) but not for
-running: a component on the default takes the newest installed version on
-the default's release line, so a machine that already has Node.js 24.19
-doesn't need a second 24 for a default of 24.22.1. A definition's
-`releaseLine` names how many leading parts make a line (1 for Node.js and
-Java, whose 24 and 25 are lines); without it, a line is every part but the
-last (Go 1.27.3 is line 1.27). A version the project chooses, by pin file or
-`version`, still matches as written. (Owner's decision.) The .NET SDK's
-`releaseLine` is 3, the whole version: its third part holds both the feature
-band and the patch (10.0.403 is band 4, patch 3), so no shorter prefix names
-a band, and an older band's compiler can't load a newer band's analyzers.
-
-### Defaults and how they are updated
-
-Each definition's `config.json` records its default `version` (exact) and its
-`track`: `"lts"` where the language has long-term support releases (Java,
-Node.js, .NET) and `"stable"` (the newest release) otherwise. Installers
-never resolve "latest" at install time, so two machines installing on
-different days get the same toolchain and every change is a reviewable diff.
+### Updating the defaults (planned)
 
 `libexec/maintenance/update-versions` asks each language's release source
 (go.dev, python.org, nodejs.org, Adoptium, swift.org, GitHub releases, with
@@ -990,75 +326,8 @@ Docker install tests (`tests/docker/`) for each language it changed on Ubuntu
 24.04 and 26.04 and Debian 13, and opens a pull request that merges when its
 checks pass. Each merged update is released as a new minor version, so a
 project gets new default toolchains when it updates hecatron, never by
-surprise.
-
-### Installing and using a version
-
-- **Side by side.** Installers add the resolved version next to any others,
-  through the ecosystem's version manager where it has one (uv, rustup,
-  ghcup, .NET's side-by-side SDKs, `openjdk-N` or Temurin, Go's toolchain
-  downloads, a `"managed"` release download's homes under hecatron's
-  toolchains directory), and never replace a version another project may
-  use.
-- **What's installed.** A definition's optional `installed.sh` prints one
-  `version<TAB>home` line per installed version, offline (each ecosystem
-  already keeps a list: `rustup toolchain list`, `dotnet --list-sdks`, uv's,
-  ghcup's, the JDKs under `/usr/lib/jvm`). The core runs it with the
-  language's static `path` entries on PATH and stdin closed, and treats a
-  failure, or a run over 30 seconds, as nothing installed. A component's
-  installed version is the newest line its spec matches.
-- **Per-language environment.** The `path` mechanism (§7) becomes a
-  per-language environment. `path` entries and the new `env` variables may
-  name `{home}`, `{version}`, `{major}` and `{minor}` of the installed
-  version (`"path": ["{home}/bin"]`, `"env": {"JAVA_HOME": "{home}"}`), and
-  are applied wherever `path` was. It is per component, since components can
-  resolve to different versions: `each-component.sh` applies the
-  component's environment before running its hook, and
-  `hecatron env LANG [-c COMPONENT]` prints it as shell exports for a
-  project's own recipes. With no installed version matching (or no
-  `installed.sh`), entries and variables naming one are left out, static
-  entries still apply, and the doctor reports it. The project's other
-  added, enabled languages' static `path` entries follow the language's own
-  (in the project's language order, each directory once): a build in one
-  language often runs another's tool (a Ruby gem's Rakefile or a dune rule
-  calling `cargo`), installed where only that language's environment looks.
-- **Queries.** `project.py version LANG [COMPONENT]` prints the spec, where it
-  came from and the installed match; `project.py versions LANG` prints each
-  distinct spec the components resolve to with its sources (`-` for a pin
-  file naming no version), so an installer installs each one.
-- **Doctor.** `doctor` checks that the resolved version is installed and is
-  the one a language's commands run; `--fix` installs it. It reports each
-  component whose version has no installed match ("b: java 21 not installed
-  (from pin:b/java/.java-version)"), for languages with an `installed.sh`. A version past its
-  upstream end of life is a warning, not a failure.
-- **Generated files.** The Dockerfile installs every version any component
-  resolves to. A snippet writes a block between `# each-version` and
-  `# end-each-version` lines, which `hecatron dockerfile` repeats for the
-  definition's default and then each other spec in component order, filling
-  in `{version}` (the spec without `=`), `{exact}` (`1` for an exact spec,
-  else empty), `{major}` and `{minor}`. `# each-version java` repeats over
-  another language's versions (Kotlin's snippet installs Java's JDKs).
-  Generation stays offline: a block given a prefix resolves it at build time,
-  installs where `installed.sh` looks, and skips a version already there.
-  `ENV` lines stay outside the block and name the default; a component's own
-  version comes from `hecatron env` at run time. A workflow template names a language's resolved version with
-  a placeholder (`{{version:java}}`, or `{{version:java:age}}` for one
-  component), which `hecatron workflows` fills in, and `hecatron check`
-  fails when a generated file is behind its versions.
-
-### JDKs a build needs besides its own
-
-A JVM build can need JDKs besides the one its component resolves to, and
-neither is a version choice, so neither is a pin file:
-`libexec/lib/jvm.py` reads them from the build files. **Toolchains** a
-Gradle build (`JavaLanguageVersion.of(17)`, `jvmToolchain(17)`) or Maven's
-toolchains plugin (`select-jdk-toolchain`'s `[11,12)`) names are installed
-side by side, and Gradle and Maven find them themselves. A **ceiling**
-comes from a tool that predates newer JDKs and fails to start on them: a
-Gradle wrapper older than 9.1 or a Kotlin compiler older than 2.3 runs on
-the newest LTS JDK it supports, which the JVM installers install and the
-hooks run the build on (`JAVA_HOME`), saying so. The doctor reports either
-when missing.
+surprise. (Not built yet: the defaults are updated by hand, and only the
+release-date tables are rewritten weekly.)
 
 ### Later
 
@@ -1190,7 +459,7 @@ entry points' output byte for byte. Decided with the first port
   creates a missing pin file at the version the component runs; silencing
   is `"advisor": {"ignore": [...]}`, which the Go `hct check` validates
   (`manage.py`'s check doesn't know the key). Its rules and thresholds are
-  in [advisor.md](advisor.md).
+  in [advisor.md](../guide/advisor.md).
 - **`hct licenses`** (#132; `internal/licenses`, `internal/spdx`) is
   native only, like `status`: OSV-Scanner's `scan source --all-packages
   --licenses` per component directory (four at a time), deps.dev's
@@ -1385,222 +654,8 @@ in the language's family or script.
 
 ### Installs as data (#77)
 
-Status: **stage 1 implemented** (the executor, dispatch and the parity
-harness, proven on eleven languages whose installers only install system
-packages). The format and its staging come from a survey of all the
-installers; the rest of the definitions are converted in later batches.
-
-**Decided by the owner (2026-10-28):**
-
-1. **Install data lives in `languages/<lang>/install.json`**, a file of its
-   own beside `config.json`, not in it. A project's
-   `.hecatron/languages/<lang>/install.json` replaces the built-in one
-   whole, as an `install.sh` override does, rather than merging key by key
-   as `config.json` does (§7): a project replacing an install wants to
-   replace all of it. Versions stay in `config.json` (`version`, `track`,
-   `pinFiles`, `path`, `env`), where resolution (§18) reads them; an
-   install never states its toolchain's version. The prototype's
-   `"install"` key moved out of Go's, Rust's, Python's and Java's
-   `config.json` into their `install.json` (Elixir's stays until its
-   installer's rewrite, #164, settles).
-2. **macOS uses the upstream release download where there is one**, so
-   macOS and Linux install the same pinned version of a language
-   downloaded as an archive; Homebrew stays for system packages (the
-   languages that come from apt on Linux). Done for the release
-   downloads converted so far (Gleam, Zig).
-3. **PATH: links to each language's default version in one hecatron bin
-   directory**, which the `~/.hecatron/env` the top-level `install.sh`
-   already writes puts on PATH; no shim. Hecatron's own commands put each
-   component's version on PATH themselves (§18), so the links only serve
-   interactive shells. The directory is `~/.local/share/hecatron/bin`
-   (under `$XDG_DATA_HOME` when set), which `~/.hecatron/env` puts on PATH
-   after hecatron's own `bin/`.
-
-**The format.** `install.json` has a `schema` (1), a `toolchain` (what
-provides the language: `"versions"`, `"system"` for the package manager's
-version, `"single"` or `"managed"` for versions hecatron installs, and one
-install kind: `packages` per package manager, or `archive`, a release
-download; later `vendor` and `via`), then optional lists, each entry with
-conditions:
-
-- `packages`: more system packages, with `when` (install only if it holds)
-  and `unless` (already satisfied: D's `build-essential` unless there's a
-  `cc`);
-- `tools`: programs the hooks need (ShellCheck, Bats, zef), each with a
-  `name`, its `packages`, a `when` whose `because` is the doctor's reason
-  ("bats not installed (a component has .bats tests)") and a `check`;
-- `steps`: commands run after the packages (`raco pkg install
-  compiler-lib`), each with a `check` and the `problem` the doctor reports
-  while it fails; a `download` (`url` and its mandatory `sha256`, cached
-  and verified as archives are) the run names as `{file}`, `{data}` for
-  hecatron's data directory, and `creates`, a directory inside it removed
-  before the step runs again and by uninstall (Common Lisp's Quicklisp,
-  installed with its quickstart `quicklisp.lisp` into
-  `~/.local/share/hecatron/quicklisp`, no root);
-- `aptSources`: a signed apt repository for one distribution (`distro`,
-  /etc/os-release's `ID`) whose own packages are too old (SWI-Prolog's PPA
-  on Ubuntu, whose 9.0 lsp_server can't use): `uri`, `suite` (default
-  `{codename}`), `components`, and the `key` URL and its `fingerprint`,
-  checked in Go (the primary key's, and only one key) before the key goes
-  in `/etc/apt/keyrings/hecatron-<name>.asc` and the repository in
-  `/etc/apt/sources.list.d/hecatron-<name>.sources`, signed by it alone.
-  Adding one refreshes the package lists, upgrades the `packages` it
-  provides that apt installed from the distribution (not receipted: they
-  weren't hecatron's), and first removes the installed `replaces`, the
-  distribution's packages whose files its packages take over without
-  saying so (Ubuntu's `swi-prolog-core`). A release the repository has no
-  suite for keeps the distribution's packages. The doctor reports a source
-  not added; uninstall removes the two files;
-- `uninstall.keep`: packages uninstall never removes, with `because`
-  (COBOL's cmake, which C, C++ and Fortran install with their scripts).
-
-Conditions are the hooks' tier-1 vocabulary (`file`, `missing`, `all`,
-`any`, `not`) plus `glob` (a file so named anywhere below a component's
-directory), `command` (on the language's PATH), `run` (exits 0) and
-`platform`; file tests hold when any component's directory satisfies them.
-Anything needing a loop, string parsing or a second command's output is a
-hook or family code, not new syntax. Later stages add `vendor` and `via`
-toolchains (`"managed"` release downloads are in, below), shared tools in
-`languages/_tools.json`,
-`installed` (in place of `installed.sh`), `requires` and `installOf`,
-`hook`, `deps` and `legacy` (old locations to clean up).
-
-**Which runs.** `hct install`, `uninstall` and `doctor` (and `--fix`)
-choose per language: the project's own `install.sh` (or `uninstall.sh`,
-`doctor.sh`) always wins; `HECATRON_INSTALLER=script` forces the scripts;
-otherwise an `install.json` the binary can carry out on this platform
-(a known schema, only keys and kinds it runs, packages for this machine's
-package manager: apt on Debian and Ubuntu, Homebrew on macOS); otherwise
-`install.sh`. A key the binary doesn't know declines the definition rather
-than being skipped, so a definition written for a newer binary still
-installs, through its script. Without the binary, `bin/hecatron` runs the
-scripts, so a converted language keeps its `install.sh`, `uninstall.sh`
-and `doctor.sh` until 1.0 (#79).
-
-Other installers still run some languages' `install.sh` directly
-(Elixir's and Gleam's scripts, and Gleam's data as a step, run Erlang's). A
-converted language that something calls starts its `install.sh` with
-`install_from_data <lang>` (`_common.sh`): given the binary
-(`HECATRON_BINARY`, set for every installer the binary runs) and not
-forced to the scripts, it runs `hecatron _install <lang>`, which
-installs from the data or exits 125 when it wouldn't (a project's own
-`install.sh`, a platform the data doesn't cover), and the script then
-carries on itself. `_install` never runs a script, so the two can't loop.
-Declaring such dependencies in the data (`requires`) comes later; callers
-don't depend on it.
-
-**The executor** (`internal/install`):
-
-- **Plan.** Every action of every language being installed, each with its
-  check: a toolchain's or a `packages` entry's packages are installed
-  (`dpkg-query`, `brew list`), or its `unless` holds; a tool's or step's
-  `check` holds. An action whose `when` fails, or with no package for this
-  manager, is skipped. `hct install --plan [lang...]` prints the plan, the
-  languages left to their scripts and why, and the commands it would run,
-  changing nothing.
-- **Apply.** The missing packages of every language go to one package
-  manager call (`apt-get install`, after `apt-get update` when the lists
-  are over an hour old as `apt_install` does; `brew install`), with `sudo`
-  unless running as root; if that fails, each language's alone, so one bad
-  package fails only its language. Then each language's steps whose checks
-  fail, each checked again after it runs, then every check again: an action
-  still failing fails its language and is named. A rerun finds every check
-  passing and runs nothing.
-- **Doctor.** A language installed from data gets the doctor's checks from
-  it, in place of `doctor.sh`: after the `dependency` and `lintDependency`
-  checks and the version notes, each tool and step that applies and whose
-  check fails (a tool checked as the `dependency` or `lintDependency`
-  already is isn't reported twice). `--fix` applies the language's plan,
-  which runs only what fails.
-- **Receipts.** `~/.local/share/hecatron/receipts/<lang>.json`
-  (`$XDG_DATA_HOME/hecatron/receipts` when set) records the packages the
-  executor installed, only those absent before, so `python3` or a system
-  Bash is never hecatron's to remove, and the steps it ran.
-- **Uninstall** reads the receipt: it removes the packages it lists that
-  are still installed, except those the definition keeps, another
-  language's receipt lists, or another definition names, and says which it
-  keeps and why; then it removes the receipt. With no receipt (installed by
-  the scripts, or before hecatron) it removes nothing and says so;
-  `HECATRON_INSTALLER=script` runs the old `uninstall.sh`.
-
-**Converted (stage 1):** Bash, COBOL, D, Common Lisp, Octave, Pascal,
-Prolog, Racket, Raku and Tcl. Elixir and Erlang, which the survey listed as
-packages only, are no longer: Elixir's installer installs builds.hex.pm's
-releases side by side (#164), and Erlang's builds.hex.pm's OTP build on
-Ubuntu, whose own is too old for current libraries (#206), falling back to
-the distribution's on Debian, which builds.hex.pm doesn't build for. The
-OTP install is shared (`otp_install_ubuntu` in `_common.sh`): Erlang's goes
-in the toolchains directory, Elixir's in `/opt/erlang`.
-
-**Release downloads (stage 2).** A `toolchain.archive` is a release
-download, installed `"versions": "single"` (the definition's default from
-`config.json`) or `"managed"`: the default and, side by side, each version
-the project's components resolve to (§18) that `installed.sh` doesn't
-list, a prefix or line as the newest release in the definition's
-`releases.json` it matches, so planning stays offline (a version with none
-fails that language's install and says so). Each version is its own
-toolchain action, checked in its own home; the links point at the
-default.
-
-- `url` is a template (`{version}`, `{os}`, `{arch}`, `{ext}`, with `os`,
-  `arch` and `ext` mapping hecatron's names to the publisher's); a
-  platform with no mapping isn't installed from data.
-- **A checksum is mandatory**, from one of: `sha256` inline by platform
-  (`"linux-x86_64": "…"`), `checksum`, a URL template serving it (a
-  sidecar such as Gleam's `{url}.sha256`: its first word), or
-  `checksumIndex`, a JSON index and the keys leading to it (Zig's
-  `index.json`, `["{version}", "{arch}-{os}", "shasum"]`). A definition
-  with none for the platform is declined. An index's `urlPath` leads to
-  the download's own URL there, which replaces the template: Zig's names
-  changed in 0.14.1 (`zig-linux-x86_64-0.14.0` before), and its index
-  lists them all.
-- `check` is required: what says the unpacked toolchain works
-  (`{"run": ["{bin}/zig", "version"]}`, with `{home}` and `{bin}`).
-- The download goes to `~/.cache/hecatron/downloads/<sha256>`, verified
-  before it is kept (a cached file is checked again before reuse); it is
-  unpacked (`tar.gz` and `zip` in Go, `tar.xz` with the system's `tar`,
-  `strip` leading components) beside its home and renamed into place, so
-  an interrupted install never leaves a half-unpacked home and a broken
-  one is replaced whole. The home is
-  `~/.local/share/hecatron/toolchains/<lang>/<version>`: no root.
-- `links` names the commands linked into the links directory (decision 3);
-  a link is replaced, a file that isn't one never is.
-- The doctor reports a home that is there but fails its check ("doesn't
-  work"), and the usual version check (`installed.sh`) a missing one;
-  `--fix` reinstalls from the downloads cache when it can.
-- The receipt records the homes and links, and uninstall removes them
-  (only ever under the toolchains and links directories).
-
-Converted: **Gleam** (GitHub release, sidecar checksum; Erlang/OTP from
-Erlang's `install.sh`, a step, unless the `erl` on PATH is OTP 26 or newer) and **Zig** (ziglang.org,
-checksum and URL from its index; it installed the latest release before,
-and now the version `config.json` pins and, `"managed"`, each line a
-component's `build.zig.zon` names). Both gain `version`, `track` and
-`path: ["{home}"]` in `config.json` and an `installed.sh` (the toolchains
-directory, then one on PATH from elsewhere), and their scripts install to
-the same place, on macOS too, checked the same way, so the two ways agree
-for the parity harness and for `bin/hecatron` without the binary. Not
-converted: Goose, whose `goose version` prints no version, so a pin can't
-be checked on a machine set up by its script; the "latest" languages
-(Crystal, Haxe, Julia, Nim, Odin, PowerShell, Swift), which need a pinned
-version and a source to update it first.
-
-**Parity.** `tests/docker/parity.sh <image> <lang>...` installs each
-language in two fresh containers with the binary built from the checkout,
-once forced to the scripts and once from its data; each must pass
-`tests/install/check.sh` (install, doctor from a login shell, rerun, smoke),
-and both must end with the same installed packages and versions, the same
-commands on PATH and the same doctor report. Project files in
-`tests/docker/parity/<lang>/` (a `.bats` test, a `META6.json`) exercise
-what installs only for some files.
-
-**Open:** pinning the twelve languages that install "latest" today, with
-`update-versions` sources; version managers' homes (`~/.rustup`, `~/.ghcup`,
-`~/.opam`, or under hecatron's toolchains directory); refusing to remove
-packages present before hecatron outright (receipts already never list
-them); Perl modules and `npm -g` without sudo; a pure-Go xz reader or the
-system `tar`; dnf packages, which nothing tests yet; Windows link
-directories (hard links or `.cmd` shims).
+Moved to [the install engine](install-engine.md), with the owner's
+decisions of 2026-10-28.
 
 ### When a tool's output changes
 
@@ -1635,23 +690,8 @@ today. On Windows the binary runs `<action>.ps1`, `.cmd` or `.exe`; elsewhere
 platform declares rules in its config instead of a script.
 
 ### Output
-
-The runner renders each finished job (label, component, exit code,
-duration, log path, error excerpt) in one of four formats:
-
-- **human** (default on a terminal): today's live display and summary;
-- **agent**: one summary line, then only the failures, each with its log
-  path and up to ten lines matching the language's error patterns (else the
-  last fifteen, without colour codes or download noise), and a `Rerun:`
-  line; one line when everything passes;
-- **json**, for scripts;
-- **CI**: human output plus GitHub annotations for each error line.
-
-`--output` chooses, else `HECATRON_OUTPUT`, else agent output when stdout
-isn't a terminal and an agent marker is set (`CLAUDECODE=1`, and others
-once verified), else CI when `GITHUB_ACTIONS` is set, else human. Not a
-config setting: the format belongs to whoever is calling, not the project.
-Exit codes: 0 passed, 1 failed, 2 usage, 3 a toolchain missing or broken.
+The four formats, how one is chosen and the exit codes moved to the user
+guide: [output](../guide/output.md).
 
 Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
 
@@ -1756,39 +796,7 @@ on a laptop and in CI.
 
 ### What works today
 
-- **GitHub Actions workflows.** `hecatron workflows` writes one workflow per
-  language from the project's templates (§11), and `hecatron check` fails
-  when one is behind.
-- **GitHub annotations.** With the Go binary, `--output ci` (chosen
-  automatically when `GITHUB_ACTIONS` is set) adds `::error` annotations at
-  each error line's file and line, shown on the pull request (§19).
-- **GitLab CI and caching (#102).** `hecatron workflows` writes
-  `.gitlab-ci.yml` (`generated.ci: "gitlab"` or `--ci gitlab`), and with
-  `"ci": {"cache": true}` caches toolchains and dependencies with
-  `actions/cache` and `cache:key:files` (§11); `hecatron check` fails when
-  the pipeline is behind. Bitbucket and Azure on demand.
-- **Dependency update configuration (#103).** `hecatron workflows` writes
-  `.github/dependabot.yml` and `renovate.json` (§11), and `hecatron check`
-  fails when a language or component was added without regenerating them.
-- **Audit in CI.** `hecatron audit` fails at a severity threshold and can
-  save each tool's raw report (`HECATRON_AUDIT_REPORT_DIR`);
-  [audit.md](audit.md) has a workflow step.
-- **Reports every CI reads (#100; `internal/reports`).** With the binary,
-  `HECATRON_REPORT_DIR` gets JUnit XML from test, lint and build (a suite
-  per language and component; the tools' own test cases merged where they
-  write them: Surefire, Failsafe, Gradle and sbt's `TEST-*.xml` found
-  under the component, `go test -json` through `hecatron _gotest`,
-  pytest's `--junitxml`, and anything a hook leaves in
-  `HECATRON_TEST_REPORTS`), SARIF 2.1.0 from lint (located error lines)
-  and audit (a rule per advisory, a result per package at its lock file,
-  accepted risks suppressed), and GitLab Code Quality JSON from lint;
-  `--output junit` and `--output sarif` print one instead of the normal
-  output. The generated GitLab pipeline hands JUnit and Code Quality to
-  the merge request widgets ([runner.md](runner.md#reports)).
-- **Job summary (#101).** With `GITHUB_STEP_SUMMARY` set, every run
-  command appends a table of languages and components with status and
-  time, then each failure's error lines, log and rerun command; audit,
-  licenses and advisor add their findings. The bash runner doesn't.
+Moved to the user guide: [hecatron in CI](../guide/ci.md).
 
 ### Planned
 

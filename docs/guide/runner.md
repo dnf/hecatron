@@ -202,7 +202,7 @@ hct sync: since 3f2a1c9e01 (HEAD@{1}, 12 commits): 31 files changed
 
 ## With the Go binary
 
-The Go core (`docs/design.md` §19), built from a checkout, has the same
+The Go core ([design record §19](../contributing/design.md#19-a-go-core-and-native-windows)), built from a checkout, has the same
 scheduling and history, and adds output for whoever reads it:
 `--output human|agent|json|ci` (or `HECATRON_OUTPUT`), and reports for CI
 (below). Agent output is a
@@ -214,7 +214,7 @@ display has no swim lanes yet.
 ## Reports
 
 With the binary, a run also writes what CI systems and forges read
-(docs/design.md §20), alongside its normal output, so one run feeds both
+([hecatron in CI](ci.md)), alongside its normal output, so one run feeds both
 the log and the forge:
 
 | Report | Commands | `HECATRON_REPORT_DIR` file | On stdout instead |
@@ -271,11 +271,11 @@ output's), its log and the command that reruns them; `hct audit` adds a
 table of findings, `hct licenses` its violations and licenses, `hct
 advisor` its findings.
 
-The pipeline `hecatron workflows` writes for GitLab sets
+The pipeline `hct workflows` writes for GitLab sets
 `HECATRON_REPORT_DIR` and hands each job's `test-<lang>.junit.xml` and
 `lint-<lang>.codequality.json` to the merge request's test and code
 quality widgets (`artifacts:reports`). On GitHub, upload SARIF with
 `github/codeql-action/upload-sarif` and show JUnit with a reporting action.
 
-[libexec/runner/README.md](../libexec/runner/README.md) documents the bash
+[libexec/runner/README.md](../../libexec/runner/README.md) documents the bash
 runner's internals: its flags, history format and display code.

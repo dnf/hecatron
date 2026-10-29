@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// A pinned hecatron (docs/design.md, "A project pins its hecatron"):
+// A pinned hecatron (docs/guide/installing-hecatron.md, "Pinning a project's hecatron"):
 // config.json's "hecatron" holds a version, "0.6" (any 0.6.x) or "0.6.1",
 // where ">=0.6.0" sets only a minimum. Only the Go core reads the pin;
 // project.py reads either form as a minimum.

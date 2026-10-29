@@ -2,7 +2,7 @@
 # sourced after _hooks.sh). Each runs its ecosystem's own report of newer
 # versions of the component's direct dependencies and hands it to
 # libexec/lib/outdated.py, which prints package, current, wanted and latest
-# (docs/outdated.md). Report-only: a component fails only for an error, or
+# (docs/guide/outdated.md). Report-only: a component fails only for an error, or
 # with --fail (HECATRON_OUTDATED_FAIL=1) when anything is outdated. The
 # tools ask their registries online.
 # shellcheck shell=bash

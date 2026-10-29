@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The hecatron project model: configuration, languages and file resolution.
 
-A project is a directory with `.hecatron/config.json` (docs/design.md §6).
+A project is a directory with `.hecatron/config.json` (docs/guide/configuration.md).
 Everything that needs to know about the project reads it through this module,
 from Python (`import project`) or from shell (`python3 project.py <query>`).
 
@@ -11,7 +11,7 @@ Shell queries:
     resolve <lang> <file>       print the path a language's file resolves to
     impl-dirs <lang>            print each component's directory for a language
     version <lang> [component]  print a language's version spec, its source and
-                                the installed match (docs/design.md §18)
+                                the installed match (docs/guide/versions.md)
     versions <lang>             print each distinct version spec the components
                                 resolve to, with its sources
     env <lang> [component]      print shell exports for the language's environment
@@ -49,7 +49,7 @@ HECATRON_HOME = os.environ.get(
     "HECATRON_HOME", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 # HECATRON_BUILTIN_LANGUAGES points the tests at fixture definitions.
 BUILTIN_LANGUAGES = os.environ.get("HECATRON_BUILTIN_LANGUAGES") or os.path.join(HECATRON_HOME, "languages")
-# Built-in default hooks live in languages/<lang>/hooks/ (docs/design.md §9).
+# Built-in default hooks live in languages/<lang>/hooks/ (docs/guide/hooks.md).
 HOOKS = ("test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh", "format.sh", "deps.sh", "outdated.sh")
 
 
@@ -450,7 +450,7 @@ class Project:
     # -- language definitions -------------------------------------------
 
     def _definition_dirs(self, lang: str) -> list[str]:
-        """Where a language's files may live, project first (docs/design.md §7)."""
+        """Where a language's files may live, project first (docs/guide/configuration.md)."""
         return [os.path.join(self.dir, "languages", lang), os.path.join(BUILTIN_LANGUAGES, lang)]
 
     @property
@@ -479,7 +479,7 @@ class Project:
         builtin = os.path.join(builtin_dir, "hooks" if filename in HOOKS else "", filename)
         return builtin if os.path.isfile(builtin) else None
 
-    # -- toolchain versions (docs/design.md §18) ---------------------------
+    # -- toolchain versions (docs/guide/versions.md) ---------------------------
 
     def _layer(self, lang: str, builtin: bool) -> dict:
         directory = BUILTIN_LANGUAGES if builtin else os.path.join(self.dir, "languages")
@@ -504,7 +504,7 @@ class Project:
 
     def _support_files(self, lang: str) -> list[dict]:
         """Files saying which versions a component supports, the newest of
-        which it gets when the default is newer (docs/design.md §18)."""
+        which it gets when the default is newer (docs/guide/versions.md)."""
         return list(self._layer(lang, True).get("supportFiles", [])) + list(self._layer(lang, False).get("supportFiles", []))
 
     def _pin(self, lang: str, component: str, entries: list[dict] | None = None, kind: str = "pin"):

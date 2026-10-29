@@ -16,7 +16,7 @@ import (
 )
 
 // Test cases from the tools' own reports, merged into hecatron's JUnit
-// (docs/runner.md, "Reports"):
+// (docs/guide/runner.md, "Reports"):
 //
 //   - JUnit XML a build tool leaves under the component: Maven's
 //     surefire-reports and failsafe-reports, Gradle's build/test-results,

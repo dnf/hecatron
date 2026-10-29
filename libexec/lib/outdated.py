@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Outdated dependencies (docs/outdated.md): read a tool's report into rows
+"""Outdated dependencies (docs/guide/outdated.md): read a tool's report into rows
 of package, current, wanted (the newest the manifest's constraints allow,
 where the tool says) and latest, print them and a summary, and save them as
 JSON for --json.

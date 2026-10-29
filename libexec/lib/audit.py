@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dependency audit findings (docs/audit.md): read an audit tool's report,
+"""Dependency audit findings (docs/guide/audit.md): read an audit tool's report,
 apply the project's accepted risks, print the findings and a summary, and
 fail when one is at or above the threshold.
 
@@ -432,7 +432,7 @@ def eol_warning(lang: str, version: str, releases: str, line_parts: int | None =
     from a definition's releases.sh output (version<TAB>flags, the newest
     release of each line). A line is the definition's "releaseLine" leading
     parts (1 for Node.js: 16 for 16.20.2), else all but the last (3.9 for
-    3.9.25), as for versions (docs/design.md §18), and never the whole
+    3.9.25), as for versions (docs/guide/versions.md), and never the whole
     version: .NET's releaseLine of 3 names a feature band, but support ends
     by channel (10.0)."""
     parts = version.lstrip("v").split(".")

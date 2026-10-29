@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write docs/languages.md, the table of every language hecatron supports,
+"""Write docs/guide/languages.md, the table of every language hecatron supports,
 from the language definitions (languages/<lang>/config.json): its name,
 homepage and summary, the build systems, test runners and linters the default
 hooks use, the default toolchain version, and the platforms with no
@@ -18,7 +18,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LANGUAGES = os.path.join(ROOT, "languages")
-DOC = os.path.join(ROOT, "docs", "languages.md")
+DOC = os.path.join(ROOT, "docs", "guide", "languages.md")
 # Each tool the tables name, linked to its own site, so a reader can find out
 # what it is.
 TOOL_LINKS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tool-links.json")
@@ -65,7 +65,7 @@ hook (`.hecatron/languages/<lang>/<action>.sh`).
 Generated from each language's `config.json` by
 `libexec/codegen/languages_doc.py`; don't edit by hand.
 [coverage.md](coverage.md) has which platforms each one installs and passes
-on, and [adding-a-language.md](adding-a-language.md) covers adding one.
+on, and [adding-a-language.md](../contributing/adding-a-language.md) covers adding one.
 """
 
 POPULAR_HEADING = """\
@@ -169,7 +169,7 @@ def main() -> int:
     if "--check" in sys.argv[1:]:
         with open(DOC, encoding="utf-8") as f:
             if f.read() != text:
-                print("docs/languages.md is out of date: run python3 libexec/codegen/languages_doc.py",
+                print("docs/guide/languages.md is out of date: run python3 libexec/codegen/languages_doc.py",
                       file=sys.stderr)
                 return 1
         return 0

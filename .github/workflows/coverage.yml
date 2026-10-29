@@ -1,7 +1,7 @@
 name: Coverage
 
 # Check every language's toolchain on every platform (tests/install/check.sh)
-# and build the coverage matrix (docs/coverage.md) from the results. Weekly,
+# and build the coverage matrix (docs/guide/coverage.md) from the results. Weekly,
 # and on demand for some languages. A full run opens, or updates, a pull
 # request with the new matrix.
 
@@ -116,12 +116,12 @@ jobs:
         run: |
           python3 tests/coverage/matrix.py collect --commit "${GITHUB_SHA}" logs/*/check.log
           python3 tests/coverage/matrix.py render
-          cat docs/coverage.md >> "${GITHUB_STEP_SUMMARY}"
+          cat docs/guide/coverage.md >> "${GITHUB_STEP_SUMMARY}"
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-matrix
           path: |
-            docs/coverage.md
+            docs/guide/coverage.md
             tests/coverage/results.json
       # A full run (every language, as the weekly one is) proposes its results;
       # a run for some languages only would leave the page half-updated.
@@ -130,14 +130,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet -- docs/coverage.md tests/coverage/results.json; then
+          if git diff --quiet -- docs/guide/coverage.md tests/coverage/results.json; then
             echo "Coverage unchanged." >> "${GITHUB_STEP_SUMMARY}"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "${BRANCH}"
-          git add docs/coverage.md tests/coverage/results.json
+          git add docs/guide/coverage.md tests/coverage/results.json
           git commit -q -m "Update the coverage matrix" -m "From the coverage run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} at ${GITHUB_SHA}."
           git push -q -f origin "${BRANCH}"
           body="$(printf 'The coverage matrix from [this run](%s/%s/actions/runs/%s) at %s.\n\nOpened by the Coverage workflow, which updates this pull request each run; close and reopen it to run CI.\n' "${GITHUB_SERVER_URL}" "${GITHUB_REPOSITORY}" "${GITHUB_RUN_ID}" "${GITHUB_SHA}")"

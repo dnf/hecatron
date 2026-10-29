@@ -56,7 +56,7 @@ def resolve_all(project: projectlib.Project, names: list[str], *, added_only: bo
 
 
 def hook_env(project: projectlib.Project) -> dict[str, str]:
-    """The environment installers and hooks see (docs/design.md §9)."""
+    """The environment installers and hooks see (docs/guide/hooks.md)."""
     env = dict(os.environ)
     env.update({
         "HECATRON_HOME": HOME,
@@ -346,7 +346,7 @@ def with_timeouts(body: str, minutes: int) -> str:
     return "\n".join(lines)
 
 
-# Settings for generated files only the Go core writes (docs/design.md §11).
+# Settings for generated files only the Go core writes (docs/guide/generated-files.md).
 GO_ONLY_GENERATED = ("ci", "dependabot", "renovate")
 GO_ONLY_SECTIONS = ("ci", "dependabot", "renovate")
 

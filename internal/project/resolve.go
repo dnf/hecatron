@@ -14,7 +14,7 @@ import (
 	"unicode/utf8"
 )
 
-// Toolchain versions (docs/design.md §18): which version of a language a
+// Toolchain versions (docs/guide/versions.md): which version of a language a
 // component uses, as project.py's resolve_version and its helpers decide
 // it. Each layer of a definition is read on its own here, as project.py
 // reads it: the definition's pin files come before the project's, and only

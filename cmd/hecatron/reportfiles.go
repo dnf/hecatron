@@ -15,7 +15,7 @@ import (
 	"github.com/dnf/hecatron/internal/runner"
 )
 
-// A run's reports for CI (docs/runner.md, "Reports"; docs/design.md §20):
+// A run's reports for CI (docs/guide/runner.md, "Reports"; docs/guide/ci.md):
 // --output junit or sarif prints one in place of the normal output;
 // HECATRON_REPORT_DIR writes them beside it (JUnit for test, lint and
 // build, SARIF and Code Quality JSON for lint, SARIF for audit); and

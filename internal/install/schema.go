@@ -1,5 +1,5 @@
 // Package install reads a language's declarative install
-// (languages/<lang>/install.json, docs/design.md §19 "Installs as data"),
+// (languages/<lang>/install.json, docs/contributing/install-engine.md),
 // says whether this binary can carry it out, plans it for a project and a
 // platform, and applies the plan: system packages batched into one
 // package-manager call, guarded steps, receipts of what it installed, and
@@ -23,7 +23,7 @@ import (
 )
 
 // FileName is a definition's install file, beside its config.json. A
-// project's own copy replaces the built-in one whole (§7), as an install.sh
+// project's own copy replaces the built-in one whole (docs/guide/configuration.md), as an install.sh
 // override does.
 const FileName = "install.json"
 
@@ -55,7 +55,7 @@ type Definition struct {
 // ToolchainsHome is where the executor puts the toolchains it installs
 // itself (downloads, not system packages), one directory per language:
 // the user's own, so installing needs no root and CI can cache and restore
-// it (design.md §11).
+// it (docs/guide/generated-files.md).
 const ToolchainsHome = "~/.local/share/hecatron/toolchains"
 
 // InstallsIntoToolchainsHome says whether the executor installs the

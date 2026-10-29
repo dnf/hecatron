@@ -1,22 +1,22 @@
-# Language Installers
+# Installing toolchains
 
 Each language's definition lives in `languages/<lang>/` in this repository (a project can override any file in its own `.hecatron/languages/<lang>/`), as separate single-purpose files. Each script handles both macOS and Linux, and runs its action on execute (no subcommands).
 
 ## Commands
 
 ```bash
-hecatron install                # install all available languages
-hecatron install go rust        # install specific languages
-hecatron install --plan         # show how each would install and what would run (needs the binary)
-hecatron uninstall go rust      # uninstall specific languages
-hecatron get-started            # interactive onboarding with status + install menu
-hecatron get-started --status   # print language status table
-hecatron get-started --check    # exit 0 if all installed, 1 if missing
-hecatron doctor                 # check every toolchain actually works, and how to repair it
-hecatron doctor --fix go lua    # run the installer of each unhealthy language, then re-check
+hct install                # install all available languages
+hct install go rust        # install specific languages
+hct install --plan         # show how each would install and what would run (needs the binary)
+hct uninstall go rust      # uninstall specific languages
+hct get-started            # interactive onboarding with status + install menu
+hct get-started --status   # print language status table
+hct get-started --check    # exit 0 if all installed, 1 if missing
+hct doctor                 # check every toolchain actually works, and how to repair it
+hct doctor --fix go lua    # run the installer of each unhealthy language, then re-check
 ```
 
-`hecatron install <lang>` is also the repair: installers are idempotent and fix the
+`hct install <lang>` is also the repair: installers are idempotent and fix the
 broken states their `doctor.sh` detects (a linter built with an older Go,
 luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula...).
 
@@ -34,15 +34,35 @@ its bin directory, `~/.local/share/hecatron/bin`, which needs no root and
 which `hct` puts first on PATH for everything it runs; on macOS, only Perl
 (cpanm into the system Perl) and Dart (Flutter's cask) still ask.
 
-Short aliases work everywhere: `hecatron install ad ts py rb rs kt gy lu ft c++ cs fs sw hs ex erl clj gm sc zg el pl dt ml`
+Short aliases work everywhere: `hct install ad ts py rb rs kt gy lu ft c++ cs fs sw hs ex erl clj gm sc zg el pl dt ml`
 
-Misspelled names get a "did you mean?" prompt (e.g. `hecatron install elixer` suggests `elixir`).
+Misspelled names get a "did you mean?" prompt (e.g. `hct install elixer` suggests `elixir`).
+
+## Doctor and repair
+
+Unchanged from sayable's design, now shared: `doctor` checks each language's
+`dependency` and `lintDependency` commands from `config.json`, then runs the
+optional `doctor.sh`, which reports one `problem` per line. A line starting
+`note: ` (`note` in `_common.sh`) is shown under the language, like the
+version notes, but isn't a problem: a language with only notes is healthy,
+and `--fix` repairs only problems. Installers are
+idempotent and repair what their doctor detects (a linter built with an older
+Go, luacheck on Lua 5.5, a moved virtualenv, an unlinked Homebrew formula).
+`doctor --fix` runs the installer of each unhealthy language and checks
+again. With the binary, a language installed from its `install.json` ([installs as
+data](../contributing/install-engine.md)) gets its checks from that instead of `doctor.sh`, and
+`--fix` runs only the steps whose checks fail. Installers that install project dependencies (`bundle install`, `uv
+sync`) do so in every component by running `hct deps` (`impl_deps` in
+`_common.sh`; [hooks](hooks.md#dependencies)). `hct install` with no languages named runs those
+once every toolchain is in, since one language's dependencies can need
+another's toolchain (cucumber/messages' `npm ci` runs a generator needing
+Ruby); a failure there fails the install and names the language.
 
 ## Installs as data
 
 A language with a `languages/<lang>/install.json` is installed by
 hecatron's binary from that data instead of its `install.sh`
-([design.md §19](design.md#installs-as-data-77)). So far that covers the
+([the install engine](../contributing/install-engine.md)). So far that covers the
 languages whose installers only install system packages (Bash, COBOL, D,
 Common Lisp, Octave, Pascal, Prolog, Racket, Raku and Tcl) and two
 release downloads (Gleam, Zig).
@@ -67,7 +87,7 @@ release downloads (Gleam, Zig).
   `apt-get install` (or `brew install`) call for all their packages.
 - **Receipts** in `~/.local/share/hecatron/receipts/<lang>.json` record the
   packages hecatron installed (only those that weren't there before), and
-  `hecatron uninstall` removes only those, keeping any another language's
+  `hct uninstall` removes only those, keeping any another language's
   receipt or definition also needs, or that the definition keeps (COBOL's
   cmake). A language installed by its script has no receipt, and uninstall
   then removes nothing and says so.
@@ -83,7 +103,7 @@ release downloads (Gleam, Zig).
   `~/.local/share/hecatron/toolchains/<lang>/<version>` without root, and
   their commands linked into `~/.local/share/hecatron/bin`, which
   `~/.hecatron/env` puts on PATH. macOS gets the same download as Linux.
-- **`hecatron install --plan`** prints, for each language, every action and
+- **`hct install --plan`** prints, for each language, every action and
   whether it is done, will install or run, or is skipped (and why), the
   languages left to their scripts and why, and the commands it would run.
 
@@ -109,11 +129,6 @@ that script starts with `install_from_data <lang>`, which hands over to the
 binary when there is one. Gleam's data runs Erlang's `install.sh` as a step
 when the `erl` on PATH is older than OTP 26.
 
-`tests/docker/parity.sh ubuntu:24.04 raku racket` installs each language in
-two fresh containers, once with its scripts and once from its data, and
-fails unless both pass `tests/install/check.sh` and end with the same
-packages, commands and doctor report.
-
 ## Shared toolchains
 
 Some languages share a toolchain. Uninstalling a language removes only what
@@ -126,7 +141,7 @@ Remove one of these by hand once no language needs it.
 | --------------- | -------------------------------------- | ------------------------------------------------ |
 | .NET SDK        | C#, F#, VB.NET                         | Leaves the SDKs (`/opt/dotnet`, `~/.local/share/hecatron/dotnet`) and their views |
 | cmake           | C, C++, Objective-C, COBOL, Fortran    | Leaves cmake                                     |
-| JDK             | Java, Kotlin, Scala, Groovy, Clojure   | Leaves the JDKs; `hecatron uninstall java` only prints where they are |
+| JDK             | Java, Kotlin, Scala, Groovy, Clojure   | Leaves the JDKs; `hct uninstall java` only prints where they are |
 | Node.js         | TypeScript, JavaScript, Elm            | Leaves Node.js (JavaScript's installer is TypeScript's; Elm's installs Node if missing) |
 | Erlang/OTP      | Erlang, Elixir, Gleam                  | Leaves the distribution's or Homebrew's Erlang/OTP; Erlang's removes rebar3 and its own OTP build (Elixir's removes the OTPs it installed for itself, see below) |
 | uv              | Python, C, C++, Objective-C, Mojo      | Leaves uv; Python's removes uv's Python builds, unless Mojo runs on one |
@@ -144,7 +159,7 @@ Some languages lack pre-built binaries on certain architectures. The installer s
 | Elm        | Yes          | No          | Yes         | No arm64 Linux binary (elm/compiler#2292) |
 | All others | Yes          | Yes         | Yes         |                                           |
 
-`hecatron get-started` shows unavailable languages with `–` instead of `✓`/`✗` in the status table.
+`hct get-started` shows unavailable languages with `–` instead of `✓`/`✗` in the status table.
 
 ## Platform behavior
 
@@ -177,7 +192,7 @@ linked into `~/.local/share/hecatron/bin`, and rebar3's release escript
 there too: Ubuntu's own Erlang is too old for current
 libraries and Gleam's standard library, which need OTP 26 (24.04's is 25).
 builds.hex.pm has no Debian builds, so Debian gets its distribution's
-Erlang and rebar3 (Debian 13's OTP 27), and `hecatron doctor erlang` notes
+Erlang and rebar3 (Debian 13's OTP 27), and `hct doctor erlang` notes
 an OTP older than 26. macOS gets Homebrew's `erlang` and `rebar3`.
 
 **Elixir** comes from builds.hex.pm's precompiled releases, one directory
@@ -191,7 +206,7 @@ a Debian machine runs the Elixirs its own Erlang supports (Debian 13's OTP 27 ru
 1.17 to 1.20), and the installer says so for one it can't. Each version
 has its own Hex in `<home>/archives` (`MIX_ARCHIVES`), since an archive
 built on one OTP doesn't load on an older one, so only these Elixirs count
-as installed, not the distribution's or Homebrew's. `hecatron doctor
+as installed, not the distribution's or Homebrew's. `hct doctor
 elixir` notes each pairing it finds ("a: Elixir 1.20.4 on OTP 27.3.4.3").
 
 ### Uninstall caveats
@@ -204,109 +219,4 @@ elixir` notes each pairing it finds ("a: Elixir 1.20.4 on OTP 27.3.4.3").
 | Perl             | No-op — the system's Perl                                              |
 | Swift (macOS)    | No-op — Xcode's Swift                                                  |
 
-## Installer script structure
-
-Each script sources `languages/_common.sh` for shared helpers:
-
-- `has()` — check if a command exists
-- `apt_install()` — apt-get install with auto cache refresh
-- `brew_install()` — brew install with `|| true`
-- `brew_ensure_linked <formula> <command>` — link a formula Homebrew installed but left unlinked
-- `impl_dirs <lang>` — each component's directory for the language (from the project's `components` and `implPath`), one per line
-- `each_impl <lang> <command...>` — run a command in each of them (e.g. `each_impl ruby bundle install`)
-- `each_impl_versioned <lang> <command...>` — the same, with each component's toolchain version on PATH
-- `impl_deps <lang>` — install each component's dependencies with `hecatron deps` (its deps hook, held to the lock file); when `hecatron install` installs every language, after all the installers have run
-- `impl_configures <lang> <file...>` — whether a component (or a directory above it) has one of the files, for a tool installed only where it's configured
-- `release_binary_install <name> <url> <sha256> [path]` — a pinned release download, checked against its checksum, into hecatron's bin directory (`~/.local/share/hecatron/bin`; no root)
-- `uv_install` — uv into `~/.local/bin`
-- `install_from_data <lang>` — first thing in a converted language's `install.sh` that other installers run: install from `install.json` through hecatron's binary, when there is one
-- `problem` / `doctor_done` — for `doctor.sh`: report a problem; exit non-zero if any were reported
-- `$OS` — `"macos"` or `"linux"`
-- `hecatron_bin` — hecatron's bin directory (`~/.local/share/hecatron/bin`), first on PATH: put or link a tool there rather than in `/usr/local/bin`, which needs root
-- `unlink_into <dir>` — for `uninstall.sh`: remove the links into a directory from hecatron's bin directory and `/usr/local/bin`
-- `$SUDO` — `"sudo"` or `""` (when root)
-- `$ROOT` — the repository root
-
-A language definition has these files (see
-[adding-a-language.md](adding-a-language.md)):
-
-| File           | Purpose                                                       | Required |
-| -------------- | ------------------------------------------------------------- | -------- |
-| `config.json`  | Dependency commands, abbreviation, detection globs, PATH entries | Yes   |
-| `install.json` | Install as data, which the binary runs (above)                | No       |
-| `install.sh`   | Install toolchain + deps; idempotent, repairs                 | Yes      |
-| `uninstall.sh` | Remove toolchain                                              | Yes      |
-| `doctor.sh`    | Detect breakages beyond a missing command (`hecatron doctor`) | No       |
-| `dockerfile`   | Snippet for `hecatron dockerfile`                             | No       |
-
-A project adds hooks for its own code in `.hecatron/languages/<lang>/`:
-
-| Hook           | Purpose                                                       |
-| -------------- | ------------------------------------------------------------- |
-| `test.sh`      | Test one component (`hecatron test <lang>`)                   |
-| `lint.sh`      | Lint one component, if there's a separate linter              |
-| `build.sh`     | Build one component, if there's a build step                  |
-| `clean.sh`     | Remove one component's build artifacts                        |
-| `version.sh`   | Update the version in source and manifests (`hecatron version`) |
-| `metadata.sh`  | Update package metadata (`hecatron metadata`)                 |
-
-`hecatron doctor` already checks that the `dependency` and `lintDependency`
-commands from `config.json` exist. Add a `doctor.sh` when a toolchain can be
-present but broken, and make `install.sh` repair that state:
-
-```bash
-#!/usr/bin/env bash
-# Check that busted and luacheck start (luacheck needs Lua 5.4; see install.sh).
-source "$(dirname "$0")/../_common.sh"
-
-busted --version >/dev/null 2>&1 || problem "busted fails to start"
-doctor_done
-```
-
-Project dependencies install into every component's implementation through
-the language's deps hook: `deps() { impl_deps ruby; }`.
-
-Templates:
-
-**install.sh:**
-```bash
-#!/usr/bin/env bash
-source "$(dirname "$0")/../_common.sh"
-
-install_macos() { ... }
-install_linux() { ... }
-deps() { ... }  # project-specific setup (npm install, etc.)
-
-log "Installing Foo..."
-"install_${OS}"
-deps
-```
-
-**uninstall.sh:**
-```bash
-#!/usr/bin/env bash
-source "$(dirname "$0")/../_common.sh"
-
-uninstall_macos() { ... }
-uninstall_linux() { ... }
-
-log "Uninstalling Foo..."
-"uninstall_${OS}"
-```
-
-**version.sh:**
-```bash
-#!/usr/bin/env bash
-source "$(dirname "$0")/../_common.sh"
-
-ver="${1:?version required}"
-# sed commands to update version in source and manifests
-```
-
-**metadata.sh** (only for languages with package manifests):
-```bash
-#!/usr/bin/env bash
-source "$(dirname "$0")/../_common.sh"
-
-# update package metadata using PT_* env vars
-```
+How an installer is written: [installer scripts](../contributing/installer-scripts.md).
