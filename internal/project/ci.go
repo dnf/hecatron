@@ -24,6 +24,7 @@ type CISettings struct {
 	Systems []string // generated.ci: github (the default), gitlab or both
 	Cache   bool     // ci.cache: cache toolchains and dependencies
 	Image   string   // ci.image: the GitLab jobs' image
+	Secrets bool     // ci.secrets: a job running hct audit secrets
 }
 
 // CISettings reads generated.ci and the "ci" section, and says what's wrong
@@ -61,6 +62,12 @@ func (p *Project) CISettings() (CISettings, []string) {
 			} else {
 				problems = append(problems, "ci.cache must be true or false")
 			}
+		case "secrets":
+			if secrets, isBool := value.(bool); isBool {
+				settings.Secrets = secrets
+			} else {
+				problems = append(problems, "ci.secrets must be true or false")
+			}
 		case "image":
 			if image, isString := value.(string); isString && strings.TrimSpace(image) != "" {
 				settings.Image = image
@@ -81,7 +88,7 @@ func (p *Project) CISettings() (CISettings, []string) {
 }
 
 // ciKeys are the "ci" section's settings, as its problems list them.
-const ciKeys = "cache, image, timeoutMinutes, languages"
+const ciKeys = "cache, image, secrets, timeoutMinutes, languages"
 
 // ciLanguagesProblems are what's wrong with ci.languages: an object of
 // languages to minutes. Absent or null is fine.

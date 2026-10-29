@@ -124,7 +124,10 @@ func TestRunCommandsMatchBinHecatron(t *testing.T) {
 	}
 	home := repoHome(t)
 	env := []string{"HECATRON_HOME=" + home, "HECATRON_BUILTIN_LANGUAGES=", "COLUMNS=80", "NO_COLOR=1",
-		"HECATRON_OUTPUT=human", "CLAUDECODE=", "GITHUB_ACTIONS="}
+		"HECATRON_OUTPUT=human", "CLAUDECODE=", "GITHUB_ACTIONS=",
+		// hct puts hecatron's bin directory on PATH, where a gitleaks would
+		// add audit's secret scan, which run.sh hasn't: an empty one.
+		"XDG_DATA_HOME=" + t.TempDir()}
 	for _, args := range runInvocations {
 		t.Run(strings.Join(args, " "), func(t *testing.T) {
 			var results [2]result

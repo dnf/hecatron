@@ -1074,7 +1074,7 @@ def ci_timeout_minutes(config: dict, lang: str) -> int:
 
 # The "ci" section's settings: the time limits, which these scripts write,
 # and cache and image, only the Go core's (manage.py's go_only_settings).
-CI_KEYS = ("cache", "image", "timeoutMinutes", "languages")
+CI_KEYS = ("cache", "image", "secrets", "timeoutMinutes", "languages")
 
 
 def ci_config_problems(config: dict) -> list[str]:

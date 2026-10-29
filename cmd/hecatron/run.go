@@ -36,6 +36,7 @@ type runArgs struct {
 	timeoutGiven  bool
 	env           []string // what the flags export to the hooks
 	outdatedJSON  bool
+	history       bool     // audit --history: the secret scan reads the commits
 	rest          []string // the arguments without --output, for run.sh
 }
 
@@ -89,6 +90,8 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 			a.env = append(a.env, "HECATRON_AUDIT_FAIL_ON="+value())
 		case strings.HasPrefix(arg, "--fail-on="):
 			a.env = append(a.env, "HECATRON_AUDIT_FAIL_ON="+strings.TrimPrefix(arg, "--fail-on="))
+		case arg == "--history" && action == "audit":
+			a.history = true
 		case arg == "--check" && action == "format":
 			a.env = append(a.env, "HECATRON_FORMAT_CHECK=1")
 		case arg == "--json" && action == "outdated":
@@ -326,6 +329,8 @@ func (r *invocation) resolveTargets() bool {
 			job.Task, job.Exec = true, r.taskExec(command)
 		} else if r.command == "lint" && target == "shell" {
 			job.Exec = r.shellcheckExec()
+		} else if r.command == "audit" && target == secretsTarget {
+			job.Exec = r.secretsExec()
 		} else if contains(r.shell.Added, label) {
 			job.Lang, job.Exec = label, r.languageExec(r.command, label, r.args.components)
 		} else {
@@ -519,6 +524,11 @@ func (r *invocation) jobs() []runner.Job {
 			job.Kind, job.Exec = runner.Runnable, r.shellcheckExec()
 		}
 		extra = append(extra, job)
+	}
+	if r.command == "audit" && len(r.args.components) == 0 {
+		if job, ok := r.secretsJob(); ok {
+			extra = append(extra, job)
+		}
 	}
 	if len(extra) > 0 {
 		jobs = append(append(jobs, runner.Job{Label: "---", Kind: runner.Separator}), extra...)

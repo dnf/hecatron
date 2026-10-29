@@ -751,7 +751,7 @@ class GeneratedFilesTest(Fixture):
                        ci={"timeoutMinutes": 0, "languages": {"go": "long"}, "timeout": 5})
         result = self.hecatron("check")
         self.assertNotEqual(result.returncode, 0)
-        for problem in ('ci.timeout is not a setting (cache, image, timeoutMinutes, languages)', "ci.timeoutMinutes must be a whole number",
+        for problem in ('ci.timeout is not a setting (cache, image, secrets, timeoutMinutes, languages)', "ci.timeoutMinutes must be a whole number",
                         "ci.languages.go must be a whole number"):
             self.assertIn(problem, result.stdout)
         self.configure(languages=["go"], components=["a", "b"], implPath="{component}/{lang}",

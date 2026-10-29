@@ -73,6 +73,51 @@ says it expired, so an accepted risk gets looked at again. The `id` matches
 an advisory's ID or any alias (GHSA, CVE, RUSTSEC, GO, PYSEC).
 `hct check` fails on an entry without a `reason` or an `until` date.
 
+## Secrets
+
+`hct audit` also looks for committed credentials (API keys, tokens,
+private keys), in every language's files at once, with
+[gitleaks](https://github.com/gitleaks/gitleaks). `hct install secrets`
+installs it: its release binary at a pinned version, checked against its
+checksum, in hecatron's bin directory (no root).
+
+```
+hct install secrets
+hct audit secrets            # only the secret scan
+hct audit secrets --history  # every commit, not just the working tree
+```
+
+It scans the working tree, leaving out what git ignores. Each finding
+shows its rule, file and line, and gitleaks' fingerprint; never the
+secret itself:
+
+```
+  aws-access-token  src/config.py:3  fingerprint src/config.py:aws-access-token:3
+secrets: 1 possible secret in the working tree (gitleaks)
+```
+
+Any finding fails the audit, whatever `--fail-on` says. Remove and rotate
+a real secret (it's in the history too: `--history` finds it there). For
+a false positive:
+
+- add its fingerprint to `.gitleaksignore` at the project root,
+- or put `gitleaks:allow` in a comment on its line,
+- or leave out paths, such as test fixtures, in `.hecatron/config.json`
+  (`*` and `?` within a name, `**` across directories, a trailing `/` for
+  a whole directory, relative to the project root):
+
+```json
+"audit": {
+  "secrets": {"ignore": ["tests/fixtures/", "**/*.example.pem"]}
+}
+```
+
+A project's own `.gitleaks.toml` (its rules and allowlists) is used in
+place of gitleaks' defaults. With gitleaks installed, `hct audit` runs the
+scan beside the languages; without it, it's listed as not installed when
+the project sets `audit.secrets`, and left out otherwise. The scan needs
+hecatron's binary.
+
 ## The toolchain
 
 For languages whose definition lists release lines (Python, Node.js, Go,
@@ -127,4 +172,13 @@ pull request:
 In GitHub Actions (`GITHUB_STEP_SUMMARY` set) the job summary gets a table
 of the findings. See [runner.md](runner.md#reports) for the other reports.
 
-Not yet: `--fix` (it changes lock files), secret scanning, static analysis.
+A possible secret is a SARIF result too: its gitleaks rule (tagged
+`security` and `secret`, `security-severity` 9.5), at its file and line,
+with its fingerprint and no secret. `"ci": {"secrets": true}` in
+`.hecatron/config.json` makes `hct workflows` generate a job that runs
+`hct install secrets` and `hct audit secrets` on each push and pull
+request: a GitHub workflow (`secrets.yml` where `generated.workflows`
+puts the languages', uploading the SARIF to code scanning) and a
+`secrets` job in a generated `.gitlab-ci.yml`.
+
+Not yet: `--fix` (it changes lock files), static analysis.
