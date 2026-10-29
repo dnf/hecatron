@@ -131,6 +131,21 @@
         },
         "wallSeconds": {"$ref": "#/$defs/seconds"},
         "complete": {"description": "False when the log ended before the harness finished (the job's time limit, or a crash).", "type": "boolean"},
+        "cache": {
+          "description": "The toolchain caches (tests/real-projects/cache.py): whether the job used them, and the languages whose installs it restored before hct install. Null when the job ran without cache.py.",
+          "anyOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "required": ["enabled", "restored"],
+              "properties": {
+                "enabled": {"type": "boolean"},
+                "restored": {"type": "array", "items": {"$ref": "#/$defs/language"}}
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
         "clone": {"anyOf": [{"$ref": "#/$defs/step"}, {"type": "null"}]},
         "init": {
           "anyOf": [

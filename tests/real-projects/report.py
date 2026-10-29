@@ -48,7 +48,7 @@ JUNIT_LINE = re.compile(r"^### junit (\S+) (\{.*\})$", re.M)
 DISK_LINE = re.compile(r"^### disk (\S+) (\{.*\})$", re.M)
 # Free space under this, at any point of a run, is close to running out.
 DISK_LOW_KB = 2 * 1024 * 1024
-MARKER = re.compile(r"^### (meta|project|end) (\{.*\})$", re.M)
+MARKER = re.compile(r"^### (meta|project|cache|end) (\{.*\})$", re.M)
 NOT_ADDED = re.compile(r"^\s*not added: (\S+) \((.*)\)\s*$", re.M)
 
 # The tools a hook runs, as its "+ <command>" lines name them: anything else
@@ -443,6 +443,7 @@ def parse_log(text: str) -> dict | None:
         "hecatron": meta["hecatron"],
         "runner": meta["runner"],
         "wallSeconds": (end or {}).get("wallSeconds", sum(int(m.group(4)) for m in steps.values())),
+        "cache": markers.get("cache"),
         "complete": end is not None,
         "clone": _step(steps["clone"]) if "clone" in steps else None,
         "init": init,
@@ -906,7 +907,8 @@ def summary(path: str) -> str:
     disk = run.get("disk")
     out = [f"### {run['repo']} at {(run['commit'] or '?')[:7]}", "",
            f"init {_minutes(run['init'])}, install {_minutes(run['install'])}, doctor {_minutes(run['doctor'])}"
-           + ("" if run["complete"] else " (incomplete)")]
+           + ("" if run["complete"] else " (incomplete)")
+           + (f" (restored from the cache: {', '.join(run['cache']['restored'])})" if (run["cache"] or {}).get("restored") else "")]
     if disk:
         out[-1] += (f"; disk free {_gb(disk['freeBeforeKB'])} at the start, lowest {_gb(disk['minFreeKB'])}"
                     f" after {disk['minFreeAfter']}" + (" ⚠️" if disk["low"] else ""))
