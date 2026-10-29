@@ -213,7 +213,12 @@ if [ "${#_targets[@]}" -eq 0 ]; then
         _jobs+=("---" "${_extra[@]}")
     fi
     if [ "${#_jobs[@]}" -eq 0 ]; then
-        echo "Nothing to ${_action}."
+        # As the binary's nothingTo says it.
+        case "${_action}" in
+            docs) echo "No docs to build." ;;
+            bench) echo "Nothing to benchmark." ;;
+            *) echo "Nothing to ${_action}." ;;
+        esac
         exit 0
     fi
     if [ "${_action}" != docs ]; then

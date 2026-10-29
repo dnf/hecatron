@@ -276,7 +276,7 @@ class CommandTest(Fixture):
     def test_with_no_targets_only_languages_with_a_hook_run(self):
         result = self.hecatron("docs")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("Nothing to docs.", result.stdout)
+        self.assertIn("No docs to build.", result.stdout)
 
     def test_help_lists_the_languages_with_a_hook(self):
         result = self.hecatron("bench", "help")

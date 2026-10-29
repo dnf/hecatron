@@ -564,11 +564,11 @@ func (r *invocation) runAll() int {
 		case r.selection != nil && !r.selection.Empty() && len(r.args.components) > 0:
 			fmt.Printf("%s; none in -c %s\n", r.selection.Line(), strings.Join(r.args.components, " "))
 		case r.selection != nil && !r.selection.Empty():
-			fmt.Printf("%s; nothing to %s there\n", r.selection.Line(), r.command)
+			fmt.Printf("%s; %s there\n", r.selection.Line(), nothingTo(r.command))
 		case r.selection != nil:
 			fmt.Println(r.selection.Line())
 		default:
-			fmt.Printf("Nothing to %s.\n", r.command)
+			fmt.Printf("%s.\n", capitalize(nothingTo(r.command)))
 		}
 		return 0
 	}
@@ -661,4 +661,17 @@ func chartWidth() int {
 		return columns
 	}
 	return 80
+}
+
+// nothingTo says a command has nothing to run: "nothing to test", and for
+// the commands whose name isn't a verb, "no docs to build", "nothing to
+// benchmark". run.sh says the same.
+func nothingTo(command string) string {
+	switch command {
+	case "docs":
+		return "no docs to build"
+	case "bench":
+		return "nothing to benchmark"
+	}
+	return "nothing to " + command
 }
