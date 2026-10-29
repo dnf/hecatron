@@ -20,7 +20,7 @@ def git(cwd, *args):
 class PruneWorktreesTest(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.TemporaryDirectory()
-        top = self.dir.name
+        top = os.path.realpath(self.dir.name)  # git reports macOS's /private/var
         # A gh that knows no pull requests: these branches have none.
         stub = os.path.join(top, "bin")
         os.mkdir(stub)
