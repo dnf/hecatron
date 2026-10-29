@@ -56,6 +56,7 @@ Project:
   env LANG [-c COMPONENT]    Print a language's environment (its version's PATH and variables)
                              gives HECATRON_* variables, the language lists and helpers
                              (_name, _check, _dep_available, _lang_grid, _ada_env, ...)
+  exec LANG [-c C] -- CMD    Run CMD with a language's environment, in this directory
   version <version>          Bump versions through each language's version.sh
   metadata                   Update package metadata through metadata.sh hooks
 

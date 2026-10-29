@@ -27,6 +27,7 @@ through them.
 | `install.go`, `installdata.go`, `sudo.go` | `install` and `uninstall`: each language's script, or the install engine for a language whose `install.json` the binary can carry out; the hidden `_install`; asking for root once (`sudo -v`, refreshed) |
 | `manage.go`, `init.go`, `list.go`, `banner.go`, `env.go`, `version.go` | The project commands `manage.py` runs (`add`, `remove`, `enable`, `disable`, `check`, `dockerfile`, `workflows`, `init`), `list`, `banner`, `env`, `version`, writing exactly what the scripts write |
 | `status.go`, `sync.go`, `advisor.go`, `licenses.go`, `sbom.go`, `secrets.go`, `skill.go` | Native-only commands |
+| `execute.go` | `exec`: a command run with a component's language environment (`project.LanguageEnv`), replacing the binary's process where the platform allows |
 | `selfupdate.go`, `selfuninstall.go` | `self update` (and the hidden `_update-check`, `_write-env`) and `self uninstall` |
 | `pin.go` | The warning when the running hecatron isn't the project's pinned one (once per command tree: `HECATRON_PIN_WARNED`) |
 | `plan.go` | `hct plan <lang> <action> [dir]`: what a declarative definition's default hook would run (prototype, #83) |

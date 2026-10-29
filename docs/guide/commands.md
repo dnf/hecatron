@@ -25,7 +25,7 @@ doesn't fail a parallel run.
 - [Setting up](#setting-up): `init`, `doctor`, `install`, `uninstall`, `get-started`, `bootstrap`
 - [Languages](#languages): `list`, `add`, `remove`, `enable`, `disable`
 - [Generated files](#generated-files): `dockerfile`, `workflows`, `check`, `banner`
-- [The project's own scripts](#the-projects-own-scripts): `env`, `parallel`, `version`, `metadata`
+- [The project's own scripts](#the-projects-own-scripts): `env`, `exec`, `parallel`, `version`, `metadata`
 - [Hecatron itself](#hecatron-itself): `self`, `skill`, `help`, `--version`
 
 ## Run commands
@@ -365,6 +365,26 @@ as shell exports.
 
 ```bash
 eval "$(hct env java -c age)"
+```
+
+### exec
+
+```
+hct exec LANG [-c COMPONENT] -- CMD [ARGS...]
+```
+
+**Binary only.** Runs CMD with the language's environment for a component,
+what `hct env LANG -c COMPONENT` prints, without changing your shell: handy
+when components use different versions of one toolchain. Without `-c`, the
+component whose directory for the language holds the working directory,
+else the only component in the language. CMD runs in the working directory,
+with your terminal; the exit status is CMD's (127 when it isn't found).
+When the component's version isn't installed, it says so (exit 3): `hct
+install LANG` installs it.
+
+```bash
+hct exec zig -c parser -- zig build
+cd age/python && hct exec python -- python -m pytest -x
 ```
 
 ### parallel
