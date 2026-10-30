@@ -61,6 +61,12 @@ build or test, not the clean. A command with no jobs at all ("Nothing to
 test.") still exits 0. It's a flag and a variable, not a config setting,
 as `--timeout` is: what a run must achieve is the caller's (a CI job's).
 
+A job is **skipped** when every component's hook had nothing to do (an
+audit with no lock file its auditor reads): status `skipped` with a
+`reason` in JSON, `SKIP <label> (<dirs>): <reason>` in agent output, `-`
+and `skipped` in human output, counted apart from passed; it doesn't fail
+the run. Not installed and disabled languages are counted as skipped too.
+
 The run commands also take `--output junit` and `--output sarif`, which
 print that report in place of the normal output. All of this needs
 hecatron's binary; the scripts alone print human output.
