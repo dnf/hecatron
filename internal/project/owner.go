@@ -7,10 +7,12 @@ import (
 
 // Owners maps paths to the language and component whose implementation
 // directory holds them: the deepest such directory, so a component nested
-// in another's tree is its own. A directory at the root, or one holding
-// another component's, claims only the files that are its language's (see
-// claimed); any other file in it falls to a directory above that claims
-// it, if any.
+// in another's tree is its own. A directory holding another component's
+// (a root Cargo workspace beside clients/go) claims only the files that are
+// its language's (see claimed); any other file in it falls to a directory
+// above that claims it, if any. A directory holding no other component
+// claims everything in it, at the root too: a single package's fixtures,
+// templates and assets are its changes.
 type Owners struct {
 	dirs []ownedDir
 }
@@ -32,9 +34,8 @@ func (p *Project) Owners() (*Owners, error) {
 			o.dirs = append(o.dirs, ownedDir{dir: strings.TrimSuffix(d.Dir, "/"), lang: lang, component: d.Component})
 		}
 	}
-	root := strings.TrimSuffix(p.Root, "/")
 	for i, d := range o.dirs {
-		if d.dir != root && !o.holdsAnother(i) {
+		if !o.holdsAnother(i) {
 			continue
 		}
 		claims, err := p.LanguageFiles(d.lang)

@@ -166,11 +166,13 @@ changes; then the commands worth running next. Runs one `git status` and
 nothing that installs. Binary only.
 
 A change belongs to the deepest language directory holding it. A language
-whose directory is the root, or holds other components (a Cargo workspace
-at the root, Go in `clients/go/`), claims only its own files there: its
+whose directory holds other components (a Cargo workspace at the root, Go
+in `clients/go/`) claims only its own files there: its
 sources, build, lock and toolchain files (its definition's `detect`,
 `detectSources`, `sourceFiles`, `pinFiles` and `supportFiles`); a crash
-dump or a README beside its packages is listed under other changes.
+dump or a README beside its packages is listed under other changes. A
+single package at the root, holding no other component, keeps every file
+in it, its fixtures and templates included.
 Anything inside another git repository or worktree below the root (an
 agent's worktree in `.claude/worktrees/`, a clone) isn't listed at all:
 its changes are that repository's. `--changed` attributes files the same

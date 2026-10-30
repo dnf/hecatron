@@ -138,7 +138,7 @@ tasks that the files changed since `REF` touch.
 
   | File | Selects | Why |
   | --- | --- | --- |
-  | In a language's directory (`hct list`; the deepest, as `hct status` maps changes); in one at the root or holding other components, only the language's own files (its definition's `detect`, `detectSources`, `sourceFiles`, pin and support files: `*.rs`, `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml` for a Cargo workspace at the root) | That language, that component | Its code |
+  | In a language's directory (`hct list`; the deepest, as `hct status` maps changes); in one holding other components, only the language's own files (its definition's `detect`, `detectSources`, `sourceFiles`, pin and support files: `*.rs`, `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml` for a Cargo workspace at the root) | That language, that component | Its code |
   | Under `.hecatron/languages/<lang>/` | That language, every component | Its hooks or definition |
   | Anything else under `.hecatron/` (`config.json`) | Everything | The layout, languages, tasks or settings may have changed |
   | A build or version file a definition names (`detect`, `sharedBuildFiles`, `pinFiles`, `supportFiles`), above the language's directories | That language, in the components below it; every component for a path relative to the root (`.github/workflows/*.yml`) | A root `CMakeLists.txt` or `.tool-versions` changes how they build or which toolchain runs |

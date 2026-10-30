@@ -376,3 +376,46 @@ func TestRootComponentSelectsItsLanguagesFiles(t *testing.T) {
 		})
 	}
 }
+
+// A single package at the root holds no other component, so it keeps
+// every file in it: a fixture or template change still selects its tests.
+func TestASinglePackageAtTheRootClaimsEverything(t *testing.T) {
+	setup(t)
+	defs := t.TempDir()
+	write(t, defs, map[string]string{
+		"rust/config.json": `{"detect": ["Cargo.toml"], "sourceFiles": ["*.rs", "Cargo.lock"]}`,
+	})
+	t.Setenv("HECATRON_BUILTIN_LANGUAGES", defs)
+	root, _ := filepath.EvalSymlinks(t.TempDir())
+	root = filepath.Join(root, "repo")
+	write(t, root, map[string]string{
+		".hecatron/config.json": `{"schema": 1, "components": ["."], "languages": ["rust"], "implPaths": {"rust": "."}}`,
+		"Cargo.toml":            "[package]\n",
+		"src/lib.rs":            "",
+		"tests/data/case.json":  "{}\n",
+	})
+	run(t, root, "init", "-q", "-b", "main")
+	run(t, root, "add", "-A")
+	run(t, root, "commit", "-qm", "main")
+	run(t, root, "checkout", "-qb", "work")
+	commit(t, root, map[string]string{"tests/data/case.json": "{\"x\": 1}\n"})
+	base, _, err := FindBase(root, "", noEnv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	files, err := Files(root, base.Commit)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := project.Load(root, project.NewHome(t.TempDir()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := Select(p, base, files, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := selected(s); !reflect.DeepEqual(got, []string{"rust:."}) {
+		t.Errorf("selected %v, want [rust:.] (files %v)", got, s.Files)
+	}
+}
