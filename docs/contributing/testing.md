@@ -158,43 +158,53 @@ for every language on every platform each week and writes
 ## Real apps
 
 The [real-apps workflow](../../.github/workflows/real-apps.yml) builds one
-open-source Xcode app every two hours: an app whose issue is labelled
-`real-app-retry`, oldest first, else the next on
-[`tests/real-apps/apps.txt`](../../tests/real-apps/apps.txt) in turn (the
-clock's two-hour slot modulo the list's length, so nothing is stored
-between runs). It clones the app, runs its steps in
-[`tests/real-apps/fixups.txt`](../../tests/real-apps/fixups.txt) (the manual
-getting-started steps its README asks for), then `hct init`, `hct deps` and
-`hct build` on its Swift and Objective-C, as a newcomer would, on GitHub's
-latest macOS runner.
+open-source app every two hours on each of its tracks:
 
-When something goes wrong (the clone, a setup step, `hct init`, no Xcode
-app found, the build) or nothing was built (every job skipped: a template
-to copy, Pods not installed), it files an issue labelled `real-app`: the
-versions, each step's exit status, the failed jobs' errors and log tails,
-the skip reasons, and `hct _xcode plan`'s plan. If the app has an open
-issue, it comments there instead, and closes it when the app builds.
-Nothing in it judges whether hecatron or the app is at fault.
+| Track | List | Runner | Languages | Steps after `hct init` |
+| --- | --- | --- | --- | --- |
+| `xcode` | [`xcode.txt`](../../tests/real-apps/xcode.txt) | macOS, the newest released Xcode | Swift, Objective-C | `deps`, `build` |
+| `android` | [`android.txt`](../../tests/real-apps/android.txt) | Linux, the runner's Android SDK | Kotlin, Java | `install --no-deps`, `deps`, `build` |
+
+Each run takes an app whose issue is labelled `real-app-retry`, oldest
+first, else the next on the track's list in turn (the clock's two-hour slot
+modulo the list's length, so nothing is stored between runs). It clones the
+app, runs its steps in
+[`tests/real-apps/fixups.txt`](../../tests/real-apps/fixups.txt) (the manual
+getting-started steps its README asks for), then hct, as a newcomer would.
+
+When something goes wrong (the clone, a setup step, `hct init`, `install`,
+no app of the track's languages found, the build) or nothing was built
+(every job skipped: a template to copy, Pods not installed), it files an
+issue titled `Real app (<track>): owner/repo`, labelled `real-app` and
+`real-app:<track>`: the versions, each step's exit status, the failed jobs'
+errors and log tails, the skip reasons, and for Xcode `hct _xcode plan`'s
+plan. If the app has an open issue, it comments there instead, and closes it
+when the app builds. Nothing in it judges whether hecatron or the app is at
+fault.
 
 Working through the queue:
 
 1. Read the issue. If the app needs a getting-started step, add it to
-   `fixups.txt` (`owner/repo: command`, one step per line, run in order with
-   bash from the clone's root); if hecatron needs fixing, fix it.
+   `fixups.txt` (`owner/repo: command`, or `track owner/repo: command` for
+   one track only; one step per line, run in order with bash from the
+   clone's root); if hecatron needs fixing, fix it.
 2. Once that's merged, label the issue `real-app-retry`. The next run tries
    the app before any other, comments with how it went, and removes the
    label (closing the issue if it built). Label it again to retry again.
 
-`tests/real-apps/try-next.sh pick` chooses the app (reading issues);
+`tests/real-apps/try-next.sh pick` chooses the app (reading issues; `TRACK`
+says which track, `xcode` by default);
 `build` runs the app's own build scripts, so its job has no token at all;
 `report`, in a third job, files the issue from what `build` recorded. To try
 an app now, run the workflow with its `app` input, or locally (it runs the
 app's code):
 
 ```bash
-APP=owner/repo bash tests/real-apps/try-next.sh build /tmp/real-app
-DRY_RUN=1 bash tests/real-apps/try-next.sh report /tmp/real-app
+TRACK=android APP=owner/repo bash tests/real-apps/try-next.sh build /tmp/real-app
+TRACK=android DRY_RUN=1 bash tests/real-apps/try-next.sh report /tmp/real-app
 ```
 
-Add apps to the end of `apps.txt`, with a comment saying what each is there
-for.
+Add apps to the end of a track's list, with a comment saying what each is
+there for. A new track is a list, a `case` in `try-next.sh` (its runner,
+languages and whether it installs toolchains), and a schedule in the
+workflow.

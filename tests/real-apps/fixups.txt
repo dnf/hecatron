@@ -1,7 +1,8 @@
 # The manual getting-started steps an app's README asks for before it
 # builds, which the real-apps workflow runs in the app's clone before hct
-# (try-next.sh). One step per line, "owner/repo: command", run in order with
-# bash from the clone's root; # starts a comment. Add an app's steps when
+# (try-next.sh). One step per line, "owner/repo: command" (or "track
+# owner/repo: command" for one track only: a monorepo's iOS and Android
+# apps), run in order with bash from the clone's root; # starts a comment. Add an app's steps when
 # its real-app issue says nothing was built, then label the issue
 # real-app-retry: the next run tries the app again (docs/contributing/testing.md#real-apps).
 

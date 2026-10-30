@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 # The real-apps workflow (.github/workflows/real-apps.yml): build the next
-# open-source Xcode app on apps.txt with hct as a newcomer would, and file
-# an issue when something goes wrong. No judgement: report.py reports what
-# the run recorded.
+# open-source app on a track's list (xcode.txt, android.txt) with hct as a
+# newcomer would, and file an issue when something goes wrong or nothing
+# was built. No judgement: report.py reports what the run recorded.
 #
-#   try-next.sh pick          the app to build: APP, else the oldest whose issue is
-#                             labelled real-app-retry, else whose turn it is
-#   try-next.sh build WORK    clone, the app's fixups.txt steps, hct init, deps and
-#                             build; records into WORK
+#   try-next.sh pick          the app to build: APP, else the oldest of the track's
+#                             issues labelled real-app-retry, else whose turn it is
+#   try-next.sh build WORK    clone, the app's fixups.txt steps, hct init, (install,)
+#                             deps and build; records into WORK
 #   try-next.sh report WORK   files or updates the app's issue, writes the job summary
 #
 # build runs the app's own build scripts, so the workflow runs it with no
 # token at all; pick and report run none of the app's code. Environment:
-# APP (owner/repo), RETRY_ISSUE (the issue pick took it from), DRY_RUN=1
-# (report prints the issue instead of filing it), GH_TOKEN and GITHUB_*
-# (Actions).
+# TRACK (xcode, the default, or android), APP (owner/repo), RETRY_ISSUE
+# (the issue pick took it from), DRY_RUN=1 (report prints the issue instead
+# of filing it), GH_TOKEN and GITHUB_* (Actions).
 
 set -uo pipefail
 
@@ -23,6 +23,23 @@ _home="$(cd "${_here}/../.." && pwd)"
 _report=(python3 "${_here}/report.py")
 _label="real-app"
 _retry_label="real-app-retry"
+_track="${TRACK:-xcode}"
+
+# A track: the runner its builds need, the languages it builds (and how
+# the report names them), and whether hct installs their toolchains first
+# (GitHub's macOS runner has Xcode; the Linux one has JDKs and the Android
+# SDK, but hct picks the JDK a build asks for).
+case "${_track}" in
+    xcode)
+        _runner=macos-latest _wanted=(swift objectivec) _wanted_text="Swift or Objective-C" _installs=0 ;;
+    android)
+        _runner=ubuntu-latest _wanted=(kotlin java) _wanted_text="Kotlin or Java" _installs=1 ;;
+    *)
+        echo "error: unknown track '${_track}' (xcode, android)" >&2
+        exit 2 ;;
+esac
+_list="${_here}/${_track}.txt"
+_title_prefix="Real app (${_track}): "
 
 # A fact about the run, for report.py.
 meta() { printf '%s\t%s\n' "$1" "$2" >>"${_work}/meta.tsv"; }
@@ -47,17 +64,17 @@ pick() {
     if [ -z "${_app}" ] && [ -n "${GH_TOKEN:-}" ]; then
         _found="$(gh issue list --repo "${GITHUB_REPOSITORY}" --label "${_label}" --label "${_retry_label}" \
             --state open --limit 100 --json number,title,createdAt \
-            --jq 'sort_by(.createdAt) | map(select(.title | startswith("Real app: "))) | first // empty |
-                  "\(.title | ltrimstr("Real app: "))\t\(.number)"')" || _found=""
+            --jq "sort_by(.createdAt) | map(select(.title | startswith(\"${_title_prefix}\"))) | first // empty |
+                  \"\\(.title | ltrimstr(\"${_title_prefix}\"))\t\\(.number)\"")" || _found=""
         if [ -n "${_found}" ]; then
             _app="${_found%%$'\t'*}"
             _issue="${_found#*$'\t'}"
         fi
     fi
-    [ -n "${_app}" ] || _app="$("${_report[@]}" pick "${_here}/apps.txt")"
-    printf '%s\t%s\n' "${_app}" "${_issue}"
+    [ -n "${_app}" ] || _app="$("${_report[@]}" pick "${_list}")"
+    printf '%s\t%s\t%s\n' "${_track}" "${_app}" "${_issue}"
     if [ -n "${GITHUB_OUTPUT:-}" ]; then
-        printf 'app=%s\nretry_issue=%s\n' "${_app}" "${_issue}" >>"${GITHUB_OUTPUT}"
+        printf 'track=%s\nrunner=%s\napp=%s\nretry_issue=%s\n' "${_track}" "${_runner}" "${_app}" "${_issue}" >>"${GITHUB_OUTPUT}"
     fi
 }
 
@@ -66,7 +83,7 @@ setup_command() {
     local _step _command=""
     while IFS= read -r _step; do
         _command="${_command:+${_command} && }${_step}"
-    done < <("${_report[@]}" fixups "${_here}/fixups.txt" "$1")
+    done < <("${_report[@]}" fixups "${_here}/fixups.txt" "$1" "${_track}")
     printf '%s' "${_command}"
 }
 
@@ -77,12 +94,24 @@ build() {
     mkdir -p "${_work}/logs"
     : >"${_work}/meta.tsv"
     : >"${_work}/steps.tsv"
-    local _app _langs=() _lang _setup
-    _app="${APP:-$("${_report[@]}" pick "${_here}/apps.txt")}"
+    local _app _langs=() _lang _wanted_lang _setup
+    _app="${APP:-$("${_report[@]}" pick "${_list}")}"
     meta app "${_app}"
+    meta track "${_track}"
+    meta wanted "${_wanted_text}"
     meta hecatron_sha "$(git -C "${_home}" rev-parse HEAD)"
-    meta macos "$(sw_vers -productVersion 2>/dev/null || uname -sr)"
-    meta xcode "$(xcodebuild -version 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')"
+    if command -v sw_vers >/dev/null; then
+        meta os "macOS $(sw_vers -productVersion)"
+    else
+        meta os "$(. /etc/os-release 2>/dev/null && echo "${PRETTY_NAME:-}" || uname -sr)"
+    fi
+    case "${_track}" in
+        xcode)
+            meta xcode "$(xcodebuild -version 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')" ;;
+        android)
+            meta java "$(java -version 2>&1 | head -n 1)"
+            meta android_sdk "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-none}}" ;;
+    esac
     if [ -n "${GITHUB_RUN_ID:-}" ]; then
         meta run_url "${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-}/actions/runs/${GITHUB_RUN_ID}"
     fi
@@ -106,13 +135,18 @@ build() {
     fi
     if step init "hct init --no-agents" "${_hct}" init --no-agents; then
         while read -r _lang _; do
-            case "${_lang}" in
-                swift | objectivec) _langs+=("${_lang}") ;;
-            esac
+            for _wanted_lang in "${_wanted[@]}"; do
+                [ "${_lang}" != "${_wanted_lang}" ] || _langs+=("${_lang}")
+            done
         done < <("${_hct}" list 2>/dev/null)
         meta languages "${_langs[*]+"${_langs[*]}"}"
         if [ "${#_langs[@]}" -gt 0 ]; then
-            "${_hct}" _xcode plan --json . >"${_work}/plan.json" 2>/dev/null || rm -f "${_work}/plan.json"
+            if [ "${_track}" = xcode ]; then
+                "${_hct}" _xcode plan --json . >"${_work}/plan.json" 2>/dev/null || rm -f "${_work}/plan.json"
+            fi
+            if [ "${_installs}" = 1 ]; then
+                step install "hct install ${_langs[*]} --no-deps" "${_hct}" install "${_langs[@]}" --no-deps || true
+            fi
             step deps "hct deps ${_langs[*]}" "${_hct}" deps "${_langs[@]}" --timeout 30m || true
             step build "hct build ${_langs[*]} --output json" hct_build "${_langs[@]}" || true
         fi
@@ -148,16 +182,20 @@ report() {
         --description "Found by the real-apps workflow (tests/real-apps/)" 2>/dev/null || true
     gh label create "${_retry_label}" --repo "${GITHUB_REPOSITORY}" --color fbca04 \
         --description "The real-apps workflow tries this app next" 2>/dev/null || true
+    gh label create "${_label}:${_track}" --repo "${GITHUB_REPOSITORY}" --color c5def5 \
+        --description "The real-apps workflow's ${_track} track" 2>/dev/null || true
     _issue="$(open_issue "${_title}")" || return 1
     if [ -n "${_issue}" ]; then
         "${_report[@]}" comment "${_work}" >"${_text}"
         gh issue comment "${_issue}" --repo "${GITHUB_REPOSITORY}" --body-file "${_text}"
+        gh issue edit "${_issue}" --repo "${GITHUB_REPOSITORY}" --add-label "${_label}:${_track}" >/dev/null || true
         if [ "${_kind}" = passed ]; then
             gh issue close "${_issue}" --repo "${GITHUB_REPOSITORY}"
         fi
     elif [ "${_file}" = file ]; then
         tail -n +2 "${_text}" >"${_text}.body"
-        gh issue create --repo "${GITHUB_REPOSITORY}" --title "${_title}" --label "${_label}" --body-file "${_text}.body"
+        gh issue create --repo "${GITHUB_REPOSITORY}" --title "${_title}" --label "${_label}" \
+            --label "${_label}:${_track}" --body-file "${_text}.body"
     fi
     # The retry is done, whichever way it went; labelling it again retries
     # it again.

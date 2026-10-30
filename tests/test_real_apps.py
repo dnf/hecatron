@@ -17,17 +17,19 @@ sys.path.insert(0, os.path.join(HOME, "tests", "real-apps"))
 
 import report  # noqa: E402
 
-APPS = os.path.join(HOME, "tests", "real-apps", "apps.txt")
+LISTS = {track: os.path.join(HOME, "tests", "real-apps", f"{track}.txt") for track in ("xcode", "android")}
+APPS = LISTS["xcode"]
 
 
 class ListTest(unittest.TestCase):
     def test_each_entry_is_an_owner_and_repository_once(self):
-        listed = report.apps(APPS)
-        self.assertGreater(len(listed), 30)
-        for app in listed:
-            self.assertRegex(app, r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
-        lowered = [app.lower() for app in listed]
-        self.assertEqual(len(lowered), len(set(lowered)), "an app listed twice")
+        for track, path in LISTS.items():
+            listed = report.apps(path)
+            self.assertGreater(len(listed), 30, track)
+            for app in listed:
+                self.assertRegex(app, r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+            lowered = [app.lower() for app in listed]
+            self.assertEqual(len(lowered), len(set(lowered)), f"an app listed twice on {track}")
 
     def test_turns_go_round_the_list(self):
         listed = report.apps(APPS)
@@ -38,21 +40,25 @@ class ListTest(unittest.TestCase):
     def test_fixups(self):
         with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
             f.write("# heading\n\nowner/app: cp a.template a   # its README\nother/app: true\n"
-                    "Owner/App: ./bootstrap.sh --url https://x.example/#frag\nowner/app:\n")
+                    "Owner/App: ./bootstrap.sh --url https://x.example/#frag\nowner/app:\n"
+                    "android owner/app: echo sdk.dir=x > local.properties\nxcode owner/app: pod install\n")
         try:
-            self.assertEqual(report.fixups(f.name, "owner/app"),
-                             ["cp a.template a", "./bootstrap.sh --url https://x.example/#frag"])
-            self.assertEqual(report.fixups(f.name, "none/here"), [])
+            self.assertEqual(report.fixups(f.name, "owner/app", "xcode"),
+                             ["cp a.template a", "./bootstrap.sh --url https://x.example/#frag", "pod install"])
+            self.assertEqual(report.fixups(f.name, "owner/app", "android"),
+                             ["cp a.template a", "./bootstrap.sh --url https://x.example/#frag",
+                              "echo sdk.dir=x > local.properties"])
+            self.assertEqual(report.fixups(f.name, "none/here", "xcode"), [])
         finally:
             os.remove(f.name)
-        for app in report.apps(APPS):
-            report.fixups(os.path.join(HOME, "tests", "real-apps", "fixups.txt"), app)  # parses
-        listed = {app.lower() for app in report.apps(APPS)}
         with open(os.path.join(HOME, "tests", "real-apps", "fixups.txt")) as f:
             for line in f:
-                name = report.COMMENT.sub("", line).partition(":")[0].strip()
-                if name:
-                    self.assertIn(name.lower(), listed, "a fixup for an app that isn't on the list")
+                words = report.COMMENT.sub("", line).partition(":")[0].split()
+                if not words:
+                    continue
+                tracks = [words[0]] if len(words) == 2 else list(LISTS)
+                listed = {app.lower() for track in tracks for app in report.apps(LISTS[track])}
+                self.assertIn(words[-1].lower(), listed, f"a fixup for an app on no list: {line.strip()}")
 
     def test_comments_and_blank_lines_are_ignored(self):
         with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
@@ -67,8 +73,9 @@ class RunTest(unittest.TestCase):
     def setUp(self):
         self.work = tempfile.mkdtemp()
         self.addCleanup(lambda: __import__("shutil").rmtree(self.work))
-        self.meta(app="owner/app", app_sha="0123456789abcdef", hecatron_sha="fedcba9876543210",
-                  macos="26.6", xcode="Xcode 27.1", run_url="https://github.com/dnf/hecatron/actions/runs/1")
+        self.meta(app="owner/app", track="xcode", wanted="Swift or Objective-C", app_sha="0123456789abcdef",
+                  hecatron_sha="fedcba9876543210", os="macOS 26.6", xcode="Xcode 27.1",
+                  run_url="https://github.com/dnf/hecatron/actions/runs/1")
 
     def meta(self, **facts):
         with open(os.path.join(self.work, "meta.tsv"), "a") as f:
@@ -109,6 +116,12 @@ class RunTest(unittest.TestCase):
         os.remove(os.path.join(self.work, "steps.tsv"))
         self.step("clone", 128)
         self.assertEqual(self.outcome()[:2], ("clone-failed", True))
+        os.remove(os.path.join(self.work, "steps.tsv"))
+        self.step("clone", 0)
+        self.step("init", 0)
+        self.meta(languages="kotlin")
+        self.step("install", 1, "hct install kotlin --no-deps")
+        self.assertEqual(self.outcome()[:2], ("install-failed", True))
         self.meta(harness_error="hecatron's binary didn't build")
         self.assertEqual(self.outcome()[:2], ("harness-error", True))
 
@@ -129,7 +142,7 @@ class RunTest(unittest.TestCase):
         with open(os.path.join(self.work, "plan.json"), "w") as f:
             json.dump({"kind": "-project", "scheme": "App"}, f)
         run = report.Run(self.work)
-        self.assertEqual(report.title(run), "Real app: owner/app")
+        self.assertEqual(report.title(run), "Real app (xcode): owner/app")
         body = report.body(run)
         for want in ("hct build failed on owner/app.", "[`0123456789ab`](https://github.com/owner/app/commit/0123456789abcdef)",
                      "| build | 1 | 3 | `hct build swift --output json` |", "### swift: failed",
@@ -166,6 +179,12 @@ class RunTest(unittest.TestCase):
         self.assertNotIn("GH_TOKEN", build_job)
         self.assertIn("persist-credentials: false", build_job)
         # Picking a retry reads issues; only the report job writes them.
+        # Each track's schedule is the one TRACK maps to it, and each has a list.
+        schedules = re.findall(r'- cron: "([^"]+)" # (\w+)', workflow)
+        self.assertEqual({track for _, track in schedules}, set(LISTS))
+        for cron, track in schedules:
+            if track != "xcode":
+                self.assertIn(f"github.event.schedule == '{cron}' && '{track}'", workflow)
         pick_job = re.search(r"\n  pick:\n(.*?)\n  # Runs", workflow, re.S).group(1)
         self.assertIn("issues: read", pick_job)
         self.assertNotIn("write", pick_job)
