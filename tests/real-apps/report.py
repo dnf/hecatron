@@ -3,8 +3,8 @@
 what a run's outcome was, and the issue and job summary that report it. No
 network and no judgement: what it writes is what the run recorded.
 
-  report.py pick APPS [--slot N]   the app whose turn it is (slot: the clock's two-hour slot)
-  report.py fixups FIXUPS APP      the app's setup steps, one per line
+  report.py pick LIST [--slot N]   the app whose turn it is on a track's list (slot: the clock's two-hour slot)
+  report.py fixups FIXUPS APP TRACK  the app's setup steps on the track, one per line
   report.py outcome WORK           kind<TAB>file|quiet<TAB>one line saying what happened
   report.py issue WORK             the issue's title, a line, then its body
   report.py comment WORK           a comment for the app's open issue
@@ -40,15 +40,21 @@ def apps(path: str) -> list[str]:
 COMMENT = re.compile(r"(^|\s)#(\s.*)?$")
 
 
-def fixups(path: str, app: str) -> list[str]:
-    """The app's setup steps in the fixups file, in order."""
+def fixups(path: str, app: str, track: str) -> list[str]:
+    """The app's setup steps in the fixups file, in order: its
+    "owner/repo: command" lines, and its "track owner/repo: command" lines
+    for this track (a monorepo's iOS and Android apps need different
+    ones)."""
     steps = []
     try:
         with open(path, encoding="utf-8") as f:
             for line in f:
                 line = COMMENT.sub("", line.rstrip("\n")).strip()
                 name, sep, command = line.partition(":")
-                if sep and name.strip().lower() == app.lower() and command.strip():
+                words = name.split()
+                if len(words) == 2 and words[0] == track:
+                    words = words[1:]
+                if sep and len(words) == 1 and words[0].lower() == app.lower() and command.strip():
                     steps.append(command.strip())
     except OSError:
         pass
@@ -105,8 +111,10 @@ class Run:
             return "setup-failed", True, f"{app}'s setup steps (tests/real-apps/fixups.txt) failed"
         if self.failed("init"):
             return "init-failed", True, f"hct init failed on {app}"
+        if self.failed("install"):
+            return "install-failed", True, f"hct install failed on {app}'s toolchains"
         if not self.meta.get("languages"):
-            return "not-detected", True, f"hct found no Swift or Objective-C in {app}"
+            return "not-detected", True, f"hct found no {self.meta.get('wanted', 'language this track builds')} in {app}"
         if self.build is None:
             return "build-crashed", True, f"hct build printed no JSON report on {app}"
         status = self.build.get("status")
@@ -145,11 +153,13 @@ def facts(run: Run) -> str:
     commit = f"[`{sha[:12]}`](https://github.com/{app}/commit/{sha})" if sha else "?"
     rows = [
         ("App", f"[{app}](https://github.com/{app}) at {commit}"),
+        ("Track", meta.get("track", "?")),
         ("hecatron", f"`{meta.get('hecatron_sha', '?')[:12]}`"),
         ("Languages", meta.get("languages") or "none detected"),
-        ("macOS", meta.get("macos", "?")),
-        ("Xcode", meta.get("xcode", "?")),
+        ("OS", meta.get("os", "?")),
     ]
+    rows += [(label, meta[key]) for key, label in (("xcode", "Xcode"), ("java", "Java"), ("android_sdk", "Android SDK"))
+             if meta.get(key)]
     if meta.get("run_url"):
         rows.append(("Run", f"{meta['run_url']} (logs: the `real-app-logs` artifact)"))
     return "| | |\n| --- | --- |\n" + "\n".join(f"| {k} | {v} |" for k, v in rows)
@@ -182,7 +192,7 @@ def body(run: Run) -> str:
                 parts.append(details(f"The last {LOG_TAIL_LINES} lines of {os.path.basename(log)}", code(text)))
     if run.skip_reasons():
         parts.append("### Skipped\n" + "\n".join(f"- {reason}" for reason in run.skip_reasons()))
-    for name in ("clone", "setup", "init", "deps"):
+    for name in ("clone", "setup", "init", "install", "deps"):
         if run.failed(name):
             parts.append(details(f"The {name} step's output", code(tail(os.path.join(run.work, "logs", name + ".log")))))
     if run.plan is not None:
@@ -198,12 +208,12 @@ NEXT = """### Next
 
 Filed by the real-apps workflow (tests/real-apps/), which reports what happened; whether hecatron or the app needs the \
 fix is for whoever picks this up. If the app needs a manual getting-started step (its README's: a template to copy, a \
-bootstrap script), add it to `tests/real-apps/fixups.txt`; if hecatron needs fixing, fix it. Then label this issue \
+bootstrap script), add it to `tests/real-apps/fixups.txt` (`owner/repo: command`, or `track owner/repo: command` for one track only); if hecatron needs fixing, fix it. Then label this issue \
 `real-app-retry`: the next run tries the app again and says here how it went (closing the issue when it builds)."""
 
 
 def title(run: Run) -> str:
-    return f"Real app: {run.meta.get('app', '?')}"
+    return f"Real app ({run.meta.get('track', '?')}): {run.meta.get('app', '?')}"
 
 
 def summary(run: Run) -> str:
@@ -212,8 +222,8 @@ def summary(run: Run) -> str:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) == 3 and argv[0] == "fixups":
-        for step in fixups(argv[1], argv[2]):
+    if len(argv) == 4 and argv[0] == "fixups":
+        for step in fixups(argv[1], argv[2], argv[3]):
             print(step)
         return 0
     if len(argv) >= 2 and argv[0] == "pick":
