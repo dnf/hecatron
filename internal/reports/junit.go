@@ -57,7 +57,7 @@ func Suites(r *runner.Report, opts SuiteOptions) []Suite {
 		case len(result.Components) == 0:
 			suites = append(suites, Suite{Name: result.Label, Lang: result.Lang, Status: result.Status,
 				Failed: result.Unsuccessful(), ExitCode: result.ExitCode, Duration: result.Duration, Log: result.Log,
-				Excerpt: result.Excerpt.Lines})
+				Excerpt: result.Excerpt.Lines, Skipped: result.SkipReason()})
 		default:
 			suites = append(suites, componentSuites(result, opts)...)
 		}

@@ -43,7 +43,7 @@ class DepsCommandTest(Fixture):
         os.remove(self.path(".hecatron", "languages", "fixture", "deps.sh"))
         result = self.hecatron("deps", "fixture")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("No dependency manager for fixture", result.stdout)
+        self.assertIn("fixture: deps skipped: no dependency manager for fixture", result.stdout)
 
     def test_installers_fetch_through_the_deps_hook(self):
         script = f"source {COMMON}\nimpl_deps fixture"

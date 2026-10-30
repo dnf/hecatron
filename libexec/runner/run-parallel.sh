@@ -39,6 +39,7 @@ _s_scroll="$_c_dim"
 max_jobs=50%
 _nice_val=""
 _viz_mode=scroll  # scroll (default), full, or zoom
+_fail_on_skip=0   # --fail-on-skip: fail when nothing passed or failed
 _tick_ds=2        # base: 0.2s per column (for scroll/zoom modes)
 _show_help() {
     cat <<'HELP'
@@ -58,6 +59,7 @@ Flags:
                     'pcores' (P-cores minus 1), or 'unlimited' (all at once)
   -n NICE           Run jobs under sudo nice -n NICE (e.g. -n -20)
   -s MODE           Visualization mode: scroll (default), full, or zoom
+  --fail-on-skip    Fail when nothing ran: every job skipped or not installed
   -h, --help        Show this help and exit
 
 Scheduling (slot-based, the default and -j N where N > 0):
@@ -91,6 +93,7 @@ HELP
 while [ $# -gt 0 ]; do
     case "$1" in
         -h|--help) _show_help ;;
+        --fail-on-skip) _fail_on_skip=1; shift ;;
         -j) case "${2:-50%}" in
                 unlimited|0) max_jobs=0 ;;
                 pcores) max_jobs=pcores ;;
@@ -346,6 +349,10 @@ if [ "$run_n" -eq 0 ]; then
     echo "$_summary"
     echo "Logs: $logdir/"
     rmdir "$lockdir" 2>/dev/null
+    if [ "$_fail_on_skip" -eq 1 ]; then
+        echo "hecatron: nothing ran: every job skipped (--fail-on-skip)" >&2
+        exit 1
+    fi
     exit 0
 fi
 
@@ -363,12 +370,20 @@ _bar() {
 _now_ds() { perl -MTime::HiRes=time -e 'printf "%d\n", time*10'; }
 _fmt_ds() { echo "$((${1} / 10)).$((${1} % 10))s"; }
 
+# The line a job's log has when components, or the whole job (a language
+# without a hook for the action: run.sh's "<lang>: <action> skipped:"), had
+# nothing to do.
+_skip_line='^[^ ]+: [^ ]+ skipped( for [0-9]+ component\(s\))?: '
+# A skipped job's status in history.log: neither passed (its time sets no
+# time limit) nor failed (it isn't run first next time).
+_skip_status=77
+
 # " skipped" for a job that succeeded without checking anything: every
 # component's hook had nothing to do (each-component.sh's "skipped for"
 # line, and no "passed for" line), as an audit without a lock file.
 _skip_mark() {
     [ "$1" -eq 0 ] || return 0
-    grep -qE '^[^ ]+: [^ ]+ skipped for [0-9]+ component\(s\): ' "$2" 2>/dev/null || return 0
+    grep -qE "$_skip_line" "$2" 2>/dev/null || return 0
     grep -qE '^[^ ]+: [^ ]+ passed for [0-9]+ component\(s\)$' "$2" 2>/dev/null && return 0
     echo " skipped"
 }
@@ -787,7 +802,7 @@ if [ "$max_jobs" -gt 0 ]; then
             _elabel="${_pair%%=*}"
             _edata="${_pair#*=}"
             _erc="${_edata#*:}"
-            if [ "$_erc" != "$_edata" ] && [ "$_erc" -ne 0 ] 2>/dev/null; then
+            if [ "$_erc" != "$_edata" ] && [ "$_erc" -ne 0 ] 2>/dev/null && [ "$_erc" -ne "$_skip_status" ]; then
                 for i in "${!all_labels[@]}"; do
                     [ "${all_labels[$i]}" = "$_elabel" ] && _error_last[$i]=1
                 done
@@ -1238,7 +1253,7 @@ for i in "${!all_labels[@]}"; do
     [ "${all_skip[$i]}" -eq 1 ] && continue
     read -r _dur_ds _rc _ < "$logdir/${all_labels[$i]}.result"
     [ "$_rc" -eq 0 ] || continue
-    grep -E '^[^ ]+: [^ ]+ skipped for [0-9]+ component\(s\): ' "$logdir/${all_labels[$i]}.log" 2>/dev/null || true
+    grep -E "$_skip_line" "$logdir/${all_labels[$i]}.log" 2>/dev/null || true
 done
 
 # --- Write run history (for duration prediction) ---
@@ -1246,7 +1261,8 @@ _hist_line=""
 for i in "${!all_labels[@]}"; do
     [ "${all_skip[$i]}" -eq 1 ] && continue
     label="${all_labels[$i]}"
-    read -r _dur_ds _rc _ < "$logdir/$label.result"
+    read -r _dur_ds _rc _skipped < "$logdir/$label.result"
+    [ -z "${_skipped:-}" ] || _rc=$_skip_status
     _hist_line="${_hist_line}${_hist_line:+ }${label}=${_dur_ds}:${_rc}"
 done
 echo "$_hist_line" >> "$logdir/history.log"
@@ -1268,5 +1284,9 @@ if [ "$failed" -gt 0 ]; then
             echo ""
         fi
     done
+    exit 1
+fi
+if [ "$_fail_on_skip" -eq 1 ] && [ "$passed" -eq 0 ]; then
+    echo "hecatron: nothing ran: every job skipped (--fail-on-skip)" >&2
     exit 1
 fi

@@ -38,6 +38,8 @@ the last 50 runs), and the next run uses them:
 
 1. **Failures first.** Jobs that failed last time start first, so a fix is
    confirmed, or the failure seen again, in the first moments of the run.
+   A [skipped](output.md#skipped) job is recorded with status 77: neither a
+   failure nor a passing run (whose time would set a time limit).
 2. **Longest first.** Among the rest, the job expected to take longest
    starts first (expected = the median of its last 5 runs). Starting long
    jobs early keeps the run from ending with one long job running alone,
@@ -236,7 +238,8 @@ disabled. Where the tool reports its own tests, they are the suite's test
 cases (a failed component none of whose cases failed, such as a build
 error before any test ran, adds a case for the component); otherwise the
 suite has one case for the component, its failure's text the component's
-error lines and log. Merged today:
+error lines and log. A [skipped](output.md#skipped) component's (or
+language's) case is `<skipped message="skipped: <reason>"/>`. Merged today:
 
 - **Maven (Surefire, Failsafe), Gradle and sbt:** any `TEST-*.xml` under a
   `surefire-reports`, `failsafe-reports`, `test-results` or `test-reports`
@@ -266,7 +269,7 @@ root), as an `error` under the rule `lint/<language>`; in Code Quality, a
 
 **Job summary:** when `GITHUB_STEP_SUMMARY` names a file, each run
 appends Markdown: its summary line, a table of languages and components
-with their status and time, then each failure with its error lines (agent
+with their status (`skipped: <reason>` for a skipped one) and time, then each failure with its error lines (agent
 output's), its log and the command that reruns them; `hct audit` adds a
 table of findings, `hct licenses` its violations and licenses, `hct
 advisor` its findings.

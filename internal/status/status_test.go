@@ -56,11 +56,15 @@ var repos = map[string]fixtureRepo{
 		".logs/lint/alpha.log":    "alpha: lint passed for 2 component(s)\n",
 		".logs/build/beta.log":    "no summary line\n",
 		".logs/build/history.log": "beta=950:2\n",
+		".logs/docs/beta.log":     "beta: docs skipped: no docs tool for beta\n",
+		".logs/lint/beta.log":     "beta: lint skipped for 1 component(s): a (no linter)\n",
+		".logs/audit/beta.log":    "beta: audit skipped for 1 component(s): b (nothing to audit)\nbeta: audit passed for 1 component(s)\n",
 		"README.md":               "",
 	}, ages: map[string]time.Duration{
 		".logs/test/history.log": 2 * time.Hour, ".logs/test/alpha.log": 2*time.Hour + time.Second,
 		".logs/test/beta.log": 2*time.Hour + time.Second, ".logs/lint/alpha.log": 30 * time.Minute,
 		".logs/build/beta.log": 50 * time.Hour, ".logs/build/history.log": 50 * time.Hour,
+		".logs/docs/beta.log": time.Hour, ".logs/lint/beta.log": time.Hour, ".logs/audit/beta.log": time.Hour,
 	}, edit: map[string]string{"a/alpha/x": "changed\n", "a/alpha/new": "", "README.md": "changed\n"}},
 	"detected": {files: map[string]string{
 		"go/go.mod": "module x\n\ntoolchain go1.22.3\n", "go/main.go": "package main\n",

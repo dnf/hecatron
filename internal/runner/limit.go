@@ -33,6 +33,10 @@ const (
 	// timedOutStatus is a timed-out job's status in history.log, as
 	// timeout(1) exits.
 	timedOutStatus = 124
+	// skippedStatus is a skipped job's: neither passed (its time sets no
+	// limit) nor failed (it isn't run first next time), as run-parallel.sh
+	// records it.
+	skippedStatus = 77
 )
 
 // LimitSource is where a job's limit came from.
@@ -186,7 +190,7 @@ func Execute(ctx context.Context, job Job, out io.Writer) (Outcome, Status) {
 		return outcome, TimedOut
 	case outcome.ExitCode != 0:
 		return outcome, Failed
-	case allSkipped(outcome.Components):
+	case outcome.Skipped != "" && len(outcome.Components) == 0, allSkipped(outcome.Components):
 		return outcome, Skipped
 	}
 	return outcome, Passed

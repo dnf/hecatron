@@ -47,11 +47,15 @@ run() {
     "$@"
 }
 
-# The hook has nothing to do here: say why, and succeed. For an action the
-# directory's build system doesn't have (no linter configured, nothing to
-# build for an interpreted library).
+# The hook has nothing to do here, or can't run: say why, and exit, so the
+# component is reported skipped rather than passed (HECATRON_SKIPPED, as
+# skip_component). For an action the directory's build system doesn't have
+# (no linter configured, nothing to build for an interpreted library, no
+# tests). It exits the hook: called in a subshell, the hook would go on and
+# its component still count as skipped.
 skip() {
     echo "${HECATRON_LANG:-}: ${_hook_action}: $* (skipping)"
+    if [ -n "${HECATRON_SKIPPED:-}" ]; then echo "$*" >"${HECATRON_SKIPPED}"; fi
     exit 0
 }
 
@@ -165,16 +169,30 @@ dirs_below_with() {
             END { for (i = 1; i <= NR; i++) if (depth[i] == least) print dir[i] }'
 }
 
-# Run this hook again in each directory, and exit: failing if any fails.
+# Run this hook again in each directory, and exit: failing if any fails,
+# skipping if every one skipped (saying why for each), else passing.
 run_hook_in() {
-    local _dir _failed_dirs=()
+    local _dir _failed_dirs=() _skipped=() _ran=0 _skip_file="" _reasons
+    [ -z "${HECATRON_SKIPPED:-}" ] || _skip_file="${HECATRON_SKIPPED}.in"
     for _dir in "$@"; do
         echo "--- ${HECATRON_LANG:-}: ${_hook_action} in ${_dir#./}"
-        (cd "${_dir}" && bash "${_hook_script}" ${_hook_args[@]+"${_hook_args[@]}"}) || _failed_dirs+=("${_dir#./}")
+        [ -z "${_skip_file}" ] || : >"${_skip_file}"
+        if ! (cd "${_dir}" && HECATRON_SKIPPED="${_skip_file}" bash "${_hook_script}" ${_hook_args[@]+"${_hook_args[@]}"}); then
+            _failed_dirs+=("${_dir#./}")
+        elif [ -n "${_skip_file}" ] && [ -s "${_skip_file}" ]; then
+            _skipped+=("${_dir#./}: $(head -n 1 "${_skip_file}")")
+        else
+            _ran=$((_ran + 1))
+        fi
     done
+    [ -z "${_skip_file}" ] || rm -f "${_skip_file}"
     if [ "${#_failed_dirs[@]}" -gt 0 ]; then
         echo "error: ${HECATRON_LANG:-}: ${_hook_action} failed in ${_failed_dirs[*]}" >&2
         exit 1
+    fi
+    if [ "${_ran}" -eq 0 ] && [ "${#_skipped[@]}" -gt 0 ]; then
+        _reasons="$(printf '%s; ' "${_skipped[@]}")"
+        skip "${_reasons%; }"
     fi
     exit 0
 }

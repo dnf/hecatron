@@ -58,6 +58,7 @@ type Report struct {
 	Root       string   // the project root
 	Cwd        string   // where paths are shown from
 	Changed    *Changed // what --changed selected, else nil
+	FailOnSkip bool     // --fail-on-skip: a run in which nothing ran fails
 	Audit      *Audit   // hct audit's findings, for JSON output; nil for none
 }
 
@@ -122,6 +123,16 @@ func (r *Report) counts() (passed, failed, timedOut, skipped int) {
 		}
 	}
 	return
+}
+
+// ExitStatus is the run's exit status (ExitStatus), and 1 with
+// --fail-on-skip when nothing ran (NothingRan).
+func (r *Report) ExitStatus() int {
+	status := ExitStatus(r.Results)
+	if status == 0 && r.FailOnSkip && NothingRan(r.Results) {
+		return 1
+	}
+	return status
 }
 
 // Rerun is the command that runs the failed jobs again.
@@ -251,7 +262,11 @@ func writeSkips(w io.Writer, r *Report) {
 				dirs = append(dirs, r.componentDir(c.Dir))
 			}
 		}
-		_, _ = fmt.Fprintf(w, "SKIP %s (%s): %s\n", result.Label, strings.Join(dirs, ", "), reason)
+		where := ""
+		if len(dirs) > 0 {
+			where = " (" + strings.Join(dirs, ", ") + ")"
+		}
+		_, _ = fmt.Fprintf(w, "SKIP %s%s: %s\n", result.Label, where, reason)
 	}
 }
 
@@ -302,10 +317,12 @@ type jsonJob struct {
 // WriteJSON writes the run as one JSON document.
 func WriteJSON(w io.Writer, r *Report) error {
 	passed, failed, timedOut, skipped := r.counts()
-	doc := jsonRun{Command: r.Action, Status: "passed", Exit: ExitStatus(r.Results), Duration: seconds(r.Wall),
+	doc := jsonRun{Command: r.Action, Status: "passed", Exit: r.ExitStatus(), Duration: seconds(r.Wall),
 		Summary: jsonCounts{passed, failed, timedOut, skipped}, Logs: r.LogDir, Jobs: []jsonJob{}, Rerun: r.Rerun(), Changed: r.Changed}
 	if failed+timedOut > 0 {
 		doc.Status = "failed"
+	} else if len(r.Results) > 0 && NothingRan(r.Results) {
+		doc.Status = "skipped"
 	}
 	if r.Audit != nil {
 		vulnerabilities := append([]Vulnerability{}, r.Audit.Vulnerabilities...)

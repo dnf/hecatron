@@ -37,7 +37,7 @@ _format_checked="$(mktemp)"
 # reads) writes why here (skip_component in languages/_hooks.sh): skipped,
 # not passed.
 _skip_file="$(mktemp)"
-trap 'rm -f "${_format_checked}" "${_skip_file}"' EXIT
+trap 'rm -f "${_format_checked}" "${_skip_file}" "${_skip_file}.format" "${_skip_file}.in"' EXIT
 
 _ran=0
 _failed=()
@@ -62,9 +62,14 @@ while IFS=$'\t' read -r _component _dir; do
     (eval "${_env}" && cd "${_dir}" && HECATRON_COMPONENT="${_component}" HECATRON_LANG="${_lang}" \
         HECATRON_FORMAT_CHECKED="${_format_checked}" HECATRON_SKIPPED="${_skip_file}" \
         bash "${_hook}" "${_component}" </dev/null) || _status=1
+    # Lint's format check: a component whose linter skipped is skipped only
+    # if its format check skipped too.
     if [ -n "${_format_hook}" ] && [ ! -s "${_format_checked}" ]; then
+        : >"${_skip_file}.format"
         (eval "${_env}" && cd "${_dir}" && HECATRON_COMPONENT="${_component}" HECATRON_LANG="${_lang}" \
-            HECATRON_FORMAT_CHECK=1 bash "${_format_hook}" "${_component}" </dev/null) || _status=1
+            HECATRON_FORMAT_CHECK=1 HECATRON_SKIPPED="${_skip_file}.format" \
+            bash "${_format_hook}" "${_component}" </dev/null) || _status=1
+        [ -s "${_skip_file}.format" ] || : >"${_skip_file}"
     fi
     if [ "${_status}" -ne 0 ]; then
         _failed+=("${_component}")
