@@ -150,6 +150,13 @@ what your code does.
   [cucumber/cucumber-expressions](https://github.com/cucumber/cucumber-expressions)
   (8) pass every language's own test suite with `hct init`, `hct install`
   and `hct test`, and no configuration.
+- **Open-source projects, every month.** About 150 public repositories,
+  polyglot ones first (Protocol Buffers, Thrift, Avro, FlatBuffers, gRPC,
+  ANTLR, OpenDAL...), then well-known projects in each language and some
+  large monorepos, each cloned on a fresh machine and run through `hct init`,
+  `install`, `doctor` and `test`. [docs/real-projects.md](docs/real-projects.md)
+  has the results per project and per language, and a README badge for
+  each project that follows its latest result.
 
 ## The parallel runner
 
@@ -262,7 +269,8 @@ them.
   [generated files](docs/guide/generated-files.md), and each report
   ([audit](docs/guide/audit.md), [outdated](docs/guide/outdated.md),
   [licenses](docs/guide/licenses.md), [format](docs/guide/format.md),
-  [advisor](docs/guide/advisor.md)).
+  [advisor](docs/guide/advisor.md)), and
+  [hecatron on real open-source projects](docs/real-projects.md).
 - **[Contributor guide](docs/contributing/README.md):** working on
   hecatron: [architecture](docs/contributing/architecture.md),
   [modules](docs/contributing/modules.md),
