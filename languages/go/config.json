@@ -8,6 +8,18 @@
   "detect": [
     "go.mod"
   ],
+  "sourceFiles": [
+    "*.go",
+    "*.s",
+    "go.sum",
+    "go.work",
+    "go.work.sum",
+    "testdata/",
+    "vendor/",
+    ".golangci.yml",
+    ".golangci.yaml",
+    ".golangci.toml"
+  ],
   "dirNames": [
     "go",
     "golang"

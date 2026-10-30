@@ -6,6 +6,24 @@
   "dependency": "kotlinc",
   "lintDependency": null,
   "detect": [],
+  "sourceFiles": [
+    "*.kt",
+    "*.kts",
+    "pom.xml",
+    "build.gradle",
+    "build.gradle.kts",
+    "settings.gradle",
+    "settings.gradle.kts",
+    "gradle.properties",
+    "gradle.lockfile",
+    "gradle/",
+    "gradlew",
+    "gradlew.bat",
+    "mvnw",
+    "mvnw.cmd",
+    ".mvn/",
+    "resources/"
+  ],
   "detectSources": [
     "*.kt"
   ],

@@ -296,3 +296,83 @@ func TestMatches(t *testing.T) {
 		}
 	}
 }
+
+// --changed attributes files as hct status does: a workspace at the root
+// (Rust at ".", durabuilt's layout) runs for its language's files only, and
+// an agent's worktree or another clone below the root selects nothing.
+func TestRootComponentSelectsItsLanguagesFiles(t *testing.T) {
+	setup(t)
+	defs := t.TempDir()
+	write(t, defs, map[string]string{
+		"go/config.json":   `{"detect": ["go.mod"]}`,
+		"rust/config.json": `{"detect": ["Cargo.toml"], "sourceFiles": ["*.rs", "Cargo.lock"]}`,
+	})
+	t.Setenv("HECATRON_BUILTIN_LANGUAGES", defs)
+	cases := []struct {
+		name   string
+		commit map[string]string
+		edit   map[string]string // uncommitted
+		nested []string          // directories made git repositories
+		want   []string
+	}{
+		{"stray files and nested repositories", nil, map[string]string{
+			".claude/worktrees/x/.git":        "gitdir: /nowhere/.git/worktrees/x\n",
+			".claude/worktrees/x/src/main.rs": "",
+			".claude/worktrees/y/src/lib.rs":  "",
+			"erl_crash.dump":                  "",
+			"crates/a/README.md":              "x\n",
+		}, []string{".claude/worktrees/y"}, nil},
+		{"a crate's source", map[string]string{"crates/a/src/lib.rs": "pub fn a() {}\n"}, nil, nil, []string{"rust:."}},
+		{"go's directory below the workspace", nil, map[string]string{"clients/go/notes.txt": ""}, nil, []string{"go:."}},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			root, _ := filepath.EvalSymlinks(t.TempDir())
+			root = filepath.Join(root, "repo")
+			write(t, root, map[string]string{
+				".hecatron/config.json": `{"schema": 1, "components": ["."], "languages": ["go", "rust"],
+					"implPath": "clients/{lang}", "implPaths": {"rust": "."}}`,
+				"Cargo.toml":          "[workspace]\nmembers = [\"crates/*\"]\n",
+				"crates/a/Cargo.toml": "[package]\n",
+				"crates/a/src/lib.rs": "",
+				"crates/a/README.md":  "",
+				"clients/go/go.mod":   "module x\n",
+			})
+			run(t, root, "init", "-q", "-b", "main")
+			run(t, root, "add", "-A")
+			run(t, root, "commit", "-qm", "main")
+			run(t, root, "checkout", "-qb", "work")
+			if c.commit != nil {
+				commit(t, root, c.commit)
+			}
+			write(t, root, c.edit)
+			for _, dir := range c.nested {
+				run(t, filepath.Join(root, dir), "init", "-q")
+			}
+			base, _, err := FindBase(root, "", noEnv)
+			if err != nil {
+				t.Fatal(err)
+			}
+			files, err := Files(root, base.Commit)
+			if err != nil {
+				t.Fatal(err)
+			}
+			p, err := project.Load(root, project.NewHome(t.TempDir()))
+			if err != nil {
+				t.Fatal(err)
+			}
+			s, err := Select(p, base, files, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := selected(s); !reflect.DeepEqual(got, c.want) {
+				t.Errorf("selected %v, want %v (files %v)", got, c.want, s.Files)
+			}
+			for _, file := range s.Files {
+				if strings.HasPrefix(file, ".claude/") {
+					t.Errorf("files %v hold a nested repository's", s.Files)
+				}
+			}
+		})
+	}
+}

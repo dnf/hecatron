@@ -9,6 +9,23 @@
     "pyproject.toml",
     "setup.py"
   ],
+  "sourceFiles": [
+    "*.py",
+    "*.pyi",
+    "*.pyx",
+    "*.pxd",
+    "requirements*.txt",
+    "uv.lock",
+    "poetry.lock",
+    "Pipfile",
+    "Pipfile.lock",
+    "setup.cfg",
+    "tox.ini",
+    "MANIFEST.in",
+    "ruff.toml",
+    ".ruff.toml",
+    "mypy.ini"
+  ],
   "detectWithSources": {
     "files": [
       "requirements.txt"

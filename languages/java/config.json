@@ -8,6 +8,22 @@
   "detect": [
     "pom.xml"
   ],
+  "sourceFiles": [
+    "*.java",
+    "build.gradle",
+    "build.gradle.kts",
+    "settings.gradle",
+    "settings.gradle.kts",
+    "gradle.properties",
+    "gradle.lockfile",
+    "gradle/",
+    "gradlew",
+    "gradlew.bat",
+    "mvnw",
+    "mvnw.cmd",
+    ".mvn/",
+    "resources/"
+  ],
   "detectSources": [
     "*.java"
   ],

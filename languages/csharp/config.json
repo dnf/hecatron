@@ -8,6 +8,21 @@
   "detect": [
     "*.csproj"
   ],
+  "sourceFiles": [
+    "*.cs",
+    "*.csproj",
+    "*.sln",
+    "*.slnx",
+    "*.props",
+    "*.targets",
+    "packages.lock.json",
+    "nuget.config",
+    "NuGet.Config",
+    "*.resx",
+    "*.razor",
+    "*.cshtml",
+    "appsettings*.json"
+  ],
   "dirNames": [
     "csharp",
     "dotnet",

@@ -311,8 +311,9 @@ func logStatus(path, lang, action string) string {
 var skippedFor = regexp.MustCompile(`^skipped for \d+ component\(s\): `)
 
 // changedFiles are the files git status lists as changed or untracked
-// under root, relative to it, from one `git status`; false outside a git
-// repository.
+// under root, relative to it, from one `git status`, less those in another
+// repository or worktree below root (project.OutsideNestedRepos); false
+// outside a git repository.
 func changedFiles(root string) ([]string, bool) {
 	top := gitTop(root)
 	if top == "" {
@@ -345,7 +346,7 @@ func changedFiles(root string) ([]string, bool) {
 		files = append(files, path)
 	}
 	sort.Strings(files)
-	return files, true
+	return project.OutsideNestedRepos(root, files), true
 }
 
 // gitTop is the top of the working tree holding dir, found as git does

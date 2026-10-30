@@ -425,7 +425,12 @@ entry points' output byte for byte. Decided with the first port
   version's environment), the last run of each action, and its uncommitted
   changes, then the commands worth running next, marking those that
   install. One `git status` (`--porcelain -z`, mapped to languages and
-  components by their directories, deepest first) and no doctor scripts;
+  components by their directories, deepest first; a directory at the root
+  or holding other components claims only its language's files, the
+  definition's `detect`, `detectSources`, `sourceFiles` and pin and support
+  file names, when it has `sourceFiles`, so a crash dump beside a root
+  Cargo workspace isn't Rust's; nothing in another git repository or
+  worktree below the root counts) and no doctor scripts;
   `--output` chosen as the runner chooses it (CI output is human). A last
   run is the action's log for the language: when it was written, passed or
   failed from the summary line both runners end it with (named runs, which

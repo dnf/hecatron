@@ -8,6 +8,15 @@
   "detect": [
     "Cargo.toml"
   ],
+  "sourceFiles": [
+    "*.rs",
+    "Cargo.lock",
+    ".cargo/",
+    "rustfmt.toml",
+    ".rustfmt.toml",
+    "clippy.toml",
+    ".clippy.toml"
+  ],
   "dirNames": [
     "rust",
     "rs"

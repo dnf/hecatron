@@ -1,16 +1,23 @@
 package project
 
-import "strings"
+import (
+	pathpkg "path"
+	"strings"
+)
 
 // Owners maps paths to the language and component whose implementation
 // directory holds them: the deepest such directory, so a component nested
-// in another's tree is its own.
+// in another's tree is its own. A directory at the root, or one holding
+// another component's, claims only the files that are its language's (see
+// claimed); any other file in it falls to a directory above that claims
+// it, if any.
 type Owners struct {
 	dirs []ownedDir
 }
 
 type ownedDir struct {
 	dir, lang, component string
+	claims               []string // the patterns it's limited to; nil: everything in it
 }
 
 // Owners reads every language's implementation directories.
@@ -22,18 +29,46 @@ func (p *Project) Owners() (*Owners, error) {
 			return nil, err
 		}
 		for _, d := range dirs {
-			o.dirs = append(o.dirs, ownedDir{strings.TrimSuffix(d.Dir, "/"), lang, d.Component})
+			o.dirs = append(o.dirs, ownedDir{dir: strings.TrimSuffix(d.Dir, "/"), lang: lang, component: d.Component})
 		}
+	}
+	root := strings.TrimSuffix(p.Root, "/")
+	for i, d := range o.dirs {
+		if d.dir != root && !o.holdsAnother(i) {
+			continue
+		}
+		claims, err := p.LanguageFiles(d.lang)
+		if err != nil {
+			return nil, err
+		}
+		o.dirs[i].claims = claims
 	}
 	return o, nil
 }
 
+// holdsAnother is whether another component's directory, in any language,
+// sits below the i-th one.
+func (o *Owners) holdsAnother(i int) bool {
+	for _, d := range o.dirs {
+		if d.dir != o.dirs[i].dir && within(d.dir, o.dirs[i].dir) {
+			return true
+		}
+	}
+	return false
+}
+
+// within reports whether an absolute path is dir or below it.
+func within(path, dir string) bool {
+	return path == dir || strings.HasPrefix(path, dir+"/") || dir == "/"
+}
+
 // Owner is the language and component an absolute path belongs to; ok is
-// false for a path in no language's directory.
+// false for a path in no language's directory, or only in ones that don't
+// claim it.
 func (o *Owners) Owner(path string) (lang, component string, ok bool) {
 	best := -1
 	for i, d := range o.dirs {
-		if (path == d.dir || strings.HasPrefix(path, d.dir+"/") || d.dir == "/") && (best < 0 || len(d.dir) > len(o.dirs[best].dir)) {
+		if within(path, d.dir) && d.claimed(path) && (best < 0 || len(d.dir) > len(o.dirs[best].dir)) {
 			best = i
 		}
 	}
@@ -41,6 +76,72 @@ func (o *Owners) Owner(path string) (lang, component string, ok bool) {
 		return "", "", false
 	}
 	return o.dirs[best].lang, o.dirs[best].component, true
+}
+
+// claimed is whether a path in the directory is its language's: anything
+// in a directory of its own; in one at the root or holding other
+// components, only what its language's file patterns match. Otherwise a
+// Cargo workspace at the root would own a crash dump or an editor's files
+// beside it, and hct test --changed would run Rust for them.
+func (d ownedDir) claimed(path string) bool {
+	if d.claims == nil {
+		return true
+	}
+	rel := strings.TrimPrefix(strings.TrimPrefix(path, d.dir), "/")
+	return MatchesLanguageFile(rel, d.claims)
+}
+
+// LanguageFiles are the file patterns that are a language's own, for
+// attributing a change in a directory it shares with others (the root):
+// its definition's detect, detectSources and sourceFiles, and the names of
+// its pin and support files. nil, claiming everything, for a definition
+// without "sourceFiles", whose files can't be told apart.
+func (p *Project) LanguageFiles(lang string) ([]string, error) {
+	sources, err := p.definitionStrings(lang, "sourceFiles")
+	if err != nil || len(sources) == 0 {
+		return nil, err
+	}
+	var patterns []string
+	for _, key := range []string{"detect", "detectSources"} {
+		list, err := p.definitionStrings(lang, key)
+		if err != nil {
+			return nil, err
+		}
+		patterns = append(patterns, list...)
+	}
+	versionFiles, err := p.VersionFiles(lang)
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range versionFiles {
+		if !strings.Contains(file, "/") { // .github/workflows/*.yml is read for a version, not the language's code
+			patterns = append(patterns, file)
+		}
+	}
+	return append(patterns, sources...), nil
+}
+
+// MatchesLanguageFile reports whether a relative path matches one of a
+// language's file patterns: a glob without a slash against its name, a
+// directory name with a trailing slash (gradle/, testdata/) against every
+// directory it's in, any other glob with a slash against the whole path.
+func MatchesLanguageFile(rel string, patterns []string) bool {
+	for _, pattern := range patterns {
+		if dir, ok := strings.CutSuffix(pattern, "/"); ok && !strings.Contains(dir, "/") {
+			if strings.Contains("/"+rel, "/"+dir+"/") {
+				return true
+			}
+			continue
+		}
+		name := rel
+		if !strings.Contains(pattern, "/") {
+			name = pathpkg.Base(rel)
+		}
+		if matched, _ := pathpkg.Match(pattern, name); matched {
+			return true
+		}
+	}
+	return false
 }
 
 // BuildFiles are the file name patterns that say how a language's code is

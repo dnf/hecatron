@@ -17,3 +17,14 @@
   they were. The Node hooks at the root no longer run packages below that
   are components of their own, and a directory several components share
   (a language whose `implPath` doesn't vary by component) runs once.
+
+- **A language at the root claims only its own files:** with a Cargo
+  workspace at the root, `hct status` and `--changed` give Rust only Rust's
+  changes (`*.rs`, `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`...);
+  a crash dump or a README beside the crates is another change, not a
+  reason to run `hct test rust`. The same holds for a directory of the
+  language's that holds other components, for every definition with the
+  new `sourceFiles` key (C#, Go, Java, JavaScript, Kotlin, Python, Rust).
+  Files inside another git repository or worktree below the root (an
+  agent's worktree in `.claude/worktrees/`, a clone) are no longer counted
+  as the project's changes at all.
