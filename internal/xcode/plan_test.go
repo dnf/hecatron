@@ -157,7 +157,7 @@ FLAG[sdk=iphoneos*] = conditional
 		t.Errorf("base config: %s", got)
 	}
 	for key, want := range map[string]string{
-		"SDKROOT": "iphoneos",          // the target's, over the project's .xcconfig
+		"SDKROOT": "iphoneos",        // the target's, over the project's .xcconfig
 		"OTHER":   "from-shared c b", // the project's $(inherited) is its .xcconfig's, which includes another
 		"NAME":    "shared",
 		"FLAG":    "", // conditional
