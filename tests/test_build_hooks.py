@@ -397,7 +397,7 @@ class XcodeTest(BuildHookTest):
         self.assertNotIn("+ swift test", result.stdout)
         write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE.replace(".iOS(.v17)", ".iOS(.v17), .macOS(.v14)"))
         self.assertIn("+ swift test", self.hook("swift", "test", "Packages/Core").stdout)
-        os.remove(os.path.join(self.bin, "uname"))
+        self.fake("uname", 'echo Linux; exit')
         write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE)
         self.assertIn("+ swift test", self.hook("swift", "test", "Packages/Core").stdout)
 
