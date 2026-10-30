@@ -775,6 +775,20 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
   component, a bad `-j`, `-s` or `--output`) exit 2; run-parallel.sh's `-j`
   and `-s` errors exited 1.
 - `rebuild` and `retest` keep `-c` for both steps (run.sh drops it).
+- **Skipped** (#236, building on #239's nothing-to-audit) is a third
+  outcome: a hook says it by writing its reason to the file
+  `HECATRON_SKIPPED` names and exiting 0 (`skip`, `skip_component`), not by
+  a reserved exit status, which a tool could return by itself and which
+  every caller of a hook would have to know. Each runner reads the file
+  per component and ends the job's log with a `skipped for N
+  component(s)` line, which run-parallel.sh and `hct status` read; a job is
+  skipped when every component was, or when the language has no hook for
+  the command. `history.log` records it as 77, so it sets no time limit
+  and isn't scheduled as a failure. It never fails a run; `--fail-on-skip`
+  (a flag and `HECATRON_FAIL_ON_SKIP`, not a config setting: what a run
+  must achieve is the caller's) fails one in which nothing passed or
+  failed, rather than one with any skip, so a monorepo with one package
+  without tests can still turn it on in CI.
 - **Reports for CI** (#100, #101; `internal/reports`, §20) are written
   beside these formats, not as one of them: `HECATRON_REPORT_DIR` (JUnit,
   SARIF, Code Quality) and `GITHUB_STEP_SUMMARY`. `--output junit` and

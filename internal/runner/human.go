@@ -169,7 +169,7 @@ func WriteTally(w io.Writer, r *Report) {
 
 // skipLine is the line each-component.sh and languageExec end a job's
 // components with when some had nothing to do, with why.
-var skipLine = regexp.MustCompile(`(?m)^\S+: \S+ skipped for \d+ component\(s\): .*$`)
+var skipLine = regexp.MustCompile(`(?m)^\S+: \S+ skipped(?: for \d+ component\(s\))?: .*$`)
 
 // writeSkipLines writes each job's skip line from its log, after the
 // tally, as run-parallel.sh does: not scanned isn't clean.

@@ -106,7 +106,7 @@ func TestReportsBesideTheOutput(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, part := range []string{"### hct test: 3 passed, 2 failed, 2 skipped", "| beta | a | **failed** |", "| alpha | b | passed |",
+	for _, part := range []string{"### hct test: 3 passed, 2 failed, 3 skipped", "| delta | a | skipped: no tests in a |", "| beta | a | **failed** |", "| alpha | b | passed |",
 		"#### FAIL beta (a/beta/): exit 1", "Log: `.logs/test/beta.log`", "beta.src:3: broken", "Rerun: `hct test beta flaky`"} {
 		if !strings.Contains(string(markdown), part) {
 			t.Errorf("no %q in the summary:\n%s", part, markdown)

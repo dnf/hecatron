@@ -219,7 +219,10 @@ func (c *cli) runHelpText() (text string, ok bool) {
 	out.WriteString("\nFlags:\n" +
 		"  -j VALUE   Concurrency: integer, percentage (default 50%), or 'unlimited'\n" +
 		"  -s MODE    Display: scroll (default), full, or zoom\n" +
-		"  -c NAME    Only this component (repeatable); components: " + strings.Join(c.project.Components, " ") + "\n")
+		"  -c NAME    Only this component (repeatable); components: " + strings.Join(c.project.Components, " ") + "\n" +
+		"  --fail-on-skip\n" +
+		"             Fail when nothing ran: every job skipped (no tests, no tool, not installed);\n" +
+		"             else HECATRON_FAIL_ON_SKIP=1\n")
 	if c.command == "audit" {
 		out.WriteString("  --fail-on SEVERITY\n" +
 			"             Fail on a finding at or above critical, high (default), moderate or low;\n" +

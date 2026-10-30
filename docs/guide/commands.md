@@ -65,8 +65,8 @@ toolchain, or in its dependencies or configuration (`cargo doc`, Sphinx
 with a `docs/conf.py`, TypeDoc as a dependency; `cargo bench`, `go test
 -bench`, pytest-benchmark, JMH, BenchmarkDotNet). `hct install` installs
 none. A language with no default (Go has no docs generator in its
-toolchain) says "No docs tool for go (skipping)", and a component without
-the tool or without benchmarks skips, saying why; neither fails. `hct docs`
+toolchain) is skipped ("go: docs skipped: no docs tool for go"), and a component without
+the tool or without benchmarks is skipped, saying why; neither fails ([skipped](output.md#skipped)). `hct docs`
 ends with where each language's docs were written. Neither is part of `hct
 check`, generated CI or `hct test`. Each language's defaults:
 [languages](languages.md#api-docs-and-benchmarks).
@@ -78,6 +78,7 @@ Flags every run command takes:
 | `-j VALUE` | Jobs at once: a number, a share of the CPUs (`50%`, the default), `pcores` or `unlimited` ([runner](runner.md#how-many-jobs-run-at-once)) |
 | `-s MODE` | The live display's time scale: `scroll` (default), `full` or `zoom` |
 | `-c NAME` | Only this component (repeatable) |
+| `--fail-on-skip` | Exit 1 when nothing ran: every job [skipped](output.md#skipped) (by its hooks, not installed or disabled); else `HECATRON_FAIL_ON_SKIP=1` |
 | `--output FORMAT` | `human`, `agent`, `json`, `ci`, `junit` or `sarif`; else `HECATRON_OUTPUT`, else chosen for whoever is calling ([output](output.md)). Binary only |
 | `--timeout DURATION` | Stop a job after `DURATION` (`90s`, `30m`, `1h30m`; `0`: no limit); else `HECATRON_TIMEOUT`, else 5× its usual time ([runner](runner.md#time-limits)). Binary only |
 | `--changed [REF]` | Only what the files changed since `REF` touch; not for `audit`, `outdated` or `clean` ([runner](runner.md#only-what-changed)). Binary only |

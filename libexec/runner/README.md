@@ -136,7 +136,7 @@ When piped or in CI, the runner waits for all jobs to complete, then prints a st
 ```
 .logs/<name>/
   <label>.log        Captured stdout+stderr for each job
-  <label>.result     Internal: "duration_ds return_code"
+  <label>.result     Internal: "duration_ds return_code [skipped]"
   history.log        Duration history for prediction
   .lock/             Directory-based lock (prevents concurrent runs)
 ```
@@ -151,12 +151,18 @@ go=11:0 rust=35:1 python=27:0
 ```
 
 - `duration_ds` is in deciseconds (1 = 0.1s)
-- `return_code` is the exit code of the job
+- `return_code` is the exit code of the job, or 77 for a job that skipped
+  (below): neither a pass, whose time sets the binary's time limits, nor a
+  failure, run first next time
 - Last 50 runs are retained (older entries are pruned)
 
 ### .result files
 
-Temporary files written by each job subprocess. Format: `duration_ds return_code`. Cleaned up on exit.
+Temporary files written by each job subprocess. Format: `duration_ds return_code`, then `skipped` when the job succeeded with nothing to do: its log has a `<label>: <action> skipped: ...` or `... skipped for N component(s): ...` line (each-component.sh's, run.sh's for a language without a hook) and no `passed for` line. A skipped job is shown with `-` and `skipped`, counted apart from passed (`3/3 passed, 1 skipped`), and its skip line is printed after the tally. Cleaned up on exit.
+
+### --fail-on-skip
+
+`run-parallel.sh --fail-on-skip NAME ...` exits 1 when no job passed or failed (each skipped or not installed), saying `hecatron: nothing ran: every job skipped (--fail-on-skip)`; run.sh passes it for `hct test --fail-on-skip`.
 
 ## Integration
 

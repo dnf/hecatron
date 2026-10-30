@@ -130,7 +130,7 @@ class FormatCommandTest(Fixture):
             f.write(json.dumps({"dependency": "bash"}))
         result = self.hecatron("format", "fixture")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("No formatter for fixture", result.stdout)
+        self.assertIn("fixture: format skipped: no formatter for fixture", result.stdout)
         lint = self.hecatron("lint", "fixture")
         self.assertEqual(lint.returncode, 0, lint.stderr)
 

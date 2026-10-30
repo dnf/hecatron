@@ -49,6 +49,12 @@ system of its own. `hct` and `hecatron` are the same command.
 ## Results
 
 - Exit status 0: passed. 1: something failed. 2: a usage error.
+- **Skipped is not passed.** A job or component whose hook had nothing to
+  run (no tests, no linter or docs tool, nothing to audit) or couldn't
+  run is skipped, with a reason: `SKIP <lang> (<dirs>): <reason>` in agent
+  output, `"status": "skipped"` and `"reason"` in JSON, `<lang>: <action>
+  skipped...` at the end of its log. It exits 0; don't report it as
+  tested. `--fail-on-skip` exits 1 when nothing ran at all.
 - Each run saves a log per target: `<logs>/<action>/<target>.log`, where
   `<logs>` is config.json `logs` (default `.logs`), or `.git/hecatron/logs`
   in a repository without `.hecatron/config.json`.
@@ -106,6 +112,8 @@ A script at `.hecatron/languages/<lang>/<action>.sh` (`test`, `lint`,
 `bench`) replaces hecatron's default for that language. It runs once per
 component, in the component's directory, with `HECATRON_LANG`,
 `HECATRON_COMPONENT` and `HECATRON_ROOT` set; exit non-zero to fail.
+With nothing to run, `source "${HECATRON_HOME}/languages/_hooks.sh"` and
+`skip "reason"`, so the component is reported skipped, not passed.
 
 ## Toolchain versions
 
