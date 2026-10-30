@@ -161,14 +161,17 @@ macOS with `xcodebuild`, unsigned (`CODE_SIGNING_ALLOWED=NO`):
   `project.xcworkspace` inside an `.xcodeproj` doesn't count), else the
   `*.xcodeproj`. Of several, the one named like the directory, the project
   (`HECATRON_PROJECT`) or the repository; otherwise the build skips.
-- **The scheme:** the one `xcodebuild -list -json` reports, or of several the
-  one named like the workspace or project (a CocoaPods workspace also lists
-  each pod's); otherwise the build skips. A scheme also resolves the
-  project's Swift packages, which a bare `xcodebuild build` may not.
-- **The destination:** the generic device of the scheme's platform, from
-  `xcodebuild -showBuildSettings`' `PLATFORM_NAME`:
-  `generic/platform=iOS`, `macOS`, `tvOS`, `watchOS` or `visionOS`; the
-  build skips when it can't tell.
+- **The scheme:** the one `xcodebuild -list -json` reports named like the
+  workspace or project (each Swift package the project uses adds a scheme,
+  and a CocoaPods workspace one per pod); otherwise the build skips. A
+  scheme also resolves the project's Swift packages, which a bare
+  `xcodebuild build` may not.
+- **The destination:** from the scheme's `SUPPORTED_PLATFORMS`
+  (`xcodebuild -showBuildSettings`): `generic/platform=macOS` where it
+  includes macOS, else `generic/platform=iOS Simulator` (a simulator SDK
+  needs no signing or provisioning), else the first other simulator
+  (visionOS, tvOS, watchOS); the build skips when there is none. Without
+  one, xcodebuild can't choose among a multiplatform target's platforms.
 - **The output:** `-derivedDataPath .build/xcode`, not `./build` or
   `~/Library/Developer/Xcode/DerivedData`; `hct clean` removes it (and
   `.build/` when that leaves it empty), without running `xcodebuild`. Add
@@ -180,8 +183,11 @@ macOS with `xcodebuild`, unsigned (`CODE_SIGNING_ALLOWED=NO`):
   ("built with swift's hook"), unless Swift is disabled
   (`hct disable swift`) or its component directory is elsewhere.
 - **Tests** skip: they need a simulator to run on, and which one is the
-  project's choice. Swift's other hooks skip there too; a Swift package
-  below or above the project is still tested with SwiftPM.
+  project's choice. So do Swift's docs and bench there, and the local
+  packages below aren't tested with SwiftPM (`swift test` builds them for
+  the Mac, and an app's are often iOS-only); lint and deps still act on
+  them. Elsewhere, on macOS, SwiftPM's build, test, docs and bench skip a
+  package whose `platforms:` leaves out `.macOS`.
 
 Where a build skips (several schemes, workspaces or projects, an unknown
 platform), it says so, naming the hooks to write:

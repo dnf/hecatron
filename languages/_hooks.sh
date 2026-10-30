@@ -327,14 +327,16 @@ dotnet_hook() {
 # targets include this directory's sources (FlatBuffers' Package.swift at the
 # root builds swift/Sources), which swift_package_args points SwiftPM at.
 # An app's Xcode project here, without a Package.swift, goes to xcode_hook:
-# for build and clean first (it builds the local packages below too), for
-# the rest when there's no package below or above to act on.
+# for what compiles first (it builds the local packages below too, for the
+# app's platform: SwiftPM on the host can't build IceCubesApp's iOS-only
+# packages), for the rest (lint, deps) when there's no package below or
+# above to act on.
 # shellcheck disable=SC2034 # read by the swift hooks
 swift_package_args=()
 swift_package() {
     if [ ! -f Package.swift ] && xcode_project; then
         case "${_hook_action}" in
-            build|clean) xcode_hook "${_hook_action}" ;;
+            build|clean|test|docs|bench) xcode_hook "${_hook_action}" ;;
         esac
     fi
     if ! find_build Package.swift; then
@@ -342,8 +344,22 @@ swift_package() {
         unknown "no Package.swift here, below, or above it in the project"
     fi
     note_build_dir
+    case "${_hook_action}" in
+        build|test|docs|bench) swift_package_builds_on_host ;;
+    esac
     # shellcheck disable=SC2034 # read by the swift hooks
     [ "${build_dir}" = . ] || swift_package_args=(--package-path "${build_dir}")
+}
+
+# On macOS, SwiftPM builds for macOS: a package whose platforms: names
+# others but not macOS (an iOS app's local package) builds at macOS's
+# oldest deployment target, where the newer APIs it uses aren't available.
+# Its app's Xcode project builds it instead.
+swift_package_builds_on_host() {
+    [ "$(uname -s)" = Darwin ] || return 0
+    grep -qs 'platforms[[:space:]]*:' "${build_dir}/Package.swift" || return 0
+    grep -qs '\.macOS' "${build_dir}/Package.swift" ||
+        skip "the package's platforms don't include macOS, which SwiftPM here builds for (an Xcode project builds it for its platform)"
 }
 
 # Janet's jpm, in the project's local tree (jpm -l) when it keeps its
@@ -1741,52 +1757,53 @@ xcode_pick() {
     echo "several: ${_found[*]}"
 }
 
-# The scheme to build from xcodebuild -list -json's report (stdin) on the
-# project or workspace named $1: its only one, else the one named like it
-# (CocoaPods' workspace lists each pod's too). Prints "scheme<TAB>name", or
-# "several<TAB>names" for the note.
+# The scheme to build from xcodebuild -list -json's report (stdin): the one
+# named like the workspace or project ($1, then $2...). Not "the only one":
+# each Swift package the project uses adds a scheme (NetNewsWire lists 27),
+# and CocoaPods' workspace one per pod. Prints the scheme, or nothing.
 xcode_scheme() {
     python3 -c '
 import json, sys
 container = json.load(sys.stdin)
 info = container.get("workspace") or container.get("project") or {}
 schemes = info.get("schemes") or []
-chosen = schemes if len(schemes) == 1 else [s for s in schemes if s == sys.argv[1]]
-print("scheme\t" + chosen[0] if len(chosen) == 1 else "several\t" + (", ".join(schemes) or "none"))
-' "$1"
+print(next((name for name in sys.argv[1:] if name in schemes), ""))
+' "$@"
 }
 
-# The generic device of the platform in xcodebuild -showBuildSettings'
-# report (stdin; the first target's PLATFORM_NAME, from its SDKROOT), for
-# -destination: without one, xcodebuild picks a destination itself, for
-# iOS a simulator that may not be installed.
+# The generic destination to build for, from xcodebuild -showBuildSettings'
+# report (stdin; the first target's SUPPORTED_PLATFORMS): macOS where the
+# target supports it, else the iOS simulator (a simulator SDK needs no
+# signing or provisioning), else the first other simulator. Without one,
+# xcodebuild can't choose among a multiplatform target's platforms.
 xcode_destination() {
-    local _platform
-    _platform="$(sed -n 's/^[[:space:]]*PLATFORM_NAME = //p' | sed -n 1p)"
-    case "${_platform}" in
-        macosx) echo "generic/platform=macOS" ;;
-        iphoneos) echo "generic/platform=iOS" ;;
-        iphonesimulator) echo "generic/platform=iOS" ;;
-        appletvos) echo "generic/platform=tvOS" ;;
-        appletvsimulator) echo "generic/platform=tvOS" ;;
-        watchos) echo "generic/platform=watchOS" ;;
-        watchsimulator) echo "generic/platform=watchOS" ;;
-        xros) echo "generic/platform=visionOS" ;;
-        xrsimulator) echo "generic/platform=visionOS" ;;
+    local _platforms _platform
+    _platforms=" $(sed -n 's/^[[:space:]]*SUPPORTED_PLATFORMS = //p' | sed -n 1p) "
+    case "${_platforms}" in
+        *" macosx "*) echo "generic/platform=macOS"; return ;;
+        *" iphonesimulator "*) echo "generic/platform=iOS Simulator"; return ;;
     esac
+    for _platform in ${_platforms}; do
+        case "${_platform}" in
+            xrsimulator) echo "generic/platform=visionOS Simulator"; return ;;
+            appletvsimulator) echo "generic/platform=tvOS Simulator"; return ;;
+            watchsimulator) echo "generic/platform=watchOS Simulator"; return ;;
+        esac
+    done
 }
 
 # Through the root workspace when there is one (CocoaPods': the bare project
-# doesn't link without its Pods), else the project; with the scheme -list
-# gives (a scheme resolves the project's Swift packages), for its platform's
-# generic device.
+# doesn't link without its Pods), else the project; with the scheme named
+# like it (a scheme resolves the project's Swift packages), for its
+# platform's generic destination.
 xcode_build() {
-    local _container _kind _scheme _found _list _settings _destination
+    local _container _kind _project _scheme _list _settings _destination
     _kind=-workspace
     _container="$(xcode_pick '*.xcworkspace')"
+    _project="$(xcode_pick '*.xcodeproj')"
     if [ -z "${_container}" ]; then
         _kind=-project
-        _container="$(xcode_pick '*.xcodeproj')"
+        _container="${_project}"
     fi
     case "${_container}" in
         "several: "*)
@@ -1794,15 +1811,14 @@ xcode_build() {
     esac
     echo "+ xcodebuild -list -json ${_kind} ${_container}"
     _list="$(xcodebuild -list -json "${_kind}" "${_container}")" || exit 1
-    IFS=$'\t' read -r _scheme _found < <(printf '%s\n' "${_list}" | xcode_scheme "${_container%.*}")
-    [ "${_scheme}" = scheme ] ||
-        skip "${_container} has several schemes (${_found}), none named like it: $(xcode_write_hooks)"
-    _scheme="${_found}"
+    _scheme="$(printf '%s\n' "${_list}" | xcode_scheme "${_container%.*}" "${_project%.*}")"
+    [ -n "${_scheme}" ] ||
+        skip "${_container} has no scheme named like it (${_container%.*}): $(xcode_write_hooks)"
     echo "+ xcodebuild -showBuildSettings ${_kind} ${_container} -scheme ${_scheme}"
     _settings="$(xcodebuild -showBuildSettings "${_kind}" "${_container}" -scheme "${_scheme}")" || exit 1
     _destination="$(printf '%s\n' "${_settings}" | xcode_destination)"
     [ -n "${_destination}" ] ||
-        skip "can't tell scheme ${_scheme}'s platform from its build settings (PLATFORM_NAME): $(xcode_write_hooks)"
+        skip "can't tell a destination for scheme ${_scheme} from its SUPPORTED_PLATFORMS: $(xcode_write_hooks)"
     run xcodebuild build "${_kind}" "${_container}" -scheme "${_scheme}" -destination "${_destination}" \
         -derivedDataPath "${xcode_derived_data}" CODE_SIGNING_ALLOWED=NO
     exit
