@@ -1,18 +1,32 @@
-hct licenses: 44 packages, 12 licenses, 7 unknown; policy: 9 violations, 1 accepted
+hct licenses: 44 packages, 12 licenses (11 identifiers), 7 unknown; copyleft: 1 strong, 3 weak, 1 unclassified; policy: 9 violations, 1 accepted
 
-  license                packages  languages                              components
-  MIT                    16        csharp, php, python, ruby, typescript  csharp-app, php-app, python-app, ruby-app, typescript-app
-  Apache-2.0             5         csharp, go, java, python               csharp-app, go-app, java-app, python-app
-  BSD-3-Clause           4         go, java, php                          go-app, java-app, php-app
-  Apache-2.0 OR MIT      3         rust                                   rust-app
-  MPL-2.0                2         go, python                             go-app, python-app
-  Apache-2.0 OR BSL-1.0  1         rust                                   rust-app
-  BSD-2-Clause           1         python                                 python-app
-  CC-BY-4.0              1         typescript                             typescript-app
-  GPL-3.0-only           1         python                                 python-app
-  LGPL-3.0-only          1         python                                 python-app
-  Ruby OR BSD-2-Clause   1         ruby                                   ruby-app
-  WTFPL                  1         typescript                             typescript-app
+  license                copyleft      packages  languages                              components
+  MIT                    none          16        csharp, php, python, ruby, typescript  csharp-app, php-app, python-app, ruby-app, typescript-app
+  Apache-2.0             none          5         csharp, go, java, python               csharp-app, go-app, java-app, python-app
+  BSD-3-Clause           none          4         go, java, php                          go-app, java-app, php-app
+  Apache-2.0 OR MIT      none          3         rust                                   rust-app
+  MPL-2.0                weak          2         go, python                             go-app, python-app
+  Apache-2.0 OR BSL-1.0  none          1         rust                                   rust-app
+  BSD-2-Clause           none          1         python                                 python-app
+  CC-BY-4.0              unclassified  1         typescript                             typescript-app
+  GPL-3.0-only           strong        1         python                                 python-app
+  LGPL-3.0-only          weak          1         python                                 python-app
+  Ruby OR BSD-2-Clause   none          1         ruby                                   ruby-app
+  WTFPL                  none          1         typescript                             typescript-app
+
+Per license identifier (a package under AND or OR counts for each):
+  identifier     copyleft      packages  languages
+  MIT            none          19        csharp, php, python, ruby, rust, typescript
+  Apache-2.0     none          9         csharp, go, java, python, rust
+  BSD-3-Clause   none          4         go, java, php
+  BSD-2-Clause   none          2         python, ruby
+  MPL-2.0        weak          2         go, python
+  BSL-1.0        none          1         rust
+  CC-BY-4.0      unclassified  1         typescript
+  GPL-3.0-only   strong        1         python
+  LGPL-3.0-only  weak          1         python
+  Ruby           none          1         ruby
+  WTFPL          none          1         typescript
 
 Unknown licenses (no metadata, or not an SPDX expression: worth a look):
   maven:com.mysql:mysql-connector-j  8.2.0   declared: non-standard  java, java-app      direct
@@ -22,6 +36,9 @@ Unknown licenses (no metadata, or not an SPDX expression: worth a look):
   pypi:chardet                       5.2.0   declared: non-standard  python, python-app  direct
   pypi:idna                          3.9.0   declared: non-standard  python, python-app  transitive
   pypi:pycrypto                      2.6.1   declared: non-standard  python, python-app  direct
+
+The project's own packages (not counted):
+  crates.io:licenses-fixture  0.1.0  rust, rust-app
 
 Not covered:
   dart: deps.dev, where OSV-Scanner finds licenses, has none for pub.dev

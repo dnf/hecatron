@@ -44,7 +44,7 @@ through them.
 | `actions` | Plans a language's default hooks from the rules in its `config.json` or a Go family (`jvm.go`); used by `hct plan` while definitions move to data |
 | `deps` | Reads the audit and outdated reports of every supported tool, as `audit.py` and `outdated.py` do, with Python's JSON rules (`pyjson.go`) |
 | `reports` | JUnit XML (merging the tools' own test reports: `native.go`), SARIF 2.1.0, GitLab Code Quality and the GitHub job summary |
-| `licenses`, `spdx` | `hct licenses`: OSV-Scanner's and the lock files' licenses, SPDX expressions, the project's policy |
+| `licenses`, `spdx` | `hct licenses`: OSV-Scanner's and the lock files' licenses, the project's own packages (`own.go`), lock files outside the components (`unread.go`), SPDX expressions and their copyleft classes (`copyleft.go`, `copyleft.txt`), the project's policy |
 | `sbom` | `hct sbom`: CycloneDX 1.6 and SPDX 2.3 JSON from `licenses.GatherAll`, purls |
 | `secrets` | `hct audit`'s secret scan: runs gitleaks with `--redact` and a generated config (what git ignores, `audit.secrets.ignore`), decoding only each finding's rule, file, line, commit and fingerprint |
 | `advisor` | `hct advisor`: rules from `advice.json` and `languages/_advice.json`, conditions, the rules written in Go (toolchain support, lock freshness, CI coverage, audit acceptances) |

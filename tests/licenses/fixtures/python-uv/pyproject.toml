@@ -1,0 +1,14 @@
+[project]
+name = "Uv_Proj"
+dynamic = ["version"]
+requires-python = ">=3.11"
+dependencies = ["six", "uvproj-lib"]
+
+[dependency-groups]
+dev = ["iniconfig"]
+
+[tool.uv.sources]
+uvproj-lib = { workspace = true }
+
+[tool.uv.workspace]
+members = ["lib"]

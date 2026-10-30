@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -13,7 +12,7 @@ import (
 	"github.com/dnf/hecatron/internal/sbom"
 )
 
-const sbomUsage = `Usage: hecatron sbom [lang...] [-c COMPONENT] [--format cyclonedx|spdx] [-o FILE] [--no-dev]
+const sbomUsage = `Usage: hecatron sbom [lang...] [-c COMPONENT] [--format cyclonedx|spdx] [-o FILE] [--no-dev] [--timeout DURATION]
 
 A software bill of materials for the project: every component of each
 language (those named, or all the project's), the packages its lock files
@@ -21,13 +20,15 @@ resolve to (OSV-Scanner's, as hct licenses reads them) with their purls,
 SPDX licenses where known, and direct dependencies. CycloneDX 1.6 JSON by
 default, or SPDX 2.3 JSON; to stdout, or FILE with -o. --no-dev leaves dev
 and test dependencies out. SOURCE_DATE_EPOCH sets the timestamp, for a
-reproducible document. Needs OSV-Scanner and the network, as hct licenses
+reproducible document. --timeout DURATION (90s, 30m, 1h30m; 0: no limit;
+else HECATRON_TIMEOUT) stops it after DURATION (exit 1). Needs OSV-Scanner and the network, as hct licenses
 does. See docs/guide/sbom.md.
 `
 
 // sbomCommand is `hecatron sbom` (#226). It exists only in the Go core.
 func (c *cli) sbomCommand() int {
 	format, output, noDev := sbom.Formats[0], "", false
+	timeoutFlag, timeoutGiven := "", false
 	var names, components []string
 	for i := 0; i < len(c.args); i++ {
 		arg := c.args[i]
@@ -62,6 +63,13 @@ func (c *cli) sbomCommand() int {
 			components = append(components, component)
 		case arg == "--no-dev":
 			noDev = true
+		case arg == "--timeout":
+			if timeoutFlag, ok = value("a duration (90s, 30m, 1h30m), or 0 for none"); !ok {
+				return 2
+			}
+			timeoutGiven = true
+		case strings.HasPrefix(arg, "--timeout="):
+			timeoutFlag, timeoutGiven = strings.TrimPrefix(arg, "--timeout="), true
 		case strings.HasPrefix(arg, "-"):
 			fmt.Fprintf(os.Stderr, "hecatron: sbom: unknown option '%s'\n%s", arg, sbomUsage)
 			return 2
@@ -76,6 +84,11 @@ func (c *cli) sbomCommand() int {
 	created, err := sourceDateEpoch()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "hecatron: sbom:", err)
+		return 2
+	}
+	limit, err := scanLimit(timeoutFlag, timeoutGiven)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 2
 	}
 	if status := c.findProject(); status != 0 {
@@ -101,15 +114,14 @@ func (c *cli) sbomCommand() int {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 1
 	}
-	report, err := licenses.GatherAll(p.Root, targets, osvScanner)
+	ctx, cancel := scanContext(limit)
+	defer cancel()
+	report, err := licenses.GatherAll(p.Root, targets, osvScannerWithin(ctx))
 	if err != nil {
-		if errors.Is(err, errNoOSVScanner) {
-			fmt.Fprintf(os.Stderr, "hecatron: sbom: %v; %s, or see https://google.github.io/osv-scanner/installation/\n",
-				err, osvScannerInstallHint(langs))
-			return 3
-		}
-		fmt.Fprintln(os.Stderr, "hecatron: sbom:", err)
-		return 1
+		return scanFailed("sbom", err, langs, limit)
+	}
+	if every, err := licenses.ProjectTargets(p, langs, nil); err == nil {
+		report.WarnUnread(p.Root, every)
 	}
 	for _, note := range sbomNotes(report) {
 		fmt.Fprintln(os.Stderr, "hecatron: sbom:", note)

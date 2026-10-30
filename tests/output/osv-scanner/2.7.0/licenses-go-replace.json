@@ -1,0 +1,43 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "/tmp/licenses-fixtures/go-replace/app/go.mod",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "github.com/google/uuid",
+            "version": "1.6.0",
+            "ecosystem": "Go",
+            "purl": "pkg:golang/github.com/google/uuid@1.6.0"
+          },
+          "licenses": [
+            "BSD-3-Clause"
+          ]
+        },
+        {
+          "package": {
+            "name": "../shared",
+            "version": "",
+            "ecosystem": "Go",
+            "purl": "pkg:golang/../shared"
+          }
+        }
+      ]
+    }
+  ],
+  "experimental_config": {
+    "licenses": {
+      "summary": true,
+      "allowlist": []
+    }
+  },
+  "license_summary": [
+    {
+      "name": "BSD-3-Clause",
+      "count": 1
+    }
+  ]
+}
