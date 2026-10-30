@@ -58,6 +58,44 @@ type Report struct {
 	Root       string   // the project root
 	Cwd        string   // where paths are shown from
 	Changed    *Changed // what --changed selected, else nil
+	Audit      *Audit   // hct audit's findings, for JSON output; nil for none
+}
+
+// Audit is what hct audit found, every finding of every component, as
+// its JSON output lists them (docs/guide/output.md).
+type Audit struct {
+	Vulnerabilities []Vulnerability
+	Secrets         []Secret
+}
+
+// Vulnerability is one advisory affecting one package in one component.
+type Vulnerability struct {
+	Component string   `json:"component"`
+	Language  string   `json:"language"`
+	Package   string   `json:"package"`
+	Version   string   `json:"version"` // installed; "" where the auditor doesn't say
+	Fixed     []string `json:"fixed"`   // the versions that fix it; [] where the auditor doesn't say
+	ID        string   `json:"id"`
+	Aliases   []string `json:"aliases"`
+	Severity  string   `json:"severity"` // critical, high, moderate, low or unrated
+	Title     string   `json:"title"`
+	URL       string   `json:"url,omitempty"`
+	Tool      string   `json:"tool"`           // the auditor: npm, pnpm, yarn-classic, yarn-berry, bun, pip-audit, govulncheck, composer, bundle-audit, dotnet, osv-scanner
+	File      string   `json:"file,omitempty"` // the lock file or manifest, relative to the workspace
+	Line      int      `json:"line,omitempty"`
+	Accepted  bool     `json:"accepted"` // an accepted risk (audit.ignore): listed, not counted
+	Reason    string   `json:"reason,omitempty"`
+	Until     string   `json:"until,omitempty"`
+}
+
+// Secret is one possible secret the secret scan found: never the secret.
+type Secret struct {
+	Rule        string `json:"rule"`
+	Description string `json:"description"`
+	File        string `json:"file,omitempty"`
+	Line        int    `json:"line,omitempty"`
+	Commit      string `json:"commit,omitempty"`
+	Fingerprint string `json:"fingerprint"`
 }
 
 // Changed is what --changed selected and why.
@@ -79,7 +117,7 @@ func (r *Report) counts() (passed, failed, timedOut, skipped int) {
 			failed++
 		case TimedOut:
 			timedOut++
-		case StatusNotInstall, StatusDisabled:
+		case StatusNotInstall, StatusDisabled, Skipped:
 			skipped++
 		}
 	}
@@ -165,6 +203,7 @@ func WriteAgent(w io.Writer, r *Report) {
 			_, _ = fmt.Fprintf(w, "%s: docs: written to %s\n", result.Label, dir)
 		}
 	}
+	writeSkips(w, r)
 	if failed+timedOut == 0 {
 		return
 	}
@@ -198,6 +237,24 @@ func WriteAgent(w io.Writer, r *Report) {
 	_, _ = fmt.Fprintf(w, "Rerun: %s\n", r.Rerun())
 }
 
+// writeSkips writes a line for each job that had nothing to do in some
+// component, with why: not scanned isn't the same as clean.
+func writeSkips(w io.Writer, r *Report) {
+	for _, result := range r.Results {
+		reason := result.SkipReason()
+		if reason == "" || result.Unsuccessful() {
+			continue
+		}
+		var dirs []string
+		for _, c := range result.Components {
+			if c.Skipped != "" {
+				dirs = append(dirs, r.componentDir(c.Dir))
+			}
+		}
+		_, _ = fmt.Fprintf(w, "SKIP %s (%s): %s\n", result.Label, strings.Join(dirs, ", "), reason)
+	}
+}
+
 type jsonRun struct {
 	Command  string     `json:"command"`
 	Status   string     `json:"status"`
@@ -208,6 +265,9 @@ type jsonRun struct {
 	Jobs     []jsonJob  `json:"jobs"`
 	Rerun    string     `json:"rerun,omitempty"`
 	Changed  *Changed   `json:"changed,omitempty"`
+
+	Vulnerabilities *[]Vulnerability `json:"vulnerabilities,omitempty"` // hct audit's, all of them
+	Secrets         *[]Secret        `json:"secrets,omitempty"`
 }
 
 type jsonCounts struct {
@@ -228,6 +288,7 @@ type jsonJob struct {
 	Kind       string      `json:"kind"`
 	Language   string      `json:"language,omitempty"`
 	Status     string      `json:"status"`
+	Reason     string      `json:"reason,omitempty"` // why it, or some of its components, had nothing to do
 	ExitCode   *int        `json:"exitCode,omitempty"`
 	Duration   *float64    `json:"duration,omitempty"`
 	Log        string      `json:"log,omitempty"`
@@ -246,11 +307,17 @@ func WriteJSON(w io.Writer, r *Report) error {
 	if failed+timedOut > 0 {
 		doc.Status = "failed"
 	}
+	if r.Audit != nil {
+		vulnerabilities := append([]Vulnerability{}, r.Audit.Vulnerabilities...)
+		secrets := append([]Secret{}, r.Audit.Secrets...)
+		doc.Vulnerabilities, doc.Secrets = &vulnerabilities, &secrets
+	}
 	for _, result := range r.Results {
 		if result.Status == StatusSeparator {
 			continue
 		}
-		job := jsonJob{Label: result.Label, Kind: "language", Language: result.Lang, Status: string(result.Status)}
+		job := jsonJob{Label: result.Label, Kind: "language", Language: result.Lang, Status: string(result.Status),
+			Reason: result.SkipReason()}
 		if result.Task {
 			job.Kind = "task"
 		} else if result.Lang == "" {

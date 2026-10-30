@@ -148,6 +148,9 @@ func (l *Live) draw() {
 		case l.ended[i]:
 			done++
 			mark, c, note := "✓", "32", ""
+			if r.Status == Skipped {
+				mark, c, note = "-", "2", " skipped"
+			}
 			if r.Unsuccessful() {
 				mark, c = "✗", "31"
 				failed++

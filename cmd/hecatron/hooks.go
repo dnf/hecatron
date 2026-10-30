@@ -49,7 +49,7 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 		}
 		base := r.environment()
 		var outcome runner.Outcome
-		var failed []string
+		var failed, skipped []string
 		for _, dir := range dirs {
 			if len(wanted) > 0 && !contains(wanted, dir.Component) {
 				continue
@@ -75,20 +75,28 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 					ok = false
 				} else {
 					_ = checked.Close() // empty: the hook writes it by name
+					skip := checked.Name() + ".skipped"
 					hookEnv := append(env, "HECATRON_COMPONENT="+dir.Component, "HECATRON_LANG="+lang)
 					if reports := r.testReportDir(lang, dir.Component); reports != "" {
 						hookEnv = append(hookEnv, "HECATRON_TEST_REPORTS="+reports)
 					}
-					ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECKED="+checked.Name()), hook, dir.Component)
+					ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECKED="+checked.Name(),
+						"HECATRON_SKIPPED="+skip), hook, dir.Component)
 					if info, err := os.Stat(checked.Name()); formatHook != "" && err == nil && info.Size() == 0 {
 						ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECK=1"), formatHook, dir.Component) && ok
 					}
+					if ok {
+						component.Skipped = skipReason(skip)
+					}
 					_ = os.Remove(checked.Name())
+					_ = os.Remove(skip)
 				}
 			}
 			if !ok {
 				component.Failed = true
 				failed = append(failed, dir.Component)
+			} else if component.Skipped != "" {
+				skipped = append(skipped, dir.Component+" ("+component.Skipped+")")
 			}
 			component.Duration = time.Since(component.Started)
 			outcome.Components = append(outcome.Components, component)
@@ -101,10 +109,25 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 			_, _ = fmt.Fprintf(out, "%s: %s failed: %s\n", lang, action, strings.Join(failed, " "))
 			outcome.ExitCode = 1
 		default:
-			_, _ = fmt.Fprintf(out, "%s: %s passed for %d component(s)\n", lang, action, len(outcome.Components))
+			if len(skipped) > 0 {
+				_, _ = fmt.Fprintf(out, "%s: %s skipped for %d component(s): %s\n", lang, action, len(skipped), strings.Join(skipped, ", "))
+			}
+			if passed := len(outcome.Components) - len(skipped); passed > 0 {
+				_, _ = fmt.Fprintf(out, "%s: %s passed for %d component(s)\n", lang, action, passed)
+			}
 		}
 		return outcome
 	}
+}
+
+// skipReason is what a hook wrote to HECATRON_SKIPPED (skip_component in
+// languages/_hooks.sh): why it had nothing to do; "" when it did.
+func skipReason(path string) string {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+	return strings.TrimRight(string(data), "\n")
 }
 
 // noHook is run.sh's word for a language without a hook for the action.

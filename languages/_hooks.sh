@@ -55,6 +55,15 @@ skip() {
     exit 0
 }
 
+# The hook had nothing to check in this component, so it neither passed nor
+# failed (an audit without a lock file the auditor reads): say why, and tell
+# the runner (HECATRON_SKIPPED), which shows it skipped rather than passed.
+# The caller exits.
+skip_component() {
+    echo "${HECATRON_LANG:-}: ${_hook_action}: $*"
+    if [ -n "${HECATRON_SKIPPED:-}" ]; then echo "$*" >"${HECATRON_SKIPPED}"; fi
+}
+
 # The hook can't tell how to act on this directory: fail, saying what it
 # looked for and how to override it.
 unknown() {

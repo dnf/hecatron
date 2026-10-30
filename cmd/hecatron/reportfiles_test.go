@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -204,5 +205,96 @@ func TestAdvisorJobSummary(t *testing.T) {
 	markdown, err := os.ReadFile(summary)
 	if err != nil || !strings.HasPrefix(string(markdown), "### hct advisor: ") || !strings.Contains(string(markdown), "| ci/configured |") {
 		t.Errorf("%v:\n%s", err, markdown)
+	}
+}
+
+// hct audit --output json lists every finding as a record of its own, with
+// the installed and fixed versions; a component with nothing to audit is
+// skipped, with why, in every format, and never counted as passed.
+func TestAuditJSONAndSkipped(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the stub hooks are bash")
+	}
+	root := reportsProject(t)
+	env := []string{"HECATRON_HOME=" + repoHome(t), "HECATRON_BUILTIN_LANGUAGES=", "HECATRON_OUTPUT=", "CLAUDECODE=",
+		"GITHUB_ACTIONS=", "GITHUB_STEP_SUMMARY=", "HECATRON_REPORT_DIR=", "XDG_DATA_HOME=" + t.TempDir(),
+		"GITHUB_WORKSPACE=", "CI_PROJECT_DIR="}
+	got := runIn(t, root, env, binary, "audit", "alpha", "gamma", "--output", "json")
+	var doc struct {
+		Summary struct {
+			Passed, Failed, Skipped int
+		} `json:"summary"`
+		Jobs []struct {
+			Label, Status, Reason string
+		} `json:"jobs"`
+		Vulnerabilities []struct {
+			Component, Language, Package, Version, ID, Severity, Tool, File string
+			Fixed, Aliases                                                  []string
+		} `json:"vulnerabilities"`
+		Secrets []any `json:"secrets"`
+	}
+	if err := json.Unmarshal([]byte(got.stdout), &doc); err != nil {
+		t.Fatalf("%v: %+v", err, got)
+	}
+	npm, _ := os.ReadFile(filepath.Join(repoHome(t), "tests", "audit", "reports", "npm.json"))
+	if n := strings.Count(string(npm), `"url": "https://github.com/advisories/`); len(doc.Vulnerabilities) != n || n == 0 {
+		t.Errorf("%d vulnerabilities, want every one of the report's %d:\n%s", len(doc.Vulnerabilities), n, got.stdout)
+	}
+	fixed := map[string][]string{}
+	for _, v := range doc.Vulnerabilities {
+		if v.Component != "a" || v.Language != "alpha" || v.Package != "lodash" || v.Version != "4.17.15" ||
+			!strings.HasPrefix(v.ID, "GHSA-") || v.Tool != "npm" || v.File != "a/alpha/package-lock.json" ||
+			v.Fixed == nil || v.Severity == "" {
+			t.Errorf("%+v", v)
+		}
+		fixed[v.ID] = v.Fixed
+	}
+	// The range "<4.17.21" is fixed in 4.17.21; "<=4.17.23" names no fix.
+	if got := strings.Join(fixed["GHSA-35jh-r3h4-6jhm"], " "); got != "4.17.21" {
+		t.Errorf("GHSA-35jh-r3h4-6jhm fixed in %q", got)
+	}
+	if got := fixed["GHSA-r5fr-rjxr-66jc"]; len(got) != 0 {
+		t.Errorf("GHSA-r5fr-rjxr-66jc fixed in %q", got)
+	}
+	if doc.Secrets == nil {
+		t.Error("no secrets array")
+	}
+	statuses := map[string]string{}
+	for _, job := range doc.Jobs {
+		statuses[job.Label] = job.Status + " " + job.Reason
+	}
+	if statuses["gamma"] != "skipped a: nothing to audit: no gamma.lock; b: nothing to audit: no gamma.lock" {
+		t.Errorf("gamma: %q", statuses["gamma"])
+	}
+	if doc.Summary.Skipped != 1 || doc.Summary.Passed != 0 {
+		t.Errorf("summary %+v", doc.Summary)
+	}
+
+	// Skipped alone: exit 0, but not passed.
+	agent := runIn(t, root, append(env, "HECATRON_OUTPUT=agent"), binary, "audit", "gamma")
+	want := "SKIP gamma (a/gamma/, b/gamma/): a: nothing to audit: no gamma.lock; b: nothing to audit: no gamma.lock\n"
+	if agent.status != 0 || !strings.HasPrefix(agent.stdout, "hct audit: 0 passed, 1 skipped (") || !strings.HasSuffix(agent.stdout, want) {
+		t.Errorf("agent: %+v", agent)
+	}
+	human := runIn(t, root, append(env, "HECATRON_OUTPUT=human", "NO_COLOR=1"), binary, "audit", "gamma", "beta")
+	for _, part := range []string{
+		"gamma: audit skipped for 2 component(s): a (nothing to audit: no gamma.lock), b (nothing to audit: no gamma.lock)",
+		"beta: audit skipped for 1 component(s): b (nothing to audit: no beta.lock)", "beta: audit passed for 1 component(s)"} {
+		if !strings.Contains(human.stdout, part) || human.status != 0 {
+			t.Errorf("no %q in human output: %+v", part, human)
+		}
+	}
+	all := runIn(t, root, append(env, "HECATRON_OUTPUT=human", "NO_COLOR=1"), binary, "audit", "--fail-on", "critical")
+	if !strings.Contains(all.stdout, " skipped (") || !regexp.MustCompile(`(?m)^  - gamma .* skipped$`).MatchString(all.stdout) {
+		t.Errorf("parallel human output: %+v", all)
+	}
+	junit := runIn(t, root, env, binary, "audit", "gamma", "--output", "junit")
+	if !strings.Contains(junit.stdout, `<skipped message="skipped: nothing to audit: no gamma.lock"/>`) {
+		t.Errorf("junit: %+v", junit)
+	}
+	sarif := runIn(t, root, env, binary, "audit", "gamma", "--output", "sarif")
+	if !strings.Contains(sarif.stdout, `"text": "gamma/a not scanned: nothing to audit: no gamma.lock"`) ||
+		!strings.Contains(sarif.stdout, `"executionSuccessful": true`) {
+		t.Errorf("sarif: %+v", sarif)
 	}
 }
