@@ -15,6 +15,16 @@
     "cs",
     "net"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "*.sln"
+      },
+      {
+        "file": "*.slnx"
+      }
+    ]
+  },
   "path": [
     "{home}"
   ],

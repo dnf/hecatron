@@ -211,6 +211,71 @@ class InitTest(Fixture):
         self.commit()
         return manage.detect_languages(self.root, defs)
 
+    def layout(self, files: dict[str, str]) -> tuple[list[str], str, dict[str, str]]:
+        """The components, implPath and implPaths detection gives the files,
+        with the built-in definitions."""
+        for path, content in files.items():
+            write(self.path(path), content)
+        self.commit()
+        config, _ = manage.detected_config(self.root)
+        return config.get("components", ["."]), config["implPath"], config.get("implPaths", {})
+
+    def test_a_cargo_workspace_at_the_root_is_the_rust_component(self):
+        # durabuilt (#255): members in server/, crates/ and clients/rust/,
+        # beside clients/go/; spikes/ is its own workspace, run by nobody.
+        workspace = '[workspace]\nmembers = ["server", "clients/rust", "crates/a"]\n'
+        self.assertEqual(self.layout({
+            "Cargo.toml": workspace, "server/Cargo.toml": "[package]\n", "server/src/main.rs": "",
+            "clients/rust/Cargo.toml": "[package]\n", "crates/a/Cargo.toml": "[package]\n",
+            "spikes/x/Cargo.toml": "[package]\n[workspace]\n", "clients/go/go.mod": "module x\n",
+            "Package.swift": "", "clients/swift/Package.swift": "", "clients/swift/Sources/a.swift": ""}),
+            (["."], "clients/{lang}", {"rust": "."}))
+
+    def test_a_root_package_beside_serverless_layers_is_a_component_too(self):
+        # #238: the root's dependencies, and each layer's.
+        lock = "{}"
+        layers = {"package.json": '{"dependencies": {"x": "1"}}', "package-lock.json": lock,
+                  "layers/a/nodejs/package.json": '{"dependencies": {"y": "1"}}', "layers/a/nodejs/package-lock.json": lock,
+                  "layers/b/nodejs/package.json": '{"dependencies": {"z": "1"}}', "layers/b/nodejs/package-lock.json": lock}
+        self.assertEqual(self.layout(layers), ([".", "layers/a/nodejs", "layers/b/nodejs"], "{component}", {}))
+        project_ = project.load(self.root)
+        self.assertEqual([c for c, _ in project_.impl_dirs("javascript")], [".", "layers/a/nodejs", "layers/b/nodejs"])
+
+    def test_beside_another_language_the_root_packages_language_alone_is_by_component(self):
+        self.assertEqual(self.layout({
+            "package.json": '{"dependencies": {"x": "1"}}', "layers/a/nodejs/package.json": '{"main": "a.js"}',
+            "layers/b/nodejs/package.json": '{"main": "b.js"}', "go.mod": "module m\n", "m.go": ""}),
+            ([".", "layers/a/nodejs", "layers/b/nodejs"], "layers/a/{lang}", {"go": ".", "javascript": "{component}"}))
+        # Go's directory is every component's: it runs once.
+        self.assertEqual([c for c, _ in project.load(self.root).impl_dirs("go")], ["."])
+
+    def test_a_workspaces_root_or_a_tooling_package_json_keeps_todays_layout(self):
+        layers = {"layers/a/nodejs/package.json": '{"main": "a.js"}', "layers/b/nodejs/package.json": '{"main": "b.js"}'}
+        self.assertEqual(self.layout({**layers, "package.json": '{"devDependencies": {"husky": "9"}}'}),
+                         (["a", "b"], "layers/{component}/{lang}", {}))
+        self.assertEqual(self.layout({**layers, "package.json": '{"workspaces": ["layers/*/nodejs"]}'}),
+                         (["."], ".", {}))
+
+    def test_go_modules_and_workspaces_at_the_root(self):
+        self.assertEqual(self.layout({"go.mod": "module m\n", "m.go": "", "clients/go/go.mod": "module c\n",
+                                      "clients/python/pyproject.toml": "[project]\n"}),
+                         ([".", "clients/go"], "clients/{lang}", {"go": "{component}"}))
+
+    def test_a_go_work_at_the_root_covers_modules_outside_the_named_directory(self):
+        self.assertEqual(self.layout({"go.work": "go 1.22\n", "server/go.mod": "module s\n",
+                                      "clients/go/go.mod": "module c\n"}), (["."], ".", {}))
+
+    def test_a_gradle_build_at_the_root_covers_its_projects(self):
+        self.assertEqual(self.layout({"settings.gradle.kts": 'include(":app", ":lib")\n', "src/main/kotlin/R.kt": "",
+                                      "app/src/main/kotlin/A.kt": "", "lib/src/main/kotlin/B.kt": ""}),
+                         (["."], ".", {}))
+
+    def test_two_root_packages_keep_todays_layout(self):
+        # Components by directory can hold only one language's packages.
+        self.assertEqual(self.layout({"go.mod": "module m\n", "clients/go/go.mod": "module c\n",
+                                      "Cargo.toml": "[package]\n", "clients/rust/Cargo.toml": "[package]\n"}),
+                         (["."], "clients/{lang}", {}))
+
     def test_examples_tests_and_vendored_code_are_skipped(self):
         found, skipped = self.detect({"go/go.mod": "", "examples/lua/x.lua": "", "third_party/zlib/x.c": "",
                                       "go/testdata/x.c": ""},

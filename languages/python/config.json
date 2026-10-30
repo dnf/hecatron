@@ -22,6 +22,14 @@
     "py",
     "python3"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "pyproject.toml",
+        "matches": "^[ \t]*\\[tool\\.uv\\.workspace\\]"
+      }
+    ]
+  },
   "path": [
     "{home}/bin",
     "~/.local/bin",

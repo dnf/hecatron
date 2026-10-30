@@ -12,6 +12,19 @@
     "rust",
     "rs"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "Cargo.toml",
+        "matches": "^[ \t]*\\[workspace\\]"
+      }
+    ],
+    "package": [
+      {
+        "file": "Cargo.toml"
+      }
+    ]
+  },
   "path": [
     "{home}/bin",
     "~/.cargo/bin"

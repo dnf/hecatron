@@ -646,7 +646,9 @@ dart_deps() {
 # as detection decides (TypeScript's have a tsconfig.json, unless the
 # package is mostly JavaScript: typescript's "detectYields") and, for test, have a test script, outside dependencies, tests,
 # examples and vendored code, the outermost of nested ones; the hook runs in
-# each, and exits. Returns when there are none.
+# each, and exits. Returns when there are none. A package that is a
+# component of its own (serverless layers below a root package) isn't
+# one of them: it runs as that component.
 node_below() {
     local _dir _dirs=()
     while IFS= read -r _dir; do _dirs+=("${_dir}"); done < <(node_below_dirs "$1" "${HECATRON_LANG:-}")
@@ -663,6 +665,29 @@ sys.path.insert(0, os.path.join(home, "libexec", "lib"))
 import project  # noqa: E402
 
 typescript = project.read_definition("typescript", root or None)
+here = os.getcwd()
+
+
+def components_below():
+    """The directories below this one of the language's components other
+    than the one this hook runs for (HECATRON_COMPONENT)."""
+    component = os.environ.get("HECATRON_COMPONENT")
+    if not root or component is None:
+        return []
+    try:
+        dirs = project.Project(root).impl_dirs(lang)
+    except Exception:  # noqa: BLE001 - a project that can't be read: every package below, as before
+        return []
+    return [d for c, d in dirs
+            if c != component and os.path.realpath(d).startswith(os.path.realpath(here) + os.sep)]
+
+
+others = components_below()
+
+
+def is_component(directory):
+    real = os.path.realpath(directory)
+    return any(real == os.path.realpath(d) or real.startswith(os.path.realpath(d) + os.sep) for d in others)
 
 
 def is_typescript(directory, files):
@@ -677,6 +702,8 @@ for top, dirs, files in os.walk("."):
     depth = top.count(os.sep)
     dirs[:] = sorted(d for d in dirs if d not in skipped and not d.startswith(".") and depth < 4)
     if top == "." or "package.json" not in files or any(top.startswith(f + os.sep) for f in found):
+        continue
+    if is_component(top):
         continue
     if lang in ("typescript", "javascript") and is_typescript(top, files) != (lang == "typescript"):
         continue

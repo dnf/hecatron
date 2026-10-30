@@ -93,8 +93,47 @@ saves it, as init would. Init itself:
    language's directory (firefox-ios' `firefox-ios/Client.xcodeproj` and
    `focus-ios/Blockzilla.xcodeproj` beside the root's `Package.swift`)
    leave the language there; its hooks build each app
-   ([hooks](hooks.md#xcode-projects)). `--components` and
-   `--impl-path` set the layout explicitly.
+   ([hooks](hooks.md#xcode-projects)).
+
+   A build file at the root keeps its language there when the directories
+   named for the language would leave it out, as a definition's
+   `detectRoot` rules say what the root is:
+   - **A workspace** covers the language's packages, so the root is the
+     language's directory when some of them sit outside the directories
+     named for it: a Cargo workspace (`[workspace]` in `Cargo.toml`) whose
+     members are `server/`, `crates/*` and `clients/rust/` is Rust's at
+     the root, not `clients/rust/`'s; so are `go.work`, Gradle's
+     `settings.gradle(.kts)` (Java, Kotlin), a Maven `pom.xml` with
+     `<modules>`, a `.sln` or `.slnx` (C#), npm or Yarn `workspaces` in
+     `package.json` or a `pnpm-workspace.yaml`, and a uv workspace
+     (`[tool.uv.workspace]` in `pyproject.toml`). The members aren't
+     components of their own: `cargo test` at the root runs them. A crate
+     outside the workspace (its own `[workspace]`, or `exclude`d: a spike,
+     size probes) isn't a component; a hook or `implPaths` can add one. A
+     workspace whose packages all sit inside the language's directory (a
+     `go.work` using only `go/`) leaves it there.
+   - **A package of its own**: a `go.mod`, a Cargo package, a
+     `package.json` with one of JavaScript's `detectKeys` (not a tooling or
+     workspaces root), beside packages of the same language in the
+     directories named for it, makes the root a component with each of
+     them. A root `package.json` with dependencies above serverless layers
+     (`layers/a/nodejs/`, `layers/b/nodejs/`, each with its own
+     `package.json` and lock file) gives `components` `.`,
+     `layers/a/nodejs` and `layers/b/nodejs`, with JavaScript at
+     `{component}` (its own `implPaths` entry beside other languages); a
+     language whose directory doesn't vary by component runs once, for the
+     first. The Node hooks at the root don't run packages below that are
+     components of their own. This happens for one such language (two
+     would need components of two languages' directories) and in a layout
+     of one component or of that language alone; otherwise the layout
+     stays as it was. Python's and Swift's roots aren't packages for this:
+     pytest at the root would collect the packages' tests below it again,
+     and a root `Package.swift` usually builds the sources of the package
+     below it for SwiftPM's sake (durabuilt's mirrors `clients/swift/`).
+
+   A root `go.mod` beside a directory named `go/` with no `go.mod` of its
+   own (Thrift's `lib/go`) is that directory's module, as before.
+   `--components` and `--impl-path` set the layout explicitly.
 4. Writes `.hecatron/config.json`, adds `.hecatron/local.json` and the log
    directory to `.gitignore`.
 5. Writes no hooks: defaults apply until the project adds its own. `--hooks`

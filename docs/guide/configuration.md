@@ -51,7 +51,7 @@ saves it as `.hecatron/config.json` to commit and adjust.
 | `schema` | Config format version; hecatron refuses formats it doesn't know | required |
 | `hecatron` | The hecatron the project uses: `"0.7"` (any 0.7.x) or `"0.7.0"` pins it (binary only; [pinning](installing-hecatron.md#pinning-a-projects-hecatron)), `">=0.7.0"` sets a minimum | none |
 | `project` | Name used in banners, Docker image tags and messages | directory name |
-| `components` | Component names, in order | `["."]` (one, unnamed) |
+| `components` | Component names, in order; or their directories, with `implPath` `{component}` (`[".", "layers/a/nodejs"]`: [detection](init.md) writes these for a root package beside packages below it). A directory several components share, for a language whose `implPath` doesn't name `{component}`, runs once, for the first | `["."]` (one, unnamed) |
 | `implPath` | Where a component's code in a language lives | `{lang}` with one component, else `{component}/{lang}` |
 | `implPaths` | A language's own `implPath`, for one kept elsewhere (`{"csharp": "dotnet"}`). A directory filled in from `{lang}` is the language's only when none of its `detectUnless` files sit there (or another language's `detectYields` gives it back) and its own `detectYields` doesn't give it away; one named outright is taken as written | `{}` |
 | `languages` | Languages the project implements (was `added.json`) | `[]` |

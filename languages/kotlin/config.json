@@ -13,6 +13,20 @@
     "kotlin",
     "kt"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "settings.gradle"
+      },
+      {
+        "file": "settings.gradle.kts"
+      },
+      {
+        "file": "pom.xml",
+        "matches": "<modules>"
+      }
+    ]
+  },
   "buildSystems": [
     "Gradle",
     "Maven",

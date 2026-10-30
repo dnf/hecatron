@@ -12,6 +12,18 @@
     "go",
     "golang"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "go.work"
+      }
+    ],
+    "package": [
+      {
+        "file": "go.mod"
+      }
+    ]
+  },
   "path": [
     "{home}/bin",
     "~/.local/bin",

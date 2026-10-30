@@ -431,9 +431,15 @@ class Project:
         return found or fallback
 
     def impl_dirs(self, lang: str) -> list[tuple[str, str]]:
-        """(component, directory) for each component implemented in `lang`."""
-        return [(c, found) for c in self.components
-                for found in [self._find_impl_dir(c, lang)[0]] if found]
+        """(component, directory) for each component implemented in `lang`.
+        A directory several components share (a language whose implPath
+        doesn't vary by component) is the first one's, so it runs once."""
+        dirs = []
+        for component in self.components:
+            found = self._find_impl_dir(component, lang)[0]
+            if found and found not in (d for _, d in dirs):
+                dirs.append((component, found))
+        return dirs
 
     @property
     def languages(self) -> list[str]:

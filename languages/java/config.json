@@ -11,6 +11,20 @@
   "detectSources": [
     "*.java"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "settings.gradle"
+      },
+      {
+        "file": "settings.gradle.kts"
+      },
+      {
+        "file": "pom.xml",
+        "matches": "<modules>"
+      }
+    ]
+  },
   "path": [
     "{home}/bin"
   ],

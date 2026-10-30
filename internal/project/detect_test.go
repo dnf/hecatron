@@ -138,6 +138,41 @@ var detectionRepos = map[string]map[string]string{
 	"test data, vendored":        {"go.mod": "", "tests_data/basic/c/a.c": "", "src/vendored/xxhash/x.c": "", "src/a.go": ""},
 	"templates":                  {"Cargo.toml": "", "crates/cli/src/templates/go.mod": ""},
 	"tcl in hooks":               {"go.mod": "", "languages/tcl/hooks/run.tcl": "", ".githooks/hooks/x.tcl": ""},
+	"cargo workspace": {"Cargo.toml": "# members\n  [workspace]\nmembers = [\"server\", \"clients/rust\"]\n",
+		"server/Cargo.toml": "[package]\n", "server/src/main.rs": "", "clients/rust/Cargo.toml": "[package]\n",
+		"clients/c/conformance/Cargo.toml": "[package]\n", "crates/a/Cargo.toml": "[package]\n",
+		"spikes/x/Cargo.toml": "[package]\n[workspace]\n", "clients/go/go.mod": "", "Package.swift": "",
+		"clients/swift/Package.swift": "", "clients/swift/Sources/a.swift": ""},
+	"cargo package beside a crate": {"Cargo.toml": "[package]\n", "src/lib.rs": "",
+		"clients/rust/Cargo.toml": "[package]\n[workspace]\n"},
+	"serverless layers": {"package.json": `{"dependencies": {"x": "1"}}`, "package-lock.json": "{}",
+		"layers/a/nodejs/package.json": `{"dependencies": {"y": "1"}}`, "layers/a/nodejs/package-lock.json": "{}",
+		"layers/b/nodejs/package.json": `{"main": "b.js"}`, "layers/b/nodejs/package-lock.json": "{}"},
+	"serverless layers and go": {"package.json": `{"bin": "x.js"}`, "layers/a/nodejs/package.json": `{"main": "a.js"}`,
+		"layers/b/nodejs/package.json": `{"main": "b.js"}`, "go.mod": "", "m.go": ""},
+	"npm workspaces root": {"package.json": `{"workspaces": {"packages": ["layers/*/nodejs"]}}`,
+		"layers/a/nodejs/package.json": `{"main": "a.js"}`, "layers/b/nodejs/package.json": `{"main": "b.js"}`},
+	"pnpm workspace root": {"package.json": `{"dependencies": {"x": "1"}}`, "pnpm-workspace.yaml": "packages: []\n",
+		"layers/a/nodejs/package.json": `{"main": "a.js"}`, "layers/b/nodejs/package.json": `{"main": "b.js"}`},
+	"tooling package.json above layers": {"package.json": `{"devDependencies": {"husky": "9"}}`,
+		"layers/a/nodejs/package.json": `{"main": "a.js"}`, "layers/b/nodejs/package.json": `{"main": "b.js"}`},
+	"broken package.json above layers": {"package.json": `{"workspaces": [`, "layers/a/nodejs/package.json": `{"main": "a.js"}`,
+		"layers/b/nodejs/package.json": `{"main": "b.js"}`},
+	"go module beside a named one": {"go.mod": "", "m.go": "", "clients/go/go.mod": "", "clients/python/pyproject.toml": "[project]\n"},
+	"go.work beside modules":       {"go.work": "go 1.22\n", "server/go.mod": "", "clients/go/go.mod": ""},
+	"two root packages":            {"go.mod": "", "clients/go/go.mod": "", "Cargo.toml": "[package]\n", "clients/rust/Cargo.toml": ""},
+	"python package beside a named one": {"pyproject.toml": "[project]\n", "clients/python/pyproject.toml": "[project]\n",
+		"clients/go/go.mod": ""},
+	"uv workspace": {"pyproject.toml": "[project]\n[tool.uv.workspace]\nmembers = [\"packages/*\"]\n",
+		"packages/a/pyproject.toml": "[project]\n", "clients/python/pyproject.toml": "[project]\n", "clients/go/go.mod": ""},
+	"gradle build with root sources": {"settings.gradle.kts": "include(\":app\")\n", "src/main/kotlin/R.kt": "",
+		"app/src/main/kotlin/A.kt": "", "lib/src/main/kotlin/B.kt": ""},
+	"gradle projects": {"settings.gradle": "include 'app', 'lib'\n", "app/src/main/java/A.java": "", "lib/src/main/java/B.java": ""},
+	"maven aggregator": {"pom.xml": "<project><modules>\n<module>java</module></modules></project>", "java/pom.xml": "",
+		"server/pom.xml": "", "go/go.mod": ""},
+	"dotnet solution": {"App.sln": "", "src/App/App.csproj": "", "clients/csharp/Client.csproj": "", "clients/go/go.mod": ""},
+	"swift package mirror": {"Package.swift": "", "clients/swift/Package.swift": "", "clients/swift/Sources/a.swift": "",
+		"clients/go/go.mod": ""},
 }
 
 func TestDetectionMatchesManagePy(t *testing.T) {
@@ -209,6 +244,67 @@ func TestDetectionOfPackagesAppsAndTooling(t *testing.T) {
 		"xcode project below the root":  ". [objectivec swift] objectivec=srcswift=src",
 		"xcode apps beside a package":   ". [swift] ",
 	})
+}
+
+// A root that is a workspace for a language (a Cargo workspace, go.work,
+// Gradle settings, a Maven aggregator, a .NET solution, npm, pnpm or uv
+// workspaces) is its directory when its packages reach outside the ones
+// named for it; a root that is a package of its own beside packages named
+// for its language is a component with each (#255, #238;
+// docs/guide/init.md).
+func TestDetectionKeepsRootPackagesAndWorkspaces(t *testing.T) {
+	checkDetectedComponents(t, map[string]string{
+		"cargo workspace":                   "[.] clients/{lang} [go rust swift] rust=.",
+		"cargo package beside a crate":      "[. clients/rust] {component} [rust] ",
+		"serverless layers":                 "[. layers/a/nodejs layers/b/nodejs] {component} [javascript] ",
+		"serverless layers and go":          "[. layers/a/nodejs layers/b/nodejs] layers/a/{lang} [go javascript] go=.javascript={component}",
+		"npm workspaces root":               "[.] . [javascript] ",
+		"pnpm workspace root":               "[.] . [javascript] ",
+		"tooling package.json above layers": "[a b] layers/{component}/{lang} [javascript] ",
+		"broken package.json above layers":  "[. layers/a/nodejs layers/b/nodejs] {component} [javascript] ",
+		"go module beside a named one":      "[. clients/go] clients/{lang} [go python] go={component}",
+		"go.work beside modules":            "[.] . [go] ",
+		"go directory module":               "[.] {lang} [go rust] ",
+		"root module, code in lib":          "[.] lib/{lang} [go java ruby] ",
+		"two root packages":                 "[.] clients/{lang} [go rust] ",
+		"python package beside a named one": "[.] clients/{lang} [go python] ",
+		"uv workspace":                      "[.] clients/{lang} [go python] python=.",
+		"gradle build with root sources":    "[.] . [kotlin] ",
+		"gradle projects":                   "[app lib] {component}/src/main/{lang} [java] ",
+		"maven aggregator":                  "[.] {lang} [go java] java=.",
+		"dotnet solution":                   "[.] clients/{lang} [csharp go] csharp=.",
+		"swift package mirror":              "[.] clients/{lang} [go swift] ",
+	})
+}
+
+// checkDetectedComponents is checkDetectedLayouts with the components first.
+func checkDetectedComponents(t *testing.T, wanted map[string]string) {
+	t.Helper()
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("no git")
+	}
+	home := repoHome(t)
+	t.Setenv("HECATRON_BUILTIN_LANGUAGES", "")
+	for name, want := range wanted {
+		root := parityCase{files: detectionRepos[name], git: true}.create(t)
+		config, _, err := DetectedConfig(root, NewHome(home), "", "", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var components any = []any{"."}
+		if c, ok := config.Values["components"]; ok {
+			components = c
+		}
+		got := fmt.Sprint(components, " ", config.Values["implPath"], " ", config.Values["languages"], " ")
+		if implPaths, ok := config.Values["implPaths"].(*Object); ok {
+			for _, lang := range implPaths.Keys {
+				got += fmt.Sprint(lang, "=", implPaths.Values[lang])
+			}
+		}
+		if got != want {
+			t.Errorf("%s: %q, want %q", name, got, want)
+		}
+	}
 }
 
 // checkDetectedLayouts compares each detectionRepos fixture's detected

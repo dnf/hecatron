@@ -29,6 +29,22 @@
     "js",
     "nodejs"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "package.json",
+        "key": "workspaces"
+      },
+      {
+        "file": "pnpm-workspace.yaml"
+      }
+    ],
+    "package": [
+      {
+        "file": "package.json"
+      }
+    ]
+  },
   "path": [
     "{home}/bin",
     "~/.cache/hecatron/corepack-shims"

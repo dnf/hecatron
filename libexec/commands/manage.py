@@ -16,6 +16,7 @@ import fnmatch
 import json
 import os
 import posixpath
+import re
 import subprocess
 import sys
 import tempfile
@@ -844,6 +845,114 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
     return ["."], template, overrides
 
 
+def root_kinds(root: str, names: set[str], defs: dict[str, dict]) -> dict[str, str]:
+    """Language → what the repository's root is for it by its definition's
+    "detectRoot" rules: "workspace" (its build covers the language's
+    packages below: a Cargo workspace, npm workspaces, go.work, Gradle
+    settings, a Maven aggregator, a .NET solution, a uv workspace) or
+    "package" (a package of its own, separate from those below: a go.mod,
+    a Cargo package, a real package.json). `names` are the files tracked
+    at the root."""
+    kinds = {}
+    for lang, d in defs.items():
+        rules = d.get("detectRoot") or {}
+        for kind in ("workspace", "package"):
+            if any(_root_rule_holds(root, names, rule) for rule in rules.get(kind, [])):
+                kinds[lang] = kind
+                break
+    return kinds
+
+
+def _root_rule_holds(root: str, names: set[str], rule: dict) -> bool:
+    """Whether a file at the root matches a "detectRoot" rule: named like its
+    "file" glob, with a line matching its "matches" (a regular expression,
+    in the syntax Python's re and Go's regexp share) or its JSON "key"
+    (dotted for a path) non-empty, when the rule has one."""
+    for name in sorted(names):
+        if not fnmatch.fnmatch(name, rule["file"]):
+            continue
+        path = os.path.join(root, name)
+        if "matches" in rule:
+            try:
+                with open(path, "rb") as f:
+                    lines = f.read().split(b"\n")
+            except OSError:
+                continue
+            pattern = re.compile(rule["matches"].encode())
+            if any(pattern.search(line) for line in lines):
+                return True
+        elif "key" in rule:
+            try:
+                with open(path, encoding="utf-8") as f:
+                    value = json.load(f)
+            except (OSError, ValueError):
+                continue
+            for part in rule["key"].split("."):
+                value = value.get(part) if isinstance(value, dict) else None
+            if value:
+                return True
+        else:
+            return True
+    return False
+
+
+def place_root_languages(found: dict[str, set[str]], layout: tuple[list[str], str, dict[str, str]],
+                         names: dict[str, list[str]], kinds: dict[str, str]) -> tuple[list[str], str, dict[str, str]]:
+    """The layout, with the languages whose build file at the root the
+    directories named for them left out (#255, #238):
+
+    - A root that is a workspace for the language ("workspace" in kinds)
+      covers its packages, so the language lives at the root when some of
+      its directories fall outside the ones the layout gave it (a Cargo
+      workspace whose members are server/, crates/ and clients/rust/ is
+      Rust's, not clients/rust/'s alone). Its members aren't components of
+      their own: the build at the root runs them.
+    - A root that is a package of its own ("package"), beside packages of
+      the same language in the layout's directories or in directories named
+      for the language (a package.json with dependencies above serverless
+      layers' layers/a/nodejs/), makes the root a component too, with each
+      of those directories: components
+      [".", "layers/a/nodejs", ...], the language at "{component}". Only
+      for a layout of one component or of that language alone, and for one
+      such language: the other languages keep their directories, run once
+      (Project.impl_dirs).
+
+    A language whose root build file the layout already uses, or whose
+    directories all sit inside the layout's (a go.work using only go/; a
+    go.mod at the root for Thrift's lib/go, which has none of its own),
+    keeps its place."""
+    components, impl_path, overrides = layout
+    overrides = dict(overrides)
+
+    def layout_dirs(lang: str) -> set[str]:
+        template = overrides.get(lang) or impl_path
+        return {posixpath.normpath(template.replace("{component}", component).replace("{lang}", name))
+                for component in components for name in names.get(lang, [lang])}
+
+    packages = []
+    for lang in sorted(found):
+        kind, dirs = kinds.get(lang), layout_dirs(lang)
+        if kind is None or "." in dirs:
+            continue
+        outside = {d for d in found[lang] if not any(_under(d, placed) for placed in dirs)}
+        if kind == "workspace" and outside:
+            if set(found) == {lang}:
+                components, impl_path, overrides = ["."], ".", {}
+            else:
+                overrides[lang] = "."
+        elif kind == "package" and "." in found[lang]:
+            separate = found[lang] & (dirs | _language_roots(found[lang], names.get(lang, [lang])))
+            if separate:
+                packages.append((lang, separate))
+    if len(packages) == 1:
+        lang, separate = packages[0]
+        if set(found) == {lang}:
+            components, impl_path, overrides = ["."] + sorted(separate), "{component}", {}
+        elif components == ["."]:
+            components, overrides[lang] = ["."] + sorted(separate), "{component}"
+    return components, impl_path, overrides
+
+
 JUSTFILE = """\
 # Recipes delegating to hecatron (generated by: hecatron init --justfile).
 # Import from the project justfile with: import '.hecatron/hecatron.just'
@@ -929,9 +1038,10 @@ def detected_config(root: str, components: str | None = None, impl_path: str | N
     defs = _detection_definitions()
     found, not_added = detect_languages(root, defs)
     by_dir, _ = _names_by_dir(tracked_files(root))
-    found_components, found_impl_path, impl_paths = infer_layout(found, dir_names(defs),
-                                                                 holds_language(by_dir, defs),
-                                                                 holds_project_dir(by_dir, defs))
+    names = dir_names(defs)
+    layout = infer_layout(found, names, holds_language(by_dir, defs), holds_project_dir(by_dir, defs))
+    found_components, found_impl_path, impl_paths = place_root_languages(
+        found, layout, names, root_kinds(root, by_dir.get(".", set()), defs))
     chosen_components = [c for c in components.split(",") if c] if components else found_components
     if impl_path:
         found_impl_path, impl_paths = impl_path, {}
