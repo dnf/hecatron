@@ -22,7 +22,8 @@ type Suite struct {
 	Lang      string
 	Component string
 	Status    runner.Status
-	Failed    bool // the component (or job) failed or timed out
+	Failed    bool   // the component (or job) failed or timed out
+	Skipped   string // why the component had nothing to do (runner.Component.Skipped)
 	ExitCode  int
 	Duration  time.Duration
 	Log       string
@@ -56,7 +57,7 @@ func Suites(r *runner.Report, opts SuiteOptions) []Suite {
 		case len(result.Components) == 0:
 			suites = append(suites, Suite{Name: result.Label, Lang: result.Lang, Status: result.Status,
 				Failed: result.Unsuccessful(), ExitCode: result.ExitCode, Duration: result.Duration, Log: result.Log,
-				Excerpt: result.Excerpt.Lines})
+				Excerpt: result.Excerpt.Lines, Skipped: result.SkipReason()})
 		default:
 			suites = append(suites, componentSuites(result, opts)...)
 		}
@@ -84,6 +85,9 @@ func componentSuites(result runner.Result, opts SuiteOptions) []Suite {
 		}
 		if !c.Failed {
 			s.Status, s.ExitCode = runner.Passed, 0
+		}
+		if c.Skipped != "" && !c.Failed {
+			s.Status, s.Skipped = runner.Skipped, c.Skipped
 		}
 		if c.Failed {
 			if part, ok := parts[c.Name]; ok {
@@ -131,6 +135,9 @@ func (s Suite) cases() []Case {
 	switch {
 	case s.Status == runner.StatusNotInstall || s.Status == runner.StatusDisabled:
 		message := string(s.Status)
+		own.Skipped = &message
+	case s.Status == runner.Skipped:
+		message := "skipped: " + s.Skipped
 		own.Skipped = &message
 	case s.Failed:
 		own.Failure = s.failure()

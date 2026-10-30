@@ -28,6 +28,7 @@ import (
 
 	"github.com/dnf/hecatron/internal/install"
 	"github.com/dnf/hecatron/internal/project"
+	"github.com/dnf/hecatron/internal/runner"
 )
 
 func main() {
@@ -208,7 +209,7 @@ func (c *cli) detectProject() bool {
 	if err != nil {
 		return false
 	}
-	if p.Announcement != "" {
+	if p.Announcement != "" && runner.ForAPerson(os.Getenv, c.args, runner.IsTerminal(os.Stdout), runner.IsTerminal(os.Stderr)) {
 		fmt.Fprintln(os.Stderr, p.Announcement)
 	}
 	c.root, c.project = top, p

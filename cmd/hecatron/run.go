@@ -36,6 +36,7 @@ type runArgs struct {
 	timeoutGiven  bool
 	env           []string // what the flags export to the hooks
 	outdatedJSON  bool
+	failOnSkip    bool     // --fail-on-skip, else HECATRON_FAIL_ON_SKIP=1
 	history       bool     // audit --history: the secret scan reads the commits
 	rest          []string // the arguments without --output, for run.sh
 }
@@ -96,6 +97,8 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 			a.env = append(a.env, "HECATRON_FORMAT_CHECK=1")
 		case arg == "--json" && action == "outdated":
 			a.outdatedJSON = true
+		case arg == "--fail-on-skip":
+			a.failOnSkip = true
 		case arg == "--fail" && action == "outdated":
 			a.env = append(a.env, "HECATRON_OUTDATED_FAIL=1")
 		default:
@@ -122,6 +125,7 @@ func (c *cli) runCommand() (int, bool) {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 2, true
 	}
+	a.failOnSkip = a.failOnSkip || os.Getenv("HECATRON_FAIL_ON_SKIP") == "1"
 	if a.changed {
 		if !changedActions[c.command] {
 			fmt.Fprintf(os.Stderr, "hecatron: --changed works with test, lint, build, format, deps, rebuild, retest, docs and bench, not %s\n", c.command)
@@ -189,7 +193,7 @@ func (c *cli) runCommand() (int, bool) {
 	defer stop()
 	r.ctx = ctx
 	var cleanup func()
-	r.reports, cleanup = newReportSettings(c.command, stdoutReport)
+	r.reports, cleanup = newReportSettings(c.command, stdoutReport, format)
 	defer cleanup()
 	status := r.run()
 	if ctx.Err() != nil {
@@ -376,6 +380,9 @@ func (r *invocation) sub(action string) *invocation {
 	c := *r.cli
 	c.command = action
 	s := &invocation{cli: &c, ctx: r.ctx, shell: r.shell, args: r.args, format: r.format, timeout: r.timeout, patterns: r.patterns, selection: r.selection, reports: r.reports}
+	if action == "clean" {
+		s.args.failOnSkip = false // run.sh passes --fail-on-skip to the build or test only
+	}
 	s.resolveTargets()
 	return s
 }
@@ -439,7 +446,7 @@ func (r *invocation) runNamed() int {
 			fmt.Fprintln(os.Stderr, "hecatron:", err)
 		}
 		result.Duration, result.ExitCode, result.Components = time.Since(began), outcome.ExitCode, outcome.Components
-		result.Status = status
+		result.Status, result.Skipped = status, outcome.Skipped
 		results = append(results, result)
 		if r.ctx.Err() != nil {
 			break
@@ -447,7 +454,17 @@ func (r *invocation) runNamed() int {
 	}
 	report := r.report(results, time.Since(start))
 	r.writeReport(report)
-	return runner.ExitStatus(results)
+	return r.exitStatus(report)
+}
+
+// exitStatus is the run's exit status, saying why when it fails only
+// because nothing ran (--fail-on-skip).
+func (r *invocation) exitStatus(report *runner.Report) int {
+	status := report.ExitStatus()
+	if status != runner.ExitStatus(report.Results) {
+		fmt.Fprintln(os.Stderr, runner.NothingRanMessage)
+	}
+	return status
 }
 
 // report adds each failure's excerpt.
@@ -467,7 +484,8 @@ func (r *invocation) report(results []runner.Result, wall time.Duration) *runner
 	}
 	cwd, _ := workingDir()
 	return &runner.Report{Action: r.command, Targets: r.args.targets, Components: r.args.components,
-		Results: results, Wall: wall, LogDir: r.logDir(), Root: r.root, Cwd: cwd, Changed: r.changedReport()}
+		Results: results, Wall: wall, LogDir: r.logDir(), Root: r.root, Cwd: cwd, Changed: r.changedReport(),
+		FailOnSkip: r.args.failOnSkip}
 }
 
 // errorPatterns are a language's, from its definition; nil for none.
@@ -608,7 +626,7 @@ func (r *invocation) runAll() int {
 		} else {
 			r.writeReport(report)
 		}
-		return 0
+		return r.exitStatus(report)
 	}
 	var live *runner.Live
 	options := runner.Options{Slots: slots, LogDir: r.logDir()}
@@ -630,7 +648,7 @@ func (r *invocation) runAll() int {
 		runner.WriteDocs(os.Stdout, report)
 	}
 	r.writeReport(report)
-	return runner.ExitStatus(results)
+	return r.exitStatus(report)
 }
 
 // writeReport writes what follows human output, or replaces it, and the
@@ -644,6 +662,9 @@ func (r *invocation) writeReport(report *runner.Report) {
 	case runner.Agent:
 		runner.WriteAgent(os.Stdout, report)
 	case runner.JSON:
+		if r.command == "audit" {
+			report.Audit = r.auditJSON()
+		}
 		_ = runner.WriteJSON(os.Stdout, report)
 	case runner.CI:
 		runner.WriteAnnotations(os.Stdout, report, os.Getenv("GITHUB_WORKSPACE"))

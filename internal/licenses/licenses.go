@@ -77,6 +77,8 @@ type Package struct {
 	Name       string   `json:"name"`
 	Version    string   `json:"version"`
 	License    string   `json:"license"`    // a canonical SPDX expression; "" when unknown
+	LicenseIDs []string `json:"licenseIds"` // the expression's license identifiers, each once
+	Copyleft   string   `json:"copyleft"`   // the expression's class (spdx.Class), "unknown" when the license is
 	Declared   []string `json:"declared"`   // what the registry or lock file says
 	Dependency string   `json:"dependency"` // direct, transitive, or "" when the lock file doesn't say
 	Dev        bool     `json:"dev"`        // a development or test dependency
@@ -95,6 +97,18 @@ func (p Package) Key() string { return strings.ToLower(p.Ecosystem) + ":" + p.Na
 // not an SPDX expression.
 func (p Package) Unknown() bool { return p.License == "" }
 
+// unknownClass is a Package's Copyleft when its license is unknown.
+const unknownClass = "unknown"
+
+// setLicense gives the package its license: the expression, its
+// identifiers and its class.
+func (p *Package) setLicense(e *spdx.Expression) {
+	p.expression, p.License, p.LicenseIDs, p.Copyleft = e, "", []string{}, unknownClass
+	if e != nil {
+		p.License, p.LicenseIDs, p.Copyleft = e.String(), e.IDs(), string(e.Copyleft())
+	}
+}
+
 // NotCovered is a language, or one component of it, whose licenses aren't
 // read, and why.
 type NotCovered struct {
@@ -105,19 +119,35 @@ type NotCovered struct {
 
 // Report is what hct licenses found.
 type Report struct {
-	Packages   []Package    `json:"packages"`
-	Licenses   []Rollup     `json:"licenses"`
-	NotCovered []NotCovered `json:"notCovered"`
-	Warnings   []string     `json:"warnings"`
-	Policy     *Verdict     `json:"policy,omitempty"`
+	Packages   []Package      `json:"packages"`
+	Own        []Package      `json:"own"`        // the project's own packages, not counted
+	Licenses   []Rollup       `json:"licenses"`   // per expression
+	LicenseIDs []Rollup       `json:"licenseIds"` // per license identifier: a package under an AND or OR counts for each
+	Copyleft   CopyleftCounts `json:"copyleft"`
+	NotCovered []NotCovered   `json:"notCovered"`
+	Warnings   []string       `json:"warnings"`
+	Policy     *Verdict       `json:"policy,omitempty"`
 }
 
-// Rollup is one license and who uses it.
+// Rollup is one license (an expression, or an identifier) and who uses it.
 type Rollup struct {
 	License    string   `json:"license"`
+	Copyleft   string   `json:"copyleft"`
 	Packages   int      `json:"packages"`
 	Languages  []string `json:"languages"`
 	Components []string `json:"components"`
+}
+
+// CopyleftCounts are how many packages (each name and version once) are
+// in each class (spdx.Class), their license as a whole.
+type CopyleftCounts struct {
+	None         int `json:"none"`
+	Weak         int `json:"weak"`
+	Strong       int `json:"strong"`
+	Network      int `json:"network"`
+	Maximal      int `json:"maximal"`
+	Unclassified int `json:"unclassified"`
+	Unknown      int `json:"unknown"`
 }
 
 // Scanner runs OSV-Scanner's license report on a directory: its JSON, or
@@ -185,6 +215,7 @@ func gatherPackages(root string, targets []Target, scan Scanner, all bool) (*Rep
 	}
 	found := map[Target]bool{}
 	approximate := map[string]bool{}
+	own := ownNames(targets)
 	scans := scanAll(dirs, scan)
 	for i, dir := range dirs {
 		data, err := scans[i].data, scans[i].err
@@ -208,10 +239,13 @@ func gatherPackages(root string, targets []Target, scan Scanner, all bool) (*Rep
 			lock := readLock(source, result.Source.Type)
 			for _, p := range result.Packages {
 				target, ok := targetFor(byDir[dir], p.Package.Ecosystem, all)
-				if !ok || lock.isRoot(p.Package.Name, p.Package.Version) {
+				if !ok {
 					continue
 				}
 				found[target] = true
+				isOwn := lock.isOwn(p.Package.Name, p.Package.Version) ||
+					own[p.Package.Ecosystem][packageName(p.Package.Ecosystem, p.Package.Name)] ||
+					p.Package.Ecosystem == "Go" && isLocalPath(p.Package.Name)
 				if result.Source.Type != "lockfile" {
 					approximate[target.Lang+"\x00"+target.Component+"\x00"+relative(root, source)] = true
 				}
@@ -225,9 +259,10 @@ func gatherPackages(root string, targets []Target, scan Scanner, all bool) (*Rep
 				pkg := Package{Ecosystem: p.Package.Ecosystem, Name: p.Package.Name, Version: p.Package.Version,
 					Declared: append([]string{}, declared...), Dependency: lock.dependency(p.Package.Name, result.Source.Type),
 					Dev: isDev(p.DependencyGroups), Language: target.Lang, Component: target.Component, Source: relative(root, source)}
-				pkg.expression = Normalize(declared)
-				if pkg.expression != nil {
-					pkg.License = pkg.expression.String()
+				pkg.setLicense(Normalize(declared))
+				if isOwn {
+					report.Own = append(report.Own, pkg)
+					continue
 				}
 				report.Packages = append(report.Packages, pkg)
 			}
@@ -251,7 +286,10 @@ func gatherPackages(root string, targets []Target, scan Scanner, all bool) (*Rep
 			parts[1], parts[0], parts[2]))
 	}
 	report.Packages = merge(report.Packages)
-	report.Licenses = rollup(report.Packages)
+	report.Own = merge(report.Own)
+	report.Licenses = rollup(report.Packages, func(p Package) []string { return []string{p.License} })
+	report.LicenseIDs = rollup(report.Packages, func(p Package) []string { return p.LicenseIDs })
+	report.Copyleft = copyleftCounts(report.Packages)
 	return report, nil
 }
 
@@ -368,7 +406,8 @@ func merge(packages []Package) []Package {
 		}
 		existing.Dev = existing.Dev && p.Dev
 		if existing.Unknown() && !p.Unknown() {
-			existing.License, existing.Declared, existing.expression = p.License, p.Declared, p.expression
+			existing.Declared = p.Declared
+			existing.setLicense(p.expression)
 		}
 	}
 	sort.SliceStable(out, func(i, j int) bool {
@@ -390,8 +429,11 @@ func merge(packages []Package) []Package {
 	return out
 }
 
-func rollup(packages []Package) []Rollup {
+// rollup counts the packages (each name and version once) under each
+// license licensesOf gives them: their expression, or each identifier.
+func rollup(packages []Package, licensesOf func(Package) []string) []Rollup {
 	type acc struct {
+		class                 spdx.Class
 		packages              map[string]bool
 		languages, components map[string]bool
 	}
@@ -400,18 +442,20 @@ func rollup(packages []Package) []Rollup {
 		if p.Unknown() {
 			continue
 		}
-		a := byLicense[p.License]
-		if a == nil {
-			a = &acc{map[string]bool{}, map[string]bool{}, map[string]bool{}}
-			byLicense[p.License] = a
+		for _, license := range licensesOf(p) {
+			a := byLicense[license]
+			if a == nil {
+				a = &acc{licenseClass(license), map[string]bool{}, map[string]bool{}, map[string]bool{}}
+				byLicense[license] = a
+			}
+			a.packages[p.Key()+"@"+p.Version] = true
+			a.languages[p.Language] = true
+			a.components[p.Component] = true
 		}
-		a.packages[p.Key()+"@"+p.Version] = true
-		a.languages[p.Language] = true
-		a.components[p.Component] = true
 	}
 	var out []Rollup
 	for license, a := range byLicense {
-		out = append(out, Rollup{license, len(a.packages), sortedKeys(a.languages), sortedKeys(a.components)})
+		out = append(out, Rollup{license, string(a.class), len(a.packages), sortedKeys(a.languages), sortedKeys(a.components)})
 	}
 	sort.Slice(out, func(i, j int) bool {
 		if out[i].Packages != out[j].Packages {
@@ -420,6 +464,46 @@ func rollup(packages []Package) []Rollup {
 		return out[i].License < out[j].License
 	})
 	return out
+}
+
+// licenseClass is a canonical expression's class.
+func licenseClass(license string) spdx.Class {
+	e, err := spdx.Parse(license)
+	if err != nil {
+		return spdx.Unclassified
+	}
+	return e.Copyleft()
+}
+
+// copyleftCounts counts the packages, each name and version once, by
+// class; one whose license differs between components counts under each.
+func copyleftCounts(packages []Package) CopyleftCounts {
+	var counts CopyleftCounts
+	seen := map[string]bool{}
+	for _, p := range packages {
+		key := p.Key() + "@" + p.Version + "\x00" + p.License
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		switch spdx.Class(p.Copyleft) {
+		case spdx.None:
+			counts.None++
+		case spdx.Weak:
+			counts.Weak++
+		case spdx.Strong:
+			counts.Strong++
+		case spdx.Network:
+			counts.Network++
+		case spdx.Maximal:
+			counts.Maximal++
+		case spdx.Unclassified:
+			counts.Unclassified++
+		default:
+			counts.Unknown++
+		}
+	}
+	return counts
 }
 
 func sortedKeys(set map[string]bool) []string {
@@ -444,17 +528,17 @@ func (r *Report) Unknown() []Package {
 
 // lockInfo is what a lock file or its manifest says beyond OSV-Scanner's
 // report: which packages are direct dependencies, the project's own
-// packages (Cargo's workspace members), and Composer's licenses.
+// packages (own.go), and Composer's licenses.
 type lockInfo struct {
 	direct   map[string]bool // nil when the lock file doesn't say
 	directs  map[string]string
-	manifest bool // a manifest OSV-Scanner resolved: what it lists itself is direct
-	roots    map[string]string
+	manifest bool              // a manifest OSV-Scanner resolved: what it lists itself is direct
+	own      map[string]string // name to version, "" for any
 	licenses map[string][]string
 }
 
-func (l lockInfo) isRoot(name, version string) bool {
-	v, ok := l.roots[name]
+func (l lockInfo) isOwn(name, version string) bool {
+	v, ok := l.own[name]
 	return ok && (v == "" || v == version)
 }
 
@@ -485,21 +569,29 @@ func readLock(path, sourceType string) lockInfo {
 	switch {
 	case name == "package-lock.json" || name == "npm-shrinkwrap.json" || name == "yarn.lock" ||
 		name == "pnpm-lock.yaml" || name == "bun.lock":
-		return lockInfo{direct: jsonKeys(filepath.Join(dir, "package.json"),
+		info := lockInfo{direct: jsonKeys(filepath.Join(dir, "package.json"),
 			"dependencies", "devDependencies", "optionalDependencies", "peerDependencies")}
+		if name == "package-lock.json" || name == "npm-shrinkwrap.json" {
+			info.own = npmLockOwn(path)
+		}
+		return info
+	case name == "uv.lock" || name == "poetry.lock":
+		return lockInfo{own: lockPackagesFromDirectories(path)}
 	case name == "composer.lock":
 		info := lockInfo{direct: jsonKeys(filepath.Join(dir, "composer.json"), "require", "require-dev")}
 		info.licenses = composerLicenses(path)
+		info.own = composerPathPackages(path)
 		return info
 	case name == "go.mod":
 		return lockInfo{directs: goModDirect(path)}
 	case name == "Cargo.lock":
 		roots, direct := cargoRoots(path)
-		return lockInfo{roots: roots, direct: direct}
+		return lockInfo{own: roots, direct: direct}
 	case name == "Gemfile.lock" || name == "gems.locked":
-		return lockInfo{direct: gemfileDirect(path)}
+		return lockInfo{direct: gemfileDirect(path), own: gemfilePath(path)}
 	case name == "packages.lock.json":
-		return lockInfo{directs: nugetDirect(path)}
+		directs, own := nugetDirect(path)
+		return lockInfo{directs: directs, own: own}
 	case name == "pom.xml" || strings.HasPrefix(name, "requirements") || name == "build.gradle" ||
 		name == "build.gradle.kts" || name == "pyproject.toml" || name == "Pipfile":
 		return lockInfo{manifest: true}
@@ -666,27 +758,30 @@ func gemfileDirect(path string) map[string]bool {
 }
 
 // nugetDirect is packages.lock.json's "type" of each package: Direct or
-// Transitive (or Project, a project reference, read as direct).
-func nugetDirect(path string) map[string]string {
+// Transitive; and its project references (Project), the project's own.
+func nugetDirect(path string) (directs, own map[string]string) {
 	var lock struct {
 		Dependencies map[string]map[string]struct {
 			Type string `json:"type"`
 		} `json:"dependencies"`
 	}
 	if !readJSON(path, &lock) {
-		return nil
+		return nil, nil
 	}
-	out := map[string]string{}
+	directs, own = map[string]string{}, map[string]string{}
 	for _, packages := range lock.Dependencies {
 		for name, p := range packages {
 			kind := "transitive"
-			if p.Type == "Direct" || p.Type == "Project" || out[name] == "direct" {
+			if p.Type == "Direct" || p.Type == "Project" || directs[name] == "direct" {
 				kind = "direct"
 			}
-			out[name] = kind
+			directs[name] = kind
+			if p.Type == "Project" {
+				own[name] = ""
+			}
 		}
 	}
-	return out
+	return directs, own
 }
 
 // ProjectTargets are the targets for a project's languages: each one's

@@ -39,6 +39,7 @@ _s_scroll="$_c_dim"
 max_jobs=50%
 _nice_val=""
 _viz_mode=scroll  # scroll (default), full, or zoom
+_fail_on_skip=0   # --fail-on-skip: fail when nothing passed or failed
 _tick_ds=2        # base: 0.2s per column (for scroll/zoom modes)
 _show_help() {
     cat <<'HELP'
@@ -58,6 +59,7 @@ Flags:
                     'pcores' (P-cores minus 1), or 'unlimited' (all at once)
   -n NICE           Run jobs under sudo nice -n NICE (e.g. -n -20)
   -s MODE           Visualization mode: scroll (default), full, or zoom
+  --fail-on-skip    Fail when nothing ran: every job skipped or not installed
   -h, --help        Show this help and exit
 
 Scheduling (slot-based, the default and -j N where N > 0):
@@ -91,6 +93,7 @@ HELP
 while [ $# -gt 0 ]; do
     case "$1" in
         -h|--help) _show_help ;;
+        --fail-on-skip) _fail_on_skip=1; shift ;;
         -j) case "${2:-50%}" in
                 unlimited|0) max_jobs=0 ;;
                 pcores) max_jobs=pcores ;;
@@ -346,6 +349,10 @@ if [ "$run_n" -eq 0 ]; then
     echo "$_summary"
     echo "Logs: $logdir/"
     rmdir "$lockdir" 2>/dev/null
+    if [ "$_fail_on_skip" -eq 1 ]; then
+        echo "hecatron: nothing ran: every job skipped (--fail-on-skip)" >&2
+        exit 1
+    fi
     exit 0
 fi
 
@@ -362,6 +369,24 @@ _bar() {
 
 _now_ds() { perl -MTime::HiRes=time -e 'printf "%d\n", time*10'; }
 _fmt_ds() { echo "$((${1} / 10)).$((${1} % 10))s"; }
+
+# The line a job's log has when components, or the whole job (a language
+# without a hook for the action: run.sh's "<lang>: <action> skipped:"), had
+# nothing to do.
+_skip_line='^[^ ]+: [^ ]+ skipped( for [0-9]+ component\(s\))?: '
+# A skipped job's status in history.log: neither passed (its time sets no
+# time limit) nor failed (it isn't run first next time).
+_skip_status=77
+
+# " skipped" for a job that succeeded without checking anything: every
+# component's hook had nothing to do (each-component.sh's "skipped for"
+# line, and no "passed for" line), as an audit without a lock file.
+_skip_mark() {
+    [ "$1" -eq 0 ] || return 0
+    grep -qE "$_skip_line" "$2" 2>/dev/null || return 0
+    grep -qE '^[^ ]+: [^ ]+ passed for [0-9]+ component\(s\)$' "$2" 2>/dev/null && return 0
+    echo " skipped"
+}
 
 # Print a duration-scaled time axis above bar charts.
 # $1 = max duration in deciseconds, $2 = 1 if interactive (adds $_c_erase)
@@ -577,6 +602,7 @@ _init_interactive_display() {
     done_flags=()
     done_durs=()
     done_rcs=()
+    done_skips=()
     _swim_height=$1
     term_h=$(_term_height)
     _calc_viewport
@@ -586,6 +612,7 @@ _init_interactive_display() {
         done_flags[$i]=""
         done_durs[$i]=0
         done_rcs[$i]=0
+        done_skips[$i]=""
     done
     _hide_cursor
     _enable_raw_input
@@ -663,7 +690,7 @@ _print_final_results() {
     _max_dur_ds=1
     for i in "${!all_labels[@]}"; do
         [ "${all_skip[$i]}" -eq 1 ] && continue
-        read -r _dur_ds _rc < "$logdir/${all_labels[$i]}.result"
+        read -r _dur_ds _rc _ < "$logdir/${all_labels[$i]}.result"
         (( _dur_ds > _max_dur_ds )) && _max_dur_ds=$_dur_ds
     done
 
@@ -678,11 +705,13 @@ _print_final_results() {
         elif [ "${all_skip[$i]}" -eq 1 ]; then
             printf "  - %-${label_w}s      - not installed\n" "$label"
         else
-            read -r _dur_ds _rc < "$logdir/$label.result"
+            read -r _dur_ds _rc _skipped < "$logdir/$label.result"
             _dur_str=$(_fmt_ds "$_dur_ds")
             _bar_len=$(( _dur_ds * max_bar / _max_dur_ds ))
             (( _bar_len < 1 )) && _bar_len=1
-            if [ "$_rc" -eq 0 ]; then
+            if [ -n "${_skipped:-}" ]; then
+                printf "  - %-${label_w}s %6s %s skipped\n" "$label" "$_dur_str" "$(_bar "$_bar_len")"
+            elif [ "$_rc" -eq 0 ]; then
                 printf "  ✓ %-${label_w}s %6s %s\n" "$label" "$_dur_str" "$(_bar "$_bar_len")"
             else
                 printf "  ✗ %-${label_w}s %6s %s\n" "$label" "$_dur_str" "$(_bar "$_bar_len")"
@@ -773,7 +802,7 @@ if [ "$max_jobs" -gt 0 ]; then
             _elabel="${_pair%%=*}"
             _edata="${_pair#*=}"
             _erc="${_edata#*:}"
-            if [ "$_erc" != "$_edata" ] && [ "$_erc" -ne 0 ] 2>/dev/null; then
+            if [ "$_erc" != "$_edata" ] && [ "$_erc" -ne 0 ] 2>/dev/null && [ "$_erc" -ne "$_skip_status" ]; then
                 for i in "${!all_labels[@]}"; do
                     [ "${all_labels[$i]}" = "$_elabel" ] && _error_last[$i]=1
                 done
@@ -859,7 +888,7 @@ if [ "$max_jobs" -gt 0 ]; then
                     _rc=0; _st=$(_now_ds)
                     ${_nice_cmd} ${job_cmd} ${all_cmds[$_qi]} > "$logdir/$label.log" 2>&1 || _rc=$?
                     _et=$(_now_ds)
-                    echo "$((_et - _st)) $_rc" > "$logdir/$label.result"
+                    echo "$((_et - _st)) $_rc$(_skip_mark "$_rc" "$logdir/$label.log")" > "$logdir/$label.result"
                 ) &
                 _slot_pids[$_s]=$!
                 _slot_labels[$_s]="$label"
@@ -889,7 +918,7 @@ if [ "$max_jobs" -gt 0 ]; then
                 [ "${all_skip[$i]}" -eq 1 ] && continue
                 label="${all_labels[$i]}"
                 if [ -z "${done_flags[$i]}" ] && [ -f "$logdir/$label.result" ]; then
-                    read -r done_durs[$i] done_rcs[$i] < "$logdir/$label.result"
+                    read -r done_durs[$i] done_rcs[$i] done_skips[$i] < "$logdir/$label.result"
                     done_flags[$i]=1
                 fi
                 [ -n "${done_flags[$i]}" ] && _done_count=$((_done_count + 1))
@@ -955,7 +984,9 @@ if [ "$max_jobs" -gt 0 ]; then
                 if [ -n "${done_flags[$i]}" ]; then
                     _dur_ds="${done_durs[$i]}"
                     _dur_str=$(_fmt_ds "$_dur_ds")
-                    if [ "${done_rcs[$i]}" -eq 0 ]; then
+                    if [ -n "${done_skips[$i]}" ]; then
+                        printf "  ${_s_skip}-$_c_reset ${_c_bg256}%dm  $_c_reset $_s_skip%-${label_w}s %6s$_c_reset " "${_palette[$_ci]}" "$label" "$_dur_str"
+                    elif [ "${done_rcs[$i]}" -eq 0 ]; then
                         printf "  ${_s_pass}✓$_c_reset ${_c_bg256}%dm  $_c_reset $_s_pass%-${label_w}s %6s$_c_reset " "${_palette[$_ci]}" "$label" "$_dur_str"
                     else
                         printf "  ${_s_fail}✗$_c_reset ${_c_bg256}%dm  $_c_reset $_s_fail%-${label_w}s %6s$_c_reset " "${_palette[$_ci]}" "$label" "$_dur_str"
@@ -1053,7 +1084,7 @@ if [ "$max_jobs" -gt 0 ]; then
                     _rc=0; _st=$(_now_ds)
                     ${_nice_cmd} ${job_cmd} ${all_cmds[$_qi]} > "$logdir/$label.log" 2>&1 || _rc=$?
                     _et=$(_now_ds)
-                    echo "$((_et - _st)) $_rc" > "$logdir/$label.result"
+                    echo "$((_et - _st)) $_rc$(_skip_mark "$_rc" "$logdir/$label.log")" > "$logdir/$label.result"
                 ) &
                 _slot_pids[$_s]=$!
                 _slot_labels[$_s]="$label"
@@ -1084,7 +1115,7 @@ else
             _st=$(_now_ds)
             ${_nice_cmd} ${job_cmd} ${all_cmds[$i]} > "$logdir/$label.log" 2>&1 || _rc=$?
             _et=$(_now_ds)
-            echo "$((_et - _st)) $_rc" > "$logdir/$label.result"
+            echo "$((_et - _st)) $_rc$(_skip_mark "$_rc" "$logdir/$label.log")" > "$logdir/$label.result"
         ) &
         pids+=($!)
     done
@@ -1122,7 +1153,7 @@ else
                 [ "${all_skip[$i]}" -eq 1 ] && continue
                 label="${all_labels[$i]}"
                 if [ -z "${done_flags[$i]}" ] && [ -f "$logdir/$label.result" ]; then
-                    read -r done_durs[$i] done_rcs[$i] < "$logdir/$label.result"
+                    read -r done_durs[$i] done_rcs[$i] done_skips[$i] < "$logdir/$label.result"
                     done_flags[$i]=1
                 fi
                 [ -n "${done_flags[$i]}" ] && _done_count=$((_done_count + 1))
@@ -1158,7 +1189,9 @@ else
                     _dur_str=$(_fmt_ds "$_dur_ds")
                     _bar_len=$(( _dur_ds * max_bar / _max_dur_ds ))
                     (( _bar_len < 1 )) && _bar_len=1
-                    if [ "${done_rcs[$i]}" -eq 0 ]; then
+                    if [ -n "${done_skips[$i]}" ]; then
+                        printf "  ${_s_skip}- %-${label_w}s %6s %s skipped$_c_reset$_c_erase" "$label" "$_dur_str" "$(_bar "$_bar_len")"; _seek_line
+                    elif [ "${done_rcs[$i]}" -eq 0 ]; then
                         printf "  ${_s_pass}✓ %-${label_w}s %6s %s$_c_reset$_c_erase" "$label" "$_dur_str" "$(_bar "$_bar_len")"; _seek_line
                     else
                         printf "  ${_s_fail}✗ %-${label_w}s %6s %s$_c_reset$_c_erase" "$label" "$_dur_str" "$(_bar "$_bar_len")"; _seek_line
@@ -1190,34 +1223,46 @@ fi
 
 # --- Summary ---
 failed=0
+skipped=0
 wall_ds=0
 for i in "${!all_labels[@]}"; do
     [ "${all_skip[$i]}" -eq 1 ] && continue
     label="${all_labels[$i]}"
-    read -r _dur_ds _rc < "$logdir/$label.result"
+    read -r _dur_ds _rc _skipped < "$logdir/$label.result"
     (( _dur_ds > wall_ds )) && wall_ds=$_dur_ds
     [ "$_rc" -ne 0 ] && failed=$((failed + 1))
+    [ -n "${_skipped:-}" ] && skipped=$((skipped + 1))
 done
 
-passed=$(( run_n - failed ))
+# A skipped job neither passed nor failed: not scanned isn't clean.
+passed=$(( run_n - failed - skipped ))
 # When using slot-based scheduling, wall time is total elapsed (not max individual)
 if [ "$max_jobs" -gt 0 ]; then
     wall_ds=$(($(_now_ds) - global_start_ds))
 fi
 wall_str=$(_fmt_ds "$wall_ds")
 _extra=""
+[ "$skipped" -gt 0 ] && _extra="$_extra, $skipped skipped"
 [ "$skip_n" -gt 0 ] && _extra="$_extra, $skip_n not installed"
 [ "$disable_n" -gt 0 ] && _extra="$_extra, $disable_n disabled"
 echo ""
-echo "$passed/$run_n passed${_extra} ($wall_str wall time)"
+echo "$passed/$((run_n - skipped)) passed${_extra} ($wall_str wall time)"
 echo "Logs: $logdir/"
+# Each job's components that had nothing to do, and why.
+for i in "${!all_labels[@]}"; do
+    [ "${all_skip[$i]}" -eq 1 ] && continue
+    read -r _dur_ds _rc _ < "$logdir/${all_labels[$i]}.result"
+    [ "$_rc" -eq 0 ] || continue
+    grep -E "$_skip_line" "$logdir/${all_labels[$i]}.log" 2>/dev/null || true
+done
 
 # --- Write run history (for duration prediction) ---
 _hist_line=""
 for i in "${!all_labels[@]}"; do
     [ "${all_skip[$i]}" -eq 1 ] && continue
     label="${all_labels[$i]}"
-    read -r _dur_ds _rc < "$logdir/$label.result"
+    read -r _dur_ds _rc _skipped < "$logdir/$label.result"
+    [ -z "${_skipped:-}" ] || _rc=$_skip_status
     _hist_line="${_hist_line}${_hist_line:+ }${label}=${_dur_ds}:${_rc}"
 done
 echo "$_hist_line" >> "$logdir/history.log"
@@ -1232,12 +1277,16 @@ if [ "$failed" -gt 0 ]; then
     for i in "${!all_labels[@]}"; do
         [ "${all_skip[$i]}" -eq 1 ] && continue
         label="${all_labels[$i]}"
-        read -r _dur_ds _rc < "$logdir/$label.result"
+        read -r _dur_ds _rc _ < "$logdir/$label.result"
         if [ "$_rc" -ne 0 ]; then
             echo "=== $label ==="
             cat "$logdir/$label.log"
             echo ""
         fi
     done
+    exit 1
+fi
+if [ "$_fail_on_skip" -eq 1 ] && [ "$passed" -eq 0 ]; then
+    echo "hecatron: nothing ran: every job skipped (--fail-on-skip)" >&2
     exit 1
 fi

@@ -309,6 +309,13 @@ func TestRenderers(t *testing.T) {
 				Excerpt:    Excerpt{Source: "tail", Lines: []ErrorLine{{Text: "> Task :test", Component: "."}}}},
 			{Label: "python2", Lang: "python", Status: Passed, Duration: 2 * time.Second, Log: "/repo/.logs/test/python2.log",
 				Limit: Limit{Duration: 90 * time.Second, Source: LimitFlag}},
+			{Label: "javascript", Lang: "javascript", Status: Skipped, Duration: 400 * time.Millisecond, Log: "/repo/.logs/test/javascript.log",
+				Components: []Component{{Name: "web", Dir: "/repo/web/js", Skipped: "package.json has no test script"},
+					{Name: "api", Dir: "/repo/api/js", Skipped: "package.json has no test script"}}},
+			{Label: "ruby", Lang: "ruby", Status: Passed, Duration: 3 * time.Second, Log: "/repo/.logs/test/ruby.log",
+				Components: []Component{{Name: "web", Dir: "/repo/web/ruby"}, {Name: "api", Dir: "/repo/api/ruby", Skipped: "no spec or test directory"}}},
+			{Label: "elm", Lang: "elm", Status: Skipped, Duration: 100 * time.Millisecond, Log: "/repo/.logs/test/elm.log",
+				Skipped: "no test runner for elm"},
 			{Label: "---", Status: StatusSeparator},
 			{Label: "docs", Task: true, Status: Passed, Duration: 300 * time.Millisecond, Log: "/repo/.logs/test/docs.log"},
 		},
@@ -330,6 +337,52 @@ func TestRenderers(t *testing.T) {
 	WriteAgent(&agent, passing)
 	if agent.String() != "hct lint: 1 passed, 1 skipped (3.0s)\n" {
 		t.Errorf("a passing run: %q", agent.String())
+	}
+}
+
+// --fail-on-skip fails a run in which no job passed or failed, and only
+// that run.
+func TestFailOnSkip(t *testing.T) {
+	skipped := Result{Label: "js", Status: Skipped, Components: []Component{{Name: ".", Skipped: "no tests"}}}
+	cases := []struct {
+		results []Result
+		want    int
+	}{
+		{[]Result{skipped}, 1},
+		{[]Result{skipped, {Label: "c", Status: StatusNotInstall}, {Label: "---", Status: StatusSeparator}}, 1},
+		{[]Result{{Label: "c", Status: StatusNotInstall}}, 1},
+		{[]Result{skipped, {Label: "go", Status: Passed}}, 0},
+		{[]Result{skipped, {Label: "go", Status: Failed}}, 1},
+		{[]Result{skipped, {Label: "go", Status: Failed, Components: []Component{{Failed: true, ToolchainMissing: true}}}}, 3},
+		{nil, 0}, // nothing to run at all
+	}
+	for i, c := range cases {
+		report := &Report{Results: c.results, FailOnSkip: true}
+		if got := report.ExitStatus(); got != c.want {
+			t.Errorf("case %d: exit %d, want %d", i, got, c.want)
+		}
+		report.FailOnSkip = false
+		if got := report.ExitStatus(); got != ExitStatus(c.results) {
+			t.Errorf("case %d without --fail-on-skip: exit %d", i, got)
+		}
+	}
+}
+
+// A skipped job is recorded with status 77: it sets no time limit and
+// isn't run first next time.
+func TestSkippedHistory(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "history.log")
+	History{}.Append(path, []Result{{Label: "js", Status: Skipped, Duration: time.Second}, {Label: "go", Status: Failed, Duration: time.Second}})
+	history := ReadHistory(path)
+	if _, code, ok := history.Last("js"); !ok || code != 77 {
+		t.Errorf("js recorded with %d", code)
+	}
+	jobs := []Job{{Label: "js"}, {Label: "go"}}
+	if _, failedLast := history.Order(jobs, []int{0, 1}); failedLast[0] || !failedLast[1] {
+		t.Errorf("failed last time: %v", failedLast)
+	}
+	if limit := history.Limit("js", Override{}); limit.Duration != 0 {
+		t.Errorf("a skipped run sets a limit: %v", limit)
 	}
 }
 

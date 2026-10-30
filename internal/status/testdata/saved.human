@@ -12,7 +12,7 @@ beta
   directories  a/beta/
   version      2.0 (default)
   toolchain    missing (no-such-tool-for-hct)
-  last runs    test: passed 2h ago, 4s; build: failed 2d ago, 1m 35s (log /repo/.logs/build/beta.log)
+  last runs    test: passed 2h ago, 4s; lint: skipped 1h ago; build: failed 2d ago, 1m 35s (log /repo/.logs/build/beta.log); audit: passed 1h ago; docs: skipped 1h ago
 
 gamma (disabled for you in parallel runs)
   directories  a/gamma/

@@ -273,11 +273,35 @@ def detected_config(root: str) -> dict:
     import manage  # noqa: E402 - only when detecting: it is the init command's module
     config, _ = manage.detected_config(root)
     del config["logs"]
-    if cached is None:
+    if cached is None and _for_a_person():
         print(f"hecatron: {root} has no .hecatron/config.json; detected "
               f"{', '.join(config['languages']) or 'no languages'} (hecatron init saves this)", file=sys.stderr)
     _write_json(cache, {"key": key, "config": config})
     return config
+
+
+def _for_a_person() -> bool:
+    """Whether a note meant for a person may go to stderr: stderr a terminal
+    and human output (the binary's runner.ForAPerson): no --output, --json
+    or HECATRON_OUTPUT naming another format, not an AI agent's session,
+    not GitHub Actions."""
+    if not sys.stderr.isatty():
+        return False
+    output = os.environ.get("HECATRON_OUTPUT", "")
+    args = sys.argv[1:]
+    for i, arg in enumerate(args):
+        if arg == "--":
+            break
+        if arg == "--output" and i + 1 < len(args):
+            output = args[i + 1]
+        elif arg.startswith("--output="):
+            output = arg[len("--output="):]
+        elif arg == "--json":
+            output = "json"
+    if output:
+        return output == "human"
+    agent = os.environ.get("CLAUDECODE") == "1" and not sys.stdout.isatty()
+    return not agent and os.environ.get("GITHUB_ACTIONS") != "true"
 
 
 def _read_json(path: str, default):

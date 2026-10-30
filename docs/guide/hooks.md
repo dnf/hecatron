@@ -22,6 +22,46 @@ Rules carried over from sayable:
 - `clean` removes build artifacts only, never installed dependencies or
   tracked files.
 - A language-specific command acts on every component of that language.
+- A hook with nothing to run in a component, or that can't run there,
+  says so and is reported **skipped**, not passed ([skipping](#skipping)).
+
+## Skipping
+
+A hook that has nothing to do in a component (no tests, no linter or docs
+tool configured, no lock file to audit) or can't run there (an Xcode
+project's tests need a scheme) shouldn't exit 0 and count as passed. It
+writes why, one line, to the file `HECATRON_SKIPPED` names, and exits 0.
+`skip` in `languages/_hooks.sh` does both, and exits the hook:
+
+```bash
+#!/usr/bin/env bash
+# .hecatron/languages/python/test.sh
+source "${HECATRON_HOME}/languages/_hooks.sh"
+compgen -G 'tests/test_*.py' >/dev/null || skip "no tests yet"
+run uv run pytest
+```
+
+prints `python: test: no tests yet (skipping)`, and the component is
+skipped with that reason ([output](output.md#skipped)). Without
+`_hooks.sh`: `echo "no tests yet" >"${HECATRON_SKIPPED}"; exit 0`.
+`skip_component "reason"` writes the reason without exiting, for a hook
+that ends by itself (`audit_nothing`, then `exit 0`). The rules:
+
+- Only an exit status of 0 with the file written is a skip: a hook that
+  writes the reason and then fails has failed.
+- `skip` must run in the hook itself, not in a subshell (`( ... skip ...
+  )`), which would exit only the subshell and leave the hook going on with
+  its component still marked skipped.
+- With `lint`, a component whose lint hook skipped is skipped only if its
+  format check skipped too (or there is none); one that ran passes.
+- A default hook that runs itself in several directories below
+  (`run_hook_in`) skips only if each of them skipped, with each one's
+  reason; else the ones that ran decide.
+- `HECATRON_SKIPPED` is set by both runners, for every run command; a hook
+  run by hand without it just exits 0.
+
+A language without a hook for a command is skipped too (`go: docs skipped:
+no docs tool for go`).
 
 ## Default hooks
 

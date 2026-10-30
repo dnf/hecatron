@@ -269,10 +269,10 @@ class CommandTest(Fixture):
     def test_a_language_without_a_docs_tool_says_so(self):
         result = self.hecatron("docs", "go")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("No docs tool for go (skipping)", result.stdout)
+        self.assertIn("go: docs skipped: no docs tool for go", result.stdout)
         result = self.hecatron("bench", "elm")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("No benchmark runner for elm (skipping)", result.stdout)
+        self.assertIn("elm: bench skipped: no benchmark runner for elm", result.stdout)
 
     def test_with_no_targets_only_languages_with_a_hook_run(self):
         result = self.hecatron("docs")

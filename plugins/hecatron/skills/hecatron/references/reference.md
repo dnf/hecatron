@@ -23,7 +23,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | Newer dependency versions | `hct outdated [lang...]` | Report only; `--json`, `--fail` |
 | API docs | `hct docs [lang...]` | The ecosystem's tool (`cargo doc`, Sphinx, Javadoc...) into its own directory; ends with `<lang>: docs: written to <dir>` (JSON: `"docs"`). Only tools the project already has; none: skipped |
 | Benchmarks | `hct bench [lang...]` | `cargo bench`, `go test -bench`, pytest-benchmark, JMH, BenchmarkDotNet...; none: skipped. Not part of `hct test` or CI |
-| Dependency licenses | `hct licenses [lang...]` | Per license and package, unknowns apart; exit 1 when the config's `licenses` policy refuses one; needs OSV-Scanner and the binary |
+| Dependency licenses | `hct licenses [lang...]` | Per license (expression and identifier) and package, each with its copyleft class (`none`, `weak`, `strong`, `network`, `maximal`, `unclassified`); unknowns and the project's own packages apart; exit 1 when the config's `licenses` policy refuses one; `--timeout DURATION`; needs OSV-Scanner and the binary |
 | Software bill of materials | `hct sbom [lang...] [-o FILE]` | CycloneDX 1.6 JSON (`--format spdx`: SPDX 2.3); `--no-dev`; `SOURCE_DATE_EPOCH` for reproducible output; needs OSV-Scanner and the binary |
 | Where to start | `HECATRON_OUTPUT=agent hct status` | Each language's directories, toolchain version and whether it's installed, last runs, uncommitted changes, and what to run next; one `git status`, installs nothing |
 | After a pull, rebase or checkout | `hct sync [ref]` | Since where HEAD was (the reflog) or `ref`: runs `hct deps` where lock files changed (`--no-deps`: says so), says the version each changed pin now needs and whether it's installed (installs nothing), runs `hct check` when the config, hooks or generated files changed; never pulls or fetches; exit 1 when deps or check fails. Needs the binary |
@@ -51,6 +51,12 @@ system of its own. `hct` and `hecatron` are the same command.
 ## Results
 
 - Exit status 0: passed. 1: something failed. 2: a usage error.
+- **Skipped is not passed.** A job or component whose hook had nothing to
+  run (no tests, no linter or docs tool, nothing to audit) or couldn't
+  run is skipped, with a reason: `SKIP <lang> (<dirs>): <reason>` in agent
+  output, `"status": "skipped"` and `"reason"` in JSON, `<lang>: <action>
+  skipped...` at the end of its log. It exits 0; don't report it as
+  tested. `--fail-on-skip` exits 1 when nothing ran at all.
 - Each run saves a log per target: `<logs>/<action>/<target>.log`, where
   `<logs>` is config.json `logs` (default `.logs`), or `.git/hecatron/logs`
   in a repository without `.hecatron/config.json`.
@@ -108,6 +114,8 @@ A script at `.hecatron/languages/<lang>/<action>.sh` (`test`, `lint`,
 `bench`) replaces hecatron's default for that language. It runs once per
 component, in the component's directory, with `HECATRON_LANG`,
 `HECATRON_COMPONENT` and `HECATRON_ROOT` set; exit non-zero to fail.
+With nothing to run, `source "${HECATRON_HOME}/languages/_hooks.sh"` and
+`skip "reason"`, so the component is reported skipped, not passed.
 
 ## Toolchain versions
 

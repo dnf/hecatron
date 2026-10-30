@@ -1,10 +1,13 @@
-                      0306090120 180 240 300360 420 480 540
-  ✗ go       12.0s █
-  ✓ python    2.5s █
-  - rust         - not installed
-  ⊘ zig          ⊘ disabled
-  ✗ php      61.0s ███
-  ✗ kotlin  600.0s ██████████████████████████████████████ timed out (10m limit: the 10m minimum (5× its median 1m10s over 5 passing runs is less))
-  ✓ python2   2.0s █
+                         0306090120180 240300 360420 480540
+  ✗ go          12.0s █
+  ✓ python       2.5s █
+  - rust            - not installed
+  ⊘ zig             ⊘ disabled
+  ✗ php         61.0s ███
+  ✗ kotlin     600.0s ███████████████████████████████████ timed out (10m limit: the 10m minimum (5× its median 1m10s over 5 passing runs is less))
+  ✓ python2      2.0s █
+  - javascript   0.4s █ skipped
+  ✓ ruby         3.0s █
+  - elm          0.1s █ skipped
 
-  ✓ docs      0.3s █
+  ✓ docs         0.3s █

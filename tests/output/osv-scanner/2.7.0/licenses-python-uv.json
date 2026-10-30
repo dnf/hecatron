@@ -1,0 +1,72 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "/tmp/licenses-fixtures/python-uv/uv.lock",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "iniconfig",
+            "version": "2.0.0",
+            "ecosystem": "PyPI",
+            "purl": "pkg:pypi/iniconfig@2.0.0"
+          },
+          "licenses": [
+            "MIT"
+          ]
+        },
+        {
+          "package": {
+            "name": "six",
+            "version": "1.16.0",
+            "ecosystem": "PyPI",
+            "purl": "pkg:pypi/six@1.16.0"
+          },
+          "licenses": [
+            "MIT"
+          ]
+        },
+        {
+          "package": {
+            "name": "uv-proj",
+            "version": "0.27.0.post18.dev0+g1a2b3c4",
+            "ecosystem": "PyPI",
+            "purl": "pkg:pypi/uv-proj@0.27.0.post18.dev0%2Bg1a2b3c4"
+          },
+          "licenses": [
+            "UNKNOWN"
+          ]
+        },
+        {
+          "package": {
+            "name": "uvproj-lib",
+            "version": "0.1.0",
+            "ecosystem": "PyPI",
+            "purl": "pkg:pypi/uvproj-lib@0.1.0"
+          },
+          "licenses": [
+            "UNKNOWN"
+          ]
+        }
+      ]
+    }
+  ],
+  "experimental_config": {
+    "licenses": {
+      "summary": true,
+      "allowlist": []
+    }
+  },
+  "license_summary": [
+    {
+      "name": "MIT",
+      "count": 2
+    },
+    {
+      "name": "UNKNOWN",
+      "count": 2
+    }
+  ]
+}

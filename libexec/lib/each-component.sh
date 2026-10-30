@@ -33,10 +33,15 @@ if [ "${_action}" = lint ] && _in_list "${_lang}" ${_LINT_FORMAT_LANGS}; then
     _format_hook="$(python3 "${HECATRON_HOME}/libexec/lib/project.py" resolve "${_lang}" format.sh)"
 fi
 _format_checked="$(mktemp)"
-trap 'rm -f "${_format_checked}"' EXIT
+# A hook with nothing to do in a component (audit without a lock file it
+# reads) writes why here (skip_component in languages/_hooks.sh): skipped,
+# not passed.
+_skip_file="$(mktemp)"
+trap 'rm -f "${_format_checked}" "${_skip_file}" "${_skip_file}.format" "${_skip_file}.in"' EXIT
 
 _ran=0
 _failed=()
+_skipped=()
 while IFS=$'\t' read -r _component _dir; do
     if [ "${_wanted}" != "  " ] && [[ "${_wanted}" != *" ${_component} "* ]]; then
         continue
@@ -52,14 +57,25 @@ while IFS=$'\t' read -r _component _dir; do
     # stdin is the component list; a hook reading it (uv does) would swallow
     # the components after its own.
     : >"${_format_checked}"
+    : >"${_skip_file}"
     _status=0
     (eval "${_env}" && cd "${_dir}" && HECATRON_COMPONENT="${_component}" HECATRON_LANG="${_lang}" \
-        HECATRON_FORMAT_CHECKED="${_format_checked}" bash "${_hook}" "${_component}" </dev/null) || _status=1
+        HECATRON_FORMAT_CHECKED="${_format_checked}" HECATRON_SKIPPED="${_skip_file}" \
+        bash "${_hook}" "${_component}" </dev/null) || _status=1
+    # Lint's format check: a component whose linter skipped is skipped only
+    # if its format check skipped too.
     if [ -n "${_format_hook}" ] && [ ! -s "${_format_checked}" ]; then
+        : >"${_skip_file}.format"
         (eval "${_env}" && cd "${_dir}" && HECATRON_COMPONENT="${_component}" HECATRON_LANG="${_lang}" \
-            HECATRON_FORMAT_CHECK=1 bash "${_format_hook}" "${_component}" </dev/null) || _status=1
+            HECATRON_FORMAT_CHECK=1 HECATRON_SKIPPED="${_skip_file}.format" \
+            bash "${_format_hook}" "${_component}" </dev/null) || _status=1
+        [ -s "${_skip_file}.format" ] || : >"${_skip_file}"
     fi
-    [ "${_status}" -eq 0 ] || _failed+=("${_component}")
+    if [ "${_status}" -ne 0 ]; then
+        _failed+=("${_component}")
+    elif _reason="$(cat "${_skip_file}")" && [ -n "${_reason}" ]; then
+        _skipped+=("${_component} (${_reason})")
+    fi
 done < <(python3 "${HECATRON_HOME}/libexec/lib/project.py" impl-dirs "${_lang}")
 
 if [ "${_ran}" -eq 0 ]; then
@@ -70,4 +86,12 @@ if [ "${#_failed[@]}" -gt 0 ]; then
     echo "${_lang}: ${_action} failed: ${_failed[*]}" >&2
     exit 1
 fi
-echo "${_lang}: ${_action} passed for ${_ran} component(s)"
+if [ "${#_skipped[@]}" -gt 0 ]; then
+    _skip_list=""
+    for _entry in "${_skipped[@]}"; do _skip_list="${_skip_list:+${_skip_list}, }${_entry}"; done
+    echo "${_lang}: ${_action} skipped for ${#_skipped[@]} component(s): ${_skip_list}"
+fi
+_passed=$((_ran - ${#_skipped[@]}))
+if [ "${_passed}" -gt 0 ]; then
+    echo "${_lang}: ${_action} passed for ${_passed} component(s)"
+fi

@@ -70,9 +70,13 @@ The Go path (`cmd/hecatron/run.go`, `hooks.go`, `internal/runner`):
    (the resolved toolchain version's `path` and `env`, then the other
    languages' static `path` entries), and runs `bash <hook> <component>`
    there, with `HECATRON_ROOT`, `HECATRON_COMPONENT`, `HECATRON_LANG`,
-   `HECATRON_BINARY` and stdin closed. Lint then runs the format hook with
+   `HECATRON_BINARY`, `HECATRON_SKIPPED` (a file a skipping hook writes
+   its reason to) and stdin closed. Lint then runs the format hook with
    `HECATRON_FORMAT_CHECK=1`, unless the lint hook checked formatting
-   itself. Every component runs even after one fails.
+   itself. Every component runs even after one fails. The job ends with
+   the line the logs, `run-parallel.sh` and `hct status` read: `<lang>:
+   <action> failed: ...`, `... skipped for N component(s): <comp>
+   (<reason>)`, `... passed for N component(s)`.
 5. **The hook** sources `languages/_hooks.sh`, finds the component's build
    file (here, below or above), picks the ecosystem's command and runs it
    (`cargo test`, `go test ./...`, the package's `npm test`...). Audit and
@@ -84,7 +88,8 @@ The Go path (`cmd/hecatron/run.go`, `hooks.go`, `internal/runner`):
    writes `<logs>/<action>/<label>.log` and `history.log`, and renders the
    results as human, agent, JSON or CI output. Reports for CI are written
    beside them (`internal/reports`).
-7. **Exit status:** 0, 1 for a failure, 2 for usage, 3 when only missing
+7. **Exit status:** 0 (a skipped job too), 1 for a failure (or, with
+   `--fail-on-skip`, when nothing ran), 2 for usage, 3 when only missing
    toolchains failed, 130 when interrupted.
 
 The script path (`run.sh`) does the same in bash: named targets run one at

@@ -63,6 +63,9 @@ func RunSummary(r *runner.Report, suites []Suite) string {
 			if s.Failed {
 				status = "**" + status + "**"
 			}
+			if s.Status == runner.Skipped && s.Skipped != "" {
+				status += ": " + s.Skipped
+			}
 			duration := ""
 			if s.Duration > 0 {
 				duration = runner.FormatDuration(s.Duration)

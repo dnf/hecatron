@@ -29,11 +29,41 @@ Each component prints its findings, then one summary line:
 | Ruby | [bundler-audit](https://github.com/rubysec/bundler-audit) | `Gemfile.lock` |
 | PHP | `composer audit` | `composer.lock` |
 | C#, F#, VB.NET | `dotnet list package --vulnerable --include-transitive` | the restored packages |
-| Rust, Java, Kotlin, Scala, Groovy, Dart, Elixir, Swift, R, Haskell, C, C++ | [OSV-Scanner](https://google.github.io/osv-scanner/) | `Cargo.lock`, `pom.xml`, `gradle.lockfile`, `pubspec.lock`, `mix.lock`, `Package.resolved`, `renv.lock`, `cabal.project.freeze`, `stack.yaml.lock`, `conan.lock`... |
+| Rust, Java, Kotlin, Scala, Groovy, Dart, Elixir, Swift, R, Haskell, C, C++ | [OSV-Scanner](https://google.github.io/osv-scanner/) | the language's own lock files: Rust `Cargo.lock`; Java, Kotlin, Scala, Groovy `pom.xml`, `gradle.lockfile`, `buildscript-gradle.lockfile`, `gradle/verification-metadata.xml`; Dart `pubspec.lock`; Elixir `mix.lock`; Swift `Package.resolved`; R `renv.lock`; Haskell `cabal.project.freeze`, `stack.yaml.lock`; C, C++ `conan.lock` |
 
-Other languages have no auditor: `hct audit <lang>` says so and succeeds. A
-component whose files the auditor can't read (a Rust crate without
-`Cargo.lock`, a C library with no package manager) says "nothing to audit".
+OSV-Scanner is given each of the language's files by name (`--lockfile`),
+found in the component's directory and below, not a recursive scan of
+everything there: an iOS SDK's `package-lock.json` (its commit tooling) is
+JavaScript's to audit, not Swift's, so its npm packages aren't reported, or
+counted, once per language. The search leaves out dependencies and build
+output (`node_modules`, `.build`, `Pods`, `deps`, `vendor`, `target`,
+`build`...), hidden directories, and another component of the same
+language below this one, which its own audit reads. CocoaPods'
+`Podfile.lock` isn't one OSV-Scanner reads, so Objective-C has no auditor.
+
+Other languages have no auditor: `hct audit <lang>` says so and succeeds.
+
+**Nothing to audit is skipped, not passed.** A component with no file the
+auditor reads (a Rust crate without `Cargo.lock`, a Gradle build without
+dependency locking, a C library with no package manager) says why and how
+to write one, and is **skipped**: it doesn't fail the audit, but it isn't
+counted as passed, so a sweep can tell clean from not scanned:
+
+```
+kotlin: audit: nothing to audit: no pom.xml, gradle.lockfile, buildscript-gradle.lockfile or verification-metadata.xml; for Gradle, enable dependency locking (dependencyLocking { lockAllConfigurations() }) and run gradle dependencies --write-locks to write gradle.lockfile
+kotlin: audit skipped for 1 component(s): . (nothing to audit: ...)
+```
+
+The run shows the job as `- kotlin ... skipped` and counts it apart
+(`2/2 passed, 1 skipped`); agent output adds a `SKIP` line with the
+reason; JSON gives the job `"status": "skipped"` and a `"reason"` (a job
+with some components skipped stays `passed`, with the reason, and each
+component has `"skipped": "<reason>"`); JUnit marks the component's case
+`<skipped>`; SARIF adds a note per component not scanned
+(`invocations[].toolExecutionNotifications`); and the job summary's table
+says `skipped`. The exit status is 0. A project hook says the same by
+writing its reason to the file `HECATRON_SKIPPED` names
+([hooks](hooks.md)).
 
 `hct install <lang>` installs bundler-audit (Ruby) and OSV-Scanner (the
 languages above that use it, and those `hct licenses` reads), each at a
@@ -147,6 +177,47 @@ jobs:
 `HECATRON_AUDIT_REPORT_DIR=<dir>` saves each auditor's raw JSON report
 there, for a CI artifact or another tool.
 
+With the binary, `--output json` lists every finding of every component
+in a top-level `vulnerabilities` array, one record each, complete (a job's
+`errors` are only its log's excerpt):
+
+```json
+"vulnerabilities": [
+  {
+    "component": ".",
+    "language": "javascript",
+    "package": "lodash",
+    "version": "4.17.15",
+    "fixed": ["4.17.21"],
+    "id": "GHSA-35jh-r3h4-6jhm",
+    "aliases": ["CVE-2021-23337"],
+    "severity": "high",
+    "title": "Command Injection in lodash",
+    "url": "https://github.com/advisories/GHSA-35jh-r3h4-6jhm",
+    "tool": "npm",
+    "file": "package-lock.json",
+    "line": 3,
+    "accepted": false
+  }
+],
+"secrets": []
+```
+
+`version` is the installed version ("" where the auditor doesn't say; for
+`npm audit`, which names only the vulnerable range, it's read from
+`package-lock.json`). `fixed` is the versions that fix it, `[]` where the
+auditor gives none: pip-audit's `fix_versions`, govulncheck's
+`fixed_version`, OSV-Scanner's fixed event for the installed version,
+bundler-audit's solution, and for npm, pnpm, Yarn, Bun and Composer the
+patched range or the first version past the vulnerable one. `severity` is
+`critical`, `high`, `moderate`, `low` or `unrated`; `tool` is `npm`,
+`pnpm`, `yarn-classic`, `yarn-berry`, `bun`, `pip-audit`, `govulncheck`,
+`composer`, `bundle-audit`, `dotnet` or `osv-scanner`; `file` is the lock
+file or manifest, relative to the workspace; an accepted risk has
+`"accepted": true` and its `reason` and `until`. `secrets` are the secret
+scan's (`rule`, `description`, `file`, `line`, `commit`, `fingerprint`;
+never the secret).
+
 With the binary, `HECATRON_REPORT_DIR=<dir>` writes the findings as SARIF
 2.1.0 (`audit.sarif`, or `audit-<lang>.sarif` for `hct audit <lang>`), and
 `--output sarif` prints it instead of the normal output. Each advisory is a
@@ -155,7 +226,8 @@ rule (its ID, title and link, tagged `security` with a
 low 2.0), and each affected package a result at the lock file or manifest
 the auditor read (OSV-Scanner names it per package), on the first line
 naming the package; levels are `error` for critical, high and unrated,
-`warning` for moderate, `note` for low. An accepted risk is a suppressed
+`warning` for moderate, `note` for low; a result's message and its `fixed`
+property name the versions that fix it, where known. An accepted risk is a suppressed
 result with its reason and date. GitHub's code scanning shows them on the
 pull request:
 

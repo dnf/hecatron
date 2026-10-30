@@ -469,8 +469,15 @@ entry points' output byte for byte. Decided with the first port
   the embedded SPDX list (deprecated GNU identifiers made `-only` or
   `-or-later`); several declared licenses are read as a choice (`OR`).
   Direct or transitive comes from the lock file or manifest where it says,
-  dev from OSV-Scanner's dependency groups. The `"licenses"` policy is
-  checked by the binary's `hct check` only. Tests read OSV-Scanner's
+  dev from OSV-Scanner's dependency groups. Copyleft classes come from
+  Blue Oak Council's copyleft and permissive lists (vendored as
+  `internal/spdx/copyleft.txt`; the SPDX list doesn't classify), an
+  expression's from its parts (`OR` the least restrictive, `AND` the most).
+  The project's own packages, which lock files list too (workspace members,
+  editable roots, local replaces), are reported apart and not counted. The
+  `"licenses"` policy is checked by the binary's `hct check` only, and is
+  by identifier (it doesn't read the classes yet). `--timeout` uses
+  `hct audit`'s parsing; with no history, there's no default limit. Tests read OSV-Scanner's
   output on fixture projects (`tests/licenses/fixtures`), captured once in
   Docker (`tests/licenses/capture.sh`) into
   `tests/output/osv-scanner/2.7.0/`. `bin/hecatron licenses` without the
@@ -769,6 +776,20 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
   component, a bad `-j`, `-s` or `--output`) exit 2; run-parallel.sh's `-j`
   and `-s` errors exited 1.
 - `rebuild` and `retest` keep `-c` for both steps (run.sh drops it).
+- **Skipped** (#236, building on #239's nothing-to-audit) is a third
+  outcome: a hook says it by writing its reason to the file
+  `HECATRON_SKIPPED` names and exiting 0 (`skip`, `skip_component`), not by
+  a reserved exit status, which a tool could return by itself and which
+  every caller of a hook would have to know. Each runner reads the file
+  per component and ends the job's log with a `skipped for N
+  component(s)` line, which run-parallel.sh and `hct status` read; a job is
+  skipped when every component was, or when the language has no hook for
+  the command. `history.log` records it as 77, so it sets no time limit
+  and isn't scheduled as a failure. It never fails a run; `--fail-on-skip`
+  (a flag and `HECATRON_FAIL_ON_SKIP`, not a config setting: what a run
+  must achieve is the caller's) fails one in which nothing passed or
+  failed, rather than one with any skip, so a monorepo with one package
+  without tests can still turn it on in CI.
 - **Reports for CI** (#100, #101; `internal/reports`, §20) are written
   beside these formats, not as one of them: `HECATRON_REPORT_DIR` (JUnit,
   SARIF, Code Quality) and `GITHUB_STEP_SUMMARY`. `--output junit` and

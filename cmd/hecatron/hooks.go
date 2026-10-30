@@ -49,7 +49,7 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 		}
 		base := r.environment()
 		var outcome runner.Outcome
-		var failed []string
+		var failed, skipped []string
 		for _, dir := range dirs {
 			if len(wanted) > 0 && !contains(wanted, dir.Component) {
 				continue
@@ -75,20 +75,34 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 					ok = false
 				} else {
 					_ = checked.Close() // empty: the hook writes it by name
+					skip := checked.Name() + ".skipped"
 					hookEnv := append(env, "HECATRON_COMPONENT="+dir.Component, "HECATRON_LANG="+lang)
 					if reports := r.testReportDir(lang, dir.Component); reports != "" {
 						hookEnv = append(hookEnv, "HECATRON_TEST_REPORTS="+reports)
 					}
-					ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECKED="+checked.Name()), hook, dir.Component)
+					ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECKED="+checked.Name(),
+						"HECATRON_SKIPPED="+skip), hook, dir.Component)
+					// Lint's format check: a component whose linter skipped
+					// is skipped only if its format check skipped too.
+					formatSkipped := true // or no format check ran
 					if info, err := os.Stat(checked.Name()); formatHook != "" && err == nil && info.Size() == 0 {
-						ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECK=1"), formatHook, dir.Component) && ok
+						ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECK=1", "HECATRON_SKIPPED="+skip+".format"),
+							formatHook, dir.Component) && ok
+						formatSkipped = skipReason(skip+".format") != ""
+					}
+					if ok && formatSkipped {
+						component.Skipped = skipReason(skip)
 					}
 					_ = os.Remove(checked.Name())
+					_ = os.Remove(skip)
+					_ = os.Remove(skip + ".format")
 				}
 			}
 			if !ok {
 				component.Failed = true
 				failed = append(failed, dir.Component)
+			} else if component.Skipped != "" {
+				skipped = append(skipped, dir.Component+" ("+component.Skipped+")")
 			}
 			component.Duration = time.Since(component.Started)
 			outcome.Components = append(outcome.Components, component)
@@ -101,28 +115,45 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 			_, _ = fmt.Fprintf(out, "%s: %s failed: %s\n", lang, action, strings.Join(failed, " "))
 			outcome.ExitCode = 1
 		default:
-			_, _ = fmt.Fprintf(out, "%s: %s passed for %d component(s)\n", lang, action, len(outcome.Components))
+			if len(skipped) > 0 {
+				_, _ = fmt.Fprintf(out, "%s: %s skipped for %d component(s): %s\n", lang, action, len(skipped), strings.Join(skipped, ", "))
+			}
+			if passed := len(outcome.Components) - len(skipped); passed > 0 {
+				_, _ = fmt.Fprintf(out, "%s: %s passed for %d component(s)\n", lang, action, passed)
+			}
 		}
 		return outcome
 	}
 }
 
-// noHook is run.sh's word for a language without a hook for the action.
-func noHook(out io.Writer, action, lang string) runner.Outcome {
-	messages := map[string]string{
-		"lint":     "%s has no separate linter: its build treats warnings as errors (hecatron test %[1]s)",
-		"build":    "No build step for: %s",
-		"clean":    "No build artifacts for: %s",
-		"audit":    "Nothing to audit for: %s (hecatron has no auditor for its dependencies)",
-		"format":   "No formatter for %s (skipping)",
-		"deps":     "No dependency manager for %s (skipping)",
-		"outdated": "No outdated report for %s (skipping)",
-		"docs":     "No docs tool for %s (skipping)",
-		"bench":    "No benchmark runner for %s (skipping)",
+// skipReason is what a hook wrote to HECATRON_SKIPPED (skip_component in
+// languages/_hooks.sh): why it had nothing to do; "" when it did.
+func skipReason(path string) string {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ""
 	}
-	if message, ok := messages[action]; ok {
-		_, _ = fmt.Fprintf(out, message+"\n", lang)
-		return runner.Outcome{}
+	return strings.TrimRight(string(data), "\n")
+}
+
+// noHook is run.sh's word for a language without a hook for the action:
+// the job is skipped, saying why.
+func noHook(out io.Writer, action, lang string) runner.Outcome {
+	reasons := map[string]string{
+		"lint":     "%s has no separate linter: its build treats warnings as errors (hecatron test %[1]s)",
+		"build":    "no build step for %s",
+		"clean":    "no build artifacts for %s",
+		"audit":    "nothing to audit for %s (hecatron has no auditor for its dependencies)",
+		"format":   "no formatter for %s",
+		"deps":     "no dependency manager for %s",
+		"outdated": "no outdated report for %s",
+		"docs":     "no docs tool for %s",
+		"bench":    "no benchmark runner for %s",
+	}
+	if reason, ok := reasons[action]; ok {
+		reason = fmt.Sprintf(reason, lang)
+		_, _ = fmt.Fprintf(out, "%s: %s skipped: %s\n", lang, action, reason)
+		return runner.Outcome{Skipped: reason}
 	}
 	_, _ = fmt.Fprintf(out, "error: %s has no %s hook (.hecatron/languages/%[1]s/%[2]s.sh)\n", lang, action)
 	return runner.Outcome{ExitCode: 1}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="hct test" tests="8" failures="4" errors="0" skipped="1" time="14.000">
+<testsuites name="hct test" tests="10" failures="4" errors="0" skipped="3" time="14.000">
   <testsuite name="go/age" tests="1" failures="1" errors="0" skipped="0" time="7.000">
     <properties>
       <property name="log" value="testdata/logs/test-go.log"/>
@@ -49,6 +49,22 @@ calc.py:2: TypeError</failure>
   <testsuite name="rust" tests="1" failures="0" errors="0" skipped="1" time="0.000">
     <testcase name="rust" classname="rust" time="0.000">
       <skipped message="not installed"/>
+    </testcase>
+  </testsuite>
+  <testsuite name="javascript/." tests="1" failures="0" errors="0" skipped="1" time="0.200">
+    <properties>
+      <property name="log" value="/repo/.logs/test/javascript.log"/>
+    </properties>
+    <testcase name="." classname="javascript" time="0.200">
+      <skipped message="skipped: package.json has no test script"/>
+    </testcase>
+  </testsuite>
+  <testsuite name="elm" tests="1" failures="0" errors="0" skipped="1" time="0.100">
+    <properties>
+      <property name="log" value="/repo/.logs/test/elm.log"/>
+    </properties>
+    <testcase name="elm" classname="elm" time="0.100">
+      <skipped message="skipped: no test runner for elm"/>
     </testcase>
   </testsuite>
   <testsuite name="docs" tests="1" failures="0" errors="0" skipped="0" time="0.300">
