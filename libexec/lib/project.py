@@ -94,8 +94,8 @@ def ignore_project_files(root: str) -> None:
 # doesn't count them (manage.py).
 SKIPPED_DIRS = {"android", "benchmarks", "buildsrc", "carthage", "demo", "demos", "doc", "docs", "example", "examples",
                 "external", "fixtures", "hooks", "node_modules", "playground", "pods", "sample", "samples", "templates",
-                "test", "test-data", "test_data", "testdata", "tests", "tests_data", "third_party", "tools", "tutorial",
-                "tutorials", "vendor", "vendored"}
+                "test", "test-data", "test_data", "testdata", "tests", "tests_data", "third-party", "third_party", "thirdparty",
+                "tools", "tutorial", "tutorials", "vendor", "vendored"}
 
 
 def yields(rule: dict, paths, build_file: str | None = None) -> bool:

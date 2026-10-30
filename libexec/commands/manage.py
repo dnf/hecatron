@@ -533,6 +533,18 @@ def holds_language(by_dir: dict[str, set[str]], defs: dict[str, dict]):
     return holds
 
 
+def holds_project_dir(by_dir: dict[str, set[str]], defs: dict[str, dict]):
+    """(lang, directory) → whether one of the language's "detectWithSources"
+    "dirs" (an Xcode project, App.xcodeproj/) sits in the directory itself:
+    xcodebuild acts on the project where it runs, and the hooks don't look
+    for one below."""
+    def holds(lang: str, directory: str) -> bool:
+        patterns = (defs.get(lang, {}).get("detectWithSources") or {}).get("dirs", [])
+        return any(posixpath.dirname(sub) == ("" if directory == "." else directory)
+                   and _matches({posixpath.basename(sub)}, patterns) for sub in by_dir if sub != ".")
+    return holds
+
+
 # How many levels below a directory the default hooks look for a build file
 # (dirs_below_with in languages/_hooks.sh).
 HOOK_SEARCH_DEPTH = 3
@@ -778,7 +790,7 @@ def _own_directory(directories: set[str]) -> str:
 
 
 def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None = None,
-                 holds=None) -> tuple[list[str], str, dict[str, str]]:
+                 holds=None, holds_project=None) -> tuple[list[str], str, dict[str, str]]:
     """Components, implPath and per-language implPaths from where each
     language's files sit.
 
@@ -791,6 +803,9 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
     directory)`, see holds_language) that no other language was found in:
     Thrift's lib/go, whose go.mod is at the root, but not Cucumber's
     javascript/, which is TypeScript's, nor a languages/go/ holding no Go.
+    A language found only in and below a directory holding its project
+    directory (`holds_project(lang, directory)`, see holds_project_dir) lives
+    there, not at the root: GoMap's src/, holding src/GoMap.xcodeproj.
     """
     names = names or {}
     roots = {lang: _language_roots(dirs, names.get(lang, [lang])) for lang, dirs in found.items()}
@@ -800,10 +815,13 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
             templates.setdefault(_as_template(root), set()).add(lang)
     if not templates:
         # Every language at the root, unless its hooks would find no build
-        # from there: one whose files are all deeper than they look.
+        # from there: one whose files are all deeper than they look, or
+        # whose project directory sits below.
         return ["."], ".", {lang: _own_directory(dirs) for lang, dirs in sorted(found.items())
                             if holds and not holds(lang, ".")
-                            and all(_depth_below(d, ".") > HOOK_SEARCH_DEPTH for d in dirs)}
+                            and all(_depth_below(d, ".") > HOOK_SEARCH_DEPTH for d in dirs)
+                            or _own_directory(dirs) != "." and holds_project
+                            and holds_project(lang, _own_directory(dirs))}
     split = [t.split("/") for t in templates]
     if len(templates) > 1 and len({len(parts) for parts in split}) == 1 and all(roots.values()):
         varying = [i for i in range(len(split[0])) if len({parts[i] for parts in split}) > 1]
@@ -912,7 +930,8 @@ def detected_config(root: str, components: str | None = None, impl_path: str | N
     found, not_added = detect_languages(root, defs)
     by_dir, _ = _names_by_dir(tracked_files(root))
     found_components, found_impl_path, impl_paths = infer_layout(found, dir_names(defs),
-                                                                 holds_language(by_dir, defs))
+                                                                 holds_language(by_dir, defs),
+                                                                 holds_project_dir(by_dir, defs))
     chosen_components = [c for c in components.split(",") if c] if components else found_components
     if impl_path:
         found_impl_path, impl_paths = impl_path, {}

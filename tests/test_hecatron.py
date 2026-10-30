@@ -407,6 +407,21 @@ class InitTest(Fixture):
         self.commit()
         return manage.detected_config(self.root)[0]
 
+    def test_an_xcode_project_below_the_root_is_where_its_languages_live(self):
+        # bryceco/GoMap: src/GoMap.xcodeproj, nothing at the root.
+        config = self.detected({"src/GoMap.xcodeproj/project.pbxproj": "", "src/iOS/AppDelegate.swift": "",
+                                "src/Shared/OsmMapData.m": "", "src/Shared/OsmMapData.h": "", "README.md": ""})
+        self.assertEqual((config["languages"], config["implPath"], config.get("implPaths")),
+                         (["objectivec", "swift"], ".", {"objectivec": "src", "swift": "src"}))
+
+    def test_apps_beside_a_root_package_leave_swift_at_the_root(self):
+        # mozilla-mobile/firefox-ios: the root's hook builds the package,
+        # then each app (xcode_apps_below in languages/_hooks.sh).
+        config = self.detected({"Package.swift": "", "BrowserKit/Sources/Common/a.swift": "",
+                                "firefox-ios/Client.xcodeproj/project.pbxproj": "", "firefox-ios/Client/a.swift": "",
+                                "focus-ios/Blockzilla.xcodeproj/project.pbxproj": "", "focus-ios/Blockzilla/a.swift": ""})
+        self.assertEqual((config["languages"], config["implPath"], config.get("implPaths")), (["swift"], ".", None))
+
     def test_a_build_file_at_the_root_beats_a_directory_named_for_the_language(self):
         # hecatron itself: the Go module at the root, Go's and Tcl's
         # definitions (no Go, a Tcl hook) under languages/.

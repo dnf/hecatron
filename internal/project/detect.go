@@ -23,7 +23,8 @@ var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildsrc
 	"demos": true, "doc": true, "docs": true, "example": true, "examples": true, "external": true, "fixtures": true,
 	"hooks": true, "node_modules": true, "playground": true, "pods": true, "sample": true, "samples": true, "templates": true,
 	"test": true, "test-data": true, "test_data": true, "testdata": true, "tests": true, "tests_data": true,
-	"third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true, "vendored": true}
+	"third-party": true, "third_party": true, "thirdparty": true, "tools": true, "tutorial": true, "tutorials": true,
+	"vendor": true, "vendored": true}
 
 // preferredParents are where projects keep per-language code; when layouts
 // disagree, one under these (or at the root) beats one covering more
@@ -209,6 +210,36 @@ func holdsLanguage(byDir namesByDir, defs []detection) func(lang, directory stri
 			return true, nil
 		}
 		return !deepBuild && len(d.sources) == 0 && inside && preference(directory)[0] == 0, nil
+	}
+}
+
+// holdsProjectDir is manage.py's holds_project_dir: whether one of the
+// language's detectWithSources dirs (an Xcode project, App.xcodeproj/) sits
+// in the directory itself. xcodebuild acts on the project where it runs,
+// and the hooks don't look for one below.
+func holdsProjectDir(byDir namesByDir, defs []detection) func(lang, directory string) (bool, error) {
+	byLang := map[string]detection{}
+	for _, d := range defs {
+		byLang[d.lang] = d
+	}
+	return func(lang, directory string) (bool, error) {
+		rule := byLang[lang].withSources
+		if rule == nil {
+			return false, nil
+		}
+		for sub := range byDir {
+			parent, name := pySplit(sub)
+			if parent == "" {
+				parent = "."
+			}
+			if sub == "." || parent != directory {
+				continue
+			}
+			if matched, err := anyMatch(map[string]bool{name: true}, rule.dirs); err != nil || matched {
+				return matched, err
+			}
+		}
+		return false, nil
 	}
 }
 
@@ -828,9 +859,12 @@ type Layout struct {
 // `rust/` one component at `{lang}`; a language whose directory doesn't fit
 // gets its own implPaths entry, unless the shared template names a
 // directory holding the language's build or source files (holds, which may
-// be nil) that no other language was found in.
+// be nil) that no other language was found in. A language found only in
+// and below a directory holding its project directory (holdsProject, which
+// may be nil) lives there, not at the root: GoMap's src/, holding
+// src/GoMap.xcodeproj.
 func InferLayout(found map[string]dirSet, names map[string][]string,
-	holds func(lang, directory string) (bool, error)) (Layout, error) {
+	holds, holdsProject func(lang, directory string) (bool, error)) (Layout, error) {
 	namesOf := func(lang string) []string {
 		if n, ok := names[lang]; ok {
 			return n
@@ -851,18 +885,28 @@ func InferLayout(found map[string]dirSet, names map[string][]string,
 	}
 	if len(templates) == 0 {
 		// Every language at the root, unless its hooks would find no build
-		// from there: one whose files are all deeper than they look.
+		// from there: one whose files are all deeper than they look, or
+		// whose project directory sits below.
 		overrides := map[string]string{}
 		for lang, dirs := range found {
-			if holds == nil || !allDeeper(dirs) {
-				continue
+			if holds != nil && allDeeper(dirs) {
+				held, err := holds(lang, ".")
+				if err != nil {
+					return Layout{}, err
+				}
+				if !held {
+					overrides[lang] = ownDirectory(dirs)
+					continue
+				}
 			}
-			held, err := holds(lang, ".")
-			if err != nil {
-				return Layout{}, err
-			}
-			if !held {
-				overrides[lang] = ownDirectory(dirs)
+			if own := ownDirectory(dirs); own != "." && holdsProject != nil {
+				held, err := holdsProject(lang, own)
+				if err != nil {
+					return Layout{}, err
+				}
+				if held {
+					overrides[lang] = own
+				}
 			}
 		}
 		return Layout{Components: []string{"."}, ImplPath: ".", ImplPaths: overrides}, nil
@@ -987,7 +1031,7 @@ func DetectedConfig(root string, home Home, components, implPath, languages stri
 		names[d.lang] = d.names
 	}
 	byDir, _ := splitByDir(files)
-	layout, err := InferLayout(detected.Found, names, holdsLanguage(byDir, defs))
+	layout, err := InferLayout(detected.Found, names, holdsLanguage(byDir, defs), holdsProjectDir(byDir, defs))
 	if err != nil {
 		return nil, nil, err
 	}

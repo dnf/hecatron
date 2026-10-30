@@ -914,3 +914,25 @@ left to `xcodebuild`, which stays the authority for a build. When the files
 don't say (no shared scheme builds an app; a target whose `SDKROOT` is set
 only conditionally), the plan says so (`unsure`) and the hook falls back to
 asking `xcodebuild`. Standard library only, like the rest of the Go core.
+
+The fallback follows the same rules where it can without the files' full
+reading: for the destination it doesn't trust `-showBuildSettings`'
+`SDKROOT`, which without a destination describes the first xcodebuild
+would build for (for a Catalyst app, the Mac), and takes macOS only for an
+app whose `SUPPORTED_PLATFORMS` is `macosx` alone; for the scheme, with
+several building the app, it keeps the one whose first build entry is an
+app no other app embeds, and skips naming them when several remain rather
+than picking by name. Builds pass `-skipMacroValidation
+-skipPackagePluginValidation`: a check runs unattended, and nobody can
+enable a package's macro as Xcode asks.
+
+An app's Xcode project beside a `Package.swift` (isowords' `App/`) is the
+product: where `xcodebuild` is installed and the project has an
+application target, Swift's build and clean are the app's, and the
+package (the app's modules) keeps SwiftPM for its tests where it builds on
+the host. Without `xcodebuild`, SwiftPM builds what it can. The apps below
+a directory are the plan's nested projects (or the same scan in
+`libexec/lib/xcode.py`) in directories holding the language's sources,
+outside examples, tests and vendored code: a scan of the directories, not
+detection's pass over every tracked file, which took seconds on
+firefox-ios.
