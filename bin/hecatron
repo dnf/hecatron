@@ -33,8 +33,19 @@ esac
 # Anything else (a branch, a platform with no binary, a failed download)
 # runs as before. HECATRON_NO_GO=1 keeps to the scripts.
 _go="${HECATRON_HOME}/bin/.hecatron-go"
-if [ -z "${HECATRON_NO_GO:-}" ] && [ -x "${_go}" ] && [ -f "${_go}.commit" ] && [ -f "${HECATRON_HOME}/.git/HEAD" ]; then
-    read -r _head < "${HECATRON_HOME}/.git/HEAD" || true
+# The checkout's git directory: .git, or in a git worktree the directory
+# the .git file names ("gitdir: ..."), without starting git.
+_git_dir="${HECATRON_HOME}/.git"
+if [ -f "${_git_dir}" ]; then
+    read -r _git_dir < "${_git_dir}" || true
+    _git_dir="${_git_dir#gitdir: }"
+    case "${_git_dir}" in
+        /*) ;;
+        *) _git_dir="${HECATRON_HOME}/${_git_dir}" ;;
+    esac
+fi
+if [ -z "${HECATRON_NO_GO:-}" ] && [ -x "${_go}" ] && [ -f "${_go}.commit" ] && [ -f "${_git_dir}/HEAD" ]; then
+    read -r _head < "${_git_dir}/HEAD" || true
     read -r _built < "${_go}.commit" || true
     # "dev": built from this checkout by hecatron self build, for any branch.
     if [ "${_built:-}" = dev ] || { [ -n "${_built:-}" ] && [ "${_head:-}" = "${_built}" ]; }; then
