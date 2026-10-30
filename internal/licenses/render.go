@@ -25,16 +25,13 @@ func Write(w io.Writer, r *Report, format string) error {
 
 func writeJSON(w io.Writer, r *Report) error {
 	out := *r
-	if out.Packages == nil {
-		out.Packages = []Package{}
-	}
-	for i := range out.Packages {
-		if out.Packages[i].Declared == nil {
-			out.Packages[i].Declared = []string{}
-		}
-	}
+	out.Packages = nonNilPackages(out.Packages)
+	out.Own = nonNilPackages(out.Own)
 	if out.Licenses == nil {
 		out.Licenses = []Rollup{}
+	}
+	if out.LicenseIDs == nil {
+		out.LicenseIDs = []Rollup{}
 	}
 	if out.NotCovered == nil {
 		out.NotCovered = []NotCovered{}
@@ -48,12 +45,34 @@ func writeJSON(w io.Writer, r *Report) error {
 	return encoder.Encode(out)
 }
 
-// Summary is the report's first line: packages, licenses, unknowns and the
-// policy's verdict.
+func nonNilPackages(packages []Package) []Package {
+	out := append([]Package{}, packages...)
+	for i := range out {
+		if out[i].Declared == nil {
+			out[i].Declared = []string{}
+		}
+		if out[i].LicenseIDs == nil {
+			out[i].LicenseIDs = []string{}
+		}
+		if out[i].Copyleft == "" {
+			out[i].Copyleft = unknownClass
+		}
+	}
+	return out
+}
+
+// Summary is the report's first line: packages, licenses (expressions and
+// identifiers), unknowns, copyleft and the policy's verdict.
 func (r *Report) Summary() string {
 	unknown := len(r.Unknown())
-	line := fmt.Sprintf("hct licenses: %s, %s, %d unknown", plural(len(r.Packages), "package"),
-		plural(len(r.Licenses), "license"), unknown)
+	line := fmt.Sprintf("hct licenses: %s, %s", plural(len(r.Packages), "package"), plural(len(r.Licenses), "license"))
+	if len(r.LicenseIDs) > 0 && len(r.LicenseIDs) != len(r.Licenses) {
+		line += " (" + plural(len(r.LicenseIDs), "identifier") + ")"
+	}
+	line += fmt.Sprintf(", %d unknown", unknown)
+	if r.Copyleft != (CopyleftCounts{}) {
+		line += "; copyleft: " + r.Copyleft.Text()
+	}
 	if r.Policy != nil {
 		line += "; policy: " + plural(len(r.Policy.Violations), "violation")
 		if len(r.Policy.Accepted) > 0 {
@@ -61,6 +80,27 @@ func (r *Report) Summary() string {
 		}
 	}
 	return line
+}
+
+// Text is the counts of copyleft packages ("2 strong, 1 weak"; "none"),
+// and of those whose class isn't known.
+func (c CopyleftCounts) Text() string {
+	var parts []string
+	for _, count := range []struct {
+		n    int
+		name string
+	}{{c.Maximal, "maximal"}, {c.Network, "network"}, {c.Strong, "strong"}, {c.Weak, "weak"}} {
+		if count.n > 0 {
+			parts = append(parts, fmt.Sprintf("%d %s", count.n, count.name))
+		}
+	}
+	if len(parts) == 0 {
+		parts = append(parts, "none")
+	}
+	if c.Unclassified > 0 {
+		parts = append(parts, fmt.Sprintf("%d unclassified", c.Unclassified))
+	}
+	return strings.Join(parts, ", ")
 }
 
 func plural(n int, noun string) string {
@@ -122,16 +162,34 @@ func writeAgent(w *strings.Builder, r *Report) {
 	for _, warning := range r.Warnings {
 		fmt.Fprintln(w, "WARNING "+warning)
 	}
-	if len(r.Licenses) > 0 {
+	if len(r.Own) > 0 {
 		var parts []string
-		for _, l := range r.Licenses {
-			parts = append(parts, fmt.Sprintf("%s %d", l.License, l.Packages))
+		for _, p := range r.Own {
+			parts = append(parts, p.Key()+" "+p.Version)
 		}
-		fmt.Fprintln(w, "Licenses: "+strings.Join(parts, ", "))
+		fmt.Fprintln(w, "Own packages (not counted): "+strings.Join(parts, ", "))
+	}
+	if len(r.Licenses) > 0 {
+		fmt.Fprintln(w, "Licenses: "+rollupText(r.Licenses))
+		fmt.Fprintln(w, "License identifiers: "+rollupText(r.LicenseIDs))
 	}
 	if len(r.Packages) > 0 {
 		fmt.Fprintln(w, "Every package: hct licenses --output json")
 	}
+}
+
+// rollupText is "MIT 16, GPL-3.0-only 1 (strong)": each license's
+// packages, and its class when copyleft or unclassified.
+func rollupText(rollups []Rollup) string {
+	var parts []string
+	for _, l := range rollups {
+		part := fmt.Sprintf("%s %d", l.License, l.Packages)
+		if l.Copyleft != "none" {
+			part += " (" + l.Copyleft + ")"
+		}
+		parts = append(parts, part)
+	}
+	return strings.Join(parts, ", ")
 }
 
 func orUnknown(license string) string {
@@ -179,10 +237,18 @@ func writeHuman(w *strings.Builder, r *Report) {
 	fmt.Fprintln(w, r.Summary())
 	if len(r.Licenses) > 0 {
 		fmt.Fprintln(w)
-		rows := [][]string{{"license", "packages", "languages", "components"}}
+		rows := [][]string{{"license", "copyleft", "packages", "languages", "components"}}
 		for _, l := range r.Licenses {
-			rows = append(rows, []string{l.License, fmt.Sprint(l.Packages), strings.Join(l.Languages, ", "),
+			rows = append(rows, []string{l.License, l.Copyleft, fmt.Sprint(l.Packages), strings.Join(l.Languages, ", "),
 				strings.Join(l.Components, ", ")})
+		}
+		table(w, "  ", rows)
+	}
+	if len(r.LicenseIDs) > 0 && len(r.LicenseIDs) != len(r.Licenses) {
+		fmt.Fprintln(w, "\nPer license identifier (a package under AND or OR counts for each):")
+		rows := [][]string{{"identifier", "copyleft", "packages", "languages"}}
+		for _, l := range r.LicenseIDs {
+			rows = append(rows, []string{l.License, l.Copyleft, fmt.Sprint(l.Packages), strings.Join(l.Languages, ", ")})
 		}
 		table(w, "  ", rows)
 	}
@@ -191,6 +257,14 @@ func writeHuman(w *strings.Builder, r *Report) {
 		var rows [][]string
 		for _, p := range unknown {
 			rows = append(rows, []string{p.Key(), p.Version, declaredText(p), where(p), dependencyText(p)})
+		}
+		table(w, "  ", rows)
+	}
+	if len(r.Own) > 0 {
+		fmt.Fprintln(w, "\nThe project's own packages (not counted):")
+		var rows [][]string
+		for _, p := range r.Own {
+			rows = append(rows, []string{p.Key(), p.Version, where(p)})
 		}
 		table(w, "  ", rows)
 	}

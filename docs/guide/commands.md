@@ -112,15 +112,18 @@ hct test --output agent   # a summary line and only the failures
 ### licenses
 
 ```
-hct licenses [lang...] [-c COMPONENT] [--output human|agent|json] [--json]
+hct licenses [lang...] [-c COMPONENT] [--output human|agent|json] [--json] [--timeout DURATION]
 ```
 
 Every dependency's license, in every component of each language (those
 named, or all the project's), from the lock files, rolled up per SPDX
-license. With a `"licenses"` policy in `.hecatron/config.json` (`allow`,
-`deny`, `ignore`, `includeDev`), a package the policy doesn't permit fails
-the command. Needs OSV-Scanner and the network. Binary only. See
-[licenses](licenses.md).
+expression and per identifier, with how far each one's copyleft reaches;
+the project's own packages are listed apart. With a `"licenses"` policy in
+`.hecatron/config.json` (`allow`, `deny`, `ignore`, `includeDev`), a
+package the policy doesn't permit fails the command. `--timeout` (else
+`HECATRON_TIMEOUT`) stops it after `DURATION`, as it stops `hct audit`;
+there's no limit by default. Needs OSV-Scanner and the network. Binary
+only. See [licenses](licenses.md).
 
 ```bash
 hct licenses              # every language
@@ -130,15 +133,15 @@ hct licenses go --json
 ### sbom
 
 ```
-hct sbom [lang...] [-c COMPONENT] [--format cyclonedx|spdx] [-o FILE] [--no-dev]
+hct sbom [lang...] [-c COMPONENT] [--format cyclonedx|spdx] [-o FILE] [--no-dev] [--timeout DURATION]
 ```
 
 A software bill of materials for every component of each language (those
 named, or all the project's), from what `hct licenses` reads: each
 package's purl, SPDX license where known, direct or transitive, dev
 dependencies marked. CycloneDX 1.6 JSON by default, or SPDX 2.3 JSON;
-`SOURCE_DATE_EPOCH` makes it reproducible. Needs OSV-Scanner and the
-network. Binary only. See [sbom](sbom.md).
+`SOURCE_DATE_EPOCH` makes it reproducible; `--timeout` as for `licenses`.
+Needs OSV-Scanner and the network. Binary only. See [sbom](sbom.md).
 
 ```bash
 hct sbom -o bom.cdx.json

@@ -7,7 +7,13 @@ configuration what init would write, detected and cached in
 `.git/hecatron/detected.json`, keyed on the commit, git's index and
 hecatron's version, so a command pays for detection only after the tracked
 files change (about 17 µs a file: 4 ms for 100 files, 0.8 s for 47,000), and
-nothing appears in the working tree or `git status`. Logs and `local.json`
+nothing appears in the working tree or `git status`. The first command to
+detect it says so in one line on stderr (`... has no .hecatron/config.json;
+detected javascript (hecatron init saves this)`), only for a person at a
+terminal, as the update notice is: not when stderr isn't a terminal, with
+`--output` or `--json` or `HECATRON_OUTPUT` naming another format than
+human, in an agent's session or in GitHub Actions; `hct status` says
+`config detected, not saved` in every format. Logs and `local.json`
 go in `.git/hecatron/` too. Changing the configuration (`add`, `remove`)
 saves it, as init would. Init itself:
 

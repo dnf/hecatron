@@ -3,6 +3,8 @@ package selfupdate
 import (
 	"fmt"
 	"strings"
+
+	"github.com/dnf/hecatron/internal/runner"
 )
 
 // ChecksAllowed is whether hecatron may look for a newer release in the
@@ -20,31 +22,13 @@ var quietCommands = map[string]bool{
 }
 
 // NoticeAllowed is whether the update notice may be shown after command:
-// checks allowed, stderr a terminal, and human output (no --output or
-// HECATRON_OUTPUT naming another format, not an AI agent's session, not
-// GitHub Actions).
+// checks allowed, and a person reading stderr (runner.ForAPerson).
 func NoticeAllowed(getenv func(string) string, command string, args []string, stdoutTerminal, stderrTerminal bool) bool {
 	selfUpdate := command == "self" && len(args) > 0 && args[0] == "update"
-	if !ChecksAllowed(getenv) || !stderrTerminal || quietCommands[command] || selfUpdate || strings.HasPrefix(command, "_") {
+	if !ChecksAllowed(getenv) || quietCommands[command] || selfUpdate || strings.HasPrefix(command, "_") {
 		return false
 	}
-	format := getenv("HECATRON_OUTPUT")
-flags:
-	for i, arg := range args {
-		switch {
-		case arg == "--":
-			break flags
-		case arg == "--output" && i+1 < len(args):
-			format = args[i+1]
-		case strings.HasPrefix(arg, "--output="):
-			format = strings.TrimPrefix(arg, "--output=")
-		}
-	}
-	if format != "" {
-		return format == "human"
-	}
-	agent := getenv("CLAUDECODE") == "1" && !stdoutTerminal
-	return !agent && getenv("GITHUB_ACTIONS") != "true"
+	return runner.ForAPerson(getenv, args, stdoutTerminal, stderrTerminal)
 }
 
 // Notice is the line saying a newer release exists.

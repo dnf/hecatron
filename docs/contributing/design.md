@@ -469,8 +469,15 @@ entry points' output byte for byte. Decided with the first port
   the embedded SPDX list (deprecated GNU identifiers made `-only` or
   `-or-later`); several declared licenses are read as a choice (`OR`).
   Direct or transitive comes from the lock file or manifest where it says,
-  dev from OSV-Scanner's dependency groups. The `"licenses"` policy is
-  checked by the binary's `hct check` only. Tests read OSV-Scanner's
+  dev from OSV-Scanner's dependency groups. Copyleft classes come from
+  Blue Oak Council's copyleft and permissive lists (vendored as
+  `internal/spdx/copyleft.txt`; the SPDX list doesn't classify), an
+  expression's from its parts (`OR` the least restrictive, `AND` the most).
+  The project's own packages, which lock files list too (workspace members,
+  editable roots, local replaces), are reported apart and not counted. The
+  `"licenses"` policy is checked by the binary's `hct check` only, and is
+  by identifier (it doesn't read the classes yet). `--timeout` uses
+  `hct audit`'s parsing; with no history, there's no default limit. Tests read OSV-Scanner's
   output on fixture projects (`tests/licenses/fixtures`), captured once in
   Docker (`tests/licenses/capture.sh`) into
   `tests/output/osv-scanner/2.7.0/`. `bin/hecatron licenses` without the

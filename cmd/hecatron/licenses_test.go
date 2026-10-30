@@ -13,6 +13,7 @@ import (
 // captured reports, and the exit statuses.
 
 const fakeOSVScanner = `#!/usr/bin/env bash
+[ -z "${OSV_SLOW:-}" ] || exec sleep 30
 for dir; do :; done
 name="$(basename "${dir}")"
 report="${CAPTURED}/licenses-${name}.json"
@@ -66,10 +67,24 @@ func TestLicensesCommand(t *testing.T) {
 	if json.status != 0 || !strings.Contains(json.stdout, `"name": "caniuse-lite"`) || strings.Contains(json.stdout, `"PyPI"`) {
 		t.Errorf("--json ts: %+v", json)
 	}
-	for _, args := range [][]string{{"licenses", "nope"}, {"licenses", "--bogus"}, {"licenses", "-c", "zz"}, {"licenses", "--output", "xml"}} {
+	for _, args := range [][]string{{"licenses", "nope"}, {"licenses", "--bogus"}, {"licenses", "-c", "zz"}, {"licenses", "--output", "xml"},
+		{"licenses", "--timeout"}, {"licenses", "--timeout", "soon"}} {
 		if got := runIn(t, root, env, append([]string{binary}, args...)...); got.status != 2 || got.stderr == "" {
 			t.Errorf("%v: %+v", args, got)
 		}
+	}
+	// --timeout and HECATRON_TIMEOUT stop it, as they stop hct audit.
+	slow := append(append([]string{}, env...), "OSV_SLOW=1")
+	if got := runIn(t, root, slow, binary, "licenses", "python", "--timeout", "1s"); got.status != 1 ||
+		!strings.Contains(got.stderr, "hecatron: licenses timed out: stopped at its 1s limit (--timeout)") {
+		t.Errorf("--timeout 1s: %+v", got)
+	}
+	if got := runIn(t, root, append(slow, "HECATRON_TIMEOUT=1"), binary, "licenses", "python"); got.status != 1 ||
+		!strings.Contains(got.stderr, "stopped at its 1s limit (HECATRON_TIMEOUT)") {
+		t.Errorf("HECATRON_TIMEOUT=1: %+v", got)
+	}
+	if got := runIn(t, root, append(env, "HECATRON_TIMEOUT=1"), binary, "licenses", "python", "--timeout=0"); got.status != 0 {
+		t.Errorf("--timeout=0: %+v", got)
 	}
 	if help := runIn(t, root, env, binary, "licenses", "help"); help.status != 0 || !strings.HasPrefix(help.stdout, "Usage: hecatron licenses") {
 		t.Errorf("help: %+v", help)

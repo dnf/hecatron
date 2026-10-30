@@ -1,0 +1,35 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "/tmp/licenses-fixtures/monorepo/layers/a/nodejs/package-lock.json",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "left-pad",
+            "version": "1.3.0",
+            "ecosystem": "npm",
+            "purl": "pkg:npm/left-pad@1.3.0?source=PUBLIC_REGISTRY"
+          },
+          "licenses": [
+            "WTFPL"
+          ]
+        }
+      ]
+    }
+  ],
+  "experimental_config": {
+    "licenses": {
+      "summary": true,
+      "allowlist": []
+    }
+  },
+  "license_summary": [
+    {
+      "name": "WTFPL",
+      "count": 1
+    }
+  ]
+}

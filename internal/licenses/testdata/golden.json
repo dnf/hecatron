@@ -5,6 +5,11 @@
       "name": "itoa",
       "version": "1.0.9",
       "license": "Apache-2.0 OR MIT",
+      "licenseIds": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "Apache-2.0 OR MIT"
       ],
@@ -19,6 +24,11 @@
       "name": "ryu",
       "version": "1.0.15",
       "license": "Apache-2.0 OR BSL-1.0",
+      "licenseIds": [
+        "Apache-2.0",
+        "BSL-1.0"
+      ],
+      "copyleft": "none",
       "declared": [
         "Apache-2.0 OR BSL-1.0"
       ],
@@ -33,6 +43,11 @@
       "name": "serde",
       "version": "1.0.193",
       "license": "Apache-2.0 OR MIT",
+      "licenseIds": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "Apache-2.0 OR MIT"
       ],
@@ -47,6 +62,11 @@
       "name": "serde_json",
       "version": "1.0.108",
       "license": "Apache-2.0 OR MIT",
+      "licenseIds": [
+        "Apache-2.0",
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "Apache-2.0 OR MIT"
       ],
@@ -61,6 +81,10 @@
       "name": "github.com/go-sql-driver/mysql",
       "version": "1.7.1",
       "license": "MPL-2.0",
+      "licenseIds": [
+        "MPL-2.0"
+      ],
+      "copyleft": "weak",
       "declared": [
         "MPL-2.0"
       ],
@@ -75,6 +99,10 @@
       "name": "github.com/google/uuid",
       "version": "1.6.0",
       "license": "BSD-3-Clause",
+      "licenseIds": [
+        "BSD-3-Clause"
+      ],
+      "copyleft": "none",
       "declared": [
         "BSD-3-Clause"
       ],
@@ -89,6 +117,10 @@
       "name": "github.com/inconshreveable/mousetrap",
       "version": "1.1.0",
       "license": "Apache-2.0",
+      "licenseIds": [
+        "Apache-2.0"
+      ],
+      "copyleft": "none",
       "declared": [
         "Apache-2.0"
       ],
@@ -103,6 +135,10 @@
       "name": "github.com/spf13/cobra",
       "version": "1.8.0",
       "license": "Apache-2.0",
+      "licenseIds": [
+        "Apache-2.0"
+      ],
+      "copyleft": "none",
       "declared": [
         "Apache-2.0"
       ],
@@ -117,6 +153,10 @@
       "name": "github.com/spf13/pflag",
       "version": "1.0.5",
       "license": "BSD-3-Clause",
+      "licenseIds": [
+        "BSD-3-Clause"
+      ],
+      "copyleft": "none",
       "declared": [
         "BSD-3-Clause"
       ],
@@ -131,6 +171,10 @@
       "name": "com.google.protobuf:protobuf-java",
       "version": "3.21.9",
       "license": "BSD-3-Clause",
+      "licenseIds": [
+        "BSD-3-Clause"
+      ],
+      "copyleft": "none",
       "declared": [
         "BSD-3-Clause"
       ],
@@ -145,6 +189,8 @@
       "name": "com.mysql:mysql-connector-j",
       "version": "8.2.0",
       "license": "",
+      "licenseIds": [],
+      "copyleft": "unknown",
       "declared": [
         "non-standard"
       ],
@@ -159,6 +205,8 @@
       "name": "junit:junit",
       "version": "4.13.2",
       "license": "",
+      "licenseIds": [],
+      "copyleft": "unknown",
       "declared": [
         "non-standard"
       ],
@@ -173,6 +221,10 @@
       "name": "org.apache.commons:commons-lang3",
       "version": "3.14.0",
       "license": "Apache-2.0",
+      "licenseIds": [
+        "Apache-2.0"
+      ],
+      "copyleft": "none",
       "declared": [
         "Apache-2.0"
       ],
@@ -187,6 +239,8 @@
       "name": "org.hamcrest:hamcrest-core",
       "version": "1.3",
       "license": "",
+      "licenseIds": [],
+      "copyleft": "unknown",
       "declared": [
         "non-standard"
       ],
@@ -201,6 +255,10 @@
       "name": "ansi-styles",
       "version": "4.3.0",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -215,6 +273,10 @@
       "name": "caniuse-lite",
       "version": "1.0.30001570",
       "license": "CC-BY-4.0",
+      "licenseIds": [
+        "CC-BY-4.0"
+      ],
+      "copyleft": "unclassified",
       "declared": [
         "CC-BY-4.0"
       ],
@@ -229,6 +291,10 @@
       "name": "chalk",
       "version": "4.1.2",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -243,6 +309,10 @@
       "name": "color-convert",
       "version": "2.0.1",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -257,6 +327,10 @@
       "name": "color-name",
       "version": "1.1.4",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -271,6 +345,10 @@
       "name": "has-flag",
       "version": "4.0.0",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -285,6 +363,10 @@
       "name": "is-number",
       "version": "7.0.0",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -299,6 +381,10 @@
       "name": "left-pad",
       "version": "1.3.0",
       "license": "WTFPL",
+      "licenseIds": [
+        "WTFPL"
+      ],
+      "copyleft": "none",
       "declared": [
         "WTFPL"
       ],
@@ -313,6 +399,10 @@
       "name": "lodash",
       "version": "4.17.21",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -327,6 +417,10 @@
       "name": "supports-color",
       "version": "7.2.0",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -341,6 +435,10 @@
       "name": "Newtonsoft.Json",
       "version": "13.0.3",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -355,6 +453,10 @@
       "name": "Serilog",
       "version": "3.1.1",
       "license": "Apache-2.0",
+      "licenseIds": [
+        "Apache-2.0"
+      ],
+      "copyleft": "none",
       "declared": [
         "Apache-2.0"
       ],
@@ -369,6 +471,8 @@
       "name": "System.Memory",
       "version": "4.5.5",
       "license": "",
+      "licenseIds": [],
+      "copyleft": "unknown",
       "declared": [
         "non-standard"
       ],
@@ -383,6 +487,10 @@
       "name": "monolog/monolog",
       "version": "3.5.0",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -397,6 +505,10 @@
       "name": "phpunit/php-timer",
       "version": "6.0.0",
       "license": "BSD-3-Clause",
+      "licenseIds": [
+        "BSD-3-Clause"
+      ],
+      "copyleft": "none",
       "declared": [
         "BSD-3-Clause"
       ],
@@ -411,6 +523,10 @@
       "name": "psr/log",
       "version": "3.0.0",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -425,6 +541,10 @@
       "name": "certifi",
       "version": "2023.7.22",
       "license": "MPL-2.0",
+      "licenseIds": [
+        "MPL-2.0"
+      ],
+      "copyleft": "weak",
       "declared": [
         "MPL-2.0"
       ],
@@ -439,6 +559,8 @@
       "name": "chardet",
       "version": "5.2.0",
       "license": "",
+      "licenseIds": [],
+      "copyleft": "unknown",
       "declared": [
         "non-standard"
       ],
@@ -453,6 +575,10 @@
       "name": "charset-normalizer",
       "version": "3.5.2",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -467,6 +593,8 @@
       "name": "idna",
       "version": "3.9.0",
       "license": "",
+      "licenseIds": [],
+      "copyleft": "unknown",
       "declared": [
         "non-standard"
       ],
@@ -481,6 +609,8 @@
       "name": "pycrypto",
       "version": "2.6.1",
       "license": "",
+      "licenseIds": [],
+      "copyleft": "unknown",
       "declared": [
         "non-standard"
       ],
@@ -495,6 +625,10 @@
       "name": "pyqt5",
       "version": "5.15.10",
       "license": "GPL-3.0-only",
+      "licenseIds": [
+        "GPL-3.0-only"
+      ],
+      "copyleft": "strong",
       "declared": [
         "GPL-3.0"
       ],
@@ -509,6 +643,10 @@
       "name": "pyqt5-qt5",
       "version": "5.15.2",
       "license": "LGPL-3.0-only",
+      "licenseIds": [
+        "LGPL-3.0-only"
+      ],
+      "copyleft": "weak",
       "declared": [
         "LGPL-3.0"
       ],
@@ -523,6 +661,10 @@
       "name": "pyqt5-sip",
       "version": "12.20.0",
       "license": "BSD-2-Clause",
+      "licenseIds": [
+        "BSD-2-Clause"
+      ],
+      "copyleft": "none",
       "declared": [
         "BSD-2-Clause"
       ],
@@ -537,6 +679,10 @@
       "name": "requests",
       "version": "2.31.0",
       "license": "Apache-2.0",
+      "licenseIds": [
+        "Apache-2.0"
+      ],
+      "copyleft": "none",
       "declared": [
         "Apache-2.0"
       ],
@@ -551,6 +697,10 @@
       "name": "urllib3",
       "version": "2.8.0",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -565,6 +715,10 @@
       "name": "mini_portile2",
       "version": "2.8.5",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -579,6 +733,10 @@
       "name": "nokogiri",
       "version": "1.15.5",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -593,6 +751,11 @@
       "name": "racc",
       "version": "1.7.3",
       "license": "Ruby OR BSD-2-Clause",
+      "licenseIds": [
+        "Ruby",
+        "BSD-2-Clause"
+      ],
+      "copyleft": "none",
       "declared": [
         "Ruby",
         "BSD-2-Clause"
@@ -608,6 +771,10 @@
       "name": "rack",
       "version": "2.2.8",
       "license": "MIT",
+      "licenseIds": [
+        "MIT"
+      ],
+      "copyleft": "none",
       "declared": [
         "MIT"
       ],
@@ -618,9 +785,28 @@
       "source": "ruby/Gemfile.lock"
     }
   ],
+  "own": [
+    {
+      "ecosystem": "crates.io",
+      "name": "licenses-fixture",
+      "version": "0.1.0",
+      "license": "",
+      "licenseIds": [],
+      "copyleft": "unknown",
+      "declared": [
+        "UNKNOWN"
+      ],
+      "dependency": "transitive",
+      "dev": false,
+      "language": "rust",
+      "component": "rust-app",
+      "source": "rust/Cargo.lock"
+    }
+  ],
   "licenses": [
     {
       "license": "MIT",
+      "copyleft": "none",
       "packages": 16,
       "languages": [
         "csharp",
@@ -639,6 +825,7 @@
     },
     {
       "license": "Apache-2.0",
+      "copyleft": "none",
       "packages": 5,
       "languages": [
         "csharp",
@@ -655,6 +842,7 @@
     },
     {
       "license": "BSD-3-Clause",
+      "copyleft": "none",
       "packages": 4,
       "languages": [
         "go",
@@ -669,6 +857,7 @@
     },
     {
       "license": "Apache-2.0 OR MIT",
+      "copyleft": "none",
       "packages": 3,
       "languages": [
         "rust"
@@ -679,6 +868,7 @@
     },
     {
       "license": "MPL-2.0",
+      "copyleft": "weak",
       "packages": 2,
       "languages": [
         "go",
@@ -691,6 +881,7 @@
     },
     {
       "license": "Apache-2.0 OR BSL-1.0",
+      "copyleft": "none",
       "packages": 1,
       "languages": [
         "rust"
@@ -701,6 +892,7 @@
     },
     {
       "license": "BSD-2-Clause",
+      "copyleft": "none",
       "packages": 1,
       "languages": [
         "python"
@@ -711,6 +903,7 @@
     },
     {
       "license": "CC-BY-4.0",
+      "copyleft": "unclassified",
       "packages": 1,
       "languages": [
         "typescript"
@@ -721,6 +914,7 @@
     },
     {
       "license": "GPL-3.0-only",
+      "copyleft": "strong",
       "packages": 1,
       "languages": [
         "python"
@@ -731,6 +925,7 @@
     },
     {
       "license": "LGPL-3.0-only",
+      "copyleft": "weak",
       "packages": 1,
       "languages": [
         "python"
@@ -741,6 +936,7 @@
     },
     {
       "license": "Ruby OR BSD-2-Clause",
+      "copyleft": "none",
       "packages": 1,
       "languages": [
         "ruby"
@@ -751,6 +947,7 @@
     },
     {
       "license": "WTFPL",
+      "copyleft": "none",
       "packages": 1,
       "languages": [
         "typescript"
@@ -760,6 +957,164 @@
       ]
     }
   ],
+  "licenseIds": [
+    {
+      "license": "MIT",
+      "copyleft": "none",
+      "packages": 19,
+      "languages": [
+        "csharp",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "typescript"
+      ],
+      "components": [
+        "csharp-app",
+        "php-app",
+        "python-app",
+        "ruby-app",
+        "rust-app",
+        "typescript-app"
+      ]
+    },
+    {
+      "license": "Apache-2.0",
+      "copyleft": "none",
+      "packages": 9,
+      "languages": [
+        "csharp",
+        "go",
+        "java",
+        "python",
+        "rust"
+      ],
+      "components": [
+        "csharp-app",
+        "go-app",
+        "java-app",
+        "python-app",
+        "rust-app"
+      ]
+    },
+    {
+      "license": "BSD-3-Clause",
+      "copyleft": "none",
+      "packages": 4,
+      "languages": [
+        "go",
+        "java",
+        "php"
+      ],
+      "components": [
+        "go-app",
+        "java-app",
+        "php-app"
+      ]
+    },
+    {
+      "license": "BSD-2-Clause",
+      "copyleft": "none",
+      "packages": 2,
+      "languages": [
+        "python",
+        "ruby"
+      ],
+      "components": [
+        "python-app",
+        "ruby-app"
+      ]
+    },
+    {
+      "license": "MPL-2.0",
+      "copyleft": "weak",
+      "packages": 2,
+      "languages": [
+        "go",
+        "python"
+      ],
+      "components": [
+        "go-app",
+        "python-app"
+      ]
+    },
+    {
+      "license": "BSL-1.0",
+      "copyleft": "none",
+      "packages": 1,
+      "languages": [
+        "rust"
+      ],
+      "components": [
+        "rust-app"
+      ]
+    },
+    {
+      "license": "CC-BY-4.0",
+      "copyleft": "unclassified",
+      "packages": 1,
+      "languages": [
+        "typescript"
+      ],
+      "components": [
+        "typescript-app"
+      ]
+    },
+    {
+      "license": "GPL-3.0-only",
+      "copyleft": "strong",
+      "packages": 1,
+      "languages": [
+        "python"
+      ],
+      "components": [
+        "python-app"
+      ]
+    },
+    {
+      "license": "LGPL-3.0-only",
+      "copyleft": "weak",
+      "packages": 1,
+      "languages": [
+        "python"
+      ],
+      "components": [
+        "python-app"
+      ]
+    },
+    {
+      "license": "Ruby",
+      "copyleft": "none",
+      "packages": 1,
+      "languages": [
+        "ruby"
+      ],
+      "components": [
+        "ruby-app"
+      ]
+    },
+    {
+      "license": "WTFPL",
+      "copyleft": "none",
+      "packages": 1,
+      "languages": [
+        "typescript"
+      ],
+      "components": [
+        "typescript-app"
+      ]
+    }
+  ],
+  "copyleft": {
+    "none": 32,
+    "weak": 3,
+    "strong": 1,
+    "network": 0,
+    "maximal": 0,
+    "unclassified": 1,
+    "unknown": 7
+  },
   "notCovered": [
     {
       "language": "dart",

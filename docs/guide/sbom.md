@@ -16,9 +16,10 @@ It reads what [`hct licenses`](licenses.md) reads, the same way:
 OSV-Scanner's report on each component's lock files and deps.dev's
 licenses. So it needs hecatron's binary,
 [OSV-Scanner](https://google.github.io/osv-scanner/) (`hct install` of a
-language it reads installs it) and the network. Exit status: 0 written,
-1 OSV-Scanner failed or the file couldn't be written, 2 a usage error, 3
-OSV-Scanner isn't installed.
+language it reads installs it) and the network. `--timeout DURATION`
+(else `HECATRON_TIMEOUT`) stops it after `DURATION`, as for `hct licenses`.
+Exit status: 0 written, 1 OSV-Scanner failed or timed out, or the file
+couldn't be written, 2 a usage error, 3 OSV-Scanner isn't installed.
 
 ## What's in it
 
@@ -30,7 +31,8 @@ OSV-Scanner isn't installed.
   `SOURCE_DATE_EPOCH` sets the timestamp, so the same commit gives the same
   document byte for byte.
 - **Each component** of the project, with its languages.
-- **Each package** once, with its [purl](https://github.com/package-url/purl-spec)
+- **Each package** once (the project's own packages, which its lock files
+  list too, aren't: [hct licenses](licenses.md#the-projects-own-packages)), with its [purl](https://github.com/package-url/purl-spec)
   (`pkg:npm/lodash@4.17.21`) and its license as an SPDX expression, where
   it's known (the rules are [hct licenses'](licenses.md#where-the-licenses-come-from)).
   An unknown license is left out (CycloneDX) or `NOASSERTION` (SPDX), never

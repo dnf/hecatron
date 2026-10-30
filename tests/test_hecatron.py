@@ -435,7 +435,9 @@ class InitTest(Fixture):
         self.commit()
         result = self.hecatron("list", cwd=self.path("go", "sub"))
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("detected go", result.stderr)
+        # The note that it was detected is for a person at a terminal: stderr
+        # here is a pipe.
+        self.assertNotIn("detected go", result.stderr)
         self.assertIn("go", result.stdout)
         self.assertFalse(os.path.exists(self.path(".hecatron")))
         status = subprocess.run(["git", "status", "--porcelain"], cwd=self.root, capture_output=True, text=True)

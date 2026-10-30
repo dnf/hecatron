@@ -367,3 +367,34 @@ func escapeData(s string) string {
 func escapeProperty(s string) string {
 	return strings.NewReplacer("%", "%25", "\r", "%0D", "\n", "%0A", ":", "%3A", ",", "%2C").Replace(s)
 }
+
+// ForAPerson is whether a note meant for a person at a terminal (the
+// update notice, the note that a repository's config was detected) may be
+// shown on stderr: stderr a terminal, and human output (no --output, --json
+// or HECATRON_OUTPUT naming another format, not an AI agent's session, not
+// GitHub Actions). A script or an agent reading the output gets only what
+// it asked for. libexec/lib/project.py's _for_a_person is its twin.
+func ForAPerson(getenv func(string) string, args []string, stdoutTerminal, stderrTerminal bool) bool {
+	if !stderrTerminal {
+		return false
+	}
+	format := getenv("HECATRON_OUTPUT")
+flags:
+	for i, arg := range args {
+		switch {
+		case arg == "--":
+			break flags
+		case arg == "--output" && i+1 < len(args):
+			format = args[i+1]
+		case strings.HasPrefix(arg, "--output="):
+			format = strings.TrimPrefix(arg, "--output=")
+		case arg == "--json":
+			format = string(JSON)
+		}
+	}
+	if format != "" {
+		return format == string(Human)
+	}
+	agent := getenv("CLAUDECODE") == "1" && !stdoutTerminal
+	return !agent && getenv("GITHUB_ACTIONS") != "true"
+}
