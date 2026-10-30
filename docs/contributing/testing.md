@@ -134,28 +134,43 @@ for every language on every platform each week and writes
 ## Real apps
 
 The [real-apps workflow](../../.github/workflows/real-apps.yml) builds one
-open-source Xcode app every two hours, the next on
+open-source Xcode app every two hours: an app whose issue is labelled
+`real-app-retry`, oldest first, else the next on
 [`tests/real-apps/apps.txt`](../../tests/real-apps/apps.txt) in turn (the
 clock's two-hour slot modulo the list's length, so nothing is stored
-between runs). It clones the app and runs `hct init`, `hct deps` and
+between runs). It clones the app, runs its steps in
+[`tests/real-apps/fixups.txt`](../../tests/real-apps/fixups.txt) (the manual
+getting-started steps its README asks for), then `hct init`, `hct deps` and
 `hct build` on its Swift and Objective-C, as a newcomer would, on GitHub's
-latest macOS runner. When something goes wrong (the clone, `hct init`, no
-Xcode app found, or the build) it files an issue labelled `real-app` with
-the versions, each step's exit status, the failed jobs' errors and log
-tails, and `hct _xcode plan`'s plan, or comments on the app's open issue; it
-comments there too when the app builds again. A skip isn't filed; the job
-summary says why. Nothing in it judges whether hecatron or the app is at
-fault: that's for whoever picks the issue up.
+latest macOS runner.
 
-`tests/real-apps/try-next.sh build` runs the app's own build scripts, so its
-job has no token that can write; `try-next.sh report`, in a second job,
-files the issue from what the first recorded. To try an app now, run the
-workflow with its `app` input, or locally (it runs the app's code):
+When something goes wrong (the clone, a setup step, `hct init`, no Xcode
+app found, the build) or nothing was built (every job skipped: a template
+to copy, Pods not installed), it files an issue labelled `real-app`: the
+versions, each step's exit status, the failed jobs' errors and log tails,
+the skip reasons, and `hct _xcode plan`'s plan. If the app has an open
+issue, it comments there instead, and closes it when the app builds.
+Nothing in it judges whether hecatron or the app is at fault.
+
+Working through the queue:
+
+1. Read the issue. If the app needs a getting-started step, add it to
+   `fixups.txt` (`owner/repo: command`, one step per line, run in order with
+   bash from the clone's root); if hecatron needs fixing, fix it.
+2. Once that's merged, label the issue `real-app-retry`. The next run tries
+   the app before any other, comments with how it went, and removes the
+   label (closing the issue if it built). Label it again to retry again.
+
+`tests/real-apps/try-next.sh pick` chooses the app (reading issues);
+`build` runs the app's own build scripts, so its job has no token at all;
+`report`, in a third job, files the issue from what `build` recorded. To try
+an app now, run the workflow with its `app` input, or locally (it runs the
+app's code):
 
 ```bash
 APP=owner/repo bash tests/real-apps/try-next.sh build /tmp/real-app
 DRY_RUN=1 bash tests/real-apps/try-next.sh report /tmp/real-app
 ```
 
-Add apps to the end of the list, with a comment saying what each is there
+Add apps to the end of `apps.txt`, with a comment saying what each is there
 for.

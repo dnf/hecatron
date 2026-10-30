@@ -35,6 +35,25 @@ class ListTest(unittest.TestCase):
         self.assertEqual(report.pick(APPS, 1), listed[1])
         self.assertEqual(report.pick(APPS, len(listed)), listed[0])
 
+    def test_fixups(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
+            f.write("# heading\n\nowner/app: cp a.template a   # its README\nother/app: true\n"
+                    "Owner/App: ./bootstrap.sh --url https://x.example/#frag\nowner/app:\n")
+        try:
+            self.assertEqual(report.fixups(f.name, "owner/app"),
+                             ["cp a.template a", "./bootstrap.sh --url https://x.example/#frag"])
+            self.assertEqual(report.fixups(f.name, "none/here"), [])
+        finally:
+            os.remove(f.name)
+        for app in report.apps(APPS):
+            report.fixups(os.path.join(HOME, "tests", "real-apps", "fixups.txt"), app)  # parses
+        listed = {app.lower() for app in report.apps(APPS)}
+        with open(os.path.join(HOME, "tests", "real-apps", "fixups.txt")) as f:
+            for line in f:
+                name = report.COMMENT.sub("", line).partition(":")[0].strip()
+                if name:
+                    self.assertIn(name.lower(), listed, "a fixup for an app that isn't on the list")
+
     def test_comments_and_blank_lines_are_ignored(self):
         with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
             f.write("# heading\n\na/b   # why\n  c/d\n")
@@ -77,12 +96,17 @@ class RunTest(unittest.TestCase):
         self.assertEqual(self.outcome()[:2], ("passed", False))
         self.build("skipped", [{"label": "swift", "status": "skipped", "reason": "the Pods aren't installed"}])
         kind, file, line = self.outcome()
-        self.assertEqual((kind, file), ("skipped", False))
+        # Nothing built is filed: a getting-started step for fixups.txt, most often.
+        self.assertEqual((kind, file), ("nothing-built", True))
         self.assertIn("swift: the Pods aren't installed", line)
         self.build("failed", [{"label": "swift", "status": "failed"}])
         self.assertEqual(self.outcome()[:2], ("build-failed", True))
 
     def test_early_failures(self):
+        self.step("clone", 0)
+        self.step("setup", 1, "cp App.xcconfig.template App.xcconfig")
+        self.assertEqual(self.outcome()[:2], ("setup-failed", True))
+        os.remove(os.path.join(self.work, "steps.tsv"))
         self.step("clone", 128)
         self.assertEqual(self.outcome()[:2], ("clone-failed", True))
         self.meta(harness_error="hecatron's binary didn't build")
@@ -112,6 +136,7 @@ class RunTest(unittest.TestCase):
                      "error: no such module 'Foo'", "line 199", "- objectivec: built with swift's hook",
                      "pod: command not found", '"scheme": "App"', "actions/runs/1"):
             self.assertIn(want, body)
+        self.assertIn("real-app-retry", body)  # how to put it back in rotation
         self.assertNotIn("line 119\n", body)  # only the log's last lines
         self.assertIn("line 120\n", body)
 
@@ -137,9 +162,13 @@ class RunTest(unittest.TestCase):
         self.assertIn("try-next.sh report", workflow)
         # The build job runs the app's own scripts: no token that can write.
         build_job = re.search(r"\n  build:\n(.*?)\n  report:", workflow, re.S).group(1)
-        self.assertNotIn("issues: write", build_job)
+        self.assertNotIn("issues:", build_job)
         self.assertNotIn("GH_TOKEN", build_job)
         self.assertIn("persist-credentials: false", build_job)
+        # Picking a retry reads issues; only the report job writes them.
+        pick_job = re.search(r"\n  pick:\n(.*?)\n  # Runs", workflow, re.S).group(1)
+        self.assertIn("issues: read", pick_job)
+        self.assertNotIn("write", pick_job)
 
 
 if __name__ == "__main__":

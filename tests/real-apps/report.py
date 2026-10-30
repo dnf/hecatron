@@ -4,6 +4,7 @@ what a run's outcome was, and the issue and job summary that report it. No
 network and no judgement: what it writes is what the run recorded.
 
   report.py pick APPS [--slot N]   the app whose turn it is (slot: the clock's two-hour slot)
+  report.py fixups FIXUPS APP      the app's setup steps, one per line
   report.py outcome WORK           kind<TAB>file|quiet<TAB>one line saying what happened
   report.py issue WORK             the issue's title, a line, then its body
   report.py comment WORK           a comment for the app's open issue
@@ -19,6 +20,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import time
 
@@ -31,6 +33,26 @@ def apps(path: str) -> list[str]:
     """The list's owner/repo entries, in order, without comments."""
     with open(path, encoding="utf-8") as f:
         return [line.split("#", 1)[0].strip() for line in f if line.split("#", 1)[0].strip()]
+
+
+# A comment: # at the start of a line, or after whitespace and before it
+# (so a command can still hold a # of its own, as in a URL's fragment).
+COMMENT = re.compile(r"(^|\s)#(\s.*)?$")
+
+
+def fixups(path: str, app: str) -> list[str]:
+    """The app's setup steps in the fixups file, in order."""
+    steps = []
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = COMMENT.sub("", line.rstrip("\n")).strip()
+                name, sep, command = line.partition(":")
+                if sep and name.strip().lower() == app.lower() and command.strip():
+                    steps.append(command.strip())
+    except OSError:
+        pass
+    return steps
 
 
 def pick(path: str, slot: int | None = None) -> str:
@@ -79,6 +101,8 @@ class Run:
             return "harness-error", True, f"the workflow couldn't try {app}: {self.meta['harness_error']}"
         if self.failed("clone"):
             return "clone-failed", True, f"{app} couldn't be cloned"
+        if self.failed("setup"):
+            return "setup-failed", True, f"{app}'s setup steps (tests/real-apps/fixups.txt) failed"
         if self.failed("init"):
             return "init-failed", True, f"hct init failed on {app}"
         if not self.meta.get("languages"):
@@ -89,7 +113,9 @@ class Run:
         if status == "passed":
             return "passed", False, f"{app} built"
         if status == "skipped":
-            return "skipped", False, f"hct skipped {app}: " + "; ".join(self.skip_reasons())
+            # Nothing was built: most often a getting-started step the app's
+            # README asks for, which fixups.txt then adds.
+            return "nothing-built", True, f"hct built nothing in {app}: " + "; ".join(self.skip_reasons())
         return "build-failed", True, f"hct build {status or 'failed'} on {app}"
 
     def jobs(self, *statuses: str) -> list[dict]:
@@ -156,17 +182,24 @@ def body(run: Run) -> str:
                 parts.append(details(f"The last {LOG_TAIL_LINES} lines of {os.path.basename(log)}", code(text)))
     if run.skip_reasons():
         parts.append("### Skipped\n" + "\n".join(f"- {reason}" for reason in run.skip_reasons()))
-    for name in ("clone", "init", "deps"):
+    for name in ("clone", "setup", "init", "deps"):
         if run.failed(name):
             parts.append(details(f"The {name} step's output", code(tail(os.path.join(run.work, "logs", name + ".log")))))
     if run.plan is not None:
         parts.append(details("hct _xcode plan", code(json.dumps(run.plan, indent=2), "json")))
-    parts.append("Filed by the real-apps workflow (tests/real-apps/). It reports what happened; whether hecatron or the "
-                 "app needs the fix is for whoever picks this up.")
+    parts.append(NEXT)
     text = "\n\n".join(parts)
     if len(text) > BODY_LIMIT:
         text = text[:BODY_LIMIT] + "\n\n(cut short: the full logs are in the run's artifact)"
     return text
+
+
+NEXT = """### Next
+
+Filed by the real-apps workflow (tests/real-apps/), which reports what happened; whether hecatron or the app needs the \
+fix is for whoever picks this up. If the app needs a manual getting-started step (its README's: a template to copy, a \
+bootstrap script), add it to `tests/real-apps/fixups.txt`; if hecatron needs fixing, fix it. Then label this issue \
+`real-app-retry`: the next run tries the app again and says here how it went (closing the issue when it builds)."""
 
 
 def title(run: Run) -> str:
@@ -179,6 +212,10 @@ def summary(run: Run) -> str:
 
 
 def main(argv: list[str]) -> int:
+    if len(argv) == 3 and argv[0] == "fixups":
+        for step in fixups(argv[1], argv[2]):
+            print(step)
+        return 0
     if len(argv) >= 2 and argv[0] == "pick":
         slot = int(argv[3]) if len(argv) == 4 and argv[2] == "--slot" else None
         print(pick(argv[1], slot))
