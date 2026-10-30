@@ -118,7 +118,12 @@ var detectionRepos = map[string]map[string]string{
 	"xcode projects": {"App.xcodeproj/project.pbxproj": "", "App/AppDelegate.swift": "", "Gemfile": "", "Gemfile.lock": "",
 		"Legacy/Legacy.xcodeproj/project.pbxproj": "", "Legacy/Sources/a.m": "", "Pods/Pods.xcodeproj/project.pbxproj": "",
 		"Pods/Alamofire/a.swift": "", "Carthage/Checkouts/x/x.xcodeproj/project.pbxproj": "", "Carthage/Checkouts/x/a.m": ""},
-	"xcode workspace alone":      {"App.xcworkspace/contents.xcworkspacedata": "", "README.md": ""},
+	"xcode workspace alone": {"App.xcworkspace/contents.xcworkspacedata": "", "README.md": ""},
+	"xcode project below the root": {"src/GoMap.xcodeproj/project.pbxproj": "", "src/iOS/AppDelegate.swift": "",
+		"src/Shared/OsmMapData.m": "", "src/Shared/OsmMapData.h": "", "README.md": ""},
+	"xcode apps beside a package": {"Package.swift": "", "BrowserKit/Sources/Common/a.swift": "",
+		"firefox-ios/Client.xcodeproj/project.pbxproj": "", "firefox-ios/Client/AppDelegate.swift": "",
+		"focus-ios/Blockzilla.xcodeproj/project.pbxproj": "", "focus-ios/Blockzilla/AppDelegate.swift": ""},
 	"xcode project in a package": {"Package.swift": "", "Sources/a.swift": "", "Example/Example.xcodeproj/project.pbxproj": "", "Example/App/a.swift": "", "ios/App.xcodeproj/project.pbxproj": "", "ios/App/AppDelegate.mm": "", "package.json": `{"main": "index.js"}`, "index.js": ""},
 	"shared build files":         {"cpp/CMakeLists.txt": "", "cpp/src/a.cc": "", "cpp/src/b.cc": "", "cpp/src/utf/x.c": "", "Makefile": "", "lib/c/a.c": ""},
 	"sources inside another":     {"cpp/CMakeLists.txt": "", "cpp/src/utf/x.c": "", "objectivec/a.m": "", "objectivec/b.c": "", "python/pyproject.toml": "", "python/ext/a.c": "", "upb/base/b.c": ""},
@@ -199,8 +204,10 @@ func TestDetectionOfPackagesAppsAndTooling(t *testing.T) {
 		"package.json for commit hooks": ". [swift] ",
 		"requirements beside python":    ". [python] ",
 		"requirements without python":   ". [go] ",
-		"xcode projects":                ". [objectivec ruby swift] ",
+		"xcode projects":                ". [objectivec ruby swift] objectivec=Legacy",
 		"xcode workspace alone":         ". [] ",
+		"xcode project below the root":  ". [objectivec swift] objectivec=srcswift=src",
+		"xcode apps beside a package":   ". [swift] ",
 	})
 }
 

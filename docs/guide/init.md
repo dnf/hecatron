@@ -84,7 +84,15 @@ saves it, as init would. Init itself:
    build files the directory doesn't fit, and the language gets the
    directory holding them (antlr4's `runtime/Go/antlr/v4`, not the root). A directory another language was found in
    doesn't fit (Cucumber's `javascript/` is TypeScript's, so JavaScript found
-   in `jsonschema/` gets `implPaths` `jsonschema`). `--components` and
+   in `jsonschema/` gets `implPaths` `jsonschema`). A language found only in
+   and below a directory holding its Xcode project (a `detectWithSources`
+   `dirs` match) gets that directory, since `xcodebuild` acts on the project
+   where it runs: GoMap's Swift and Objective-C get `implPaths` `src`, for
+   `src/GoMap.xcodeproj`. Apps with Xcode projects of their own below a
+   language's directory (firefox-ios' `firefox-ios/Client.xcodeproj` and
+   `focus-ios/Blockzilla.xcodeproj` beside the root's `Package.swift`)
+   leave the language there; its hooks build each app
+   ([hooks](hooks.md#xcode-projects)). `--components` and
    `--impl-path` set the layout explicitly.
 4. Writes `.hecatron/config.json`, adds `.hecatron/local.json` and the log
    directory to `.gitignore`.

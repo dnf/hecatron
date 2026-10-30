@@ -330,10 +330,14 @@ dotnet_hook() {
 # for what compiles first (it builds the local packages below too, for the
 # app's platform: SwiftPM on the host can't build IceCubesApp's iOS-only
 # packages), for the rest (lint, deps) when there's no package below or
-# above to act on.
+# above to act on. The apps below with Xcode projects of their own
+# (xcode_apps_below) build and clean as well.
 # shellcheck disable=SC2034 # read by the swift hooks
 swift_package_args=()
 swift_package() {
+    case "${_hook_action}" in
+        build|clean) xcode_apps_below Package.swift ;;
+    esac
     if [ ! -f Package.swift ] && xcode_project; then
         case "${_hook_action}" in
             build|clean|test|docs|bench) xcode_hook "${_hook_action}" ;;
@@ -1711,6 +1715,34 @@ xcode_hook() {
     esac
 }
 
+# The apps below this directory with an Xcode project of their own, which
+# detection takes for this language (docs/guide/init.md), as ./paths, into
+# xcode_apps: firefox-ios' firefox-ios/Client.xcodeproj and
+# focus-ios/Blockzilla.xcodeproj, beside the root's Package.swift, whose
+# SwiftPM build doesn't reach them. None inside one of those runs.
+xcode_apps=()
+xcode_find_apps() {
+    local _dir
+    xcode_apps=()
+    [ -z "${HECATRON_XCODE_APPS:-}" ] || return 0
+    while IFS= read -r _dir; do
+        [ -z "${_dir}" ] || xcode_apps+=("${_dir}")
+    done < <(xcode_py apps "${HECATRON_LANG:-}" "${HECATRON_ROOT:-.}" 2>/dev/null)
+}
+
+# When there are apps below (xcode_find_apps), run the hook in each, and
+# here when this directory has an Xcode project or one of the build files
+# given (the language's own), and exit. Packages and builds below, outside
+# a build here, are then left to the apps that use them.
+xcode_apps_below() {
+    xcode_find_apps
+    [ "${#xcode_apps[@]}" -gt 0 ] || return 0
+    local _dirs=("${xcode_apps[@]}")
+    if xcode_project || has_any "$@"; then _dirs=(. "${_dirs[@]}"); fi
+    export HECATRON_XCODE_APPS=1
+    run_hook_in "${_dirs[@]}"
+}
+
 xcode_hook_path() { echo ".hecatron/languages/${HECATRON_LANG:-<lang>}/$1.sh"; }
 xcode_write_hooks() {
     echo "write $(xcode_hook_path build) (xcodebuild build -scheme <scheme> -destination <destination>) and $(xcode_hook_path test)"
@@ -1719,22 +1751,12 @@ xcode_write_hooks() {
 # Swift and Objective-C both find an app's Xcode project (NetNewsWire's),
 # and hct runs their builds at once: two xcodebuilds of one project race on
 # its build database. Swift's hook builds it where Swift is added (and not
-# disabled) for this directory without a Package.swift here (where its hook
-# builds the Xcode project); Objective-C's then skips.
+# disabled) for this directory, or for one above it whose apps below
+# include this one (xcode_apps_below), without a Package.swift here (where
+# its hook builds the Xcode project); Objective-C's then skips.
 swift_builds_xcode_here() {
     [ "${HECATRON_LANG:-}" = objectivec ] && [ ! -f Package.swift ] || return 1
-    python3 - "${HECATRON_HOME:-${_hooks_home}}/libexec/lib" 2>/dev/null <<'PY'
-import os
-import sys
-
-sys.path.insert(0, sys.argv[1])
-import project
-
-model = project.load()
-here = os.path.realpath(".")
-added = "swift" in model.languages and "swift" not in model.disabled
-sys.exit(0 if added and any(os.path.realpath(d) == here for _, d in model.impl_dirs("swift")) else 1)
-PY
+    xcode_py swift-builds "${HECATRON_ROOT:-.}" 2>/dev/null
 }
 
 # The Xcode file of a kind here ('*.xcworkspace' or '*.xcodeproj') to build:
@@ -1758,30 +1780,44 @@ xcode_pick() {
     echo "several: ${_found[*]}"
 }
 
-# The scheme to build from xcodebuild -list -json's report (stdin): the one
-# named like the workspace or project ($1, then $2...). Not "the only one":
-# each Swift package the project uses adds a scheme (NetNewsWire lists 27),
-# and CocoaPods' workspace one per pod. Prints the scheme, or nothing.
-xcode_scheme() {
-    python3 -c '
-import json, sys
-container = json.load(sys.stdin)
-info = container.get("workspace") or container.get("project") or {}
-schemes = info.get("schemes") or []
-print(next((name for name in sys.argv[1:] if name in schemes), ""))
-' "$@"
-}
+# hecatron's reader of Xcode's files (libexec/lib/xcode.py).
+xcode_py() { python3 "${HECATRON_HOME:-${_hooks_home}}/libexec/lib/xcode.py" "$@"; }
+
+# The scheme to build, and why, tab-separated, from xcodebuild -list -json's
+# report (stdin) and the files of the workspace or project ($1), the project
+# ($2, or empty) and the names to match ($3...): the shared scheme building
+# the project's app target (named like the project, else the only one, else
+# the first by name, not a Release one unless all are), else the scheme of
+# its only app target (xcodebuild's own, when none is shared), else the one
+# named like the workspace or project. Not "the only one": each Swift
+# package the project uses adds a scheme (NetNewsWire lists 27), and
+# CocoaPods' workspace one per pod. Prints nothing when none fits.
+xcode_scheme() { xcode_py scheme "$@"; }
+
+# A setting's value in xcodebuild -showBuildSettings' report ($1): the
+# first target's.
+xcode_setting() { printf '%s\n' "$1" | sed -n "s/^[[:space:]]*$2 = //p" | sed -n 1p; }
 
 # The generic destination to build for, from xcodebuild -showBuildSettings'
-# report (stdin; the first target's SUPPORTED_PLATFORMS): macOS where the
-# target supports it, else the iOS simulator (a simulator SDK needs no
-# signing or provisioning), else the first other simulator. Without one,
-# xcodebuild can't choose among a multiplatform target's platforms.
+# report (stdin; the first target's settings): macOS for a native Mac app
+# (SDKROOT is macOS's), else the iOS simulator where the target supports it
+# (a simulator SDK needs no signing or provisioning), else the first other
+# simulator, else macOS when it's the only platform. An iOS app supporting
+# Mac Catalyst (SUPPORTED_PLATFORMS has macosx, SDKROOT is iOS's) builds for
+# the simulator: its Catalyst variant can fail where iOS wouldn't. Without a
+# destination, xcodebuild can't choose among a multiplatform target's
+# platforms.
 xcode_destination() {
-    local _platforms _platform
-    _platforms=" $(sed -n 's/^[[:space:]]*SUPPORTED_PLATFORMS = //p' | sed -n 1p) "
+    local _settings _platforms _platform
+    _settings="$(cat)"
+    _platforms=" $(xcode_setting "${_settings}" SUPPORTED_PLATFORMS) "
     case "${_platforms}" in
-        *" macosx "*) echo "generic/platform=macOS"; return ;;
+        *" macosx "*)
+            case "$(xcode_setting "${_settings}" SDKROOT)" in
+                macosx | */MacOSX*.sdk) echo "generic/platform=macOS"; return ;;
+            esac ;;
+    esac
+    case "${_platforms}" in
         *" iphonesimulator "*) echo "generic/platform=iOS Simulator"; return ;;
     esac
     for _platform in ${_platforms}; do
@@ -1791,14 +1827,32 @@ xcode_destination() {
             watchsimulator) echo "generic/platform=watchOS Simulator"; return ;;
         esac
     done
+    case "${_platforms}" in
+        *" macosx "*) echo "generic/platform=macOS" ;;
+    esac
+}
+
+# A workspace whose projects aren't all there skips the build: xcodebuild
+# -list succeeds without them, and the build fails. CocoaPods' Pods/ is
+# made by pod install, and often not committed (eidolon's Kiosk.xcworkspace
+# refers to Pods/Pods.xcodeproj).
+xcode_workspace_complete() {
+    local _missing
+    _missing="$(xcode_py missing "$1" | paste -sd ' ' -)"
+    if [ -z "${_missing}" ] && [ -f Podfile.lock ] && [ ! -d Pods/Pods.xcodeproj ]; then _missing=Pods/Pods.xcodeproj; fi
+    [ -n "${_missing}" ] || return 0
+    case " ${_missing}" in
+        *" Pods/"*) skip "the Pods aren't installed: run pod install (hct deps runs it, with CocoaPods installed)" ;;
+    esac
+    skip "$1 refers to projects that aren't here (${_missing}): $(xcode_write_hooks)"
 }
 
 # Through the root workspace when there is one (CocoaPods': the bare project
-# doesn't link without its Pods), else the project; with the scheme named
-# like it (a scheme resolves the project's Swift packages), for its
-# platform's generic destination.
+# doesn't link without its Pods), else the project; with its scheme
+# (xcode_scheme; a scheme also resolves the project's Swift packages), for
+# its platform's generic destination.
 xcode_build() {
-    local _container _kind _project _scheme _list _settings _destination
+    local _container _kind _project _chosen _scheme _list _settings _destination _tab=$'\t'
     _kind=-workspace
     _container="$(xcode_pick '*.xcworkspace')"
     _project="$(xcode_pick '*.xcodeproj')"
@@ -1810,11 +1864,16 @@ xcode_build() {
         "several: "*)
             skip "several Xcode ${_kind#-}s here (${_container#several: }), none named like the directory: $(xcode_write_hooks)" ;;
     esac
+    case "${_project}" in "several: "*) _project="" ;; esac
+    [ "${_kind}" = -project ] || xcode_workspace_complete "${_container}"
     echo "+ xcodebuild -list -json ${_kind} ${_container}"
     _list="$(xcodebuild -list -json "${_kind}" "${_container}")" || exit 1
-    _scheme="$(printf '%s\n' "${_list}" | xcode_scheme "${_container%.*}" "${_project%.*}")"
+    _chosen="$(printf '%s\n' "${_list}" |
+        xcode_scheme "${_container}" "${_project}" "${_container%.*}" ${_project:+"${_project%.*}"})"
+    _scheme="${_chosen%%"${_tab}"*}"
     [ -n "${_scheme}" ] ||
-        skip "${_container} has no scheme named like it (${_container%.*}): $(xcode_write_hooks)"
+        skip "${_container} has no shared scheme building its app, nor one named like it (${_container%.*}): $(xcode_write_hooks)"
+    echo "${HECATRON_LANG:-}: ${_hook_action}: scheme ${_scheme}: ${_chosen#*"${_tab}"}"
     echo "+ xcodebuild -showBuildSettings ${_kind} ${_container} -scheme ${_scheme}"
     _settings="$(xcodebuild -showBuildSettings "${_kind}" "${_container}" -scheme "${_scheme}")" || exit 1
     _destination="$(printf '%s\n' "${_settings}" | xcode_destination)"
@@ -1826,11 +1885,22 @@ xcode_build() {
 }
 
 # Objective-C: an Xcode project through xcodebuild (xcode_hook), unless
-# another build is here and there is no xcodebuild, GNUstep make for a
+# another build is here and there is no xcodebuild; with nothing that builds
+# here, the Xcode apps below (xcode_apps_below: firefox-ios' Objective-C is
+# all in its apps), skipping what they don't do on their own; GNUstep make for a
 # GNUmakefile that includes GNUstep's common.make (which needs
 # GNUSTEP_MAKEFILES, from gnustep-config), else CMake, Meson or make as for C.
 objc_hook() {
-    if xcode_project && { has xcodebuild || ! has_any CMakeLists.txt meson.build configure configure.ac Makefile makefile GNUmakefile; }; then
+    local _builds=(CMakeLists.txt meson.build configure configure.ac Makefile makefile GNUmakefile)
+    case "$1" in
+        build|clean) xcode_apps_below "${_builds[@]}" ;;
+    esac
+    if ! xcode_project && ! has_any "${_builds[@]}"; then
+        xcode_find_apps
+        [ "${#xcode_apps[@]}" -eq 0 ] ||
+            skip "the Objective-C here is in the Xcode apps below (${xcode_apps[*]#./}), which build and clean on their own; write $(xcode_hook_path "$1") for their $1"
+    fi
+    if xcode_project && { has xcodebuild || ! has_any "${_builds[@]}"; }; then
         xcode_hook "$1"
     fi
     if is_gnustep_make && [ -z "${GNUSTEP_MAKEFILES:-}" ]; then

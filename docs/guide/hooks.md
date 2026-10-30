@@ -161,17 +161,56 @@ macOS with `xcodebuild`, unsigned (`CODE_SIGNING_ALLOWED=NO`):
   `project.xcworkspace` inside an `.xcodeproj` doesn't count), else the
   `*.xcodeproj`. Of several, the one named like the directory, the project
   (`HECATRON_PROJECT`) or the repository; otherwise the build skips.
-- **The scheme:** the one `xcodebuild -list -json` reports named like the
-  workspace or project (each Swift package the project uses adds a scheme,
-  and a CocoaPods workspace one per pod); otherwise the build skips. A
-  scheme also resolves the project's Swift packages, which a bare
-  `xcodebuild build` may not.
-- **The destination:** from the scheme's `SUPPORTED_PLATFORMS`
-  (`xcodebuild -showBuildSettings`): `generic/platform=macOS` where it
-  includes macOS, else `generic/platform=iOS Simulator` (a simulator SDK
-  needs no signing or provisioning), else the first other simulator
-  (visionOS, tvOS, watchOS); the build skips when there is none. Without
-  one, xcodebuild can't choose among a multiplatform target's platforms.
+- **A workspace's projects:** when a project the workspace refers to
+  (`contents.xcworkspacedata`) isn't there, or there is a `Podfile.lock`
+  and no `Pods/Pods.xcodeproj`, the build skips: "the Pods aren't
+  installed: run pod install" for CocoaPods' (`Pods/` is often not
+  committed; `xcodebuild -list` succeeds without it, and the build fails).
+- **The scheme**, among those `xcodebuild -list -json` reports (each Swift
+  package the project uses adds one, and a CocoaPods workspace one per pod):
+  1. a shared scheme (`xcshareddata/xcschemes/*.xcscheme` in the project,
+     or in the workspace and the projects it refers to) whose build action
+     builds one of the project's application targets (`productType`
+     `com.apple.product-type.application` in `project.pbxproj`): the one
+     named like the workspace or project, else the only one, else the first
+     by name, a Release one only when all are (home-assistant's `App-Debug`
+     over `App-Release`; Firefox's `Fennec`, `Firefox` and `FirefoxBeta`
+     build `Fennec`);
+  2. else, with a single application target, the scheme named after it
+     (xcodebuild makes one per target when none is shared);
+  3. else the one named like the workspace or project;
+
+  otherwise the build skips. The log says which scheme and why. A scheme
+  also resolves the project's Swift packages, which a bare `xcodebuild
+  build` may not. Only those two facts are read from the project's files;
+  the rest comes from `xcodebuild`.
+- **The destination:** from the scheme's first target's settings
+  (`xcodebuild -showBuildSettings`): `generic/platform=macOS` for a native
+  Mac app (`SDKROOT` is macOS's), else `generic/platform=iOS Simulator`
+  where `SUPPORTED_PLATFORMS` includes it (a simulator SDK needs no
+  signing or provisioning), else the first other simulator (visionOS,
+  tvOS, watchOS), else macOS when it's the only platform; the build skips
+  when there is none. An iOS app that supports Mac Catalyst
+  (`SUPPORTED_PLATFORMS` includes `macosx`, `SDKROOT` is iOS's: IceCubesApp,
+  GoMap) builds for the simulator, not its Catalyst variant. Without a
+  destination, xcodebuild can't choose among a multiplatform target's
+  platforms.
+- **Apps below:** a language's hooks also build and clean the apps below
+  its directory with Xcode projects of their own that
+  [detection](init.md) takes for the language (a directory holding an
+  `.xcodeproj` or `.xcworkspace`, with the language's sources, outside
+  examples, tests and vendored code), after its own build:
+  firefox-ios' root `Package.swift`, then `firefox-ios/Client.xcodeproj`
+  and `focus-ios/Blockzilla.xcodeproj` (SwiftPM builds only the targets
+  `Package.swift` names, so nothing builds twice). A directory with no
+  build of its own (no `Package.swift` or Xcode project for Swift; no
+  Xcode project, CMake, Meson or make for Objective-C) builds only the
+  apps, and Objective-C's other hooks skip there, saying so. An app with
+  Objective-C below Swift's directory is Swift's to build too.
+- **Dependencies:** `hct deps` runs `pod install` where there is a
+  `Podfile` and CocoaPods' `pod` is installed (hecatron doesn't install
+  it), and skips saying so otherwise; Swift's hook installs the pods of a
+  project the two languages share.
 - **The output:** `-derivedDataPath .build/xcode`, not `./build` or
   `~/Library/Developer/Xcode/DerivedData`; `hct clean` removes it (and
   `.build/` when that leaves it empty), without running `xcodebuild`. Add
@@ -181,7 +220,8 @@ macOS with `xcodebuild`, unsigned (`CODE_SIGNING_ALLOWED=NO`):
   languages at once; two `xcodebuild`s of one project would race on its
   build database. Swift's hook builds and cleans it, and Objective-C's skips
   ("built with swift's hook"), unless Swift is disabled
-  (`hct disable swift`) or its component directory is elsewhere.
+  (`hct disable swift`) or neither its component directory nor the apps
+  below it include the project.
 - **Tests** skip: they need a simulator to run on, and which one is the
   project's choice. So do Swift's docs and bench there, and the local
   packages below aren't tested with SwiftPM (`swift test` builds them for
