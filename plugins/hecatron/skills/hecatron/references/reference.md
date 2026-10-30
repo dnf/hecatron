@@ -29,7 +29,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | After a pull, rebase or checkout | `hct sync [ref]` | Since where HEAD was (the reflog) or `ref`: runs `hct deps` where lock files changed (`--no-deps`: says so), says the version each changed pin now needs and whether it's installed (installs nothing), runs `hct check` when the config, hooks or generated files changed; never pulls or fetches; exit 1 when deps or check fails. Needs the binary |
 | What the ecosystems recommend | `hct advisor [lang...]` | Lock files, toolchain pins and end of life, linter config, CI coverage; each with why and a link. Reads files only; `--fix` adds pin files; `--fail-on recommended` |
 | Which languages, where | `hct list` | `hct list --all`: every supported language |
-| Is each toolchain working | `hct doctor [lang...]` | Read-only; see Installing |
+| Is each toolchain working | `hct doctor [lang...]` | Read-only; see Installing. `--output json`: each language's problems and notes (needs the binary) |
 | Validate config and generated files | `hct check` | |
 | A language's environment in a shell | `eval "$(hct env LANG)"` | The PATH and variables its commands run with |
 | Run one command with a component's toolchain | `hct exec LANG [-c COMPONENT] -- CMD...` | That environment, in the working directory; exit status is CMD's; needs the binary |
@@ -83,7 +83,10 @@ system of its own. `hct` and `hecatron` are the same command.
 `hct install [lang...]` and `hct doctor --fix` install or repair toolchains
 on this machine (system packages, files in the home directory). Ask the
 user before running them. `hct doctor` without `--fix` only checks, and is
-safe.
+safe. Both also install the project's dependencies (`hct deps`, which runs
+the packages' install scripts) unless given `--no-deps`. `hct format
+--check` installs nothing; `hct format` and `hct outdated` install missing
+dependencies first.
 
 ## Project configuration
 

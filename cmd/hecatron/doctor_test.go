@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
 	"testing"
@@ -47,8 +49,9 @@ var doctorArgs = [][]string{
 	{"doctor", "ver"}, {"doctor", "badver"}, {"doctor", "badver", "ok"}, {"doctor", "nope"}, {"doctor", "zig"},
 	{"doctor", "help"}, {"doctor", "--help", "ok"}, {"doctor", "ok", "help"}, {"doctor", "-x"}, {"doctor", "off"},
 	{"doctor", "--fix", "noinst"}, {"doctor", "--fix", "ok", "broken", "nodep"}, {"doctor", "broken"},
-	{"doctor", "--fix", "ver"}, {"doctor", "ver"}, {"doctor", "--fix"},
+	{"doctor", "--fix", "ver"}, {"doctor", "ver"}, {"doctor", "--fix"}, {"doctor", "--fix", "--no-deps", "broken"},
 	{"doctor", "noted"}, {"doctor", "noted", "mixed"}, {"doctor", "--fix", "noted"}, {"doctor", "--fix", "mixed"},
+	{"doctor", "--output", "human", "ok"}, {"doctor", "--output=agent", "ok"}, {"doctor", "--output", "xml"}, {"doctor", "--output"},
 }
 
 // doctorWants are what some invocations print, beyond matching
@@ -118,4 +121,44 @@ func TestDoctorMatchesBinHecatron(t *testing.T) {
 		}
 	}
 	t.Logf("%d doctor invocations compared with bin/hecatron", compared)
+}
+
+// --output json is the binary's alone: the report as JSON on stdout.
+func TestDoctorJSON(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("doctor.sh needs bash")
+	}
+	home := repoHome(t)
+	definitions := filepath.Join(t.TempDir(), "languages")
+	for name, content := range doctorDefinitions {
+		path := filepath.Join(definitions, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	root := repoFixture(t, map[string]string{
+		".hecatron/config.json": `{"schema": 1, "components": ["a", "b"], "languages": ["ok", "mixed"]}`, "a/ok/x": "",
+	})
+	env := []string{"HECATRON_HOME=" + home, "HECATRON_BUILTIN_LANGUAGES=" + definitions, "HECATRON_AS_OF=off", "PATH=/usr/bin:/bin"}
+	r := runIn(t, root, env, binary, "doctor", "--output", "json", "ok", "mixed")
+	var report struct {
+		Healthy   bool
+		Languages []doctorResult
+	}
+	if err := json.Unmarshal([]byte(r.stdout), &report); err != nil {
+		t.Fatalf("stdout isn't JSON: %v\n%+v", err, r)
+	}
+	want := []doctorResult{
+		{Language: "ok", Healthy: true, Problems: []string{}, Notes: []string{}},
+		{Language: "mixed", Problems: []string{"really broken", "note:no space, so a problem"}, Notes: []string{"paired"}},
+	}
+	if r.status != 1 || report.Healthy || !reflect.DeepEqual(report.Languages, want) {
+		t.Errorf("got status %d, %+v; want 1, %+v", r.status, report, want)
+	}
+	if !strings.Contains(r.stderr, "1 of 2 need attention") {
+		t.Errorf("the human report should go to stderr: %q", r.stderr)
+	}
 }
