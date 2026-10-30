@@ -117,7 +117,7 @@ instead of holding the run, or the agent waiting on it, forever.
 ## Only what changed
 
 `hct test --changed [REF]` (also `lint`, `build`, `format`, `deps`,
-`rebuild` and `retest`) runs only the languages, components and project
+`rebuild`, `retest`, `docs` and `bench`) runs only the languages, components and project
 tasks that the files changed since `REF` touch.
 
 - **The base** is the merge base of `HEAD` with `REF`; with no `REF`, in CI
@@ -204,9 +204,11 @@ hct sync: since 3f2a1c9e01 (HEAD@{1}, 12 commits): 31 files changed
 
 ## With the Go binary
 
-The Go core ([design record §19](../contributing/design.md#19-a-go-core-and-native-windows)), built from a checkout, has the same
-scheduling and history, and adds output for whoever reads it:
-`--output human|agent|json|ci` (or `HECATRON_OUTPUT`), and reports for CI
+The Go core ([design record §19](../contributing/design.md#19-a-go-core-and-native-windows)),
+which `install.sh` downloads with a release (or `hct self build` builds
+in a checkout), has the same scheduling and history, and adds output for
+whoever reads it: `--output human|agent|json|ci|junit|sarif` (or
+`HECATRON_OUTPUT`), and reports for CI
 (below). Agent output is a
 summary line and only the failures, each with its log path and the error
 lines that matter, under a third of the size of the human summary; CI

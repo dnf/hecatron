@@ -28,8 +28,8 @@ Rules carried over from sayable:
 ## Skipping
 
 A hook that has nothing to do in a component (no tests, no linter or docs
-tool configured, no lock file to audit) or can't run there (an Xcode
-project's tests need a scheme) shouldn't exit 0 and count as passed. It
+tool configured, no lock file to audit) or can't run there (xcodebuild
+has no lint action) shouldn't exit 0 and count as passed. It
 writes why, one line, to the file `HECATRON_SKIPPED` names, and exits 0.
 `skip` in `languages/_hooks.sh` does both, and exits the hook:
 
@@ -157,7 +157,8 @@ Shards') install them when they're missing through the same function
 never a required first step; where the build tool fetches by itself (go,
 cargo, dotnet, `uv run`, SwiftPM, Maven, Gradle) the hooks leave it to the
 tool. Installers install each component's dependencies by running
-`hct deps`, so a project's own `deps.sh` applies there too.
+`hct deps` (not with `--no-deps`), so a project's own `deps.sh` applies
+there too.
 
 ## Formatting
 
@@ -198,8 +199,10 @@ docs_written site
 ## Environment
 
 Environment for hooks: `HECATRON_ROOT` (project root), `HECATRON_COMPONENT`,
-`HECATRON_LANG`, `HECATRON_HOME`, and `_common.sh` helpers available by
-sourcing `$HECATRON_HOME/languages/_common.sh`.
+`HECATRON_LANG`, `HECATRON_HOME`, `HECATRON_SKIPPED` (the file a skipping
+hook writes its reason to, [above](#skipping)), `HECATRON_FORMAT_CHECK=1`
+for a format hook that must only check, and `_common.sh` helpers available
+by sourcing `$HECATRON_HOME/languages/_common.sh`.
 
 ## Trust
 

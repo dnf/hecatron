@@ -217,7 +217,7 @@ func (c *cli) runHelpText() (text string, ok bool) {
 		out.WriteString("\nTools:\n  secrets    gitleaks: committed credentials in the working tree (with hecatron's binary)\n")
 	}
 	out.WriteString("\nFlags:\n" +
-		"  -j VALUE   Concurrency: integer, percentage (default 50%), or 'unlimited'\n" +
+		"  -j VALUE   Concurrency: integer, percentage (default 50%), 'pcores' or 'unlimited'\n" +
 		"  -s MODE    Display: scroll (default), full, or zoom\n" +
 		"  -c NAME    Only this component (repeatable); components: " + strings.Join(c.project.Components, " ") + "\n" +
 		"  --fail-on-skip\n" +

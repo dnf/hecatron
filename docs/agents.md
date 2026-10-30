@@ -2,7 +2,7 @@
 
 A compact reference for coding agents working in a repository that uses
 hecatron. `hct help agents` prints this file for the installed version.
-People: see the [README](../README.md).
+People: see the [README](https://github.com/dnf/hecatron#readme).
 
 hecatron runs every language's toolchain through the same commands. It calls
 each language's own tools (cargo, go, gradle, uv, npm...); it has no build
@@ -33,12 +33,12 @@ system of its own. `hct` and `hecatron` are the same command.
 | Run one command with a component's toolchain | `hct exec LANG [-c COMPONENT] -- CMD...` | That environment, in the working directory; exit status is CMD's; needs the binary |
 | A newer hecatron | `hct self update --check` | Exit 3: a newer release exists (`hct status` says so from its daily check). `hct self update` installs it: ask the user first, as a new version can change generated files |
 
-- `--changed [REF]` (`test`, `lint`, `build`, `format`, `deps`): only the
-  languages and components whose files changed since the merge base with
-  `REF` (default: the default branch; in CI, the pull request's base),
-  uncommitted and untracked files included. Its first line says what it
-  compared, what runs and why; nothing changed that hecatron runs: that
-  line, exit 0. Needs the binary.
+- `--changed [REF]` (every run command but `audit`, `outdated` and
+  `clean`): only the languages, components and tasks whose files changed
+  since the merge base with `REF` (default: the default branch; in CI, the
+  pull request's base), uncommitted and untracked files included. Its
+  first line says what it compared, what runs and why; nothing changed
+  that hecatron runs: that line, exit 0. Needs the binary.
 - Targets: language names or abbreviations (`go`, `rs`, `ts`), or a
   project task named in config.json `tasks`.
 - `-c COMPONENT` (repeatable): one component only. `-j N`: concurrency.
@@ -59,9 +59,9 @@ system of its own. `hct` and `hecatron` are the same command.
   `<logs>` is config.json `logs` (default `.logs`), or `.git/hecatron/logs`
   in a repository without `.hecatron/config.json`.
 - A failed language's log holds the tool's own output; read its end first.
-- With the Go binary (`go build -o hct ./cmd/hecatron` in a hecatron
-  checkout; `bin/hecatron` doesn't do this yet), the run commands also
-  print output for agents: `HECATRON_OUTPUT=agent` (or `--output agent`,
+- With the Go binary (which `install.sh` downloads with a release, and
+  `hct self build` builds in a checkout), the run commands also print
+  output for agents: `HECATRON_OUTPUT=agent` (or `--output agent`,
   and by default when `CLAUDECODE=1` is set and stdout isn't a terminal)
   gives one summary line, then each failure with its log and its error
   lines, then a `Rerun:` command; a passing run is one line.

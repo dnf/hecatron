@@ -12,7 +12,8 @@ binary, which [install.sh](installing-hecatron.md) downloads with a release;
 run through the scripts alone (a checkout on a branch, `HECATRON_NO_GO=1`),
 they say so.
 
-**Exit status:** 0 when everything run passed, 1 when anything failed, 2
+**Exit status:** 0 when nothing failed (a [skipped](output.md#skipped) job
+doesn't fail), 1 when anything failed, 2
 for a usage error, and, for the run commands with the binary, 3 when the
 only failures were toolchains not installed ([output](output.md)). A
 language whose toolchain is missing is reported as "not installed" and
@@ -87,7 +88,7 @@ Flags of one command:
 
 | Flag | Command | Meaning |
 | --- | --- | --- |
-| `--check` | `format` | Change nothing; fail, listing the files the formatter would change |
+| `--check` | `format` | Change nothing; fail, listing the files the formatter would change. Installs no dependencies: a component whose formatter comes from them is skipped until `hct deps` ([format](format.md#dependencies)) |
 | `--fail-on SEVERITY` | `audit` | Fail on a finding at or above `critical`, `high` (default), `moderate` or `low`; the project's own is `"audit": {"failOn": ...}` |
 | `--json` | `outdated` | Print one JSON array of every outdated dependency (component, language, package, current, wanted, latest); the languages run one at a time |
 | `--fail` | `outdated` | Fail when anything is outdated |

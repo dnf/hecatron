@@ -15,6 +15,8 @@ hct get-started --status   # print language status table
 hct get-started --check    # exit 0 if all installed, 1 if missing
 hct doctor                 # check every toolchain actually works, and how to repair it
 hct doctor --fix go lua    # run the installer of each unhealthy language, then re-check
+hct doctor --fix --no-deps # repair toolchains only, not the project's dependencies
+hct doctor --output json   # each language's problems and notes as JSON (needs the binary)
 ```
 
 `hct install <lang>` is also the repair: installers are idempotent and fix the
@@ -58,7 +60,9 @@ sync`) do so in every component by running `hct deps` (`impl_deps` in
 `_common.sh`; [hooks](hooks.md#dependencies)). `hct install` with no languages named runs those
 once every toolchain is in, since one language's dependencies can need
 another's toolchain (cucumber/messages' `npm ci` runs a generator needing
-Ruby); a failure there fails the install and names the language.
+Ruby); a failure there fails the install and names the language. With
+`--no-deps` (`hct install --no-deps`, `hct doctor --fix --no-deps`) the
+installers install toolchains only and run none of the project's code.
 
 ## Installs as data
 

@@ -50,6 +50,8 @@ each language's test, lint or build command.
 - Read the summary; open a log (`<logs>/<action>/<lang>.log`, path in the
   output) only for a failure whose excerpt isn't enough.
 - Exit status: 0 passed, 1 failed, 2 usage error, 3 a toolchain is missing.
+  A `SKIP` line means that language or component had nothing to run (no
+  tests, no linter): it exits 0, but don't report it as tested.
 
 ## Ask the user first
 
@@ -75,7 +77,9 @@ A script at `.hecatron/languages/<lang>/<action>.sh` (`test`, `lint`,
 `build`, `clean`, `format`, `deps`, `audit`, `outdated`, `docs`,
 `bench`) replaces hecatron's default for that language. It runs once per
 component, in the component's directory, with `HECATRON_LANG`,
-`HECATRON_COMPONENT` and `HECATRON_ROOT` set. `hct init` saves the
+`HECATRON_COMPONENT` and `HECATRON_ROOT` set; with nothing to run, it
+sources `${HECATRON_HOME}/languages/_hooks.sh` and calls `skip "reason"`.
+`hct init` saves the
 detected layout as `.hecatron/config.json`, to commit and adjust.
 
 ## More

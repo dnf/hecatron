@@ -79,7 +79,8 @@ otherwise.
 | Julia | JuliaFormatter | with a `.JuliaFormatter.toml` |
 
 Other languages have no formatter hecatron runs: `hct format <lang>` says
-so and succeeds. A project adds or replaces one with its own
+so and is [skipped](output.md#skipped), as is a component whose formatter
+the project doesn't show it uses. A project adds or replaces one with its own
 `.hecatron/languages/<lang>/format.sh`, which formats when run and only
 checks when `HECATRON_FORMAT_CHECK=1`.
 

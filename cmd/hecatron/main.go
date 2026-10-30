@@ -14,7 +14,8 @@
 // project commands (init, add, remove, enable, disable, check, dockerfile,
 // workflows: manage.go, init.go), banner (banner.go), and install and uninstall
 // (install.go; each language's install.sh and uninstall.sh stay bash),
-// and self update (selfupdate.go), which only the binary has. The
+// and the commands only the binary has: licenses, sbom, exec, skill, self
+// update and self uninstall (selfupdate.go, selfuninstall.go). The
 // prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
 

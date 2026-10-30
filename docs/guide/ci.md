@@ -3,8 +3,8 @@
 Hecatron runs the same everywhere; what differs between GitHub, GitLab,
 Bitbucket and Azure DevOps is where CI is configured and where results are
 shown. It never needs a forge's token: it doesn't post comments or call
-forge APIs, so it works the same in a fork, on a laptop and in CI. What's
-planned is in the [design record](../contributing/design.md#20-source-control-backends).
+forge APIs, so it works the same in a fork, on a laptop and in CI. The
+design is in the [design record](../contributing/design.md#20-source-control-backends).
 
 - **GitHub Actions workflows.** `hct workflows` writes one workflow per
   language from the project's templates ([generated files](generated-files.md)), and `hct check` fails
@@ -20,6 +20,10 @@ planned is in the [design record](../contributing/design.md#20-source-control-ba
 - **Dependency update configuration (#103).** `hct workflows` writes
   `.github/dependabot.yml` and `renovate.json` ([generated files](generated-files.md)), and `hct check`
   fails when a language or component was added without regenerating them.
+- **Only what a pull request changed (#99).** With the binary, `--changed`
+  without a ref compares with the pull or merge request's base from the CI
+  environment (GitHub, GitLab, Bitbucket, Azure), and runs everything
+  outside one ([runner](runner.md#only-what-changed)).
 - **Audit in CI.** `hct audit` fails at a severity threshold and can
   save each tool's raw report (`HECATRON_AUDIT_REPORT_DIR`);
   [audit.md](audit.md) has a workflow step.
