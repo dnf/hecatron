@@ -1,0 +1,72 @@
+# Builds one open-source Xcode app every two hours, the next on
+# tests/real-apps/apps.txt in turn, with hct as a newcomer would; files an
+# issue (label real-app) when something goes wrong, or comments on the
+# app's open one. No AI: tests/real-apps/try-next.sh and report.py.
+name: real apps
+
+on:
+  schedule:
+    - cron: "23 */2 * * *"
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "owner/repo to build (default: whose turn it is)"
+        required: false
+
+concurrency:
+  group: real-apps
+  cancel-in-progress: false
+
+jobs:
+  # Runs the app's own build scripts, so it gets no token that can write.
+  build:
+    if: github.repository == 'dnf/hecatron'
+    runs-on: macos-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build the next app
+        env:
+          APP: ${{ inputs.app }}
+        run: bash tests/real-apps/try-next.sh build "${RUNNER_TEMP}/real-app"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: real-app-logs
+          path: |
+            ${{ runner.temp }}/real-app/meta.tsv
+            ${{ runner.temp }}/real-app/steps.tsv
+            ${{ runner.temp }}/real-app/plan.json
+            ${{ runner.temp }}/real-app/build.json
+            ${{ runner.temp }}/real-app/logs
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # Files or updates the issue from what the build recorded; runs none of
+  # the app's code.
+  report:
+    needs: build
+    if: always() && github.repository == 'dnf/hecatron' && needs.build.result != 'cancelled'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: real-app-logs
+          path: ${{ runner.temp }}/real-app
+      - name: File or update the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash tests/real-apps/try-next.sh report "${RUNNER_TEMP}/real-app"
