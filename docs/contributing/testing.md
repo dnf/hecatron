@@ -130,3 +130,32 @@ model declines a project, the test checks that the command was delegated.
 The [coverage workflow](../../.github/workflows/coverage.yml) runs the install test
 for every language on every platform each week and writes
 [coverage.md](../guide/coverage.md).
+
+## Real apps
+
+The [real-apps workflow](../../.github/workflows/real-apps.yml) builds one
+open-source Xcode app every two hours, the next on
+[`tests/real-apps/apps.txt`](../../tests/real-apps/apps.txt) in turn (the
+clock's two-hour slot modulo the list's length, so nothing is stored
+between runs). It clones the app and runs `hct init`, `hct deps` and
+`hct build` on its Swift and Objective-C, as a newcomer would, on GitHub's
+latest macOS runner. When something goes wrong (the clone, `hct init`, no
+Xcode app found, or the build) it files an issue labelled `real-app` with
+the versions, each step's exit status, the failed jobs' errors and log
+tails, and `hct _xcode plan`'s plan, or comments on the app's open issue; it
+comments there too when the app builds again. A skip isn't filed; the job
+summary says why. Nothing in it judges whether hecatron or the app is at
+fault: that's for whoever picks the issue up.
+
+`tests/real-apps/try-next.sh build` runs the app's own build scripts, so its
+job has no token that can write; `try-next.sh report`, in a second job,
+files the issue from what the first recorded. To try an app now, run the
+workflow with its `app` input, or locally (it runs the app's code):
+
+```bash
+APP=owner/repo bash tests/real-apps/try-next.sh build /tmp/real-app
+DRY_RUN=1 bash tests/real-apps/try-next.sh report /tmp/real-app
+```
+
+Add apps to the end of the list, with a comment saying what each is there
+for.

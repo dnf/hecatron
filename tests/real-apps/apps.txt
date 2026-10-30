@@ -1,0 +1,62 @@
+# Open-source Xcode apps the real-apps workflow builds, one every two hours
+# in turn (.github/workflows/real-apps.yml, try-next.sh). One GitHub
+# owner/repo per line; # starts a comment, which says what the app is
+# there for. Add to the end: the turn is the clock's two-hour slot modulo
+# the list's length, so inserting earlier only shifts whose turn it is.
+
+Ranchero-Software/NetNewsWire        # Mac app, Swift and Objective-C share the project
+Dimillian/IceCubesApp                # iOS with Catalyst, local Swift packages
+home-assistant/iOS                   # App-Debug/App-Release, watchOS app and Mac launcher embedded
+wikimedia/wikipedia-ios              # .xcconfig its setup script makes
+mozilla-mobile/firefox-ios           # root Package.swift, apps below, Swift macros, ThirdParty/
+bryceco/GoMap                        # project in src/, Catalyst
+artsy/eidolon                        # CocoaPods workspace, Pods not committed (archived)
+pointfreeco/isowords                 # app beside its Package.swift, ten app targets
+nalexn/clean-architecture-swiftui    # small SwiftUI app with a root Package.swift
+kickstarter/ios-oss                  # large app, several projects
+wordpress-mobile/WordPress-iOS       # very large, workspace
+woocommerce/woocommerce-ios          # workspace, many local packages
+Automattic/pocket-casts-ios          # iOS and watchOS
+Automattic/simplenote-ios            # Swift and Objective-C
+Automattic/simplenote-macos          # Mac app
+mastodon/mastodon-ios                # workspace, Swift packages
+element-hq/element-x-ios             # XcodeGen project.yml
+nextcloud/ios                        # large, extensions
+owncloud/ios-app                     # workspace, submodules
+openhab/openhab-ios                  # iOS and watchOS
+keepassium/KeePassium                # app with AutoFill extension
+bitwarden/ios                        # XcodeGen, several apps
+jellyfin/Swiftfin                    # iOS and tvOS
+kiwix/kiwix-apple                    # iOS and macOS, XcodeGen
+yattee/yattee                        # multiplatform: iOS, macOS, tvOS
+quran/quran-ios                      # Swift packages
+Aidoku/Aidoku                        # iOS and macOS
+rileytestut/Delta                    # submodules, emulator cores
+Provenance-Emu/Provenance            # C, C++, Objective-C and Swift, tvOS
+WireGuard/wireguard-apple            # Go bridge built by a script phase
+ivpn/ios-app                         # VPN app, network extension
+simplex-chat/simplex-chat            # app in apps/ios of a Haskell monorepo
+Dimillian/MovieSwiftUI               # SwiftUI, iOS and macOS
+insidegui/WWDC                       # Mac app
+exelban/stats                        # Mac menu bar app, several targets
+rxhanson/Rectangle                   # Mac app
+MonitorControl/MonitorControl        # Mac app
+p0deje/Maccy                         # Mac app
+jordanbaird/Ice                      # Mac menu bar app
+CodeEditApp/CodeEdit                 # Mac app, many Swift packages
+coteditor/CotEditor                  # Mac app
+lwouis/alt-tab-macos                 # Mac app, CocoaPods committed
+mrkai77/Loop                         # Mac app
+objective-see/LuLu                   # Objective-C Mac app, system extension
+Hammerspoon/hammerspoon              # Objective-C Mac app, Lua
+iina/iina                            # Mac app with native dependencies
+utmapp/UTM                           # iOS and macOS, prebuilt dependencies
+gnachman/iTerm2                      # large Objective-C and Swift Mac app
+Clipy/Clipy                          # Mac app, CocoaPods
+sindresorhus/Gifski                  # Mac app with a Rust library
+OpenEmu/OpenEmu                      # Mac app, submodules
+LoopKit/Loop                         # workspace of several repositories
+signalapp/Signal-iOS                 # very large, CocoaPods, submodules
+ProtonVPN/ios-mac-app                # iOS and macOS apps in one repository
+mullvad/mullvadvpn-app               # app in ios/ of a Rust monorepo
+duckduckgo/apple-browsers            # iOS/ and macOS/ apps in one repository
