@@ -43,5 +43,6 @@ their logs on stderr.
 
 Other languages have no report: `hct outdated <lang>` says so and
 succeeds. Dependencies are installed first where the report reads them
-(npm's, Bundler's, Hex's, pub's). `HECATRON_OUTDATED_REPORT_DIR=<dir>`
+(npm's, Bundler's, Hex's, pub's), which runs the packages' install
+scripts as `hct deps` would. `HECATRON_OUTDATED_REPORT_DIR=<dir>`
 saves each tool's raw report there.

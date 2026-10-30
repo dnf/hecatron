@@ -20,11 +20,18 @@ _outdated_cleanup() {
 trap _outdated_cleanup EXIT
 
 # Run a tool, its report into the report file; its messages pass through.
-# Most exit non-zero when something is outdated, so the status isn't read:
-# a report outdated.py can't parse is the error.
+# Most exit non-zero when something is outdated, so the status alone isn't
+# an error: a report outdated.py can't parse is, and so is failing with no
+# report at all (uv without its interpreter), which would read as nothing
+# outdated.
 outdated_run() {
+    local _status=0
     echo "+ $*"
-    "$@" >"${_outdated_report_file}" || true
+    "$@" >"${_outdated_report_file}" || _status=$?
+    if [ "${_status}" -ne 0 ] && ! grep -q '[^[:space:]]' "${_outdated_report_file}"; then
+        echo "error: ${HECATRON_LANG:-}: outdated: $1 failed (exit ${_status}) without a report" >&2
+        exit 1
+    fi
 }
 
 # libexec/lib/outdated.py's commands, run by hecatron's binary when the run

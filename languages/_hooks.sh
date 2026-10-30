@@ -501,8 +501,9 @@ npm_deps() {
 # Mix: deps.get, which installs what mix.lock locks.
 mix_fetch() { run mix deps.get; }
 # A locked project's dependencies, when they aren't fetched yet.
+mix_fetched() { [ ! -f mix.lock ] || [ -d deps ]; }
 mix_deps() {
-    if [ -f mix.lock ] && [ ! -d deps ]; then mix_fetch; fi
+    mix_fetched || mix_fetch
 }
 
 # Whether composer.json defines a script, e.g. `composer_script test`.
@@ -516,8 +517,9 @@ sys.exit(0 if sys.argv[1] in (json.load(open("composer.json")).get("scripts") or
 # one, resolves and writes it).
 composer_fetch() { run composer install --no-interaction; }
 # When they aren't installed yet.
+composer_installed() { [ -d vendor ]; }
 composer_deps() {
-    if [ ! -d vendor ]; then composer_fetch; fi
+    composer_installed || composer_fetch
 }
 
 # Ruby: the bundle and Rakefile here, else the nearest above (Bundler and
@@ -538,8 +540,9 @@ bundle_fetch() {
 }
 # The bundle, when it isn't installed yet; then a command through it (or
 # directly, without a Gemfile).
+bundle_installed() { [ ! -f "${ruby_root}/Gemfile" ] || bundle check >/dev/null 2>&1; }
 bundle_deps() {
-    if [ -f "${ruby_root}/Gemfile" ] && ! bundle check >/dev/null 2>&1; then bundle_fetch; fi
+    bundle_installed || bundle_fetch
 }
 ruby_run() {
     if [ -f "${ruby_root}/Gemfile" ]; then run bundle exec "$@"; else run "$@"; fi

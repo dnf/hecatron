@@ -112,10 +112,12 @@ each_impl_versioned() {
 # Only for a language the project has (TypeScript's installer also runs for
 # JavaScript's Node.js) with a deps hook. While `hecatron install` installs
 # every language, the language is only listed in the HECATRON_DEFER_DEPS
-# file: the dependencies are fetched once every toolchain is in.
+# file: the dependencies are fetched once every toolchain is in. With
+# HECATRON_NO_DEPS=1 (install --no-deps, doctor --fix --no-deps) they aren't.
 impl_deps() {
     local _deps_langs
     [ -n "${HECATRON_HOME:-}" ] || return 0
+    [ "${HECATRON_NO_DEPS:-}" != 1 ] || return 0
     _deps_langs="$(cd "${ROOT}" && eval "$(python3 "${HECATRON_HOME}/libexec/lib/project.py" shell-env </dev/null)" &&
         printf '%s\n' "${_DEPS_LANGS}")" || return 0
     in_list "$1" ${_deps_langs} || return 0

@@ -8,6 +8,7 @@ Each language's definition lives in `languages/<lang>/` in this repository (a pr
 hct install                # install all available languages
 hct install go rust        # install specific languages
 hct install --plan         # show how each would install and what would run (needs the binary)
+hct install --no-deps      # toolchains only, not the project's dependencies (hct deps)
 hct uninstall go rust      # uninstall specific languages
 hct get-started            # interactive onboarding with status + install menu
 hct get-started --status   # print language status table

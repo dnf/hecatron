@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -34,11 +35,32 @@ func (c *cli) doctor() (int, bool) {
 	if err != nil {
 		return 0, false
 	}
-	fix := false
+	fix, asJSON := false, false
 	var langs []string
-	for _, arg := range c.args {
+	for i := 0; i < len(c.args); i++ {
+		arg := c.args[i]
 		if arg == "--fix" {
 			fix = true
+			continue
+		}
+		if arg == "--no-deps" {
+			skipDeps()
+			continue
+		}
+		if format, ok := strings.CutPrefix(arg, "--output="); ok || arg == "--output" {
+			if !ok {
+				if i+1 >= len(c.args) {
+					fmt.Fprintln(os.Stderr, "hecatron: --output needs a format: human, agent or json")
+					return 2, true
+				}
+				i++
+				format = c.args[i]
+			}
+			if format != "human" && format != "agent" && format != "json" {
+				fmt.Fprintf(os.Stderr, "hecatron: unknown output format '%s' (human, agent or json)\n", format)
+				return 2, true
+			}
+			asJSON = format == "json"
 			continue
 		}
 		lang, ok := addedLanguage(shell, arg)
@@ -78,7 +100,39 @@ func (c *cli) doctor() (int, bool) {
 			return 0, false
 		}
 	}
+	if asJSON {
+		return d.runJSON(langs, fix), true
+	}
 	return d.run(langs, fix), true
+}
+
+// doctorResult is one language in `hct doctor --output json`.
+type doctorResult struct {
+	Language string   `json:"language"`
+	Healthy  bool     `json:"healthy"`
+	Problems []string `json:"problems"`
+	Notes    []string `json:"notes"`
+}
+
+// runJSON is run with its report as JSON on stdout: what run prints, and
+// the installers' output when repairing, goes to stderr instead.
+func (d *doctorRun) runJSON(langs []string, fix bool) int {
+	stdout := os.Stdout
+	os.Stdout = os.Stderr
+	d.results = []doctorResult{}
+	status := d.run(langs, fix)
+	os.Stdout = stdout
+	report := struct {
+		Healthy   bool           `json:"healthy"`
+		Languages []doctorResult `json:"languages"`
+	}{status == 0, d.results}
+	encoded, err := json.MarshalIndent(report, "", "  ")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "hecatron:", err)
+		return 1
+	}
+	fmt.Println(string(encoded))
+	return status
 }
 
 // addedLanguage is doctor.sh's _check for a name it accepts without a
@@ -97,6 +151,7 @@ type doctorRun struct {
 	*cli
 	env     []string // doctor.sh's: hecatron's variables and the project's exports
 	manager *install.Manager
+	results []doctorResult // each language's, for --output json (nil otherwise)
 }
 
 // fromData is how a language installs when it's installed from its
@@ -176,6 +231,13 @@ func (d *doctorRun) run(langs []string, fix bool) int {
 		}
 		for _, note := range versionNotes {
 			fmt.Printf("          %s: %s %s\n", note.Component, lang, note.Note)
+		}
+		if d.results != nil {
+			result := doctorResult{lang, found == "", doctorLines(found), doctorLines(notes)}
+			for _, note := range versionNotes {
+				result.Notes = append(result.Notes, fmt.Sprintf("%s: %s %s", note.Component, lang, note.Note))
+			}
+			d.results = append(d.results, result)
 		}
 	}
 	fmt.Println()
@@ -308,6 +370,17 @@ func (d *doctorRun) runInstaller(installer string) {
 	cmd.Env = setEnv(d.env, "HECATRON_BINARY", binaryPath())
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	_ = cmd.Run()
+}
+
+// doctorLines are the non-empty lines of a doctor's output, never nil.
+func doctorLines(output string) []string {
+	result := []string{}
+	for _, line := range strings.Split(output, "\n") {
+		if line != "" {
+			result = append(result, line)
+		}
+	}
+	return result
 }
 
 func reportModelError(err error) { reportModelErrorTo(os.Stderr, err) }
