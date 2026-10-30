@@ -58,8 +58,9 @@ saves it, as init would. Init itself:
    Examples, tests and test data, docs, tools, hooks, a generator's
    templates and vendored code (`examples/`, `tests/`, `tests_data/`,
    `tools/`, `hooks/`, `templates/`, `fixtures/`, `android/`,
-   `third_party/`, `vendor/`, `vendored/`, `node_modules/`, CocoaPods'
-   `Pods/`, Carthage's `Carthage/` and the like, in any case:
+   `third_party/` (`ThirdParty/`, `third-party/`), `vendor/`, `vendored/`,
+   `node_modules/`, CocoaPods' `Pods/`, Carthage's `Carthage/` and the
+   like, in any case:
    `Examples/`) and hidden directories (`.jenkins/`) are skipped, except a
    definition's `detectTests` files (Bash's `*.bats`) in a `test/` or
    `tests/` directory, which, for a language not otherwise found, make it

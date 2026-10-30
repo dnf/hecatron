@@ -60,7 +60,7 @@ through them.
 | `lib/project.py` | The project model, from Python (`import project`) or shell (`python3 project.py <query>`: `root`, `shell-env`, `resolve`, `impl-dirs`, `version`, `versions`, `env`, `missing-versions`, `version-notes`, `tasks`, `task`). Detection and its cache in `.git/hecatron/` |
 | `lib/versions.py` | Hecatron's version syntax and the pin-file formats |
 | `lib/jvm.py` | The JDKs a JVM build needs besides its own: toolchains and a ceiling |
-| `lib/xcode.py` | What the Xcode hooks read from a project's files: the scheme to build (shared schemes, application targets), a workspace's missing projects, the apps below a directory, whether Swift's hook builds a project |
+| `lib/xcode.py` | What the Xcode hooks read from a project's files where hct's binary (`hct _xcode plan`) isn't there or is unsure: the scheme to build (shared schemes, application targets, the apps they embed), a workspace's missing projects, the apps below a directory (a directory scan, filtered for the language's sources), whether a project has an app, whether Swift's hook builds a project |
 | `lib/helpers.sh` | Sourced by the shell commands: evaluates `project.py shell-env` (the `HECATRON_*` variables, the language lists `_ADDED_LANGS`, `_TEST_LANGS`..., lookups such as `_name`, `_check`, `_dep_available`) |
 | `lib/each-component.sh` | Runs one hook for every component of a language (or those named), from each component's directory with its environment; lint's format check after |
 | `lib/audit.py`, `lib/outdated.py` | Read a tool's audit or outdated report, apply accepted risks and thresholds, print findings |
