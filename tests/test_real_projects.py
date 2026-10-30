@@ -1,12 +1,29 @@
 """docs/real-projects.md and the real-project data files (tests/real-projects/)."""
 
+import importlib.util
 import json
 import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "real-projects"))
-import report  # noqa: E402
+SCRIPTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "real-projects")
+
+
+def load_script(name):
+    """Load tests/real-projects/<name>.py under its own module name: a plain
+    import would share `report` with tests/real-apps/report.py, and whichever
+    test module ran first would win."""
+    module_name = "real_projects_" + name
+    if module_name in sys.modules:
+        return sys.modules[module_name]
+    spec = importlib.util.spec_from_file_location(module_name, os.path.join(SCRIPTS, name + ".py"))
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+report = load_script("report")
 
 LOG = """\
 ### meta {"repo": "acme/widget", "date": "2026-10-28", "hecatron": {"version": "0.5.0", "commit": "abc123", "runner": "binary"}, "runner": {"os": "Ubuntu 24.04.3 LTS", "arch": "x86_64", "image": "ubuntu:24.04", "host": "local", "runUrl": ""}, "actions": "test"}

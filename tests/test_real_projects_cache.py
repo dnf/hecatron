@@ -3,14 +3,13 @@
 import json
 import os
 import shutil
-import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "real-projects"))
-import cache  # noqa: E402
-import report  # noqa: E402
-from test_real_projects import LOG  # noqa: E402
+from test_real_projects import LOG, load_script
+
+cache = load_script("cache")
+report = load_script("report")
 
 
 class KeyTest(unittest.TestCase):
