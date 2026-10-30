@@ -190,7 +190,6 @@ class RunTest(unittest.TestCase):
         self.assertNotIn("ran", result.stdout)
         self.assertIn("failed (exit 2) without a report", result.stderr)
 
-
     def test_nothing_to_check_skips(self):
         hooks = os.path.join(HOME, "languages", "_hooks.sh")
         helpers = os.path.join(HOME, "languages", "_outdated.sh")
@@ -201,6 +200,8 @@ class RunTest(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertNotIn("ran", result.stdout)
             self.assertIn("nothing to check: no lock", result.stdout)
+            # The runner reports the component skipped, not passed (#241).
+            self.assertEqual(skipped.read().strip(), "nothing to check: no lock")
 
 
 class JsonCommandTest(Fixture):
