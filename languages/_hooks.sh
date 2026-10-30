@@ -1639,24 +1639,146 @@ build_jobs() {
 
 # An Xcode project or workspace here (Swift's and Objective-C's apps).
 xcode_project() { exists '*.xcodeproj' || exists '*.xcworkspace'; }
-# Xcode projects, on macOS (untested: no macOS here): xcodebuild builds and
-# cleans the project's default target, unsigned (a check, not a release).
-# Its tests need a scheme and, for iOS, a simulator to run on, which only
-# the project knows, so test skips saying how to write the hook. Exits.
+# Where xcodebuild puts a build (its -derivedDataPath): inside SwiftPM's
+# hidden .build/, not xcodebuild's default ./build or ~/Library's
+# DerivedData, so clean knows what to remove.
+xcode_derived_data=.build/xcode
+
+# Xcode projects, on macOS (untested here: no macOS): xcodebuild builds one
+# scheme, unsigned (a check, not a release), for its platform's generic
+# device; clean removes the build's derived data. Tests need a simulator to
+# run on, which only the project knows, so test skips saying how to write
+# the hook. Exits.
 xcode_hook() {
-    local _hook=".hecatron/languages/${HECATRON_LANG:-<lang>}/$1.sh"
     case "$1" in
         build|clean)
+            ! swift_builds_xcode_here || skip "built with swift's hook (Swift and Objective-C share this Xcode project)"
+            if [ "$1" = clean ]; then
+                run rm -rf "${xcode_derived_data}"
+                rmdir .build 2>/dev/null || true
+                exit
+            fi
             has xcodebuild || skip "an Xcode project builds with xcodebuild (Xcode, on macOS), which isn't installed"
-            exists '*.xcodeproj' ||
-                skip "an Xcode workspace builds through a scheme: write ${_hook} (xcodebuild -workspace <name> -scheme <scheme> $1)"
-            if [ "$1" = build ]; then run xcodebuild build CODE_SIGNING_ALLOWED=NO; else run xcodebuild clean; fi
-            exit ;;
+            xcode_build ;;
         test)
-            skip "an Xcode project's tests need a scheme and a destination: write ${_hook} (xcodebuild test -scheme <scheme> -destination <destination>)" ;;
+            skip "an Xcode project's tests need a scheme and a simulator destination: write $(xcode_hook_path test) (xcodebuild test -scheme <scheme> -destination 'platform=iOS Simulator,name=<device>')" ;;
         *)
             skip "an Xcode project has no standard $1 command" ;;
     esac
+}
+
+xcode_hook_path() { echo ".hecatron/languages/${HECATRON_LANG:-<lang>}/$1.sh"; }
+xcode_write_hooks() {
+    echo "write $(xcode_hook_path build) (xcodebuild build -scheme <scheme> -destination <destination>) and $(xcode_hook_path test)"
+}
+
+# Swift and Objective-C both find an app's Xcode project (NetNewsWire's),
+# and hct runs their builds at once: two xcodebuilds of one project race on
+# its build database. Swift's hook builds it where Swift is added (and not
+# disabled) for this directory without a Package.swift here (where its hook
+# builds the Xcode project); Objective-C's then skips.
+swift_builds_xcode_here() {
+    [ "${HECATRON_LANG:-}" = objectivec ] && [ ! -f Package.swift ] || return 1
+    python3 - "${HECATRON_HOME:-${_hooks_home}}/libexec/lib" 2>/dev/null <<'PY'
+import os
+import sys
+
+sys.path.insert(0, sys.argv[1])
+import project
+
+model = project.load()
+here = os.path.realpath(".")
+added = "swift" in model.languages and "swift" not in model.disabled
+sys.exit(0 if added and any(os.path.realpath(d) == here for _, d in model.impl_dirs("swift")) else 1)
+PY
+}
+
+# The Xcode file of a kind here ('*.xcworkspace' or '*.xcodeproj') to build:
+# the only one, else the one named like this directory, the project
+# (HECATRON_PROJECT) or its repository; "several: <names>" when none is so
+# named, nothing when there is none.
+xcode_pick() {
+    local _found=() _match _name
+    for _match in $1; do
+        [ -e "${_match}" ] && _found+=("${_match}")
+    done
+    case "${#_found[@]}" in
+        0) return 0 ;;
+        1) echo "${_found[0]}"; return 0 ;;
+    esac
+    for _name in "$(basename "$(pwd)")" "${HECATRON_PROJECT:-}" "$(basename "${HECATRON_ROOT:-.}")"; do
+        for _match in "${_found[@]}"; do
+            [ "${_match%.*}" != "${_name}" ] || { echo "${_match}"; return 0; }
+        done
+    done
+    echo "several: ${_found[*]}"
+}
+
+# The scheme to build from xcodebuild -list -json's report (stdin) on the
+# project or workspace named $1: its only one, else the one named like it
+# (CocoaPods' workspace lists each pod's too). Prints "scheme<TAB>name", or
+# "several<TAB>names" for the note.
+xcode_scheme() {
+    python3 -c '
+import json, sys
+container = json.load(sys.stdin)
+info = container.get("workspace") or container.get("project") or {}
+schemes = info.get("schemes") or []
+chosen = schemes if len(schemes) == 1 else [s for s in schemes if s == sys.argv[1]]
+print("scheme\t" + chosen[0] if len(chosen) == 1 else "several\t" + (", ".join(schemes) or "none"))
+' "$1"
+}
+
+# The generic device of the platform in xcodebuild -showBuildSettings'
+# report (stdin; the first target's PLATFORM_NAME, from its SDKROOT), for
+# -destination: without one, xcodebuild picks a destination itself, for
+# iOS a simulator that may not be installed.
+xcode_destination() {
+    local _platform
+    _platform="$(sed -n 's/^[[:space:]]*PLATFORM_NAME = //p' | sed -n 1p)"
+    case "${_platform}" in
+        macosx) echo "generic/platform=macOS" ;;
+        iphoneos) echo "generic/platform=iOS" ;;
+        iphonesimulator) echo "generic/platform=iOS" ;;
+        appletvos) echo "generic/platform=tvOS" ;;
+        appletvsimulator) echo "generic/platform=tvOS" ;;
+        watchos) echo "generic/platform=watchOS" ;;
+        watchsimulator) echo "generic/platform=watchOS" ;;
+        xros) echo "generic/platform=visionOS" ;;
+        xrsimulator) echo "generic/platform=visionOS" ;;
+    esac
+}
+
+# Through the root workspace when there is one (CocoaPods': the bare project
+# doesn't link without its Pods), else the project; with the scheme -list
+# gives (a scheme resolves the project's Swift packages), for its platform's
+# generic device.
+xcode_build() {
+    local _container _kind _scheme _found _list _settings _destination
+    _kind=-workspace
+    _container="$(xcode_pick '*.xcworkspace')"
+    if [ -z "${_container}" ]; then
+        _kind=-project
+        _container="$(xcode_pick '*.xcodeproj')"
+    fi
+    case "${_container}" in
+        "several: "*)
+            skip "several Xcode ${_kind#-}s here (${_container#several: }), none named like the directory: $(xcode_write_hooks)" ;;
+    esac
+    echo "+ xcodebuild -list -json ${_kind} ${_container}"
+    _list="$(xcodebuild -list -json "${_kind}" "${_container}")" || exit 1
+    IFS=$'\t' read -r _scheme _found < <(printf '%s\n' "${_list}" | xcode_scheme "${_container%.*}")
+    [ "${_scheme}" = scheme ] ||
+        skip "${_container} has several schemes (${_found}), none named like it: $(xcode_write_hooks)"
+    _scheme="${_found}"
+    echo "+ xcodebuild -showBuildSettings ${_kind} ${_container} -scheme ${_scheme}"
+    _settings="$(xcodebuild -showBuildSettings "${_kind}" "${_container}" -scheme "${_scheme}")" || exit 1
+    _destination="$(printf '%s\n' "${_settings}" | xcode_destination)"
+    [ -n "${_destination}" ] ||
+        skip "can't tell scheme ${_scheme}'s platform from its build settings (PLATFORM_NAME): $(xcode_write_hooks)"
+    run xcodebuild build "${_kind}" "${_container}" -scheme "${_scheme}" -destination "${_destination}" \
+        -derivedDataPath "${xcode_derived_data}" CODE_SIGNING_ALLOWED=NO
+    exit
 }
 
 # Objective-C: an Xcode project through xcodebuild (xcode_hook), unless

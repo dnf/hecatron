@@ -16,6 +16,12 @@
 - **Xcode apps are Swift or Objective-C:** an `*.xcodeproj` or
   `*.xcworkspace` with `*.swift` sources is Swift, with `*.m` or `*.mm`
   Objective-C, without a `Package.swift` or Podfile. On macOS `hct build`
-  and `hct clean` run `xcodebuild`; tests skip, saying to write a hook with
-  the scheme and destination. CocoaPods' `Pods/` and Carthage's
-  `Carthage/` are vendored code to detection.
+  runs `xcodebuild` on the root workspace (CocoaPods') or project, with
+  the scheme `xcodebuild -list` gives (the only one, or the one named like
+  the project), for its platform's generic device
+  (`generic/platform=iOS`, `macOS`...), into `.build/xcode`, which
+  `hct clean` removes; where it can't tell (several schemes or projects),
+  it skips, saying to write a hook. An app with both Swift and
+  Objective-C builds once, with Swift's hook. Tests skip, saying to write a
+  hook with the scheme and simulator destination. CocoaPods' `Pods/` and
+  Carthage's `Carthage/` are vendored code to detection.
