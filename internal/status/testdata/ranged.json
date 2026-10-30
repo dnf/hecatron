@@ -1,0 +1,47 @@
+{
+  "version": "VERSION",
+  "runner": "binary",
+  "root": "/repo",
+  "config": "saved",
+  "languages": [
+    {
+      "name": "node",
+      "disabled": false,
+      "components": [
+        {
+          "name": ".",
+          "dir": ".",
+          "toolchainFound": true,
+          "rangeRun": {
+            "version": "26.13.0",
+            "allowed": "\u003e=22",
+            "file": "package.json"
+          }
+        }
+      ],
+      "versions": [
+        {
+          "spec": "24.22.1",
+          "exact": true,
+          "sources": [
+            "default"
+          ]
+        }
+      ],
+      "dependency": "sh",
+      "toolchain": "installed",
+      "runs": {},
+      "changes": []
+    }
+  ],
+  "otherChanges": [],
+  "git": true,
+  "next": [
+    {
+      "command": "hct test",
+      "why": "every language's tests",
+      "askUser": false
+    }
+  ],
+  "update": null
+}

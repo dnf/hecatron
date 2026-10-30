@@ -1,0 +1,11 @@
+hecatron VERSION (binary)
+Project  /repo (config saved in .hecatron/config.json)
+
+node
+  directories  .
+  version      24.22.1 (default)
+  toolchain    installed: 26.13.0 runs (package.json allows >=22)
+  last runs    test: never run
+
+Next:
+  hct test                 every language's tests

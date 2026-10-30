@@ -85,6 +85,17 @@ type Component struct {
 	// VersionMissing is the version the component resolves to when none
 	// installed matches it, as hct doctor reports it ("=24.22.1"), else "".
 	VersionMissing string `json:"versionMissing,omitempty"`
+	// RangeRun is the installed version the component runs instead of the
+	// default, which none of is installed, because its rangeFiles allow it
+	// (package.json's engines.node); nil otherwise.
+	RangeRun *RangeRun `json:"rangeRun,omitempty"`
+}
+
+// RangeRun is a version a component runs because its range allows it.
+type RangeRun struct {
+	Version string `json:"version"` // what runs: "26.13.0"
+	Allowed string `json:"allowed"` // the range: ">=22"
+	File    string `json:"file"`    // where it's written: "clients/web/package.json"
 }
 
 // Version is a toolchain version the components resolve to.
@@ -178,6 +189,9 @@ func gatherLanguage(p *project.Project, lang string, env []string, now time.Time
 	found := 0
 	for _, d := range dirs {
 		c := Component{Name: d.Component, Dir: project.PyRelpath(d.Dir, p.Root), VersionMissing: missing[d.Component]}
+		if version, allowed, where, ok, err := p.RangeRun(lang, d.Component); err == nil && ok {
+			c.RangeRun = &RangeRun{version, allowed, where}
+		}
 		if l.Dependency != "" {
 			c.Toolchain = toolchainFound(p, lang, d.Component, l.Dependency, env)
 			if c.Toolchain {
