@@ -507,7 +507,8 @@ entry points' output byte for byte. Decided with the first port
   `enable`, `disable`, `check`, `dockerfile` and `workflows` (with
   `--check`), with detection (`detect_languages`, `infer_layout`,
   `detected_config`: `detectSources`, `detectUnless`, `sharedBuildFiles`,
-  `dirNames`, `detectScript`) in `internal/project` and the generated files
+  `dirNames`, `detectScript`, since replaced by `detectKeys`, and later
+  `detectWithSources`) in `internal/project` and the generated files
   in `internal/generate`. Each command works out everything it will print
   and write before doing any of it, so a project the model declines is
   handed to `manage.py` untouched; files are written as Python writes them

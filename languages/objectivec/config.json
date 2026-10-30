@@ -6,9 +6,18 @@
   "dependency": "cc",
   "lintDependency": null,
   "detect": [
-    "*.xcodeproj",
     "*.podspec"
   ],
+  "detectWithSources": {
+    "dirs": [
+      "*.xcodeproj",
+      "*.xcworkspace"
+    ],
+    "sources": [
+      "*.m",
+      "*.mm"
+    ]
+  },
   "detectSources": [
     "*.m",
     "*.mm"

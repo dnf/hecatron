@@ -115,8 +115,9 @@ class NodeTestHookTest(Fixture):
     def test_npms_placeholder_test_script_isnt_a_test(self):
         self.files({"package.json": package(test='echo "Error: no test specified" && exit 1')})
         result = self.test()
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("package.json has no test script", result.stderr)
+        self.assertEqual(self.ran(result), [])
+        self.assertIn("package.json has no test script", result.stdout)
+        self.assertIn("(skipping)", result.stdout)
 
     def test_a_workspace_package_its_tests_use_is_built_first(self):
         # Prometheus: mantine-ui's tests import codemirror-promql, whose dist/
@@ -199,11 +200,21 @@ class NodeTestHookTest(Fixture):
                     "node/tsconfig.json": "{}", "node/node_modules/.keep": ""})
         self.assertEqual(self.ran(self.test()), ["npm run test in node"])
 
-    def test_no_test_anywhere_fails(self):
-        self.files({"package.json": package(build="tsc")})
-        result = self.test()
+    def test_no_test_anywhere_skips(self):
+        # An Express app: detection takes it for JavaScript without tests.
+        for lang in ("typescript", "javascript"):
+            self.files({"package.json": json.dumps({"dependencies": {"express": "^4"},
+                                                    "scripts": {"start": "node index.js"}})})
+            result = self.test(lang)
+            self.assertEqual(self.ran(result), [])
+            self.assertIn(f"{lang}: test: package.json has no test script", result.stdout)
+            self.assertIn("(skipping)", result.stdout)
+
+    def test_without_a_package_json_anywhere_it_is_unknown(self):
+        os.makedirs(self.path("empty"))
+        result = self.test(cwd="empty")
         self.assertEqual(result.returncode, 1)
-        self.assertIn("package.json has no test script", result.stderr)
+        self.assertIn("no package.json here, below or above", result.stderr)
 
     def test_scripts_find_the_package_manager_through_corepacks_shim(self):
         # Without pnpm on PATH, `pnpm -r test` in a script needs Corepack's shim.

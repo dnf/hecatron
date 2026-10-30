@@ -19,9 +19,9 @@ import (
 // git hooks, build hooks) and a generator's templates, whatever their case
 // (Examples/), as do hidden directories (.jenkins/, .github/). A language
 // found only there isn't added, and no language's directory is placed there.
-var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildsrc": true, "demo": true, "demos": true,
-	"doc": true, "docs": true, "example": true, "examples": true, "external": true, "fixtures": true,
-	"hooks": true, "node_modules": true, "playground": true, "sample": true, "samples": true, "templates": true,
+var skippedDirs = map[string]bool{"android": true, "benchmarks": true, "buildsrc": true, "carthage": true, "demo": true,
+	"demos": true, "doc": true, "docs": true, "example": true, "examples": true, "external": true, "fixtures": true,
+	"hooks": true, "node_modules": true, "playground": true, "pods": true, "sample": true, "samples": true, "templates": true,
 	"test": true, "test-data": true, "test_data": true, "testdata": true, "tests": true, "tests_data": true,
 	"third_party": true, "tools": true, "tutorial": true, "tutorials": true, "vendor": true, "vendored": true}
 
@@ -35,7 +35,8 @@ var preferredParents = map[string]bool{"bindings": true, "ffi": true, "lang": tr
 type detection struct {
 	lang                                          string
 	detect, sources, unless, shared, names, tests []string
-	script                                        string
+	keys                                          []string
+	withSources                                   *withSourcesRule
 	yields                                        *yieldsRule
 	name                                          string // "name", else lang
 }
@@ -72,12 +73,16 @@ func detectionDefinitions(home Home) ([]detection, error) {
 				}
 			}
 		}
-		if raw, present := object.Get("detectScript"); present && truthy(raw) {
-			if d.script, ok = raw.(string); !ok {
-				return nil, unsupported("%s detectScript is not a string", lang)
+		if raw, present := object.Get("detectKeys"); present && truthy(raw) {
+			if d.keys, err = toStrings(raw, lang+" detectKeys"); err != nil {
+				return nil, err
 			}
 		}
-		raw, present := object.Get("detectYields")
+		raw, present := object.Get("detectWithSources")
+		if d.withSources, err = parseWithSources(raw, present, lang); err != nil {
+			return nil, err
+		}
+		raw, present = object.Get("detectYields")
 		if d.yields, err = parseYields(raw, present, lang); err != nil {
 			return nil, err
 		}
@@ -431,9 +436,10 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 		for directory := range sharedHits(d.lang) {
 			directories[directory] = true
 		}
-		if d.script != "" && len(directories) > 0 {
+		tooling := ""
+		if len(d.keys) > 0 && len(directories) > 0 {
 			for directory := range directories {
-				has, err := hasNpmScript(root, directory, d.script)
+				has, err := hasDetectKey(root, directory, byDir[directory], d.detect, d.keys)
 				if err != nil {
 					return nil, err
 				}
@@ -442,9 +448,19 @@ func DetectLanguages(root string, defs []detection, files []string) (*Detected, 
 				}
 			}
 			if len(directories) == 0 {
-				result.NotAdded[d.lang] = "no " + d.script + " script"
-				continue
+				tooling = "its " + strings.Join(d.detect, ", ") + " has none of " + strings.Join(d.keys, ", ")
 			}
+		}
+		withSources, err := d.withSources.hits(byDir, d.unless)
+		if err != nil {
+			return nil, err
+		}
+		for directory := range withSources {
+			directories[directory] = true
+		}
+		if len(directories) == 0 && tooling != "" {
+			result.NotAdded[d.lang] = tooling
+			continue
 		}
 		if len(directories) == 0 && len(d.sources) > 0 {
 			if directories, err = sourceHits(byDir, d.sources, d.unless); err != nil {
@@ -584,10 +600,20 @@ func sharedSources(byDir namesByDir, directory string, sources []string) (int, e
 	return n, nil
 }
 
-// hasNpmScript is whether the directory's package.json has the npm script;
-// one that can't be read counts as having it.
-func hasNpmScript(root, directory, script string) (bool, error) {
-	data, err := os.ReadFile(pyJoin(root, directory, "package.json"))
+// hasDetectKey is whether the directory's build file (JSON: the first of
+// its names a detect pattern matches) has one of the keys, non-empty; a
+// dotted key is a path (scripts.test). One that can't be read counts as
+// having one.
+func hasDetectKey(root, directory string, names map[string]bool, detect, keys []string) (bool, error) {
+	listing := make([]string, 0, len(names))
+	for name := range names {
+		listing = append(listing, name)
+	}
+	buildFile, err := buildFileIn(pyJoin(root, directory), listing, detect)
+	if err != nil || buildFile == "" {
+		return true, err
+	}
+	data, err := os.ReadFile(buildFile)
 	if err != nil {
 		return true, nil
 	}
@@ -595,7 +621,6 @@ func hasNpmScript(root, directory, script string) (bool, error) {
 		return true, nil // UnicodeDecodeError is a ValueError
 	}
 	document, ok, err := pyJSONLoads(pyText(data)) // json.load reads in text mode
-
 	if err != nil {
 		return false, err
 	}
@@ -603,16 +628,103 @@ func hasNpmScript(root, directory, script string) (bool, error) {
 	if !ok || !isObject {
 		return true, nil
 	}
-	scripts, _ := object.Get("scripts")
-	if !truthy(scripts) {
-		return false, nil // {} has no script
+	for _, key := range keys {
+		var value any = object
+		for _, part := range strings.Split(key, ".") {
+			if inner, isObject := value.(*Object); isObject {
+				value, _ = inner.Get(part)
+			} else {
+				value = nil
+			}
+		}
+		if truthy(value) {
+			return true, nil
+		}
 	}
-	scriptObject, isObject := scripts.(*Object)
-	if !isObject {
-		return false, nil
+	return false, nil
+}
+
+// withSourcesRule is a definition's "detectWithSources": build files
+// (files) and directories (dirs, such as an Xcode project's *.xcodeproj)
+// that make a hit only with the language's sources beside or below them.
+type withSourcesRule struct {
+	files, dirs, sources []string
+}
+
+func parseWithSources(value any, present bool, lang string) (*withSourcesRule, error) {
+	if !present || !truthy(value) {
+		return nil, nil
 	}
-	_, has := scriptObject.Get(script)
-	return has, nil
+	object, ok := value.(*Object)
+	if !ok {
+		return nil, unsupported("%s detectWithSources is not an object", lang)
+	}
+	rule := &withSourcesRule{}
+	for key, target := range map[string]*[]string{"files": &rule.files, "dirs": &rule.dirs, "sources": &rule.sources} {
+		if raw, present := object.Get(key); present {
+			var err error
+			if *target, err = toStrings(raw, lang+" detectWithSources "+key); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return rule, nil
+}
+
+// hits are the directories holding one of the rule's files, or a directory
+// named like its dirs (none of unless beside it), with one of its sources
+// in them or below: a requirements.txt beside Python code, not one for a
+// docs build (manage.py's with_sources_hits).
+func (rule *withSourcesRule) hits(byDir namesByDir, unless []string) (dirSet, error) {
+	if rule == nil {
+		return dirSet{}, nil
+	}
+	candidates, err := hits(byDir, rule.files, unless)
+	if err != nil {
+		return nil, err
+	}
+	for sub := range byDir {
+		parts := strings.Split(sub, "/")
+		for i, part := range parts {
+			parent := strings.Join(parts[:i], "/")
+			if parent == "" {
+				parent = "."
+			}
+			named, err := anyMatch(map[string]bool{part: true}, rule.dirs)
+			if err != nil {
+				return nil, err
+			}
+			if !named {
+				continue
+			}
+			excluded, err := anyMatch(byDir[parent], unless)
+			if err != nil {
+				return nil, err
+			}
+			if !excluded {
+				candidates[parent] = true
+			}
+		}
+	}
+	withSources, err := sourceHits(byDir, rule.sources, nil)
+	if err != nil {
+		return nil, err
+	}
+	// Sources count for the innermost candidate holding them: a nested
+	// Xcode project's Objective-C isn't the Swift app's above it.
+	found := dirSet{}
+	for sub := range withSources {
+		innermost, depth := "", -1
+		for c := range candidates {
+			if (c == "." || under(sub, c)) && depthBelow(c, ".") > depth {
+				innermost, depth = c, depthBelow(c, ".")
+			}
+		}
+		if depth >= 0 {
+			found[innermost] = true
+		}
+	}
+	return found, nil
 }
 
 // languageRoots cut each directory at the first part naming the language

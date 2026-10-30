@@ -299,10 +299,21 @@ dotnet_hook() {
 # SwiftPM: the package here, each package below, or the one above whose
 # targets include this directory's sources (FlatBuffers' Package.swift at the
 # root builds swift/Sources), which swift_package_args points SwiftPM at.
+# An app's Xcode project here, without a Package.swift, goes to xcode_hook:
+# for build and clean first (it builds the local packages below too), for
+# the rest when there's no package below or above to act on.
 # shellcheck disable=SC2034 # read by the swift hooks
 swift_package_args=()
 swift_package() {
-    find_build Package.swift || unknown "no Package.swift here, below, or above it in the project"
+    if [ ! -f Package.swift ] && xcode_project; then
+        case "${_hook_action}" in
+            build|clean) xcode_hook "${_hook_action}" ;;
+        esac
+    fi
+    if ! find_build Package.swift; then
+        xcode_project && xcode_hook "${_hook_action}"
+        unknown "no Package.swift here, below, or above it in the project"
+    fi
     note_build_dir
     # shellcheck disable=SC2034 # read by the swift hooks
     [ "${build_dir}" = . ] || swift_package_args=(--package-path "${build_dir}")
@@ -831,8 +842,10 @@ node_hook() {
                 node_build_first
                 run "${node_runner[@]}"
             else
+                # An app (start and dev scripts, dependencies) can have no
+                # tests: detection takes it for JavaScript all the same.
                 node_below test
-                unknown "package.json has no test script, nor do its workspace packages or the packages below"
+                skip "package.json has no test script, nor do its workspace packages or the packages below"
             fi ;;
         lint)
             npm_deps
@@ -1624,19 +1637,35 @@ build_jobs() {
     echo "${_cpus}"
 }
 
-# Objective-C: xcodebuild for an Xcode project on macOS (untested: no macOS
-# here; it acts on the project's default scheme and target), GNUstep make for
-# a GNUmakefile that includes GNUstep's common.make (which needs
+# An Xcode project or workspace here (Swift's and Objective-C's apps).
+xcode_project() { exists '*.xcodeproj' || exists '*.xcworkspace'; }
+# Xcode projects, on macOS (untested: no macOS here): xcodebuild builds and
+# cleans the project's default target, unsigned (a check, not a release).
+# Its tests need a scheme and, for iOS, a simulator to run on, which only
+# the project knows, so test skips saying how to write the hook. Exits.
+xcode_hook() {
+    local _hook=".hecatron/languages/${HECATRON_LANG:-<lang>}/$1.sh"
+    case "$1" in
+        build|clean)
+            has xcodebuild || skip "an Xcode project builds with xcodebuild (Xcode, on macOS), which isn't installed"
+            exists '*.xcodeproj' ||
+                skip "an Xcode workspace builds through a scheme: write ${_hook} (xcodebuild -workspace <name> -scheme <scheme> $1)"
+            if [ "$1" = build ]; then run xcodebuild build CODE_SIGNING_ALLOWED=NO; else run xcodebuild clean; fi
+            exit ;;
+        test)
+            skip "an Xcode project's tests need a scheme and a destination: write ${_hook} (xcodebuild test -scheme <scheme> -destination <destination>)" ;;
+        *)
+            skip "an Xcode project has no standard $1 command" ;;
+    esac
+}
+
+# Objective-C: an Xcode project through xcodebuild (xcode_hook), unless
+# another build is here and there is no xcodebuild, GNUstep make for a
+# GNUmakefile that includes GNUstep's common.make (which needs
 # GNUSTEP_MAKEFILES, from gnustep-config), else CMake, Meson or make as for C.
 objc_hook() {
-    if exists '*.xcodeproj' && has xcodebuild; then
-        case "$1" in
-            test) run xcodebuild test ;;
-            build) run xcodebuild build ;;
-            clean) run xcodebuild clean ;;
-            lint) skip "xcodebuild has no standard lint action" ;;
-        esac
-        return
+    if xcode_project && { has xcodebuild || ! has_any CMakeLists.txt meson.build configure configure.ac Makefile makefile GNUmakefile; }; then
+        xcode_hook "$1"
     fi
     if is_gnustep_make && [ -z "${GNUSTEP_MAKEFILES:-}" ]; then
         has gnustep-config || unknown "the GNUmakefile uses GNUstep make, and gnustep-config is not installed"

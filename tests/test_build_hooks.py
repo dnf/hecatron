@@ -7,6 +7,7 @@ the environment a command gets, installers' view of builds below)."""
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
 import unittest
@@ -177,6 +178,79 @@ class JvmBuildToolsTest(BuildHookTest):
         write(self.path("java", "packages", "pom.xml"), "<project />")
         write(self.path("java", "packages", "mvnw"), "#!/bin/sh\n", 0o755)
         self.assertEqual(self.missing("java"), "")
+
+
+class PythonRequirementsTest(BuildHookTest):
+    """An application with only a requirements.txt: detection takes it for
+    Python, so its tests run with those packages, or skip without tests."""
+
+    def test_its_tests_run_with_the_requirements(self):
+        write(self.path("requirements.txt"), "flask\n")
+        write(self.path("requirements-dev.txt"), "pytest-mock\n")
+        write(self.path("app.py"), "")
+        write(self.path("tests", "test_app.py"), "")
+        self.fake("uv")
+        result = self.hook("python", "test", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("uv run --with-requirements requirements-dev.txt --with-requirements requirements.txt"
+                      " --with pytest pytest", result.stdout)
+
+    def test_without_test_files_it_skips(self):
+        write(self.path("requirements.txt"), "flask\n")
+        write(self.path("app.py"), "")
+        self.fake("uv")
+        result = self.hook("python", "test", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("python: test: no test files", result.stdout)
+        self.assertNotIn("uv run", result.stdout)
+
+
+class XcodeTest(BuildHookTest):
+    """An app with only an Xcode project: xcodebuild builds it; its tests,
+    which need a scheme and a destination, skip saying so."""
+
+    def setUp(self):
+        super().setUp()
+        write(self.path("App.xcodeproj", "project.pbxproj"), "")
+        write(self.path("App", "AppDelegate.swift"), "")
+        write(self.path("App", "Legacy.m"), "")
+
+    def test_xcodebuild_builds_and_cleans(self):
+        self.fake("xcodebuild")
+        for lang in ("swift", "objectivec"):
+            result = self.hook(lang, "build", ".")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("xcodebuild build CODE_SIGNING_ALLOWED=NO", result.stdout)
+            self.assertIn("xcodebuild clean", self.hook(lang, "clean", ".").stdout)
+
+    def test_tests_skip_saying_how_to_run_them(self):
+        self.fake("xcodebuild")
+        for lang in ("swift", "objectivec"):
+            result = self.hook(lang, "test", ".")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn(f"{lang}: test: an Xcode project's tests need a scheme", result.stdout)
+            self.assertIn(f".hecatron/languages/{lang}/test.sh", result.stdout)
+            self.assertNotIn("+ xcodebuild", result.stdout)
+
+    def test_swifts_other_hooks_skip(self):
+        for action in ("lint", "deps", "docs", "bench"):
+            result = self.hook("swift", action, ".")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn(f"an Xcode project has no standard {action} command", result.stdout)
+
+    def test_without_xcodebuild_the_build_skips(self):
+        if shutil.which("xcodebuild"):
+            self.skipTest("xcodebuild is installed")
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("builds with xcodebuild (Xcode, on macOS), which isn't installed", result.stdout)
+
+    def test_a_package_below_is_tested_with_swiftpm(self):
+        write(self.path("Packages", "Core", "Package.swift"), "testTarget(name: \"CoreTests\")\n")
+        self.fake("swift")
+        result = self.hook("swift", "test", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("swift test", result.stdout)
 
 
 if __name__ == "__main__":

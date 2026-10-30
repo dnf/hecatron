@@ -34,13 +34,26 @@ saves it, as init would. Init itself:
    directly below, the `compilerOptions.outDir` its `tsconfig.json` names
    (read with comments and trailing commas), and a `.js` beside a `.ts` of
    the same name. A
-   `package.json` without the definition's `detectScript` npm script doesn't
-   count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
+   `package.json` counts only with one of the definition's `detectKeys`
+   (JavaScript's: runtime `dependencies`, an entry point `main`, `bin`,
+   `exports`, `module` or `browser`, `workspaces`, or a `start`, `dev`,
+   `serve` or `test` script), so an Express app without tests is
+   JavaScript, and a `package.json` carrying only tooling (husky,
+   commitlint and Prettier in `devDependencies`, `prepare` and `lint`
+   scripts: an iOS SDK's commit hooks, Cucumber's `jsonschema/`) isn't. Some
+   build files count only beside the language's code, in their directory or
+   below (`detectWithSources`): a `requirements.txt` with `*.py` files is
+   Python (an app with no `pyproject.toml`), one for a docs build isn't; an
+   Xcode project or workspace (`*.xcodeproj/`, `*.xcworkspace/`) is Swift
+   with `*.swift` files and Objective-C with `*.m` or `*.mm`, each source
+   counting for the innermost project holding it. A `Gemfile` is Ruby even
+   when it only installs fastlane: that is Ruby tooling the project runs.
    Dotfiles aren't sources (a `.nvim.lua` configures an editor).
    Examples, tests and test data, docs, tools, hooks, a generator's
    templates and vendored code (`examples/`, `tests/`, `tests_data/`,
    `tools/`, `hooks/`, `templates/`, `fixtures/`, `android/`,
-   `third_party/`, `vendor/`, `vendored/`, `node_modules/` and the like, in any case:
+   `third_party/`, `vendor/`, `vendored/`, `node_modules/`, CocoaPods'
+   `Pods/`, Carthage's `Carthage/` and the like, in any case:
    `Examples/`) and hidden directories (`.jenkins/`) are skipped, except a
    definition's `detectTests` files (Bash's `*.bats`) in a `test/` or
    `tests/` directory, which, for a language not otherwise found, make it

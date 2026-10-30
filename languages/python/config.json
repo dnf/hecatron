@@ -9,6 +9,14 @@
     "pyproject.toml",
     "setup.py"
   ],
+  "detectWithSources": {
+    "files": [
+      "requirements.txt"
+    ],
+    "sources": [
+      "*.py"
+    ]
+  },
   "dirNames": [
     "python",
     "py",
@@ -67,7 +75,7 @@
     "UV_PYTHON": "{home}/bin/python3"
   },
   "buildSystems": [
-    "uv (pyproject.toml)",
+    "uv (pyproject.toml, requirements.txt)",
     "setuptools"
   ],
   "testing": "pytest",

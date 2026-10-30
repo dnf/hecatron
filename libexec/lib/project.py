@@ -92,9 +92,9 @@ def ignore_project_files(root: str) -> None:
 # hooks, build hooks) and a generator's templates, whatever their case
 # (Examples/), and hidden directories (.jenkins/, .github/): detection
 # doesn't count them (manage.py).
-SKIPPED_DIRS = {"android", "benchmarks", "buildsrc", "demo", "demos", "doc", "docs", "example", "examples",
-                "external", "fixtures", "hooks", "node_modules", "playground", "sample", "samples", "templates", "test",
-                "test-data", "test_data", "testdata", "tests", "tests_data", "third_party", "tools", "tutorial",
+SKIPPED_DIRS = {"android", "benchmarks", "buildsrc", "carthage", "demo", "demos", "doc", "docs", "example", "examples",
+                "external", "fixtures", "hooks", "node_modules", "playground", "pods", "sample", "samples", "templates",
+                "test", "test-data", "test_data", "testdata", "tests", "tests_data", "third_party", "tools", "tutorial",
                 "tutorials", "vendor", "vendored"}
 
 

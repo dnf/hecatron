@@ -296,19 +296,63 @@ class InitTest(Fixture):
         self.assertEqual(found, {"javascript": {"."}})
         self.assertEqual(not_added, {"typescript": "its tsconfig.json only sits beside mostly JavaScript"})
 
-    def test_a_package_without_a_test_script_isnt_a_language(self):
+    def test_a_package_without_any_detect_key_isnt_a_language(self):
         # Cucumber messages: jsonschema/package.json is tooling with no tests.
-        defs = {"javascript": {"detect": ["package.json"], "detectScript": "test"}}
+        defs = {"javascript": {"detect": ["package.json"], "detectKeys": ["dependencies", "scripts.test"]}}
         found, not_added = self.detect({"js/package.json": '{"scripts": {"test": "mocha"}}',
                                         "jsonschema/package.json": '{"scripts": {"build": "x"}}'}, defs)
         self.assertEqual(found, {"javascript": {"js"}})
         self.assertEqual(not_added, {})
 
-    def test_a_language_whose_packages_have_no_test_script_isnt_added(self):
-        defs = {"javascript": {"detect": ["package.json"], "detectScript": "test"}}
-        found, not_added = self.detect({"jsonschema/package.json": "{}"}, defs)
+    def test_a_language_whose_packages_are_all_tooling_isnt_added(self):
+        defs = {"javascript": {"detect": ["package.json"], "detectKeys": ["dependencies", "scripts.test"]}}
+        found, not_added = self.detect({"jsonschema/package.json": '{"dependencies": {}}'}, defs)
         self.assertEqual(found, {})
-        self.assertEqual(not_added, {"javascript": "no test script"})
+        self.assertEqual(not_added, {"javascript": "its package.json has none of dependencies, scripts.test"})
+
+    def test_an_application_without_a_test_script_is_javascript(self):
+        # Express apps: a start or dev script, or only runtime dependencies.
+        found, _ = self.detect({"api/package.json": '{"scripts": {"start": "node .", "dev": "nodemon"}}',
+                                "api/package-lock.json": "{}", "api/index.js": "",
+                                "web/package.json": '{"type": "module", "dependencies": {"express": "^4"}}',
+                                "web/yarn.lock": "", "web/index.js": "",
+                                "cli/package.json": '{"bin": {"x": "cli.js"}}', "cli/cli.js": ""}, None)
+        self.assertEqual(found, {"javascript": {"api", "web", "cli"}})
+
+    def test_a_package_json_for_commit_hooks_isnt_javascript(self):
+        # An iOS SDK's root package-lock.json, for husky and commitlint.
+        found, not_added = self.detect({
+            "package.json": '{"type": "module", "devDependencies": {"husky": "^9", "@commitlint/cli": "^19"},'
+                            ' "scripts": {"prepare": "husky", "lint": "x", "format": "prettier -w ."}}',
+            "package-lock.json": "{}", "commitlint.config.js": "", "Package.swift": "",
+            "Sources/A/a.swift": ""}, None)
+        self.assertEqual(found, {"swift": {"."}})
+        self.assertIn("has none of dependencies", not_added["javascript"])
+
+    def test_a_requirements_file_beside_python_code_is_python(self):
+        found, _ = self.detect({"requirements.txt": "flask\n", "app.py": "", "Dockerfile": "",
+                                "worker/requirements.txt": "celery\n", "worker/src/tasks.py": ""}, None)
+        self.assertEqual(found, {"python": {".", "worker"}})
+
+    def test_a_requirements_file_without_python_code_isnt_python(self):
+        # A docs build's requirements (Sphinx, MkDocs) in a Go repository.
+        found, _ = self.detect({"go.mod": "", "main.go": "", "requirements.txt": "mkdocs\n",
+                                "docs/requirements.txt": "sphinx\n", "docs/conf.py": "",
+                                "site/requirements.txt": "mkdocs-material\n", "site/mkdocs.yml": "",
+                                ".github/scripts/requirements.txt": "", ".github/scripts/x.py": ""}, None)
+        self.assertEqual(found, {"go": {"."}})
+
+    def test_an_xcode_project_is_swift_or_objective_c_by_its_sources(self):
+        found, _ = self.detect({"App.xcodeproj/project.pbxproj": "", "App/AppDelegate.swift": "",
+                                "Legacy/Legacy.xcodeproj/project.pbxproj": "", "Legacy/Sources/a.m": "",
+                                "Legacy/Sources/a.h": "", "Gemfile": "gem 'fastlane'\n", "Gemfile.lock": "",
+                                "Pods/Pods.xcodeproj/project.pbxproj": "", "Pods/Alamofire/a.swift": ""}, None)
+        # Legacy's Objective-C is its own project's, not the root's.
+        self.assertEqual(found, {"swift": {"."}, "objectivec": {"Legacy"}, "ruby": {"."}})
+
+    def test_an_xcode_workspace_without_sources_isnt_a_language(self):
+        found, _ = self.detect({"App.xcworkspace/contents.xcworkspacedata": "", "README.md": ""}, None)
+        self.assertEqual(found, {})
 
     def test_a_shared_build_file_marks_c_and_cpp_at_the_root(self):
         # flatbuffers: CMakeLists.txt at the root and C++ in src/, not the

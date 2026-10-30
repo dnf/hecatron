@@ -88,7 +88,8 @@ configured runner (`vitest.config.*`, `jest.config.*`, `.mocharc.*`); else,
 and in a directory without a `package.json`, it tests the language's
 packages below (TypeScript's have a `tsconfig.json`, but for one beside
 mostly JavaScript, which is JavaScript's: detection's `detectYields`, the
-same rule through `project.py`). It sets `CI=true` (unless it's set) so watching test
+same rule through `project.py`), and skips when none of them has a test
+script either (an app without tests). It sets `CI=true` (unless it's set) so watching test
 runners run once. A package its tests need built (a native addon, from a `napi`
 key, a `binding.gyp` or a build script running napi or node-gyp, whose
 `*.node` isn't built; or a `main` or `exports` entry point that isn't
@@ -100,7 +101,15 @@ each package in turn. pytest also collects `Test*.py` files where no test
 file has its default names (`test_*.py`, `*_test.py`) and the project sets
 no `python_files`, and leaves out the Python projects inside the one it tests
 (`--ignore=pydantic-core`: their environments aren't the outer one's) unless
-the project sets `testpaths`. Where there is no `python`, only `python3`, Python's
+the project sets `testpaths`. Without a `pyproject.toml` or `setup.py` (an
+app with a `requirements.txt`), pytest runs with the packages of the
+directory's `requirements*.txt` (`uv run --with-requirements`), and the
+hook skips where there are no test files. An Xcode project without a
+`Package.swift` (an app's) builds and cleans with `xcodebuild`, unsigned,
+on macOS; its tests skip, since they need a scheme and a destination only
+the project knows (a project hook runs `xcodebuild test -scheme ...
+-destination ...`), as do Swift's other hooks there; a package below or
+above it is still tested with SwiftPM. Where there is no `python`, only `python3`, Python's
 installer links one to it in `~/.local/share/hecatron/python/bin`, a static
 `path` entry of Python's, so the builds of a project's other languages that
 call `python` (a Rust build script, a CMake project's) find it, and nothing
