@@ -9,6 +9,8 @@
 # binary is hecatron and hct (in /usr/local/sbin, ahead of the checkout's
 # bin/hecatron on every PATH, login shells' included). HECATRON_INSTALLER and
 # HECATRON_CHECK_SEED are passed on (tests/docker/parity.sh).
+# HECATRON_TEST_CACHE, a directory, is mounted at /cache
+# (tests/real-projects/cache.py).
 set -euo pipefail
 
 if [ "$#" -lt 1 ]; then
@@ -34,6 +36,7 @@ if [ -n "${HECATRON_TEST_BINARY:-}" ]; then
 fi
 [ -n "${HECATRON_INSTALLER:-}" ] && _extra+=(--env "HECATRON_INSTALLER=${HECATRON_INSTALLER}")
 [ -n "${HECATRON_CHECK_SEED:-}" ] && _extra+=(--env "HECATRON_CHECK_SEED=${HECATRON_CHECK_SEED}")
+[ -n "${HECATRON_TEST_CACHE:-}" ] && _extra+=(--volume "${HECATRON_TEST_CACHE}:/cache")
 # A developer machine's UTF-8 locale: the image's default C locale makes an
 # embedded Python's filesystem encoding ASCII, which no newcomer's machine has.
 exec docker run --rm ${_tty[@]+"${_tty[@]}"} ${_extra[@]+"${_extra[@]}"} \

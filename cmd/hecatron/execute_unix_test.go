@@ -96,7 +96,9 @@ func TestExecOnlyComponentAndStdin(t *testing.T) {
 func TestExecWithoutTheBinary(t *testing.T) {
 	root, env := execFixture(t, `["a"]`)
 	got := runIn(t, root, append(env, "HECATRON_NO_GO=1"), "bash", filepath.Join(repoHome(t), "bin", "hecatron"), "exec", "zz", "--", "zz")
-	if got.status != 1 || !strings.Contains(got.stderr, `exec needs hecatron's binary, which install.sh downloads with a release; without it, eval "$(hct env LANG -c COMPONENT)" first`) {
+	// A checkout (as here) is told to build the binary (#258).
+	if got.status != 1 || !strings.Contains(got.stderr, `exec needs hecatron's binary, which install.sh downloads with a release; `+
+		`in this checkout, run hct self build; without it, eval "$(hct env LANG -c COMPONENT)" first`) {
 		t.Errorf("%+v", got)
 	}
 }

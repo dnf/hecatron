@@ -33,8 +33,19 @@ esac
 # Anything else (a branch, a platform with no binary, a failed download)
 # runs as before. HECATRON_NO_GO=1 keeps to the scripts.
 _go="${HECATRON_HOME}/bin/.hecatron-go"
-if [ -z "${HECATRON_NO_GO:-}" ] && [ -x "${_go}" ] && [ -f "${_go}.commit" ] && [ -f "${HECATRON_HOME}/.git/HEAD" ]; then
-    read -r _head < "${HECATRON_HOME}/.git/HEAD" || true
+# The checkout's git directory: .git, or in a git worktree the directory
+# the .git file names ("gitdir: ..."), without starting git.
+_git_dir="${HECATRON_HOME}/.git"
+if [ -f "${_git_dir}" ]; then
+    read -r _git_dir < "${_git_dir}" || true
+    _git_dir="${_git_dir#gitdir: }"
+    case "${_git_dir}" in
+        /*) ;;
+        *) _git_dir="${HECATRON_HOME}/${_git_dir}" ;;
+    esac
+fi
+if [ -z "${HECATRON_NO_GO:-}" ] && [ -x "${_go}" ] && [ -f "${_go}.commit" ] && [ -f "${_git_dir}/HEAD" ]; then
+    read -r _head < "${_git_dir}/HEAD" || true
     read -r _built < "${_go}.commit" || true
     # "dev": built from this checkout by hecatron self build, for any branch.
     if [ "${_built:-}" = dev ] || { [ -n "${_built:-}" ] && [ "${_head:-}" = "${_built}" ]; }; then
@@ -138,6 +149,15 @@ if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 9))' 2>/dev/null; t
     exit 1
 fi
 
+# A command only the Go binary has. install.sh's installs and checkouts are
+# both git clones, and hct self build builds the binary in either (with Go).
+_needs_binary() {
+    local hint=""
+    [ -e "${HECATRON_HOME}/.git" ] && hint="; in this checkout, run hct self build"
+    echo "hecatron: $1 needs hecatron's binary, which install.sh downloads with a release${hint}${2:+; $2}" >&2
+    exit 1
+}
+
 _self_usage() {
     cat <<EOF
 Usage: hecatron self <command>     (or: hct self <command>)
@@ -162,11 +182,9 @@ if [ "${_command}" = "self" ]; then
         self-test|self-build) ;;
         self-update)
             # Native in the Go core only (docs/contributing/design.md §19).
-            echo "hecatron: self update needs hecatron's binary, which install.sh downloads with a release; a checkout updates with git pull" >&2
-            exit 1 ;;
+            _needs_binary "self update" "a checkout updates with git pull" ;;
         self-uninstall)
-            echo "hecatron: self uninstall needs hecatron's binary, which install.sh downloads with a release; delete a checkout yourself, and the lines ending '# hecatron' in your shell's startup files" >&2
-            exit 1 ;;
+            _needs_binary "self uninstall" "delete a checkout yourself, and the lines ending '# hecatron' in your shell's startup files" ;;
         *)
             echo "hecatron: self: unknown command '${_command#self-}' (try 'hecatron self help')" >&2
             exit 2 ;;
@@ -238,32 +256,25 @@ case "${_command}" in
         exec bash "${HECATRON_HOME}/libexec/commands/version.sh" "$@" ;;
     skill)
         # Native in the Go core only (docs/contributing/design.md §19).
-        echo "hecatron: skill needs hecatron's binary, which install.sh downloads with a release; the skill itself is in ${HECATRON_HOME}/plugins/hecatron/skills/hecatron" >&2
-        exit 1 ;;
+        _needs_binary skill "the skill itself is in ${HECATRON_HOME}/plugins/hecatron/skills/hecatron" ;;
     status)
         # Native in the Go core only (docs/contributing/design.md §19).
-        echo "hecatron: status needs hecatron's binary, which install.sh downloads with a release; without it, hct list and hct doctor say most of it" >&2
-        exit 1 ;;
+        _needs_binary status "without it, hct list and hct doctor say most of it" ;;
     sync)
         # Native in the Go core only (docs/contributing/design.md §19).
-        echo "hecatron: sync needs hecatron's binary, which install.sh downloads with a release" >&2
-        exit 1 ;;
+        _needs_binary sync ;;
     advisor)
         # Native in the Go core only (docs/contributing/design.md §19).
-        echo "hecatron: advisor needs hecatron's binary, which install.sh downloads with a release" >&2
-        exit 1 ;;
+        _needs_binary advisor ;;
     licenses)
         # Native in the Go core only (docs/contributing/design.md §19).
-        echo "hecatron: licenses needs hecatron's binary, which install.sh downloads with a release" >&2
-        exit 1 ;;
+        _needs_binary licenses ;;
     sbom)
         # Native in the Go core only (docs/contributing/design.md §19).
-        echo "hecatron: sbom needs hecatron's binary, which install.sh downloads with a release" >&2
-        exit 1 ;;
+        _needs_binary sbom ;;
     exec)
         # Native in the Go core only (docs/contributing/design.md §19).
-        echo "hecatron: exec needs hecatron's binary, which install.sh downloads with a release; without it, eval \"\$(hct env LANG -c COMPONENT)\" first" >&2
-        exit 1 ;;
+        _needs_binary exec "without it, eval \"\$(hct env LANG -c COMPONENT)\" first" ;;
     init|banner)
         exec python3 "${HECATRON_HOME}/libexec/commands/manage.py" "${_command}" "$@" ;;
     install|uninstall|list|add|remove|enable|disable|dockerfile|workflows|check)

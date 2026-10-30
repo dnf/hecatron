@@ -46,6 +46,7 @@ printf 'thing broken\n\n  indented\n\n\n'; echo "to stderr" >&2; exit 1`,
 
 var doctorArgs = [][]string{
 	{"doctor"}, {"doctor", "ok", "broken"}, {"doctor", "o"}, {"doctor", "ok", "ok"}, {"doctor", "nodep", "lint", "builtin"},
+	{"doctor", "lint"}, {"doctor", "--fix", "lint"},
 	{"doctor", "ver"}, {"doctor", "badver"}, {"doctor", "badver", "ok"}, {"doctor", "nope"}, {"doctor", "zig"},
 	{"doctor", "help"}, {"doctor", "--help", "ok"}, {"doctor", "ok", "help"}, {"doctor", "-x"}, {"doctor", "off"},
 	{"doctor", "--fix", "noinst"}, {"doctor", "--fix", "ok", "broken", "nodep"}, {"doctor", "broken"},
@@ -63,6 +64,10 @@ var doctorWants = map[string]result{
 		"  FAIL  mixed\n          really broken\n          note:no space, so a problem\n          paired\n\n" +
 		"1 of 2 need attention: mixed\n"},
 	"doctor --fix noted": {status: 0, stdout: "  ok    noted\n"},
+	// A missing lint tool is a note (#254), so --fix runs no installer.
+	"doctor lint": {status: 0, stdout: "  ok    lint\n          lint tool no-such-linter-for-hct not found: " +
+		"hct lint lint needs it (hct install lint installs it)\n\nAll 1 toolchains look healthy.\n"},
+	"doctor --fix lint": {status: 0, stdout: "  ok    lint\n"},
 }
 
 func TestDoctorMatchesBinHecatron(t *testing.T) {

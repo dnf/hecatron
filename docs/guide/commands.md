@@ -161,7 +161,8 @@ hct status [--output human|agent|json]
 Hecatron's version (and a newer release, when the last daily check found
 one), the project (its config saved or only detected), and per language
 its directories, the toolchain version it resolves to and why, whether that
-toolchain is installed, the last run of each action, and its uncommitted
+toolchain is installed (its command on PATH, and the version each component
+needs, as `hct doctor` checks it: "installed, but not 24.22.1 (web)"), the last run of each action, and its uncommitted
 changes; then the commands worth running next. Runs one `git status` and
 nothing that installs. Binary only.
 

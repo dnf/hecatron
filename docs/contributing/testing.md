@@ -29,6 +29,30 @@ A downstream job that checks out sayable and runs `hct check` and `hct test
 go python` against it, so a change that breaks the project hecatron came
 from fails CI, is planned but not in CI yet.
 
+Real open-source projects (`tests/real-projects/`): a backlog of about
+150 public repositories (`projects.json`: polyglot projects, a well-known
+project or two per language, and monorepos), each cloned in a fresh
+container and run as a newcomer would, `hct init`, `install`, `doctor`
+and `test <lang>` with no configuration (`run.sh`). A monthly workflow
+(`.github/workflows/real-projects.yml`) runs one job per project on
+GitHub's runners and opens a pull request with the results:
+`results.json` (each run: commit, detection, toolchain versions, per-step
+exit codes and times, test counts, failure category and excerpt) and a
+flat `results-by-language.json`, both described by `schema.json`, and
+`docs/real-projects.md` rendered from them (`report.py`). It measures what
+detection and the default hooks get right on code hecatron has never
+seen. `report.py` also writes a shields.io endpoint file per tested
+project (`badges/OWNER_REPO.json`: passing, N/M languages or failing), so
+a project can show a badge that follows its latest result without running
+anything itself; the page lists the Markdown for each passing project.
+`run.sh --actions test,lint,build` (the workflow's `actions` input when
+dispatched; the monthly run tests only) records lint and build as steps
+beside the tests, whose result stays the language's. Each run records the
+free disk space before, after each step and at the end, and the page
+flags runs that fell under 2 GB. The failure categories are regular
+expressions in `report.py`; `report.py categories LOG...` re-parses saved
+logs, to try a change to them without rerunning the projects.
+
 ### What CI runs
 
 A pull request runs only the CI jobs its changes can affect: the first job,

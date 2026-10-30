@@ -86,6 +86,13 @@
       "key": "node-version"
     }
   ],
+  "rangeFiles": [
+    {
+      "file": "package.json",
+      "format": "npm-engines",
+      "key": "node"
+    }
+  ],
   "buildSystems": [
     "npm, pnpm, Yarn or Bun (tsc)"
   ],

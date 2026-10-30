@@ -52,7 +52,8 @@ A project adds hooks for its own code in `.hecatron/languages/<lang>/`:
 | `metadata.sh`  | Update package metadata (`hct metadata`)                 |
 
 `hct doctor` already checks that the `dependency` and `lintDependency`
-commands from `config.json` exist. Add a `doctor.sh` when a toolchain can be
+commands from `config.json` exist (a missing lint tool is a note, not a
+problem). Add a `doctor.sh` when a toolchain can be
 present but broken, and make `install.sh` repair that state:
 
 ```bash

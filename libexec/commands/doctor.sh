@@ -50,7 +50,11 @@ for _arg in "$@"; do
 done
 case "${_output}" in
     ""|human|agent) ;;
-    json) echo "hecatron: doctor --output json needs hecatron's binary (hct self update installs it)" >&2; exit 2 ;;
+    json)
+        _hint=""
+        [ -e "${HECATRON_HOME}/.git" ] && _hint="; in this checkout, run hct self build"
+        echo "hecatron: doctor --output json needs hecatron's binary, which install.sh downloads with a release${_hint}" >&2
+        exit 2 ;;
     next) echo "hecatron: --output needs a format: human, agent or json" >&2; exit 2 ;;
     *) echo "hecatron: unknown output format '${_output}' (human, agent or json)" >&2; exit 2 ;;
 esac
@@ -77,8 +81,10 @@ _problems() (
         echo "${_dep} not found"
         return
     fi
+    # A note, not a problem: the toolchain works without its linter, and a
+    # project can lint its own way (#254); hct lint still needs it.
     if [ -n "${_lint}" ] && ! command -v "${_lint}" >/dev/null 2>&1; then
-        echo "lint tool ${_lint} not found"
+        echo "note: lint tool ${_lint} not found: hct lint ${_lang} needs it (hct install ${_lang} installs it)"
     fi
     # Each component's version (docs/guide/versions.md), where the definition
     # can list what's installed.

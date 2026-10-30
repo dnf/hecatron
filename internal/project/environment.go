@@ -155,7 +155,67 @@ func (p *Project) InstalledVersion(lang, component string) (Installed, bool, err
 	if resolved.Spec == "" {
 		return Installed{}, false, nil
 	}
-	return p.installedMatch(lang, resolved.Spec, resolved.Source)
+	match, ok, err := p.installedMatch(lang, resolved.Spec, resolved.Source)
+	if err != nil || ok {
+		return match, ok, err
+	}
+	return p.inRange(lang, component, resolved)
+}
+
+// versionRange is project.py's _range: the range of versions a component
+// runs on from the nearest of the definition's rangeFiles (package.json's
+// engines.node), and its file; ok is false for none.
+func (p *Project) versionRange(lang, component string) (allowed, path string, ok bool, err error) {
+	entries, err := p.fileEntries(lang, "rangeFiles")
+	if err != nil {
+		return "", "", false, err
+	}
+	value, source, _, err := p.pinEntry(lang, component, entries, "range")
+	if err != nil || !value.pins || value.spec == "" {
+		return "", "", false, err
+	}
+	return value.spec, strings.TrimPrefix(source, "range:"), true, nil
+}
+
+// RangeRun is what a component on the default runs instead when none of
+// the default's line is installed and its rangeFiles allow another
+// installed version (hct status says so, as hct doctor's note does): the
+// version, the range and its file; ok is false otherwise.
+func (p *Project) RangeRun(lang, component string) (version, allowed, where string, ok bool, err error) {
+	resolved, err := p.ResolveVersion(lang, component)
+	if err != nil {
+		return "", "", "", false, err
+	}
+	runs, ok, err := p.inRange(lang, component, resolved)
+	if err != nil || !ok {
+		return "", "", "", false, err
+	}
+	allowed, where, _, err = p.versionRange(lang, component)
+	return runs.Version, allowed, where, err == nil, err
+}
+
+// inRange is project.py's _in_range: for a component on the default with
+// none of the default's line installed, the newest installed version in
+// the range its rangeFiles give, which it runs instead (a package whose
+// engines say >=22, on a machine with Node.js 26 and no 24).
+func (p *Project) inRange(lang, component string, resolved Resolved) (Installed, bool, error) {
+	if resolved.Source != "default" || resolved.Spec == "" {
+		return Installed{}, false, nil
+	}
+	if component == "" {
+		var err error
+		if component, err = p.firstComponent(lang); err != nil {
+			return Installed{}, false, err
+		}
+	}
+	allowed, _, ok, err := p.versionRange(lang, component)
+	if err != nil || !ok {
+		return Installed{}, false, err
+	}
+	if _, onDefault, err := p.installedMatch(lang, resolved.Spec, "default"); err != nil || onDefault {
+		return Installed{}, false, err
+	}
+	return p.installedWhere(lang, func(version string) bool { return satisfies(allowed, version) })
 }
 
 // installedMatch is the newest installed version a spec matches ("" matches
@@ -178,6 +238,12 @@ func (p *Project) installedMatch(lang, specText, source string) (Installed, bool
 		}
 		wanted = &parsed
 	}
+	return p.installedWhere(lang, func(version string) bool { return wanted == nil || wanted.matches(version) })
+}
+
+// installedWhere is project.py's _installed_where: the newest installed
+// version that passes wanted.
+func (p *Project) installedWhere(lang string, wanted func(string) bool) (Installed, bool, error) {
 	all, err := p.InstalledVersions(lang)
 	if err != nil {
 		return Installed{}, false, err
@@ -187,7 +253,7 @@ func (p *Project) installedMatch(lang, specText, source string) (Installed, bool
 	var order []string
 	homes := map[string]string{}
 	for _, entry := range all {
-		if wanted != nil && !wanted.matches(entry.Version) {
+		if !wanted(entry.Version) {
 			continue
 		}
 		if _, seen := homes[entry.Version]; !seen {
@@ -229,6 +295,11 @@ func (p *Project) MissingVersions(lang string) ([]MissingVersion, error) {
 		}
 		if _, ok, err := p.installedMatch(lang, resolved.Spec, resolved.Source); err != nil {
 			return nil, err
+		} else if ok {
+			continue
+		}
+		if _, ok, err := p.inRange(lang, component, resolved); err != nil {
+			return nil, err
 		} else if !ok {
 			missing = append(missing, MissingVersion{component, resolved.Spec, resolved.Source})
 		}
@@ -265,6 +336,19 @@ func (p *Project) VersionNotes(lang string) ([]VersionNote, error) {
 			notes = append(notes, VersionNote{component, note})
 		case strings.HasPrefix(source, "supports:"):
 			notes = append(notes, VersionNote{component, fmt.Sprintf("%s, the newest %s supports", specText, strings.TrimPrefix(source, "supports:"))})
+		case source == "default":
+			runs, ok, err := p.inRange(lang, component, resolved)
+			if err != nil {
+				return nil, err
+			}
+			if ok {
+				allowed, where, _, err := p.versionRange(lang, component)
+				if err != nil {
+					return nil, err
+				}
+				notes = append(notes, VersionNote{component, fmt.Sprintf("%s runs: %s allows %s, and the default %s isn't installed",
+					runs.Version, where, allowed, specText)})
+			}
 		case strings.HasPrefix(source, "as-of:"):
 			when, reason, _ := strings.Cut(strings.TrimPrefix(source, "as-of:"), " (")
 			reason = reason[:max(len(reason)-1, 0)]
