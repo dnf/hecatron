@@ -4,6 +4,7 @@ project root, with HECATRON_HOME and HECATRON_ROOT, against fake tools."""
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
 import unittest
@@ -41,10 +42,12 @@ class RubyDoctorTest(Fixture):
                 link = os.path.join(self.bin, name)
                 if name != "bundle" and not os.path.exists(link):
                     os.symlink(os.path.join(directory, name), link)
-        python = os.path.join(self.bin, "python3")
-        if os.path.lexists(python):
-            os.remove(python)
-        os.symlink(sys.executable, python)
+        # This Python, and the bash on PATH (CI's bash 3.2 isn't in /bin).
+        for name, target in (("python3", sys.executable), ("bash", shutil.which("bash"))):
+            link = os.path.join(self.bin, name)
+            if os.path.lexists(link):
+                os.remove(link)
+            os.symlink(target, link)
         result = self.doctor(self.bin)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Bundler isn't installed", result.stdout)
