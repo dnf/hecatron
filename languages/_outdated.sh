@@ -58,10 +58,10 @@ outdated_finish() {
     exit "${_status}"
 }
 
-# Nothing this tool can report on here: say so, and succeed.
+# Nothing this tool can report on here: say so, and skip the component
+# (skip in _hooks.sh), which neither passed nor failed.
 outdated_nothing() {
-    echo "${HECATRON_LANG:-}: outdated: nothing to check: $*"
-    exit 0
+    skip "nothing to check: $*"
 }
 
 # Node.js: the package manager's own outdated report, on the installed

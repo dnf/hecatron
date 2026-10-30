@@ -191,6 +191,18 @@ class RunTest(unittest.TestCase):
         self.assertIn("failed (exit 2) without a report", result.stderr)
 
 
+    def test_nothing_to_check_skips(self):
+        hooks = os.path.join(HOME, "languages", "_hooks.sh")
+        helpers = os.path.join(HOME, "languages", "_outdated.sh")
+        with tempfile.NamedTemporaryFile("r") as skipped:
+            env = {**os.environ, "HECATRON_LANG": "fixture", "HECATRON_SKIPPED": skipped.name}
+            result = subprocess.run(["bash", "-c", f"source {hooks}\nsource {helpers}\noutdated_nothing no lock\necho ran"],
+                                    env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertNotIn("ran", result.stdout)
+            self.assertIn("nothing to check: no lock", result.stdout)
+
+
 class JsonCommandTest(Fixture):
     """--json runs each language and prints one array, logs on stderr."""
 
