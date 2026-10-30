@@ -9,6 +9,23 @@
     "pyproject.toml",
     "setup.py"
   ],
+  "sourceFiles": [
+    "*.py",
+    "*.pyi",
+    "*.pyx",
+    "*.pxd",
+    "requirements*.txt",
+    "uv.lock",
+    "poetry.lock",
+    "Pipfile",
+    "Pipfile.lock",
+    "setup.cfg",
+    "tox.ini",
+    "MANIFEST.in",
+    "ruff.toml",
+    ".ruff.toml",
+    "mypy.ini"
+  ],
   "detectWithSources": {
     "files": [
       "requirements.txt"
@@ -22,6 +39,14 @@
     "py",
     "python3"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "pyproject.toml",
+        "matches": "^[ \t]*\\[tool\\.uv\\.workspace\\]"
+      }
+    ]
+  },
   "path": [
     "{home}/bin",
     "~/.local/bin",

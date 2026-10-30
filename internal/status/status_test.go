@@ -187,3 +187,81 @@ func git(t *testing.T, dir string, args ...string) {
 		t.Fatalf("git %v: %v\n%s", args, err, out)
 	}
 }
+
+// A workspace at the root (durabuilt's Cargo workspace, Rust at ".")
+// claims only Rust's files: a crash dump or a README beside its crates is
+// another change, and an agent's worktree or another clone below the root
+// isn't the project's at all, whether git lists it as one directory (a
+// repository it can read) or file by file (a worktree whose .git file
+// points nowhere here).
+func TestRootComponentClaimsItsLanguagesFiles(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("no git")
+	}
+	builtin := filepath.Join(t.TempDir(), "languages")
+	write(t, builtin, map[string]string{
+		"go/config.json":   `{"detect": ["go.mod"]}`,
+		"rust/config.json": `{"detect": ["Cargo.toml"], "sourceFiles": ["*.rs", "Cargo.lock"]}`,
+	})
+	t.Setenv("HECATRON_BUILTIN_LANGUAGES", builtin)
+	t.Setenv("HECATRON_AS_OF", "off")
+	t.Setenv("GIT_CONFIG_NOSYSTEM", "1")
+	t.Setenv("GIT_CONFIG_GLOBAL", filepath.Join(builtin, "no-gitconfig"))
+	cases := []struct {
+		name                string
+		edit                map[string]string
+		nested              []string // directories made git repositories
+		rust, golang, other []string
+	}{
+		{"stray files and nested repositories", map[string]string{
+			".claude/worktrees/x/.git":        "gitdir: /nowhere/.git/worktrees/x\n",
+			".claude/worktrees/x/src/main.rs": "",
+			".claude/worktrees/y/src/lib.rs":  "",
+			"erl_crash.dump":                  "",
+			"crates/a/README.md":              "x\n",
+			"clients/go/notes.txt":            "",
+		}, []string{".claude/worktrees/y"}, nil, []string{"clients/go/notes.txt"}, []string{"crates/a/README.md", "erl_crash.dump"}},
+		{"a crate's source", map[string]string{"crates/a/src/lib.rs": "pub fn a() {}\n", "Cargo.lock": "x\n"}, nil,
+			[]string{"Cargo.lock", "crates/a/src/lib.rs"}, nil, nil},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			root, _ := filepath.EvalSymlinks(t.TempDir())
+			root = filepath.Join(root, "repo")
+			write(t, root, map[string]string{
+				".hecatron/config.json": `{"schema": 1, "components": ["."], "languages": ["go", "rust"],
+					"implPath": "clients/{lang}", "implPaths": {"rust": "."}}`,
+				"Cargo.toml":          "[workspace]\nmembers = [\"crates/*\"]\n",
+				"Cargo.lock":          "",
+				"crates/a/Cargo.toml": "[package]\n",
+				"crates/a/src/lib.rs": "",
+				"crates/a/README.md":  "",
+				"clients/go/go.mod":   "module x\n",
+			})
+			git(t, root, "init", "-q")
+			git(t, root, "add", "-A")
+			git(t, root, "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-qm", "x")
+			write(t, root, c.edit)
+			for _, dir := range c.nested {
+				git(t, filepath.Join(root, dir), "init", "-q")
+			}
+			p, err := project.Load(root, project.NewHome(t.TempDir()))
+			if err != nil {
+				t.Fatal(err)
+			}
+			s, err := Gather(p, []string{"PATH=/usr/bin:/bin", "HOME=" + root}, now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := map[string][]string{"other": s.OtherChanges}
+			for _, l := range s.Languages {
+				got[l.Name] = l.Changes
+			}
+			for name, want := range map[string][]string{"rust": c.rust, "go": c.golang, "other": c.other} {
+				if strings.Join(got[name], " ") != strings.Join(want, " ") {
+					t.Errorf("%s changes %q, want %q", name, got[name], want)
+				}
+			}
+		})
+	}
+}

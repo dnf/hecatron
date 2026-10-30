@@ -200,6 +200,21 @@ class NodeTestHookTest(Fixture):
                     "node/tsconfig.json": "{}", "node/node_modules/.keep": ""})
         self.assertEqual(self.ran(self.test()), ["npm run test in node"])
 
+    def test_packages_below_that_are_components_of_their_own_dont_run_twice(self):
+        # Serverless layers below a root package (#238): detection makes
+        # each a component, which runs it; the root's hook leaves them.
+        layers = {f"layers/{layer}/nodejs/package.json": package(test="jest") for layer in ("a", "b")}
+        self.files({"package.json": json.dumps({"dependencies": {"x": "1"}}), "lib/package.json": package(test="jest"),
+                    "lib/node_modules/.keep": "", **layers})
+        self.configure(components=[".", "layers/a/nodejs", "layers/b/nodejs"], implPath="{component}",
+                       languages=["javascript"])
+        self.assertEqual(self.ran(self.test("javascript", HECATRON_COMPONENT=".")), ["npm run test in lib"])
+        # Where the layers aren't components, the root's hook runs them.
+        self.configure(languages=["javascript"])
+        ran = self.ran(self.test("javascript", HECATRON_COMPONENT="."))
+        self.assertEqual(sorted(call for call in ran if call.startswith("npm run test")),
+                         ["npm run test in lib", "npm run test in nodejs", "npm run test in nodejs"])
+
     def test_no_test_anywhere_skips(self):
         # An Express app: detection takes it for JavaScript without tests.
         for lang in ("typescript", "javascript"):

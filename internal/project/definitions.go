@@ -282,15 +282,19 @@ type ComponentDir struct {
 }
 
 // ImplDirs are the components implemented in a language and their
-// directories, in component order.
+// directories, in component order. A directory several components share
+// (a language whose implPath doesn't vary by component) is the first
+// one's, so it runs once.
 func (p *Project) ImplDirs(lang string) ([]ComponentDir, error) {
 	var result []ComponentDir
+	seen := map[string]bool{}
 	for _, component := range p.Components {
 		found, _, err := p.findImplDir(component, lang)
 		if err != nil {
 			return nil, err
 		}
-		if found != "" {
+		if found != "" && !seen[found] {
+			seen[found] = true
 			result = append(result, ComponentDir{component, found})
 		}
 	}

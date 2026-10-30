@@ -8,10 +8,32 @@
   "detect": [
     "Cargo.toml"
   ],
+  "sourceFiles": [
+    "*.rs",
+    "Cargo.lock",
+    ".cargo/",
+    "rustfmt.toml",
+    ".rustfmt.toml",
+    "clippy.toml",
+    ".clippy.toml"
+  ],
   "dirNames": [
     "rust",
     "rs"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "Cargo.toml",
+        "matches": "^[ \t]*\\[workspace\\]"
+      }
+    ],
+    "package": [
+      {
+        "file": "Cargo.toml"
+      }
+    ]
+  },
   "path": [
     "{home}/bin",
     "~/.cargo/bin"

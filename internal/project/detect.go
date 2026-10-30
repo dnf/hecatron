@@ -39,7 +39,8 @@ type detection struct {
 	keys                                          []string
 	withSources                                   *withSourcesRule
 	yields                                        *yieldsRule
-	name                                          string // "name", else lang
+	root                                          map[string][]rootRule // "detectRoot": "workspace", "package"
+	name                                          string                // "name", else lang
 }
 
 // detectionDefinitions are the built-in definitions' detection keys, in
@@ -85,6 +86,10 @@ func detectionDefinitions(home Home) ([]detection, error) {
 		}
 		raw, present = object.Get("detectYields")
 		if d.yields, err = parseYields(raw, present, lang); err != nil {
+			return nil, err
+		}
+		raw, present = object.Get("detectRoot")
+		if d.root, err = parseRootRules(raw, present, lang); err != nil {
 			return nil, err
 		}
 		d.name = lang
@@ -1035,6 +1040,11 @@ func DetectedConfig(root string, home Home, components, implPath, languages stri
 	if err != nil {
 		return nil, nil, err
 	}
+	kinds, err := rootKinds(root, byDir["."], defs)
+	if err != nil {
+		return nil, nil, err
+	}
+	layout = placeRootLanguages(detected.Found, layout, names, kinds)
 	chosenComponents := layout.Components
 	if components != "" {
 		chosenComponents = nil

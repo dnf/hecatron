@@ -8,10 +8,34 @@
   "detect": [
     "go.mod"
   ],
+  "sourceFiles": [
+    "*.go",
+    "*.s",
+    "go.sum",
+    "go.work",
+    "go.work.sum",
+    "testdata/",
+    "vendor/",
+    ".golangci.yml",
+    ".golangci.yaml",
+    ".golangci.toml"
+  ],
   "dirNames": [
     "go",
     "golang"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "go.work"
+      }
+    ],
+    "package": [
+      {
+        "file": "go.mod"
+      }
+    ]
+  },
   "path": [
     "{home}/bin",
     "~/.local/bin",

@@ -8,6 +8,32 @@
   "detect": [
     "package.json"
   ],
+  "sourceFiles": [
+    "*.js",
+    "*.mjs",
+    "*.cjs",
+    "*.jsx",
+    "*.ts",
+    "*.mts",
+    "*.cts",
+    "*.tsx",
+    "*.vue",
+    "*.svelte",
+    "package-lock.json",
+    "npm-shrinkwrap.json",
+    "yarn.lock",
+    ".yarnrc.yml",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "bun.lock",
+    "bun.lockb",
+    ".npmrc",
+    "tsconfig*.json",
+    "eslint.config.*",
+    ".eslintrc*",
+    ".prettierrc*",
+    "prettier.config.*"
+  ],
   "detectUnless": [
     "tsconfig.json"
   ],
@@ -29,6 +55,22 @@
     "js",
     "nodejs"
   ],
+  "detectRoot": {
+    "workspace": [
+      {
+        "file": "package.json",
+        "key": "workspaces"
+      },
+      {
+        "file": "pnpm-workspace.yaml"
+      }
+    ],
+    "package": [
+      {
+        "file": "package.json"
+      }
+    ]
+  },
   "path": [
     "{home}/bin",
     "~/.cache/hecatron/corepack-shims"

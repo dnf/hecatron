@@ -16,6 +16,8 @@ import (
 	"path"
 	"sort"
 	"strings"
+
+	"github.com/dnf/hecatron/internal/project"
 )
 
 // Base is what the changes are measured from.
@@ -120,7 +122,8 @@ func isCommit(root, ref string) bool {
 
 // Files are the files changed since commit under root, relative to it:
 // git's diff to the working tree (renames as their old and new paths), and
-// the untracked files it doesn't ignore.
+// the untracked files it doesn't ignore, less those in another repository
+// or worktree below root (project.OutsideNestedRepos).
 func Files(root, commit string) ([]string, error) {
 	diff, err := git(root, "diff", "--name-only", "-z", "--no-renames", "--relative", commit, "--")
 	if err != nil {
@@ -139,7 +142,7 @@ func Files(root, commit string) ([]string, error) {
 		}
 	}
 	sort.Strings(files)
-	return files, nil
+	return project.OutsideNestedRepos(root, files), nil
 }
 
 func git(dir string, args ...string) (string, error) {
