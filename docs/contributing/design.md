@@ -110,7 +110,7 @@ has one, implicitly. Each language's code for a component lives at a path
 built from a template, e.g. `{component}/impl/{lang}`.
 
 **Action.** Something done to one component in one language: `test`, `lint`,
-`build`, `clean`, `audit`, `format`, `deps`, `outdated`. A project hook script implements it; hecatron runs it once
+`build`, `clean`, `audit`, `format`, `deps`, `outdated`, `docs`, `bench`. A project hook script implements it; hecatron runs it once
 per component (the "every library" rule sayable adopted: a command for one
 language acts on all of that language's components).
 
@@ -168,7 +168,7 @@ commands and the sayable `just` recipes or scripts they replaced:
 
 | Command | From |
 | --- | --- |
-| `init`, `outdated`, `deps`, `format`, `--version`, `self` | new |
+| `init`, `outdated`, `deps`, `format`, `audit`, `docs`, `bench`, `licenses`, `sbom`, `status`, `sync`, `advisor`, `exec`, `skill`, `--version`, `self` | new |
 | `test`, `lint`, `build`, `clean`, `rebuild`, `retest` | `just test`, `just lint`, `just build`, `just clean`, same |
 | `install`, `uninstall`, `doctor` | `just install`, `just doctor` |
 | `add`, `remove`, `enable`, `disable`, `list languages` | the same recipes, `just list` |
@@ -835,8 +835,8 @@ The bash 3.2 rule (§14) then applies only to hooks and install scripts.
 
 ## 20. Source control backends
 
-Status: **planned** (#99–#103), except where marked as working today
-(#100–#103 are done).
+Status: **done** (#99–#103); Bitbucket and Azure pipelines are generated
+on demand.
 Hecatron runs the same everywhere; what differs between GitHub, GitLab,
 Bitbucket and Azure DevOps is where CI is configured and where results are
 shown. Hecatron meets each forge with thin adapters (an environment variable
@@ -849,11 +849,11 @@ on a laptop and in CI.
 
 Moved to the user guide: [hecatron in CI](../guide/ci.md).
 
-### Planned
+### What was planned
 
 | Feature | GitHub | GitLab | Others | Issue |
 | --- | --- | --- | --- | --- |
-| Test only what a pull or merge request changed (`--changed` with the base from the CI environment) | `GITHUB_BASE_REF` | `CI_MERGE_REQUEST_DIFF_BASE_SHA` | Bitbucket, Azure variables | #99 (needs #91) |
+| Test only what a pull or merge request changed (`--changed` with the base from the CI environment) | `GITHUB_BASE_REF` | `CI_MERGE_REQUEST_DIFF_BASE_SHA` | Bitbucket, Azure variables | #99 (done) |
 | Per-test results (JUnit XML, `--output junit`) | through a reporting action | merge request test widget | Jenkins, Azure, Buildkite, CircleCI | #100 (done) |
 | Findings on the change (SARIF from `audit` and `lint`; GitLab Code Quality JSON) | code scanning | security and code quality widgets | any SARIF reader | #100 (done) |
 | A results page per run | job summary (`GITHUB_STEP_SUMMARY`) | the JUnit report | | #101 (done) |

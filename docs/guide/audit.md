@@ -41,7 +41,8 @@ output (`node_modules`, `.build`, `Pods`, `deps`, `vendor`, `target`,
 language below this one, which its own audit reads. CocoaPods'
 `Podfile.lock` isn't one OSV-Scanner reads, so Objective-C has no auditor.
 
-Other languages have no auditor: `hct audit <lang>` says so and succeeds.
+Other languages have no auditor: `hct audit <lang>` says so and is
+[skipped](output.md#skipped).
 
 **Nothing to audit is skipped, not passed.** A component with no file the
 auditor reads (a Rust crate without `Cargo.lock`, a Gradle build without

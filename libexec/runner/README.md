@@ -16,16 +16,16 @@ A bash script that runs jobs (hecatron commands, or just recipes when run standa
 
 ```bash
 # Run 3 jobs with default concurrency (nproc/2 slots)
-./.hecatron/tools/runner/run-parallel.sh test "test go" "test rust" "test python"
+libexec/runner/run-parallel.sh test "test go" "test rust" "test python"
 
 # Limit to 2 concurrent slots
-./.hecatron/tools/runner/run-parallel.sh -j 2 test "test go" "test rust" "test python"
+libexec/runner/run-parallel.sh -j 2 test "test go" "test rust" "test python"
 
 # All jobs at once (no swimlanes)
-./.hecatron/tools/runner/run-parallel.sh -j unlimited test "test go" "test rust" "test python"
+libexec/runner/run-parallel.sh -j unlimited test "test go" "test rust" "test python"
 
 # Mark a language as not installed
-./.hecatron/tools/runner/run-parallel.sh test "test go" "skip:haskell" "test rust"
+libexec/runner/run-parallel.sh test "test go" "skip:haskell" "test rust"
 ```
 
 ## Command-line reference
@@ -49,6 +49,7 @@ Usage: run-parallel.sh [flags] <name> "cmd args" ...
 | `-j VALUE` | Set concurrency: integer, percentage (default `50%`), `pcores`, or `unlimited` |
 | `-n NICE`  | Run jobs under `sudo nice -n NICE` (e.g. `-n -20` for highest CPU priority)    |
 | `-s MODE`  | Visualization mode: `scroll` (default), `full`, or `zoom`                      |
+| `--fail-on-skip` | Exit 1 when no job passed or failed ([below](#--fail-on-skip))           |
 | `-h`       | Show help and exit                                                             |
 | `--help`   | Show help and exit                                                             |
 
@@ -162,7 +163,7 @@ Temporary files written by each job subprocess. Format: `duration_ds return_code
 
 ### --fail-on-skip
 
-`run-parallel.sh --fail-on-skip NAME ...` exits 1 when no job passed or failed (each skipped or not installed), saying `hecatron: nothing ran: every job skipped (--fail-on-skip)`; run.sh passes it for `hct test --fail-on-skip`.
+`run-parallel.sh --fail-on-skip NAME ...` exits 1 when no job passed or failed (each skipped or not installed), saying `hecatron: nothing ran: every job skipped (--fail-on-skip)`; run.sh passes it for every run command's `--fail-on-skip` (`hct test --fail-on-skip`).
 
 ## Integration
 
@@ -176,7 +177,7 @@ test *lang:
     # ... parse -j/-s flags and language args ...
     if [ -z "$_langs" ]; then
         # Parallel: build args array, call runner
-        .hecatron/tools/runner/run-parallel.sh ${_jflag:+-j "$_jflag"} test "${args[@]}"
+        "${HECATRON_HOME}/libexec/runner/run-parallel.sh" ${_jflag:+-j "$_jflag"} test "${args[@]}"
     else
         # Single language: run directly with tee
         (cd src/$_langs && run_tests) 2>&1 | tee ".logs/test/$name.log"
@@ -205,7 +206,7 @@ The display label is the **last word** of each command argument:
 The justfile recipes parse `-j`, `-n`, and `-s` from their own arguments and forward them:
 
 ```bash
-.hecatron/tools/runner/run-parallel.sh ${_jflag:+-j "$_jflag"} ${_nflag:+-n "$_nflag"} ${_sflag:+-s "$_sflag"} test "${args[@]}"
+"${HECATRON_HOME}/libexec/runner/run-parallel.sh" ${_jflag:+-j "$_jflag"} ${_nflag:+-n "$_nflag"} ${_sflag:+-s "$_sflag"} test "${args[@]}"
 ```
 
 ## Requirements

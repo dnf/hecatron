@@ -8,10 +8,15 @@ duration, log path, error excerpt) in one of four formats:
   path and up to ten lines matching the language's error patterns (else the
   last fifteen, without colour codes or download noise), and a `Rerun:`
   line; one line when everything passes;
-- **json**, for scripts: the run's `status`, `exitCode`, `summary`
-  (`passed`, `failed`, `timedOut`, `skipped`) and each job's `label`,
-  `status`, `exitCode`, `duration`, `log`, `components` and, when it
-  failed, its error excerpt (`errors`); `hct audit` adds every finding as
+- **json**, for scripts: the run's `command`, `status` (`passed`,
+  `failed` or `skipped`), `exitCode`, `duration`, `summary` (`passed`,
+  `failed`, `timedOut`, `skipped`), `logs`, `rerun` and, with
+  `--changed`, what it compared (`changed`); and each job's `label`,
+  `kind` (`language`, `task` or `tool`), `language`, `status` (`passed`,
+  `failed`, `timed out`, `skipped`, `not installed` or `disabled`),
+  `reason`, `exitCode`, `duration`, `log`, `timeLimit`, `components`,
+  `docs` (`hct docs`) and, when it failed, its error excerpt (`errors`);
+  `hct audit` adds every finding as
   a `vulnerabilities` record and the secret scan's as `secrets`
   ([audit](audit.md#in-ci));
 - **CI**: human output plus GitHub annotations for each error line.
@@ -60,12 +65,6 @@ passed or failed is enough. With `rebuild` and `retest` it applies to the
 build or test, not the clean. A command with no jobs at all ("Nothing to
 test.") still exits 0. It's a flag and a variable, not a config setting,
 as `--timeout` is: what a run must achieve is the caller's (a CI job's).
-
-A job is **skipped** when every component's hook had nothing to do (an
-audit with no lock file its auditor reads): status `skipped` with a
-`reason` in JSON, `SKIP <label> (<dirs>): <reason>` in agent output, `-`
-and `skipped` in human output, counted apart from passed; it doesn't fail
-the run. Not installed and disabled languages are counted as skipped too.
 
 The run commands also take `--output junit` and `--output sarif`, which
 print that report in place of the normal output. All of this needs

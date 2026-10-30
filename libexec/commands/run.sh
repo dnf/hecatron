@@ -103,7 +103,7 @@ _usage() {
     printf '%s\n' \
         "" \
         "Flags:" \
-        "  -j VALUE   Concurrency: integer, percentage (default 50%), or 'unlimited'" \
+        "  -j VALUE   Concurrency: integer, percentage (default 50%), 'pcores' or 'unlimited'" \
         "  -s MODE    Display: scroll (default), full, or zoom" \
         "  -c NAME    Only this component (repeatable); components: ${HECATRON_COMPONENTS}" \
         "  --fail-on-skip" \

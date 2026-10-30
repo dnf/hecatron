@@ -114,7 +114,9 @@ from `helpers.sh`'s language lists and hands it to
    language's version environment.
 5. With no languages named, the dependencies the installers deferred
    (`HECATRON_DEFER_DEPS`) are fetched with `hct deps` once every toolchain
-   is in.
+   is in; with languages named, each installer fetches its own. With
+   `--no-deps` (`HECATRON_NO_DEPS=1`, as for `doctor --fix --no-deps`),
+   none are.
 
 Without the binary, `manage.py install` runs each `install.sh` in turn.
 
