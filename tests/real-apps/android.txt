@@ -1,0 +1,55 @@
+# Open-source Android apps the real-apps workflow's android track builds,
+# one every two hours in turn (.github/workflows/real-apps.yml,
+# try-next.sh), on Linux with the runner's Android SDK. One GitHub
+# owner/repo per line; # starts a comment, which says what the app is there
+# for. Add to the end: the turn is the clock's two-hour slot modulo the
+# list's length, so inserting earlier only shifts whose turn it is.
+
+android/nowinandroid                 # Google's reference app: Compose, many modules, convention plugins
+android/architecture-samples         # small Compose app
+thunderbird/thunderbird-android      # large multi-module mail app
+signalapp/Signal-Android             # very large, flavours, native libraries
+element-hq/element-x-android         # Compose, many modules
+mastodon/mastodon-android            # Java app
+nextcloud/android                    # flavours, google-services
+nextcloud/talk-android               # flavours
+owncloud/android                     # multi-module
+bitwarden/android                    # several apps in one build
+wikimedia/apps-android-wikipedia     # flavours
+duckduckgo/Android                   # very many modules
+AntennaPod/AntennaPod                # Java, flavours
+TeamNewPipe/NewPipe                  # Java app
+streetcomplete/StreetComplete        # Kotlin Multiplatform
+home-assistant/android               # phone, Wear OS and Automotive apps, google-services
+openhab/openhab-android              # flavours
+Kunzisoft/KeePassDX                  # flavours, native crypto
+Automattic/pocket-casts-android      # many modules, secrets properties
+wordpress-mobile/WordPress-Android   # very large, gradle.properties secrets
+woocommerce/woocommerce-android      # large, secrets
+ProtonVPN/android-app                # flavours
+mihonapp/mihon                       # multi-module
+LawnchairLauncher/lawnchair          # launcher on AOSP sources, submodules
+termux/termux-app                    # Java, native bootstrap
+florisboard/florisboard              # keyboard, native code
+zhanghai/MaterialFiles               # single module
+FossifyOrg/Gallery                   # app on a shared commons library
+FossifyOrg/Calendar                  # app on a shared commons library
+JetBrains/kotlinconf-app             # Kotlin Multiplatform, Compose Multiplatform
+touchlab/KaMPKit                     # Kotlin Multiplatform starter
+skydoves/Pokedex                     # Compose, Hilt
+DroidKaigi/conference-app-2024       # Kotlin Multiplatform, many modules
+mpv-android/mpv-android              # native libraries built by scripts
+deltachat/deltachat-android          # Java, Rust core through submodules
+quran/quran_android                  # flavours
+videolan/vlc-android                 # native libVLC built by scripts
+Docile-Alligator/Infinity-For-Reddit # Java app
+jellyfin/jellyfin-android            # small app
+jellyfin/jellyfin-androidtv          # Android TV
+kiwix/kiwix-android                  # multi-module, custom apps
+commons-app/apps-android-commons     # Wikimedia Commons
+DrKLO/Telegram                       # very large Java app, NDK
+topjohnwu/Magisk                     # NDK, Rust, build.py
+osmandapp/OsmAnd                     # very large, several repositories
+Droid-ify/client                     # F-Droid client
+simplex-chat/simplex-chat            # Compose Multiplatform app in apps/multiplatform of a Haskell monorepo
+mullvad/mullvadvpn-app               # app in android/ of a Rust monorepo

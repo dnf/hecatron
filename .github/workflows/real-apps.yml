@@ -1,25 +1,39 @@
-# Builds one open-source Xcode app every two hours with hct as a newcomer
-# would: an app whose issue is labelled real-app-retry, else the next on
-# tests/real-apps/apps.txt in turn. Files an issue (label real-app) when
-# something goes wrong or nothing was built, or comments on the app's open
-# one. No AI: tests/real-apps/try-next.sh and report.py.
+# Builds one open-source app every two hours on each track, with hct as a
+# newcomer would: xcode (tests/real-apps/xcode.txt, on macOS) and android
+# (android.txt, on Linux). Each run takes an app whose issue is labelled
+# real-app-retry, else the next on the track's list in turn. Files an issue
+# (labels real-app, real-app:<track>) when something goes wrong or nothing
+# was built, or comments on the app's open one. No AI:
+# tests/real-apps/try-next.sh and report.py.
 name: real apps
 
 on:
   schedule:
-    - cron: "23 */2 * * *"
+    - cron: "23 */2 * * *" # xcode
+    - cron: "53 */2 * * *" # android
   workflow_dispatch:
     inputs:
+      track:
+        description: "Track"
+        type: choice
+        options:
+          - xcode
+          - android
+        default: xcode
       app:
-        description: "owner/repo to build (default: whose turn it is)"
+        description: "owner/repo to build (default: a retry, else whose turn it is)"
         required: false
 
 concurrency:
-  group: real-apps
+  group: real-apps-${{ inputs.track || github.event.schedule }}
   cancel-in-progress: false
 
+env:
+  TRACK: ${{ inputs.track || (github.event.schedule == '53 */2 * * *' && 'android') || 'xcode' }}
+
 jobs:
-  # Which app: the manual input, a retry, or whose turn it is.
+  # Which app: the manual input, a retry, or whose turn it is; and the
+  # runner its track builds on.
   pick:
     if: github.repository == 'dnf/hecatron'
     runs-on: ubuntu-latest
@@ -27,6 +41,8 @@ jobs:
       contents: read
       issues: read
     outputs:
+      track: ${{ steps.pick.outputs.track }}
+      runner: ${{ steps.pick.outputs.runner }}
       app: ${{ steps.pick.outputs.app }}
       retry_issue: ${{ steps.pick.outputs.retry_issue }}
     steps:
@@ -42,10 +58,12 @@ jobs:
   # Runs the app's own build scripts, so it gets no token that can write.
   build:
     needs: pick
-    runs-on: macos-latest
+    runs-on: ${{ needs.pick.outputs.runner }}
     timeout-minutes: 120
     permissions:
       contents: read
+    env:
+      TRACK: ${{ needs.pick.outputs.track }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,6 +71,18 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      # The image's default Xcode trails its newest; apps follow the newest
+      # SDK (IceCubesApp's toolbarVerticalEdge, #251).
+      - name: Use the newest released Xcode
+        if: env.TRACK == 'xcode'
+        run: |
+          xcode="$(ls -d /Applications/Xcode_*.app | grep -viE 'beta|release_candidate|_rc' | sort -V | tail -n 1)"
+          if [ -n "${xcode}" ]; then sudo xcode-select -s "${xcode}"; fi
+          xcodebuild -version
+      # Gradle builds of large apps fill the runner's disk; these aren't used.
+      - name: Free disk space
+        if: env.TRACK == 'android'
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost
       - name: Build the next app
         env:
           APP: ${{ needs.pick.outputs.app }}
@@ -79,6 +109,8 @@ jobs:
     permissions:
       contents: read
       issues: write
+    env:
+      TRACK: ${{ needs.pick.outputs.track }}
     steps:
       - uses: actions/checkout@v4
         with:
