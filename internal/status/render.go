@@ -171,6 +171,9 @@ func sourceText(source string, noVersion bool) string {
 func toolchainText(l Language) string {
 	switch l.Toolchain {
 	case "installed":
+		if missing := versionsMissing(l); missing != "" {
+			return "installed, but not " + missing
+		}
 		return "installed"
 	case "missing":
 		return "missing (" + l.Dependency + ")"

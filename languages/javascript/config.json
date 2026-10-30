@@ -68,6 +68,13 @@
       "key": "node-version"
     }
   ],
+  "rangeFiles": [
+    {
+      "file": "package.json",
+      "format": "npm-engines",
+      "key": "node"
+    }
+  ],
   "releasesOf": "typescript",
   "buildSystems": [
     "npm, pnpm, Yarn or Bun"

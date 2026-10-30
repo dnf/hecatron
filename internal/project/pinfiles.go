@@ -61,6 +61,7 @@ func init() {
 		"github-setup":        githubSetup,
 		"maven-source-level":  mavenSourceLevel,
 		"target-framework":    targetFramework,
+		"npm-engines":         npmEngines,
 	}
 }
 
@@ -393,6 +394,40 @@ func composerJSON(text string, _ pinKey) (pinned, error) {
 		return noVersion, nil
 	}
 	return pinnedSpec(strings.Join(prefixStrings(strings.Split(result.spec, "."), 2), ".")), nil
+}
+
+// npmEngines is versions.py's _npm_engines: package.json's engines.node
+// (">=22"), the range of versions the package runs on, for rangeFiles.
+func npmEngines(text string, key pinKey) (pinned, error) {
+	document, ok, err := pyJSONLoads(text)
+	if err != nil || !ok {
+		return notPinned, err
+	}
+	top, isObject := document.(*Object)
+	if !isObject {
+		return notPinned, nil // AttributeError
+	}
+	engines, _ := top.Get("engines")
+	if !truthy(engines) {
+		return notPinned, nil
+	}
+	object, isObject := engines.(*Object)
+	if !isObject {
+		return notPinned, nil
+	}
+	name := "node"
+	if key.set && key.name != "" {
+		name = key.name
+	}
+	value, _ := object.Get(name)
+	allowed, isString := value.(string)
+	if !isString {
+		return notPinned, nil
+	}
+	if _, ok := parseRange(allowed); !ok {
+		return notPinned, nil
+	}
+	return pinnedSpec(strings.Join(pyFields(allowed), " ")), nil
 }
 
 var (

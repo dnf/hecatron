@@ -367,7 +367,11 @@ def go_only_settings(project) -> list[str]:
 
 
 def needs_binary(what: str) -> None:
-    die(f"{what} needs hecatron's binary, which install.sh downloads with a release")
+    # install.sh's installs and checkouts are both git clones; hct self build
+    # builds the binary in either, as bin/hecatron says.
+    in_checkout = os.path.exists(os.path.join(HOME, ".git"))
+    hint = "; in this checkout, run hct self build" if in_checkout else ""
+    die(f"{what} needs hecatron's binary, which install.sh downloads with a release{hint}")
 
 
 def write_workflows(project, *, check: bool) -> bool:
