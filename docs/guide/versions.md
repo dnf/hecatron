@@ -170,6 +170,24 @@ last (Go 1.27.3 is line 1.27). A version the project chooses, by pin file or
 band and the patch (10.0.403 is band 4, patch 3), so no shorter prefix names
 a band, and an older band's compiler can't load a newer band's analyzers.
 
+A component on the default can also say which versions it runs on, as a
+range rather than a version: a definition's `rangeFiles`, read like pin
+files (nearest first, up to the root; a file whose entry has nothing to say,
+such as a `package.json` without `engines.node`, is passed over). JavaScript
+and TypeScript read `package.json`'s `engines.node` (format `npm-engines`,
+npm's range syntax: `>=22`, `^20.1 || ^22`, `20 - 22`, `22.x`). When none of
+the default's line is installed, the newest installed version in the range
+runs, and the doctor counts it as installed and says so ("clients/web:
+typescript 26.13.0 runs: clients/web/package.json allows >=22, and the
+default 24.22.1 isn't installed"), so a machine with Node.js 26 needs no 24
+for a package asking for 22 or later. A range isn't a pin: what installers
+and the Dockerfile install, and what runs where the default's line is
+installed, stay the default, even when the range excludes it (holding a
+component back to the newest line its range allows is
+`supportFiles`' job, which `engines` doesn't do yet). A pin file, the
+project's `version`, a supported line or an old checkout's date wins over
+a range. (The implementation's decision, #257; the owner may revise it.)
+
 ## Defaults and how they are updated
 
 Each definition's `config.json` records its default `version` (exact) and its
@@ -250,3 +268,16 @@ Gradle wrapper older than 9.1 or a Kotlin compiler older than 2.3 runs on
 the newest LTS JDK it supports, which the JVM installers install and the
 hooks run the build on (`JAVA_HOME`), saying so. The doctor reports either
 when missing.
+
+## .NET runtimes a component runs on
+
+A .NET SDK builds for every framework, but runs tests and apps only on a
+runtime it has. The C# installer installs, and the doctor asks for, the
+runtime of each `netX.0` framework a project that runs targets: a test
+project (`Microsoft.NET.Test.Sdk`, `<IsTestProject>`), an executable
+(`<OutputType>Exe</OutputType>` or `WinExe`) or a web or worker app (their
+SDKs), with its frameworks from the project file or, failing that, the
+nearest `Directory.Build.props` that sets them. A class library's
+frameworks need only their targeting packs, which the SDK restores, so a
+library multi-targeting `net8.0;netstandard2.1` whose tests target
+`net10.0` needs no .NET 8 runtime.

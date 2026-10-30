@@ -401,16 +401,41 @@ exit(any(p -> p.name == \"JuliaFormatter\" && string(p.version) == \"${_JULIA_FO
 }
 
 # For the .NET languages' installers and doctors: the .NET runtimes the
-# components' projects target (net8.0, net9.0...; not netstandard, which runs
-# on any, nor the Windows-only .NET Framework's net4x), which their tests need.
+# components' projects run on (net8.0, net9.0...; not netstandard, which runs
+# on any, nor the Windows-only .NET Framework's net4x). Only a project that
+# runs needs its runtime: a test project, an executable or a web app. A class
+# library only builds, and the SDK restores the targeting pack that needs, so
+# a library multi-targeting net8.0 needs no .NET 8 runtime (#256).
 dotnet_target_majors() {
-    local _lang _dir
+    local _lang _dir _project
     for _lang in csharp fsharp vbnet; do impl_dirs "${_lang}"; done | while IFS= read -r _dir; do
         find "${_dir}" -maxdepth 4 \( -name bin -o -name obj \) -prune -o \
-            \( -name '*.csproj' -o -name '*.fsproj' -o -name '*.vbproj' -o -name '*.props' \) -type f -print
-    done |
-        xargs -r grep -ho '<TargetFrameworks\?[^>]*>[^<]*' 2>/dev/null |
-        sed 's/.*>//' | tr ';' '\n' | sed -n 's/^net\([0-9][0-9]*\)\.0.*$/\1/p' | sort -un
+            \( -name '*.csproj' -o -name '*.fsproj' -o -name '*.vbproj' \) -type f -print
+    done | while IFS= read -r _project; do
+        if dotnet_project_runs "${_project}"; then dotnet_frameworks_of "${_project}"; fi
+    done | sed -n 's/^[[:space:]]*net\([0-9][0-9]*\)\.0.*$/\1/p' | sort -un
+}
+# Whether a project runs: a test project (the test SDK, or IsTestProject), an
+# executable (OutputType Exe or WinExe), or an app whose SDK makes one (web,
+# worker).
+dotnet_project_runs() {
+    grep -qsiE 'Microsoft\.NET\.Test\.Sdk|<IsTestProject>[[:space:]]*true|<OutputType>[[:space:]]*(Win)?Exe[[:space:]]*<|Sdk="Microsoft\.NET\.Sdk\.(Web|Worker|Razor|BlazorWebAssembly)"' "$1"
+}
+# A project's target frameworks, one per line: its own TargetFramework(s),
+# else those of the nearest Directory.Build.props above it, up to the project
+# root, that sets them (MSBuild imports the nearest).
+_dotnet_framework_tag='<TargetFrameworks\{0,1\}[[:space:]>]'
+_dotnet_sets_frameworks() { grep -qs "${_dotnet_framework_tag}" "$1"; }
+dotnet_frameworks_of() {
+    local _file="$1" _dir
+    _dir="$(dirname "$1")"
+    while ! _dotnet_sets_frameworks "${_file}"; do
+        _file="${_dir}/Directory.Build.props"
+        _dotnet_sets_frameworks "${_file}" && break
+        if [ "${_dir}" = "${ROOT}" ] || [ "${_dir}" = / ] || [ "${_dir}" = . ]; then return 0; fi
+        _dir="$(dirname "${_dir}")"
+    done
+    grep -h "${_dotnet_framework_tag}" "${_file}" | sed 's/^[^<]*<TargetFrameworks\{0,1\}[^>]*>//; s/<.*//' | tr ';' '\n'
 }
 dotnet_has_runtime() { grep -q "^Microsoft.NETCore.App $1\." <<<"$(dotnet --list-runtimes 2>/dev/null)"; }
 dotnet_runtimes_missing() {

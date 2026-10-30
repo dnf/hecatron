@@ -45,6 +45,7 @@ var repos = map[string]fixtureRepo{
 		".hecatron/local.json":    `{"disabled": ["gamma"]}`,
 		".gitignore":              ".logs/\n.hecatron/local.json\n",
 		"a/alpha/x":               "x\n",
+		"a/alpha/.alpha-version":  "1.3\n",
 		"b/alpha/.alpha-version":  "1.1\n",
 		"a/beta/y":                "",
 		"a/gamma/z":               "",

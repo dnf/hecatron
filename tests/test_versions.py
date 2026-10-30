@@ -844,5 +844,58 @@ class PythonInstalledTest(unittest.TestCase):
             self.assertEqual(result.stdout.split(), ["3.12.1", os.path.realpath(os.path.join(tmp, "3.12.1"))])
 
 
+class RangeTest(unittest.TestCase):
+    """npm's range syntax, which package.json's engines use (#257)."""
+
+    CASES = [
+        (">=22", "26.13.0", True), (">=22", "20.1.0", False), (">= 22", "22.0.0", True),
+        (">22", "22.5.0", False), (">22", "23.0.0", True), (">22.4", "22.5.0", True),
+        ("<=22", "22.9.9", True), ("<22", "22.0.0", False), ("22.x", "22.2.0", True), ("22", "23.0.0", False),
+        ("=22.4.0", "22.4.0", True), ("=22.4.0", "22.4.1", False), ("*", "1.0.0", True), ("", "1.0.0", True),
+        ("^18", "18.9.1", True), ("^18", "19.0.0", False), ("^0.2.3", "0.2.9", True), ("^0.2.3", "0.3.0", False),
+        ("^0.0.3", "0.0.4", False), ("~18.17", "18.17.9", True), ("~18.17", "18.18.0", False),
+        (">=16 <21", "20.9.0", True), (">=16 <21", "21.0.0", False), ("14 || >=18", "16.0.0", False),
+        ("14 || >=18", "14.2.0", True), ("20 - 22", "22.9.0", True), ("20 - 22", "23.0.0", False),
+        ("20 - 22.4.1", "22.4.2", False), (">=22", "26.0.0-rc.1", False), ("lts", "1.0.0", False),
+    ]
+
+    def test_satisfies(self):
+        for allowed, version, expected in self.CASES:
+            with self.subTest(allowed=allowed, version=version):
+                self.assertEqual(versions.satisfies(allowed, version), expected)
+
+    def test_npm_engines_gives_the_node_range(self):
+        self.assertEqual(versions.read_pin("npm-engines", '{"engines": {"node": " >= 22 "}}'), ">= 22")
+        for text in ("{}", '{"engines": {"npm": ">=10"}}', '{"engines": {"node": "lts"}}',
+                     '{"engines": {"node": 22}}', '{"engines": ">=22"}', "[1]", "{"):
+            self.assertIs(versions.read_pin("npm-engines", text), versions.NOT_PINNED, text)
+
+
+class RangeFilesTest(VersionFixture):
+    def setUp(self) -> None:
+        super().setUp()
+        self.define(version="=24.22.1", releaseLine=1, rangeFiles=[{"file": "package.json", "format": "npm-engines"}])
+        os.environ["HECATRON_AS_OF"] = "off"
+
+    def test_an_installed_version_in_the_range_runs_in_place_of_the_default(self):
+        self.installed("26.13.0\t/opt/n26", "20.1.0\t/opt/n20")
+        write(self.path("a", "tool", "package.json"), '{"engines": {"node": ">=22"}}')
+        p = self.load()
+        self.assertEqual(p.installed_version("tool", "a"), ("26.13.0", "/opt/n26"))
+        self.assertEqual(p.missing_versions("tool"), [("b", "=24.22.1", "default")])
+        self.assertEqual(p.version_notes("tool"),
+                         [("a", "26.13.0 runs: a/tool/package.json allows >=22, and the default 24.22.1 isn't installed")])
+
+    def test_the_defaults_line_still_wins_where_installed(self):
+        self.installed("26.13.0\t/opt/n26", "24.1.0\t/opt/n24")
+        write(self.path("a", "tool", "package.json"), '{"engines": {"node": ">=22"}}')
+        self.assertEqual(self.load().installed_version("tool", "a"), ("24.1.0", "/opt/n24"))
+
+    def test_nothing_in_the_range_is_still_missing(self):
+        self.installed("20.1.0\t/opt/n20")
+        write(self.path("a", "tool", "package.json"), '{"engines": {"node": ">=22"}}')
+        self.assertIn(("a", "=24.22.1", "default"), self.load().missing_versions("tool"))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -219,6 +219,20 @@ def _composer_json(text, key):
     return ".".join(spec.split(".")[:2]) if spec else None
 
 
+def _npm_engines(text, key):
+    # package.json's engines.node (">=22"): not a pin but the range of
+    # versions the package runs on, for rangeFiles (the range, normalized,
+    # or NOT_PINNED for none or one this can't read).
+    try:
+        engines = json.loads(text).get("engines") or {}
+        value = engines.get(key or "node")
+    except (json.JSONDecodeError, AttributeError):
+        return NOT_PINNED
+    if not isinstance(value, str) or parse_range(value) is None:
+        return NOT_PINNED
+    return " ".join(value.split())
+
+
 def _go_mod_toolchain(text, key):
     match = re.search(r"^\s*toolchain\s+go(\S+)\s*$", text, re.MULTILINE)
     return _plain(match.group(1), exact=True) if match else NOT_PINNED
@@ -365,7 +379,110 @@ FORMATS = {
     "github-setup": _github_setup,
     "maven-source-level": _maven_source_level,
     "target-framework": _target_framework,
+    "npm-engines": _npm_engines,
 }
+
+
+# -- ranges -------------------------------------------------------------------
+
+# A range is npm's (node-semver's) syntax, which package.json's engines use:
+# comparators (>=22, <23.1, =22.4.0), partial versions (22, 22.x, *), ~ and ^,
+# hyphens (20 - 22), all of a space-separated set, any set of ||. Parsed into
+# sets of (operator, (major, minor, patch)) comparators.
+_PARTIAL = re.compile(r"^v?(\d+|[xX*])?(?:\.(\d+|[xX*]))?(?:\.(\d+|[xX*]))?(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
+_OPERATOR = re.compile(r"^(<=|>=|<|>|=|~>|~|\^)?(.*)$")
+
+
+def _partial(text: str) -> list[int] | None:
+    """The numbers a partial version gives, up to the first wildcard."""
+    match = _PARTIAL.match(text)
+    if not match:
+        return None
+    numbers = []
+    for part in match.groups():
+        if part is None or part in "xX*":
+            break
+        numbers.append(int(part))
+    return numbers
+
+
+def _padded(numbers: list[int]) -> tuple[int, int, int]:
+    return tuple((numbers + [0, 0, 0])[:3])
+
+
+def _next(numbers: list[int]) -> tuple[int, int, int]:
+    """The first version past a partial one: 22 -> 23.0.0, 22.4 -> 22.5.0."""
+    bumped = numbers[:-1] + [numbers[-1] + 1]
+    return _padded(bumped)
+
+
+def _comparators(token: str) -> list | None:
+    operator, rest = _OPERATOR.match(token).groups()
+    numbers = _partial(rest)
+    if numbers is None:
+        return None
+    n = len(numbers)
+    if n == 0:
+        return [("<", (0, 0, 0))] if operator in ("<", ">") else []
+    low = _padded(numbers)
+    if operator in (None, "="):
+        return [(">=", low), ("<=", low)] if n == 3 else [(">=", low), ("<", _next(numbers))]
+    if operator == ">=":
+        return [(">=", low)]
+    if operator == ">":
+        return [(">", low)] if n == 3 else [(">=", _next(numbers))]
+    if operator == "<":
+        return [("<", low)]
+    if operator == "<=":
+        return [("<=", low)] if n == 3 else [("<", _next(numbers))]
+    if operator in ("~", "~>"):
+        return [(">=", low), ("<", _next(numbers[:2]))]
+    # ^: the leftmost non-zero part stays fixed (^0.2.3 is below 0.3.0).
+    fixed = next((i for i, part in enumerate(numbers) if part != 0), n - 1)
+    return [(">=", low), ("<", _next(numbers[:fixed + 1]))]
+
+
+def _hyphen(low: str, high: str) -> list | None:
+    first, last = _partial(low), _partial(high)
+    if first is None or last is None:
+        return None
+    bounds = [(">=", _padded(first))] if first else []
+    if len(last) == 3:
+        bounds.append(("<=", _padded(last)))
+    elif last:
+        bounds.append(("<", _next(last)))
+    return bounds
+
+
+def parse_range(text: str) -> list | None:
+    """A range's sets of comparators, or None when it isn't one."""
+    sets = []
+    for alternative in text.split("||"):
+        alternative = re.sub(r"(<=|>=|<|>|=|~>|~|\^)\s+", r"\1", alternative.strip())
+        hyphen = re.fullmatch(r"(\S+)\s+-\s+(\S+)", alternative)
+        if hyphen:
+            bounds = _hyphen(hyphen.group(1), hyphen.group(2))
+        else:
+            bounds = []
+            for token in alternative.split():
+                found = _comparators(token)
+                if found is None:
+                    return None
+                bounds += found
+        if bounds is None:
+            return None
+        sets.append(bounds)
+    return sets
+
+
+def satisfies(text: str, version: str) -> bool:
+    """Whether a release is in a range; a pre-release never is."""
+    sets, parsed = parse_range(text), _parse(version)
+    if sets is None or parsed is None or parsed[1]:
+        return False
+    numbers = _padded(list(parsed[0]))
+    tests = {"<": numbers.__lt__, "<=": numbers.__le__, ">": numbers.__gt__, ">=": numbers.__ge__}
+    return any(all(tests[operator](bound) for operator, bound in bounds) for bounds in sets)
 
 
 def strip_pin(spec, pattern: str | None):

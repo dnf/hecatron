@@ -531,6 +531,28 @@ class Project:
         which it gets when the default is newer (docs/guide/versions.md)."""
         return list(self._layer(lang, True).get("supportFiles", [])) + list(self._layer(lang, False).get("supportFiles", []))
 
+    def _range(self, lang: str, component: str) -> tuple[str | None, str | None]:
+        """(range, path) from the nearest file in the definition's
+        rangeFiles: the versions a component runs on (package.json's
+        engines.node), else (None, None)."""
+        entries = list(self._layer(lang, True).get("rangeFiles", [])) + list(self._layer(lang, False).get("rangeFiles", []))
+        allowed, source, _ = self._pin_entry(lang, component, entries, "range")
+        if not isinstance(allowed, str):
+            return None, None
+        return allowed, source[len("range:"):]
+
+    def _in_range(self, lang: str, component: str | None, resolved: dict) -> tuple[str, str] | None:
+        """For a component on the default with none of the default's line
+        installed: the newest installed (version, home) in the range its
+        rangeFiles give, which it runs instead (a package whose engines say
+        >=22, on a machine with Node.js 26 and no 24)."""
+        if resolved["source"] != "default" or resolved["spec"] is None:
+            return None
+        allowed, _ = self._range(lang, component or self._first_component(lang))
+        if allowed is None or self._installed_match(lang, resolved["spec"], "default") is not None:
+            return None
+        return self._installed_where(lang, lambda version: versions.satisfies(allowed, version))
+
     def _pin(self, lang: str, component: str, entries: list[dict] | None = None, kind: str = "pin"):
         """(spec, source) from the nearest pin file (or other entries),
         searching from the component's implementation directory up to the
@@ -810,7 +832,8 @@ class Project:
         if not selects:
             default = self.default_version(lang)
             return self._installed_match(lang, default, "default") or self._installed_match(lang, "", "newest")
-        return self._installed_match(lang, resolved["spec"], resolved["source"])
+        return (self._installed_match(lang, resolved["spec"], resolved["source"])
+                or self._in_range(lang, component, resolved))
 
     def _installed_match(self, lang: str, spec: str | None, source: str | None) -> tuple[str, str] | None:
         """The newest installed (version, home) a spec matches ("" matches
@@ -820,7 +843,11 @@ class Project:
         if source == "default":
             spec = self._release_line(lang, spec)
         wanted = versions.Spec(spec) if spec else None
-        matching = {v: home for v, home in self.installed(lang) if wanted is None or wanted.matches(v)}
+        return self._installed_where(lang, lambda version: wanted is None or wanted.matches(version))
+
+    def _installed_where(self, lang: str, wanted) -> tuple[str, str] | None:
+        """The newest installed (version, home) whose version passes wanted."""
+        matching = {v: home for v, home in self.installed(lang) if wanted(v)}
         best = versions.newest(list(matching))
         return (best, matching[best]) if best else None
 
@@ -834,7 +861,8 @@ class Project:
         missing = []
         for component in [c for c, _ in self.impl_dirs(lang)] or [self.components[0]]:
             resolved = self.resolve_version(lang, component)
-            if resolved["spec"] is not None and self._installed_match(lang, resolved["spec"], resolved["source"]) is None:
+            if (resolved["spec"] is not None and self._installed_match(lang, resolved["spec"], resolved["source"]) is None
+                    and self._in_range(lang, component, resolved) is None):
                 missing.append((component, resolved["spec"], resolved["source"]))
         return missing
 
@@ -854,6 +882,9 @@ class Project:
                                          f"{runs[0] if runs else 'once installed'}" + (f", unless {pins} picks one" if pins else "")))
             elif source.startswith("supports:"):
                 notes.append((component, f"{spec}, the newest {source[len('supports:'):]} supports"))
+            elif runs := self._in_range(lang, component, resolved):
+                allowed, where = self._range(lang, component)
+                notes.append((component, f"{runs[0]} runs: {where} allows {allowed}, and the default {spec} isn't installed"))
             elif source.startswith("as-of:"):
                 when, _, reason = source[len("as-of:"):].partition(" (")
                 reason = reason[:-1]

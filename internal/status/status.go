@@ -82,6 +82,9 @@ type Component struct {
 	Name      string `json:"name"`
 	Dir       string `json:"dir"` // relative to the root, "." for the root
 	Toolchain bool   `json:"toolchainFound"`
+	// VersionMissing is the version the component resolves to when none
+	// installed matches it, as hct doctor reports it ("=24.22.1"), else "".
+	VersionMissing string `json:"versionMissing,omitempty"`
 }
 
 // Version is a toolchain version the components resolve to.
@@ -166,9 +169,15 @@ func gatherLanguage(p *project.Project, lang string, env []string, now time.Time
 		}
 		l.VersionError = "resolved by project.py only (hct doctor " + lang + " says it)"
 	}
+	missing := map[string]string{}
+	if list, err := p.MissingVersions(lang); err == nil {
+		for _, m := range list {
+			missing[m.Component] = m.Spec
+		}
+	}
 	found := 0
 	for _, d := range dirs {
-		c := Component{Name: d.Component, Dir: project.PyRelpath(d.Dir, p.Root)}
+		c := Component{Name: d.Component, Dir: project.PyRelpath(d.Dir, p.Root), VersionMissing: missing[d.Component]}
 		if l.Dependency != "" {
 			c.Toolchain = toolchainFound(p, lang, d.Component, l.Dependency, env)
 			if c.Toolchain {
@@ -371,6 +380,8 @@ func suggest(s *Status) []Next {
 	for _, l := range s.Languages {
 		if l.Toolchain == "missing" || l.Toolchain == "partly" {
 			next = append(next, Next{"hct install " + l.Name, l.Dependency + " not found; installs a toolchain", true})
+		} else if versionsMissing(l) != "" {
+			next = append(next, Next{"hct install " + l.Name, "installs " + versionsMissing(l) + ", which hct doctor finds missing", true})
 		}
 	}
 	for _, l := range s.Languages {
@@ -396,6 +407,18 @@ func suggest(s *Status) []Next {
 		next = append(next, Next{"hct add <lang>", "no languages: add one", false})
 	}
 	return next
+}
+
+// versionsMissing names the components whose version isn't installed, as
+// hct doctor finds them ("24.22.1 (web)"), "" for none.
+func versionsMissing(l Language) string {
+	var parts []string
+	for _, c := range l.Components {
+		if c.VersionMissing != "" {
+			parts = append(parts, strings.TrimLeft(c.VersionMissing, "=")+" ("+c.Name+")")
+		}
+	}
+	return strings.Join(parts, ", ")
 }
 
 func contains(list []string, item string) bool {

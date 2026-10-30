@@ -66,11 +66,19 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 			{"file": ".tool-versions", "format": "tool-versions", "key": "nodejs"}]}`,
 	"nd/releases.json": `{"releases": [["14.17.0", "2021-05-11", "lts"], ["16.1.0", "2021-05-04"], ["16.17.0", "2022-08-16", "lts"], ["24.22.1", "2026-10-01", "lts"]]}`,
 	"ts/config.json":   `{"releasesOf": "nd", "version": "=24.22.1", "track": "lts", "releaseLine": 1, "pinFiles": [{"file": ".nvmrc", "format": "nvmrc"}]}`,
-	"zg/config.json":   `{"version": "=0.17.0", "pinFiles": [{"file": "build.zig.zon", "format": "build-zig-zon"}], "path": ["{home}"]}`,
-	"zg/releases.json": `{"releases": [["0.13.0", "2024-06-07"], ["0.14.0", "2025-03-05"], ["0.14.1", "2025-05-21"], ["0.17.0", "2026-10-01"]]}`,
-	"zg/installed.sh":  `printf '0.17.0\t%s/toolchains/zig17\n0.14.1\t%s/toolchains/zig14\n' "$PWD" "$PWD"`,
-	"rb/config.json":   `{"version": "=4.0.9", "pinFiles": [{"file": ".ruby-version", "format": "ruby-version"}]}`,
-	"sw/config.json":   `{"version": "=6.2", "pinFiles": [{"file": ".swift-version", "format": "swift-version"}]}`,
+	"eng/config.json": `{"version": "=24.22.1", "track": "lts", "releaseLine": 1, "path": ["{home}/bin"],
+		"pinFiles": [{"file": ".nvmrc", "format": "nvmrc"}],
+		"rangeFiles": [{"file": "package.json", "format": "npm-engines", "key": "node"}]}`,
+	"eng/installed.sh":  `printf '26.13.0\t%s/toolchains/node26\n20.1.0\t%s/toolchains/node20\n22.4.0-rc.1\t/opt/rc\n' "$PWD" "$PWD"`,
+	"eng/releases.json": `{"releases": [["14.17.0", "2021-05-11", "lts"], ["24.22.1", "2026-10-01", "lts"]]}`,
+	"eng24/config.json": `{"version": "=24.22.1", "releaseLine": 1, "releasesOf": "eng",
+		"rangeFiles": [{"file": "package.json", "format": "npm-engines"}]}`,
+	"eng24/installed.sh": `printf '24.1.0\t/opt/n24\n26.13.0\t/opt/n26\n'`,
+	"zg/config.json":     `{"version": "=0.17.0", "pinFiles": [{"file": "build.zig.zon", "format": "build-zig-zon"}], "path": ["{home}"]}`,
+	"zg/releases.json":   `{"releases": [["0.13.0", "2024-06-07"], ["0.14.0", "2025-03-05"], ["0.14.1", "2025-05-21"], ["0.17.0", "2026-10-01"]]}`,
+	"zg/installed.sh":    `printf '0.17.0\t%s/toolchains/zig17\n0.14.1\t%s/toolchains/zig14\n' "$PWD" "$PWD"`,
+	"rb/config.json":     `{"version": "=4.0.9", "pinFiles": [{"file": ".ruby-version", "format": "ruby-version"}]}`,
+	"sw/config.json":     `{"version": "=6.2", "pinFiles": [{"file": ".swift-version", "format": "swift-version"}]}`,
 
 	"ex/config.json": `{"version": "=1.20.4",
 		"pinFiles": [{"file": ".tool-versions", "format": "tool-versions", "key": "elixir", "strip": "-otp-[0-9]+$"},
@@ -95,7 +103,7 @@ printf '3.12.4\t%s/toolchains/py312b\n' "$PWD"`,
 }
 
 // versionLangs are the fixture languages compared.
-var versionLangs = []string{"py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "zg", "rb", "sw", "ex", "exall", "badstrip",
+var versionLangs = []string{"eng", "eng24", "py", "jv", "net", "fs", "rs", "gol", "ph", "nd", "ts", "zg", "rb", "sw", "ex", "exall", "badstrip",
 	"inexact", "numeric", "badfmt", "badspec", "noline", "neg", "failing", "oddpath", "rel", "dup", "also", "off", "unknown"}
 
 // pinned projects: one component per pin file format.
@@ -309,6 +317,29 @@ func versionCases() []parityCase {
 		"a/fs/global.json":       `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,
 		"a/fs/x.csproj":          "<TargetFramework>net12.0</TargetFramework>",
 	}, nil)
+	ranges := map[string]string{
+		".hecatron/config.json": `{"schema": 1, "components": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"],
+			"languages": ["eng", "eng24"]}`,
+		"a/eng/package.json":     `{"engines": {"node": ">=22"}}`,
+		"b/eng/package.json":     `{"engines": {"node": "^18 || ^20.1"}}`,
+		"c/eng/package.json":     `{"engines": {"node": "  >= 16   <21 "}}`,
+		"d/eng/package.json":     `{"engines": {"npm": ">=10"}}`,
+		"d/package.json":         `{"engines": {"node": "20 - 26.13"}}`,
+		"e/eng/package.json":     `{"engines": {"node": "lts"}}`,
+		"f/eng/package.json":     `{"engines": {"node": 22}}`,
+		"g/eng/package.json":     `{"engines": ">=22"}`,
+		"h/eng/package.json":     `[1]`,
+		"i/eng/package.json":     `{"engines": {"node": ">=22"`,
+		"j/eng/package.json":     `{"engines": {"node": "~26.13.0 || 1.x"}}`,
+		"j/eng/.nvmrc":           "26\n",
+		"k/eng/package.json":     `{"engines": {"node": ">22.4"}}`,
+		"l/eng/package.json":     `{"engines": {"node": "*"}, "engines": {"node": "<=20"}}`,
+		"m/eng/package.json":     `{"engines": {"node": ">=27"}}`,
+		"a/eng24/package.json":   `{"engines": {"node": ">=22"}}`,
+		"toolchains/node26/bin/": "",
+	}
+	add("versions: engines ranges", ranges, nil)
+	add("versions: engines ranges as of 2021", ranges, map[string]string{"HECATRON_AS_OF": "2021-06-01"})
 	add("versions: global.json floors as of 2024", map[string]string{
 		".hecatron/config.json": `{"schema": 1, "components": ["a"], "languages": ["net"]}`,
 		"a/net/global.json":     `{"sdk": {"version": "8.0.100", "rollForward": "latestMajor"}}`,

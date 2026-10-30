@@ -11,7 +11,8 @@
         {
           "name": "a",
           "dir": "a/alpha",
-          "toolchainFound": true
+          "toolchainFound": true,
+          "versionMissing": "1.3"
         },
         {
           "name": "b",
@@ -21,10 +22,10 @@
       ],
       "versions": [
         {
-          "spec": "1.2.3",
-          "exact": true,
+          "spec": "1.3",
+          "exact": false,
           "sources": [
-            "default"
+            "pin:a/alpha/.alpha-version"
           ]
         },
         {
@@ -139,6 +140,11 @@
   ],
   "git": true,
   "next": [
+    {
+      "command": "hct install alpha",
+      "why": "installs 1.3 (a), which hct doctor finds missing",
+      "askUser": true
+    },
     {
       "command": "hct install beta",
       "why": "no-such-tool-for-hct not found; installs a toolchain",

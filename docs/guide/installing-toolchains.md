@@ -46,7 +46,12 @@ Misspelled names get a "did you mean?" prompt (e.g. `hct install elixer` suggest
 
 Unchanged from sayable's design, now shared: `doctor` checks each language's
 `dependency` and `lintDependency` commands from `config.json`, then runs the
-optional `doctor.sh`, which reports one `problem` per line. A line starting
+optional `doctor.sh`, which reports one `problem` per line. A missing
+`dependency` is a problem; a missing `lintDependency` (Go's golangci-lint,
+Lua's luacheck, Bash's ShellCheck) is a note ("lint tool golangci-lint not
+found: hct lint go needs it"), since the toolchain works without it and a
+project may lint its own way (a project `lint.sh`); `hct lint` still needs
+it, and `hct install` installs it. A line starting
 `note: ` (`note` in `_common.sh`) is shown under the language, like the
 version notes, but isn't a problem: a language with only notes is healthy,
 and `--fix` repairs only problems. Installers are

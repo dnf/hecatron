@@ -18,10 +18,10 @@ import (
 
 // doctor is `hecatron doctor [--fix] [lang ...]`, doctor.sh's driver in Go:
 // for each language (by default every added, enabled one), its problems,
-// one per line: its command or lint tool not on PATH (with its version's
-// environment), components whose version isn't installed, and what its
-// doctor.sh prints (the project's, else the built-in one; it stays a
-// script). With --fix an unhealthy language's install.sh runs and the
+// one per line: its command not on PATH (with its version's environment;
+// a missing lint tool is a note), components whose version isn't
+// installed, and what its doctor.sh prints (the project's, else the
+// built-in one; it stays a script). With --fix an unhealthy language's install.sh runs and the
 // language is checked again. Then the version notes, and a summary.
 //
 // A language name or abbreviation doctor.sh's _check would question (an
@@ -339,8 +339,10 @@ func (d *doctorRun) problems(lang string, stderr io.Writer) string {
 		fmt.Fprintf(&out, "%s not found\n", dependency)
 		return commandSubstitution(out.Bytes())
 	}
+	// A note, not a problem: the toolchain works without its linter, and a
+	// project can lint its own way (#254); hct lint still needs it.
 	if lint, _ := d.project().LintDependency(lang); lint != "" && !commandFound(lint, path) {
-		fmt.Fprintf(&out, "lint tool %s not found\n", lint)
+		fmt.Fprintf(&out, "note: lint tool %s not found: hct lint %s needs it (hct install %s installs it)\n", lint, lang, lang)
 	}
 	missing, err := d.project().MissingVersions(lang)
 	if err != nil {
