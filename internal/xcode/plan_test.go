@@ -323,7 +323,7 @@ func TestPlanPicksAmongSeveralProjects(t *testing.T) {
 func TestPlanFindsProjectsBelow(t *testing.T) {
 	dir := t.TempDir()
 	for _, path := range []string{"src/GoMap.xcodeproj", "apps/a/A.xcodeproj", "apps/a/A.xcworkspace", "apps/a/nested/N.xcodeproj",
-		"Pods/Pods.xcodeproj", ".build/x/X.xcodeproj", "src/GoMap.xcodeproj/project.xcworkspace"} {
+		"Pods/Pods.xcodeproj", ".build/x/X.xcodeproj", "lib/ThirdParty/Deferred/Deferred.xcodeproj", "src/GoMap.xcodeproj/project.xcworkspace"} {
 		if err := os.MkdirAll(filepath.Join(dir, path), 0o755); err != nil {
 			t.Fatal(err)
 		}

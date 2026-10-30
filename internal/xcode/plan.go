@@ -105,10 +105,12 @@ func containers(dir string) (workspaces, projects []string) {
 }
 
 // skippedBelow are directories Below doesn't look in: dependencies,
-// build output and version control.
+// vendored code (firefox-ios/ThirdParty/Deferred), build output and
+// version control.
 var skippedBelow = map[string]bool{
 	"Pods": true, "Carthage": true, "build": true, "DerivedData": true, "node_modules": true,
-	"vendor": true, ".build": true, ".git": true, ".swiftpm": true,
+	"vendor": true, "Vendor": true, "ThirdParty": true, "third_party": true, "third-party": true,
+	"External": true, "external": true, ".build": true, ".git": true, ".swiftpm": true,
 }
 
 // Below are the Xcode projects and workspaces below dir (not in it), the
