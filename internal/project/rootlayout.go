@@ -137,7 +137,7 @@ func (r rootRule) holds(root string, names map[string]bool) (bool, error) {
 			if !ok {
 				continue
 			}
-			var value any = document
+			value := document
 			for _, part := range strings.Split(r.Key, ".") {
 				if inner, isObject := value.(*Object); isObject {
 					value, _ = inner.Get(part)
