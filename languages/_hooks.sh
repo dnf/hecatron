@@ -326,13 +326,40 @@ dotnet_hook() {
 # SwiftPM: the package here, each package below, or the one above whose
 # targets include this directory's sources (FlatBuffers' Package.swift at the
 # root builds swift/Sources), which swift_package_args points SwiftPM at.
+# An app's Xcode project here, without a Package.swift, goes to xcode_hook:
+# for what compiles first (it builds the local packages below too, for the
+# app's platform: SwiftPM on the host can't build IceCubesApp's iOS-only
+# packages), for the rest (lint, deps) when there's no package below or
+# above to act on.
 # shellcheck disable=SC2034 # read by the swift hooks
 swift_package_args=()
 swift_package() {
-    find_build Package.swift || unknown "no Package.swift here, below, or above it in the project"
+    if [ ! -f Package.swift ] && xcode_project; then
+        case "${_hook_action}" in
+            build|clean|test|docs|bench) xcode_hook "${_hook_action}" ;;
+        esac
+    fi
+    if ! find_build Package.swift; then
+        xcode_project && xcode_hook "${_hook_action}"
+        unknown "no Package.swift here, below, or above it in the project"
+    fi
     note_build_dir
+    case "${_hook_action}" in
+        build|test|docs|bench) swift_package_builds_on_host ;;
+    esac
     # shellcheck disable=SC2034 # read by the swift hooks
     [ "${build_dir}" = . ] || swift_package_args=(--package-path "${build_dir}")
+}
+
+# On macOS, SwiftPM builds for macOS: a package whose platforms: names
+# others but not macOS (an iOS app's local package) builds at macOS's
+# oldest deployment target, where the newer APIs it uses aren't available.
+# Its app's Xcode project builds it instead.
+swift_package_builds_on_host() {
+    [ "$(uname -s)" = Darwin ] || return 0
+    grep -qs 'platforms[[:space:]]*:' "${build_dir}/Package.swift" || return 0
+    grep -qs '\.macOS' "${build_dir}/Package.swift" ||
+        skip "the package's platforms don't include macOS, which SwiftPM here builds for (an Xcode project builds it for its platform)"
 }
 
 # Janet's jpm, in the project's local tree (jpm -l) when it keeps its
@@ -861,8 +888,10 @@ node_hook() {
                 node_build_first
                 run "${node_runner[@]}"
             else
+                # An app (start and dev scripts, dependencies) can have no
+                # tests: detection takes it for JavaScript all the same.
                 node_below test
-                unknown "package.json has no test script, nor do its workspace packages or the packages below"
+                skip "package.json has no test script, nor do its workspace packages or the packages below"
             fi ;;
         lint)
             npm_deps
@@ -1654,19 +1683,158 @@ build_jobs() {
     echo "${_cpus}"
 }
 
-# Objective-C: xcodebuild for an Xcode project on macOS (untested: no macOS
-# here; it acts on the project's default scheme and target), GNUstep make for
-# a GNUmakefile that includes GNUstep's common.make (which needs
+# An Xcode project or workspace here (Swift's and Objective-C's apps).
+xcode_project() { exists '*.xcodeproj' || exists '*.xcworkspace'; }
+# Where xcodebuild puts a build (its -derivedDataPath): inside SwiftPM's
+# hidden .build/, not xcodebuild's default ./build or ~/Library's
+# DerivedData, so clean knows what to remove.
+xcode_derived_data=.build/xcode
+
+# Xcode projects, on macOS (untested here: no macOS): xcodebuild builds one
+# scheme, unsigned (a check, not a release), for its platform's generic
+# device; clean removes the build's derived data. Tests need a simulator to
+# run on, which only the project knows, so test skips saying how to write
+# the hook. Exits.
+xcode_hook() {
+    case "$1" in
+        build|clean)
+            ! swift_builds_xcode_here || skip "built with swift's hook (Swift and Objective-C share this Xcode project)"
+            if [ "$1" = clean ]; then
+                run rm -rf "${xcode_derived_data}"
+                rmdir .build 2>/dev/null || true
+                exit
+            fi
+            has xcodebuild || skip "an Xcode project builds with xcodebuild (Xcode, on macOS), which isn't installed"
+            xcode_build ;;
+        test)
+            ! swift_builds_xcode_here || skip "tested with swift's hook (Swift and Objective-C share this Xcode project)"
+            skip "an Xcode project's tests need a scheme and a destination to run on: write $(xcode_hook_path test) (xcodebuild test -scheme <scheme> -destination 'platform=macOS' for a Mac app, 'platform=iOS Simulator,name=<device>' for an iOS one)" ;;
+        *)
+            skip "an Xcode project has no standard $1 command" ;;
+    esac
+}
+
+xcode_hook_path() { echo ".hecatron/languages/${HECATRON_LANG:-<lang>}/$1.sh"; }
+xcode_write_hooks() {
+    echo "write $(xcode_hook_path build) (xcodebuild build -scheme <scheme> -destination <destination>) and $(xcode_hook_path test)"
+}
+
+# Swift and Objective-C both find an app's Xcode project (NetNewsWire's),
+# and hct runs their builds at once: two xcodebuilds of one project race on
+# its build database. Swift's hook builds it where Swift is added (and not
+# disabled) for this directory without a Package.swift here (where its hook
+# builds the Xcode project); Objective-C's then skips.
+swift_builds_xcode_here() {
+    [ "${HECATRON_LANG:-}" = objectivec ] && [ ! -f Package.swift ] || return 1
+    python3 - "${HECATRON_HOME:-${_hooks_home}}/libexec/lib" 2>/dev/null <<'PY'
+import os
+import sys
+
+sys.path.insert(0, sys.argv[1])
+import project
+
+model = project.load()
+here = os.path.realpath(".")
+added = "swift" in model.languages and "swift" not in model.disabled
+sys.exit(0 if added and any(os.path.realpath(d) == here for _, d in model.impl_dirs("swift")) else 1)
+PY
+}
+
+# The Xcode file of a kind here ('*.xcworkspace' or '*.xcodeproj') to build:
+# the only one, else the one named like this directory, the project
+# (HECATRON_PROJECT) or its repository; "several: <names>" when none is so
+# named, nothing when there is none.
+xcode_pick() {
+    local _found=() _match _name
+    for _match in $1; do
+        [ -e "${_match}" ] && _found+=("${_match}")
+    done
+    case "${#_found[@]}" in
+        0) return 0 ;;
+        1) echo "${_found[0]}"; return 0 ;;
+    esac
+    for _name in "$(basename "$(pwd)")" "${HECATRON_PROJECT:-}" "$(basename "${HECATRON_ROOT:-.}")"; do
+        for _match in "${_found[@]}"; do
+            [ "${_match%.*}" != "${_name}" ] || { echo "${_match}"; return 0; }
+        done
+    done
+    echo "several: ${_found[*]}"
+}
+
+# The scheme to build from xcodebuild -list -json's report (stdin): the one
+# named like the workspace or project ($1, then $2...). Not "the only one":
+# each Swift package the project uses adds a scheme (NetNewsWire lists 27),
+# and CocoaPods' workspace one per pod. Prints the scheme, or nothing.
+xcode_scheme() {
+    python3 -c '
+import json, sys
+container = json.load(sys.stdin)
+info = container.get("workspace") or container.get("project") or {}
+schemes = info.get("schemes") or []
+print(next((name for name in sys.argv[1:] if name in schemes), ""))
+' "$@"
+}
+
+# The generic destination to build for, from xcodebuild -showBuildSettings'
+# report (stdin; the first target's SUPPORTED_PLATFORMS): macOS where the
+# target supports it, else the iOS simulator (a simulator SDK needs no
+# signing or provisioning), else the first other simulator. Without one,
+# xcodebuild can't choose among a multiplatform target's platforms.
+xcode_destination() {
+    local _platforms _platform
+    _platforms=" $(sed -n 's/^[[:space:]]*SUPPORTED_PLATFORMS = //p' | sed -n 1p) "
+    case "${_platforms}" in
+        *" macosx "*) echo "generic/platform=macOS"; return ;;
+        *" iphonesimulator "*) echo "generic/platform=iOS Simulator"; return ;;
+    esac
+    for _platform in ${_platforms}; do
+        case "${_platform}" in
+            xrsimulator) echo "generic/platform=visionOS Simulator"; return ;;
+            appletvsimulator) echo "generic/platform=tvOS Simulator"; return ;;
+            watchsimulator) echo "generic/platform=watchOS Simulator"; return ;;
+        esac
+    done
+}
+
+# Through the root workspace when there is one (CocoaPods': the bare project
+# doesn't link without its Pods), else the project; with the scheme named
+# like it (a scheme resolves the project's Swift packages), for its
+# platform's generic destination.
+xcode_build() {
+    local _container _kind _project _scheme _list _settings _destination
+    _kind=-workspace
+    _container="$(xcode_pick '*.xcworkspace')"
+    _project="$(xcode_pick '*.xcodeproj')"
+    if [ -z "${_container}" ]; then
+        _kind=-project
+        _container="${_project}"
+    fi
+    case "${_container}" in
+        "several: "*)
+            skip "several Xcode ${_kind#-}s here (${_container#several: }), none named like the directory: $(xcode_write_hooks)" ;;
+    esac
+    echo "+ xcodebuild -list -json ${_kind} ${_container}"
+    _list="$(xcodebuild -list -json "${_kind}" "${_container}")" || exit 1
+    _scheme="$(printf '%s\n' "${_list}" | xcode_scheme "${_container%.*}" "${_project%.*}")"
+    [ -n "${_scheme}" ] ||
+        skip "${_container} has no scheme named like it (${_container%.*}): $(xcode_write_hooks)"
+    echo "+ xcodebuild -showBuildSettings ${_kind} ${_container} -scheme ${_scheme}"
+    _settings="$(xcodebuild -showBuildSettings "${_kind}" "${_container}" -scheme "${_scheme}")" || exit 1
+    _destination="$(printf '%s\n' "${_settings}" | xcode_destination)"
+    [ -n "${_destination}" ] ||
+        skip "can't tell a destination for scheme ${_scheme} from its SUPPORTED_PLATFORMS: $(xcode_write_hooks)"
+    run xcodebuild build "${_kind}" "${_container}" -scheme "${_scheme}" -destination "${_destination}" \
+        -derivedDataPath "${xcode_derived_data}" CODE_SIGNING_ALLOWED=NO
+    exit
+}
+
+# Objective-C: an Xcode project through xcodebuild (xcode_hook), unless
+# another build is here and there is no xcodebuild, GNUstep make for a
+# GNUmakefile that includes GNUstep's common.make (which needs
 # GNUSTEP_MAKEFILES, from gnustep-config), else CMake, Meson or make as for C.
 objc_hook() {
-    if exists '*.xcodeproj' && has xcodebuild; then
-        case "$1" in
-            test) run xcodebuild test ;;
-            build) run xcodebuild build ;;
-            clean) run xcodebuild clean ;;
-            lint) skip "xcodebuild has no standard lint action" ;;
-        esac
-        return
+    if xcode_project && { has xcodebuild || ! has_any CMakeLists.txt meson.build configure configure.ac Makefile makefile GNUmakefile; }; then
+        xcode_hook "$1"
     fi
     if is_gnustep_make && [ -z "${GNUSTEP_MAKEFILES:-}" ]; then
         has gnustep-config || unknown "the GNUmakefile uses GNUstep make, and gnustep-config is not installed"

@@ -6,7 +6,9 @@ the environment a command gets, installers' view of builds below)."""
 
 from __future__ import annotations
 
+import json
 import os
+import shutil
 import subprocess
 import sys
 import unittest
@@ -177,6 +179,227 @@ class JvmBuildToolsTest(BuildHookTest):
         write(self.path("java", "packages", "pom.xml"), "<project />")
         write(self.path("java", "packages", "mvnw"), "#!/bin/sh\n", 0o755)
         self.assertEqual(self.missing("java"), "")
+
+
+class PythonRequirementsTest(BuildHookTest):
+    """An application with only a requirements.txt: detection takes it for
+    Python, so its tests run with those packages, or skip without tests."""
+
+    def test_its_tests_run_with_the_requirements(self):
+        write(self.path("requirements.txt"), "flask\n")
+        write(self.path("requirements-dev.txt"), "pytest-mock\n")
+        write(self.path("app.py"), "")
+        write(self.path("tests", "test_app.py"), "")
+        self.fake("uv")
+        result = self.hook("python", "test", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("uv run --with-requirements requirements-dev.txt --with-requirements requirements.txt"
+                      " --with pytest pytest", result.stdout)
+
+    def test_without_test_files_it_skips(self):
+        write(self.path("requirements.txt"), "flask\n")
+        write(self.path("app.py"), "")
+        self.fake("uv")
+        result = self.hook("python", "test", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("python: test: no test files", result.stdout)
+        self.assertNotIn("uv run", result.stdout)
+
+
+class XcodeTest(BuildHookTest):
+    """An app with an Xcode project: xcodebuild builds the scheme named like
+    it, for a generic destination its supported platforms give, into
+    .build/xcode; its tests, which need a simulator, skip saying so. The
+    fake xcodebuild logs each call and answers -list -json and
+    -showBuildSettings from fixture text, shaped as Xcode 27's output for
+    IceCubesApp (28 schemes: one per Swift package) and NetNewsWire."""
+
+    SETTINGS = ("Build settings for action build and target {scheme}:\n    PLATFORM_NAME = iphoneos\n"
+                "    SDKROOT = /sdk\n    SUPPORTED_PLATFORMS = {platforms}\n"
+                "Build settings for action build and target Other:\n    SUPPORTED_PLATFORMS = macosx\n")
+    PACKAGES = [f"Package{n}" for n in range(26)]
+    IOS_AND_VISION = "iphoneos iphonesimulator xros xrsimulator"
+
+    def setUp(self):
+        super().setUp()
+        write(self.path("App.xcodeproj", "project.pbxproj"), "")
+        write(self.path("App.xcodeproj", "project.xcworkspace", "contents.xcworkspacedata"), "")
+        write(self.path("App", "AppDelegate.swift"), "")
+        write(self.path("App", "Legacy.m"), "")
+        self.log = self.path(".xcodebuild.log")
+        self.xcodebuild(self.PACKAGES + ["App"])
+
+    def xcodebuild(self, schemes: list[str], platforms: str = IOS_AND_VISION, kind: str = "project") -> None:
+        write(self.path(".list.json"), json.dumps({kind: {"name": "App", "schemes": schemes}}))
+        write(self.path(".settings.txt"), self.SETTINGS.format(scheme="App", platforms=platforms))
+        body = (f'echo "$*" >>"{self.log}"\n'
+                f'case "$*" in *-list*) cat "{self.path(".list.json")}"; exit ;; '
+                f'*-showBuildSettings*) cat "{self.path(".settings.txt")}"; exit ;; esac')
+        self.fake("xcodebuild", body)
+
+    def calls(self) -> list[str]:
+        if not os.path.exists(self.log):
+            return []
+        with open(self.log) as log:
+            return log.read().splitlines()
+
+    def builds(self) -> list[str]:
+        return [call for call in self.calls() if call.startswith("build ")]
+
+    def only(self, *languages: str, **config) -> None:
+        self.configure(languages=list(languages), implPaths={lang: "." for lang in languages}, **config)
+
+    def destination(self, platforms: str) -> str:
+        self.xcodebuild(["App"], platforms=platforms)
+        open(self.log, "w").close()
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        builds = self.builds()
+        return builds[0].split("-destination ")[1].split(" -derivedDataPath")[0] if builds else result.stdout
+
+    def test_xcodebuild_builds_the_scheme_named_like_the_project(self):
+        for lang in ("swift", "objectivec"):
+            self.only(lang)
+            open(self.log, "w").close()
+            result = self.hook(lang, "build", ".")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(self.builds(), ["build -project App.xcodeproj -scheme App -destination generic/platform=iOS "
+                                             "Simulator -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO"])
+            self.assertIn("-list -json -project App.xcodeproj", self.calls())
+            self.assertIn("-showBuildSettings -project App.xcodeproj -scheme App", self.calls())
+
+    def test_the_destination_comes_from_the_supported_platforms(self):
+        self.only("swift")
+        self.assertEqual(self.destination("macosx"), "generic/platform=macOS")
+        self.assertEqual(self.destination("iphoneos iphonesimulator macosx"), "generic/platform=macOS")
+        self.assertEqual(self.destination("xros xrsimulator"), "generic/platform=visionOS Simulator")
+        self.assertEqual(self.destination("watchos watchsimulator"), "generic/platform=watchOS Simulator")
+        self.assertIn("can't tell a destination for scheme App", self.destination("iphoneos"))
+        self.assertIn(".hecatron/languages/swift/build.sh", self.destination(""))
+
+    def test_objective_c_leaves_a_shared_project_to_swift(self):
+        self.only("swift", "objectivec")
+        skipped = self.path(".skipped")
+        for action in ("build", "clean"):
+            result = self.hook("objectivec", action, ".", HECATRON_SKIPPED=skipped)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn(f"objectivec: {action}: built with swift's hook", result.stdout)
+            with open(skipped) as reason:
+                self.assertIn("built with swift's hook", reason.read())
+        result = self.hook("objectivec", "test", ".")
+        self.assertIn("objectivec: test: tested with swift's hook", result.stdout)
+        self.assertEqual(self.calls(), [])
+        self.assertEqual(self.hook("swift", "build", ".").returncode, 0)
+        self.assertEqual(len(self.builds()), 1)
+
+    def test_objective_c_builds_when_swift_is_disabled_or_elsewhere(self):
+        self.only("swift", "objectivec")
+        write(self.path(".hecatron", "local.json"), json.dumps({"disabled": ["swift"]}))
+        self.assertEqual(self.hook("objectivec", "build", ".").returncode, 0)
+        self.assertEqual(len(self.builds()), 1)
+        os.remove(self.path(".hecatron", "local.json"))
+        self.configure(languages=["swift", "objectivec"], implPaths={"swift": "Packages", "objectivec": "."})
+        os.makedirs(self.path("Packages"))
+        self.assertEqual(self.hook("objectivec", "build", ".").returncode, 0)
+        self.assertEqual(len(self.builds()), 2)
+
+    def test_a_root_workspace_builds_through_its_scheme(self):
+        write(self.path("App.xcworkspace", "contents.xcworkspacedata"), "")
+        self.xcodebuild(["Alamofire", "App", "Pods-App"], kind="workspace")
+        self.only("swift")
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(len(self.builds()), 1)
+        self.assertIn("build -workspace App.xcworkspace -scheme App ", self.builds()[0])
+
+    def test_a_workspace_named_otherwise_builds_the_projects_scheme(self):
+        write(self.path("Main.xcworkspace", "contents.xcworkspacedata"), "")
+        self.xcodebuild(["Pods-App", "App"], kind="workspace")
+        self.only("swift")
+        self.assertEqual(self.hook("swift", "build", ".").returncode, 0)
+        self.assertIn("build -workspace Main.xcworkspace -scheme App ", self.builds()[0])
+
+    def test_without_a_scheme_named_like_the_project_the_build_skips(self):
+        self.xcodebuild(["App-iOS"])
+        self.only("swift")
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("App.xcodeproj has no scheme named like it (App)", result.stdout)
+        self.assertIn(".hecatron/languages/swift/build.sh", result.stdout)
+        self.assertIn(".hecatron/languages/swift/test.sh", result.stdout)
+        self.assertEqual(self.builds(), [])
+
+    def test_several_projects_build_the_one_named_like_the_directory(self):
+        write(self.path("Tools.xcodeproj", "project.pbxproj"), "")
+        self.only("swift")
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("several Xcode projects here (App.xcodeproj Tools.xcodeproj)", result.stdout)
+        self.assertEqual(self.calls(), [])
+        os.makedirs(self.path("App", "App.xcodeproj"))
+        os.makedirs(self.path("App", "Tools.xcodeproj"))
+        self.assertEqual(self.hook("swift", "build", "App").returncode, 0)
+        self.assertIn("build -project App.xcodeproj ", self.builds()[0])
+
+    def test_clean_removes_the_derived_data(self):
+        write(self.path(".build", "xcode", "Build", "App.o"), "")
+        self.only("swift")
+        result = self.hook("swift", "clean", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("+ rm -rf .build/xcode", result.stdout)
+        self.assertFalse(os.path.exists(self.path(".build")))
+        self.assertEqual(self.calls(), [])
+
+    def test_tests_skip_saying_how_to_run_them(self):
+        for lang in ("swift", "objectivec"):
+            self.only(lang)
+            result = self.hook(lang, "test", ".")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn(f"{lang}: test: an Xcode project's tests need a scheme and a destination", result.stdout)
+            self.assertIn("'platform=macOS' for a Mac app", result.stdout)
+            self.assertIn(f".hecatron/languages/{lang}/test.sh", result.stdout)
+        self.assertEqual(self.calls(), [])
+
+    def test_swifts_other_hooks_skip(self):
+        for action in ("lint", "deps", "docs", "bench"):
+            result = self.hook("swift", action, ".")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn(f"an Xcode project has no standard {action} command", result.stdout)
+
+    def test_without_xcodebuild_the_build_skips(self):
+        if shutil.which("xcodebuild"):
+            self.skipTest("xcodebuild is installed")
+        os.remove(os.path.join(self.bin, "xcodebuild"))
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("builds with xcodebuild (Xcode, on macOS), which isn't installed", result.stdout)
+
+    IOS_PACKAGE = ('// swift-tools-version:6.0\nlet package = Package(name: "Core", platforms: [.iOS(.v17), .visionOS(.v1)],\n'
+                   '  targets: [.target(name: "Core"), .testTarget(name: "CoreTests")])\n')
+
+    def test_the_xcode_project_owns_the_tests_of_its_local_packages(self):
+        # IceCubesApp: iOS-only packages under Packages/, which swift test
+        # on the Mac can't build.
+        write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE)
+        self.fake("swift")
+        result = self.hook("swift", "test", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("swift: test: an Xcode project's tests need a scheme", result.stdout)
+        self.assertNotIn("swift test", result.stdout)
+
+    def test_an_ios_only_package_skips_swiftpm_on_macos(self):
+        write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE)
+        self.fake("swift")
+        self.fake("uname", 'echo Darwin; exit')
+        result = self.hook("swift", "test", "Packages/Core")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("the package's platforms don't include macOS", result.stdout)
+        self.assertNotIn("+ swift test", result.stdout)
+        write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE.replace(".iOS(.v17)", ".iOS(.v17), .macOS(.v14)"))
+        self.assertIn("+ swift test", self.hook("swift", "test", "Packages/Core").stdout)
+        self.fake("uname", 'echo Linux; exit')
+        write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE)
+        self.assertIn("+ swift test", self.hook("swift", "test", "Packages/Core").stdout)
 
 
 if __name__ == "__main__":

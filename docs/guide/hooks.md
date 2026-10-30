@@ -128,7 +128,8 @@ configured runner (`vitest.config.*`, `jest.config.*`, `.mocharc.*`); else,
 and in a directory without a `package.json`, it tests the language's
 packages below (TypeScript's have a `tsconfig.json`, but for one beside
 mostly JavaScript, which is JavaScript's: detection's `detectYields`, the
-same rule through `project.py`). It sets `CI=true` (unless it's set) so watching test
+same rule through `project.py`), and skips when none of them has a test
+script either (an app without tests). It sets `CI=true` (unless it's set) so watching test
 runners run once. A package its tests need built (a native addon, from a `napi`
 key, a `binding.gyp` or a build script running napi or node-gyp, whose
 `*.node` isn't built; or a `main` or `exports` entry point that isn't
@@ -140,11 +141,67 @@ each package in turn. pytest also collects `Test*.py` files where no test
 file has its default names (`test_*.py`, `*_test.py`) and the project sets
 no `python_files`, and leaves out the Python projects inside the one it tests
 (`--ignore=pydantic-core`: their environments aren't the outer one's) unless
-the project sets `testpaths`. Where there is no `python`, only `python3`, Python's
+the project sets `testpaths`. Without a `pyproject.toml` or `setup.py` (an
+app with a `requirements.txt`), pytest runs with the packages of the
+directory's `requirements*.txt` (`uv run --with-requirements`), and the
+hook skips where there are no test files. An app's Xcode project builds
+as [below](#xcode-projects). Where there is no `python`, only `python3`, Python's
 installer links one to it in `~/.local/share/hecatron/python/bin`, a static
 `path` entry of Python's, so the builds of a project's other languages that
 call `python` (a Rust build script, a CMake project's) find it, and nothing
 outside hecatron's hooks does.
+
+### Xcode projects
+
+An Xcode project without a `Package.swift` beside it (an app's) builds on
+macOS with `xcodebuild`, unsigned (`CODE_SIGNING_ALLOWED=NO`):
+
+- **What it builds:** the root `*.xcworkspace` when there is one (a
+  CocoaPods app's: the bare project doesn't link without its Pods; the
+  `project.xcworkspace` inside an `.xcodeproj` doesn't count), else the
+  `*.xcodeproj`. Of several, the one named like the directory, the project
+  (`HECATRON_PROJECT`) or the repository; otherwise the build skips.
+- **The scheme:** the one `xcodebuild -list -json` reports named like the
+  workspace or project (each Swift package the project uses adds a scheme,
+  and a CocoaPods workspace one per pod); otherwise the build skips. A
+  scheme also resolves the project's Swift packages, which a bare
+  `xcodebuild build` may not.
+- **The destination:** from the scheme's `SUPPORTED_PLATFORMS`
+  (`xcodebuild -showBuildSettings`): `generic/platform=macOS` where it
+  includes macOS, else `generic/platform=iOS Simulator` (a simulator SDK
+  needs no signing or provisioning), else the first other simulator
+  (visionOS, tvOS, watchOS); the build skips when there is none. Without
+  one, xcodebuild can't choose among a multiplatform target's platforms.
+- **The output:** `-derivedDataPath .build/xcode`, not `./build` or
+  `~/Library/Developer/Xcode/DerivedData`; `hct clean` removes it (and
+  `.build/` when that leaves it empty), without running `xcodebuild`. Add
+  `.build/` to `.gitignore` if it isn't there.
+- **Swift and Objective-C together:** an app with both kinds of source (NetNewsWire)
+  has both languages at the project's directory, and `hct build` runs
+  languages at once; two `xcodebuild`s of one project would race on its
+  build database. Swift's hook builds and cleans it, and Objective-C's skips
+  ("built with swift's hook"), unless Swift is disabled
+  (`hct disable swift`) or its component directory is elsewhere.
+- **Tests** skip: they need a simulator to run on, and which one is the
+  project's choice. So do Swift's docs and bench there, and the local
+  packages below aren't tested with SwiftPM (`swift test` builds them for
+  the Mac, and an app's are often iOS-only); lint and deps still act on
+  them. Elsewhere, on macOS, SwiftPM's build, test, docs and bench skip a
+  package whose `platforms:` leaves out `.macOS`.
+
+Where a build skips (several schemes, workspaces or projects, an unknown
+platform), it says so, naming the hooks to write:
+`.hecatron/languages/<lang>/build.sh` and `test.sh`, e.g.
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+xcodebuild test -scheme NetNewsWire -destination 'platform=macOS' \
+    -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO
+```
+
+For iOS: `-destination 'platform=iOS Simulator,name=iPhone 17'` (one
+`xcrun simctl list devices available` lists).
 
 ## Dependencies
 

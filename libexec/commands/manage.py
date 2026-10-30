@@ -560,9 +560,14 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
       TypeScript), and where its "detectYields" rule holds, which makes it
       the other language's even beside that one's "detectUnless" files
       (a tsconfig.json beside mostly JavaScript is a JavaScript package's),
-      and, for a language with a "detectScript", where its
-      package.json has no such npm script (Cucumber's jsonschema/, tooling
-      with no test script).
+      and, for a language with "detectKeys", where its build file (JSON)
+      has none of those keys: a package.json with no dependencies, entry
+      point, workspaces or start, dev, serve or test script is tooling
+      (commit hooks, Cucumber's jsonschema/), not a package.
+    - A directory holding one of "detectWithSources"' "files", or holding a
+      directory named like its "dirs" (an Xcode project, App.xcodeproj/), is
+      a hit when a file matching its "sources" is tracked in it or below: a
+      requirements.txt beside Python code, not one for a docs build.
     - Nothing under SKIPPED_DIRS counts, except a language's "detectTests"
       (Bats' *.bats) in a test/ or tests/ directory, for a language
       otherwise not found: it is the language of the directory tested.
@@ -586,6 +591,28 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
         return {directory for directory, names in dirs.items()
                 if _matches({name for name in names if not name.startswith(".")}, sources)
                 and not _matches(names, unless)}
+
+    def with_sources_hits(rule: dict | None, unless: list[str]) -> set[str]:
+        """The directories holding one of the rule's "files", or a directory
+        named like its "dirs", with its "sources" in them or below."""
+        if not rule:
+            return set()
+        candidates = hits(by_dir, rule.get("files", []), unless)
+        for sub in by_dir:
+            parts = sub.split("/")
+            for i, part in enumerate(parts):
+                parent = "/".join(parts[:i]) or "."
+                if (any(fnmatch.fnmatch(part, pattern) for pattern in rule.get("dirs", []))
+                        and not _matches(by_dir.get(parent, set()), unless)):
+                    candidates.add(parent)
+        # Sources count for the innermost candidate holding them: a nested
+        # Xcode project's Objective-C isn't the Swift app's above it.
+        found = set()
+        for sub in source_hits(by_dir, rule.get("sources", []), []):
+            holding = [c for c in candidates if c == "." or _under(sub, c)]
+            if holding:
+                found.add(max(holding, key=lambda c: _depth_below(c, ".")))
+        return found
 
     def count(names: set[str], patterns: list[str]) -> int:
         return sum(1 for name in names if any(fnmatch.fnmatch(name, pattern) for pattern in patterns))
@@ -635,12 +662,17 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
         directories = (hits(by_dir, d.get("detect", []), unless) - yielded.get(lang, set())
                        | hits(by_dir, d.get("detect", []), []) & granted.get(lang, set())
                        | shared_hits(lang))
-        script = d.get("detectScript")
-        if script and directories:
-            directories = {directory for directory in directories if _has_npm_script(root, directory, script)}
+        keys = d.get("detectKeys")
+        tooling = None
+        if keys and directories:
+            directories = {directory for directory in directories
+                           if _has_detect_key(root, directory, by_dir[directory], d.get("detect", []), keys)}
             if not directories:
-                not_added[lang] = f"no {script} script"
-                continue
+                tooling = f"its {', '.join(d.get('detect', []))} has none of {', '.join(keys)}"
+        directories |= with_sources_hits(d.get("detectWithSources"), unless)
+        if not directories and tooling:
+            not_added[lang] = tooling
+            continue
         if not directories and sources:
             directories = source_hits(by_dir, sources, unless)
             from_sources.add(lang)
@@ -686,15 +718,27 @@ def _tested_directory(directory: str) -> str | None:
     return None
 
 
-def _has_npm_script(root: str, directory: str, script: str) -> bool:
-    """Whether the directory's package.json has the npm script; one that
-    can't be read counts as having it."""
-    try:
-        with open(os.path.join(root, directory, "package.json"), encoding="utf-8") as f:
-            scripts = json.load(f).get("scripts") or {}
-    except (OSError, ValueError, AttributeError):
+def _has_detect_key(root: str, directory: str, names: set[str], detect: list[str], keys: list[str]) -> bool:
+    """Whether the directory's build file (JSON: the first of its names a
+    "detect" pattern matches) has one of the keys, non-empty; a dotted key is
+    a path (scripts.test). One that can't be read counts as having one."""
+    build_file = projectlib.build_file_in(os.path.join(root, directory), names, detect)
+    if build_file is None:
         return True
-    return isinstance(scripts, dict) and script in scripts
+    try:
+        with open(build_file, encoding="utf-8") as f:
+            document = json.load(f)
+    except (OSError, ValueError):
+        return True
+    if not isinstance(document, dict):
+        return True
+    for key in keys:
+        value = document
+        for part in key.split("."):
+            value = value.get(part) if isinstance(value, dict) else None
+        if value:
+            return True
+    return False
 
 
 def _language_roots(directories: set[str], names: list[str]) -> set[str]:

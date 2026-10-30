@@ -11,7 +11,19 @@
   "detectUnless": [
     "tsconfig.json"
   ],
-  "detectScript": "test",
+  "detectKeys": [
+    "dependencies",
+    "main",
+    "bin",
+    "exports",
+    "module",
+    "browser",
+    "workspaces",
+    "scripts.start",
+    "scripts.dev",
+    "scripts.serve",
+    "scripts.test"
+  ],
   "dirNames": [
     "javascript",
     "js",

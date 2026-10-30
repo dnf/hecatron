@@ -2,8 +2,9 @@
 # Default test hook: pytest, in the project's environment (with every extra
 # and dependency group, where test dependencies usually are) through uv, else
 # on its own. Without a project here, the projects in the directories below,
-# each (a monorepo's py-polars/ or python-package/), else pytest here on its
-# own. Asked for a JUnit report (HECATRON_TEST_REPORTS), pytest writes one
+# each (a monorepo's py-polars/ or python-package/), else pytest here with
+# the requirements*.txt files' packages, skipping where there are no test
+# files. Asked for a JUnit report (HECATRON_TEST_REPORTS), pytest writes one
 # there.
 source "$(dirname "$0")/../../_hooks.sh"
 has_any pyproject.toml setup.py setup.cfg || run_below_with pyproject.toml setup.py setup.cfg
@@ -61,6 +62,17 @@ fi
 if [ -n "${HECATRON_TEST_REPORTS:-}" ]; then _args+=(--junitxml="${HECATRON_TEST_REPORTS}/pytest.xml"); fi
 if [ "${_project}" -eq 1 ]; then
     run uv run --all-extras --all-groups --with pytest pytest ${_args[@]+"${_args[@]}"}
-else
-    run uv run --with pytest pytest ${_args[@]+"${_args[@]}"}
+    exit
 fi
+# Without a project (an application with only a requirements.txt), pytest
+# would collect nothing and fail where there are no test files.
+if ! pytest_sets python_files && ! pytest_sets testpaths &&
+    ! has_below 'test_*.py' && ! has_below '*_test.py' && ! has_below 'Test*.py'; then
+    skip "no test files (test_*.py, *_test.py) and no pyproject.toml or setup.py"
+fi
+# Its requirements files are the environment the tests import from.
+_with=()
+for _file in requirements*.txt; do
+    [ -f "${_file}" ] && _with+=(--with-requirements "${_file}")
+done
+run uv run ${_with[@]+"${_with[@]}"} --with pytest pytest ${_args[@]+"${_args[@]}"}

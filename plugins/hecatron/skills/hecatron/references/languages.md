@@ -48,14 +48,14 @@ The key is what to type (`hct test csharp`).
 | PHP | `php` | Composer | PHPUnit | PHPStan, PHP_CodeSniffer, PHP CS Fixer | PHP CS Fixer, Laravel Pint |
 | PowerShell | `powershell` | PowerShell modules | Pester | PSScriptAnalyzer | – |
 | Prolog | `prolog` | SWI-Prolog packs | plunit | – | – |
-| Python | `python` | uv (pyproject.toml), setuptools | pytest | Ruff | Ruff, Black |
+| Python | `python` | uv (pyproject.toml, requirements.txt), setuptools | pytest | Ruff | Ruff, Black |
 | R | `r` | R packages (DESCRIPTION) | testthat | lintr | Air |
 | Racket | `racket` | raco | rackunit (raco test) | – | – |
 | Raku | `raku` | zef | Test (prove6, zef test) | – | – |
 | Ruby | `ruby` | Bundler, Rake, RubyGems | RSpec, Minitest | RuboCop, Standard | RuboCop, Standard |
 | Rust | `rust` | Cargo | cargo test | Clippy, rustfmt | rustfmt |
 | Scala | `scala` | sbt, Gradle, Maven, scalac | MUnit, ScalaTest | – | sbt-scalafmt, Spotless |
-| Swift | `swift` | Swift Package Manager | XCTest, Swift Testing | – | swift-format |
+| Swift | `swift` | Swift Package Manager, Xcode (xcodebuild build and clean) | XCTest, Swift Testing | – | swift-format |
 | Tcl | `tcl` | TEA (make) | tcltest | – | – |
 | TypeScript | `typescript` | npm, pnpm, Yarn or Bun (tsc) | npm test | npm run lint, tsc --noEmit | Prettier, Biome |
 | V | `v` | v | v test | v fmt, v vet | v fmt |
