@@ -22,7 +22,8 @@ type Suite struct {
 	Lang      string
 	Component string
 	Status    runner.Status
-	Failed    bool // the component (or job) failed or timed out
+	Failed    bool   // the component (or job) failed or timed out
+	Skipped   string // why the component had nothing to do (runner.Component.Skipped)
 	ExitCode  int
 	Duration  time.Duration
 	Log       string
@@ -85,6 +86,9 @@ func componentSuites(result runner.Result, opts SuiteOptions) []Suite {
 		if !c.Failed {
 			s.Status, s.ExitCode = runner.Passed, 0
 		}
+		if c.Skipped != "" && !c.Failed {
+			s.Status, s.Skipped = runner.Skipped, c.Skipped
+		}
 		if c.Failed {
 			if part, ok := parts[c.Name]; ok {
 				s.Excerpt = runner.Extract(part, patterns).Lines
@@ -131,6 +135,9 @@ func (s Suite) cases() []Case {
 	switch {
 	case s.Status == runner.StatusNotInstall || s.Status == runner.StatusDisabled:
 		message := string(s.Status)
+		own.Skipped = &message
+	case s.Status == runner.Skipped:
+		message := "skipped: " + s.Skipped
 		own.Skipped = &message
 	case s.Failed:
 		own.Failure = s.failure()

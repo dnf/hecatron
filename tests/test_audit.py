@@ -124,6 +124,26 @@ class FormatsTest(unittest.TestCase):
     def test_an_empty_osv_report_has_no_findings(self):
         self.assertEqual(audit.parse("osv", ""), [])
 
+    def test_npm_findings_get_the_installed_version_from_the_lock_file(self):
+        """npm audit names the vulnerable range, not the installed version:
+        the lock file it read, in the working directory, gives it (as
+        internal/deps' withInstalled does)."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            with open(os.path.join(tmp, "package-lock.json"), "w", encoding="utf-8") as f:
+                json.dump({"lockfileVersion": 3, "packages": {
+                    "": {"name": "x"}, "node_modules/lodash": {"version": "4.17.15"},
+                    "node_modules/a/node_modules/lodash": {"version": "4.17.10"}, "node_modules/b": "odd"}}, f)
+            cwd = os.getcwd()
+            os.chdir(tmp)
+            try:
+                findings = audit.parse("npm", report_text("npm.json"))
+            finally:
+                os.chdir(cwd)
+        self.assertTrue(findings)
+        self.assertEqual({f.version for f in findings}, {"4.17.10, 4.17.15"})
+        self.assertIn("  lodash 4.17.10, 4.17.15  GHSA-", audit._line(findings[0]))
+
 
 def finding_report(*severities: str | None) -> str:
     return json.dumps({"advisories": {str(i): {

@@ -991,7 +991,7 @@ func ParseAudit(format, text string) ([]Finding, error) {
 		}
 		return less
 	})
-	return unique, sortErr
+	return withInstalled(format, unique), sortErr
 }
 
 // pyLess is Python's a < b for the values a report's names and IDs are.

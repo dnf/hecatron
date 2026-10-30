@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -57,6 +58,10 @@ type Component struct {
 	Dir              string `json:"dir"`
 	Failed           bool   `json:"failed"`
 	ToolchainMissing bool   `json:"toolchainMissing,omitempty"`
+	// Skipped is why its hook had nothing to do (audit's "nothing to
+	// audit": no lock file the auditor reads), which it wrote to
+	// HECATRON_SKIPPED; "" when it ran.
+	Skipped string `json:"skipped,omitempty"`
 
 	// When its hooks started and how long they took, for the reports
 	// (JUnit, the job summary); zero where unknown.
@@ -71,6 +76,7 @@ const (
 	Passed            Status = "passed"
 	Failed            Status = "failed"
 	TimedOut          Status = "timed out" // stopped at its time limit
+	Skipped           Status = "skipped"   // it ran, but every component's hook had nothing to do
 	StatusNotInstall  Status = "not installed"
 	StatusDisabled    Status = "disabled"
 	StatusSeparator   Status = ""
@@ -139,9 +145,40 @@ func (r *Result) ToolchainMissing() bool {
 	return missing
 }
 
-// Ran reports whether the job ran: it passed, failed or timed out.
+// Ran reports whether the job ran: it passed, failed, timed out, or had
+// nothing to do.
 func (r *Result) Ran() bool {
-	return r.Status == Passed || r.Status == Failed || r.Status == TimedOut
+	return r.Status == Passed || r.Status == Failed || r.Status == TimedOut || r.Status == Skipped
+}
+
+// SkipReason is why a job, or some of its components, had nothing to do:
+// each component's reason, prefixed with the component when there are
+// several; "" when none skipped.
+func (r *Result) SkipReason() string {
+	var reasons []string
+	for _, c := range r.Components {
+		if c.Skipped == "" {
+			continue
+		}
+		reason := c.Skipped
+		if len(r.Components) > 1 {
+			reason = c.Name + ": " + reason
+		}
+		if !slices.Contains(reasons, reason) {
+			reasons = append(reasons, reason)
+		}
+	}
+	return strings.Join(reasons, "; ")
+}
+
+// allSkipped says whether every component had nothing to do.
+func allSkipped(components []Component) bool {
+	for _, c := range components {
+		if c.Skipped == "" || c.Failed {
+			return false
+		}
+	}
+	return len(components) > 0
 }
 
 // Unsuccessful reports whether the job failed or timed out.

@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/dnf/hecatron/internal/runner"
 )
 
 // The audit hooks run their auditors and hand each report to `hecatron
@@ -51,6 +53,25 @@ func ReadAuditRecords(dir string) []AuditFinding {
 		}
 	}
 	return sortedFindings(all)
+}
+
+// AuditSkip is a component audit had nothing to scan in, and why (no lock
+// file its auditor reads).
+type AuditSkip struct {
+	Lang, Component, Reason string
+}
+
+// AuditSkips are a run's skipped components.
+func AuditSkips(r *runner.Report) []AuditSkip {
+	var skips []AuditSkip
+	for _, result := range r.Results {
+		for _, c := range result.Components {
+			if c.Skipped != "" && !c.Failed {
+				skips = append(skips, AuditSkip{Lang: result.Lang, Component: c.Name, Reason: c.Skipped})
+			}
+		}
+	}
+	return skips
 }
 
 // OSVSources are, from an OSV-Scanner report, the lock file or manifest

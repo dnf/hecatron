@@ -186,6 +186,8 @@ func Execute(ctx context.Context, job Job, out io.Writer) (Outcome, Status) {
 		return outcome, TimedOut
 	case outcome.ExitCode != 0:
 		return outcome, Failed
+	case allSkipped(outcome.Components):
+		return outcome, Skipped
 	}
 	return outcome, Passed
 }

@@ -220,7 +220,7 @@ var auditFindings = []AuditFinding{
 
 func TestAuditReports(t *testing.T) {
 	var sarif bytes.Buffer
-	if err := WriteAuditSARIF(&sarif, "0.5.0", auditFindings); err != nil {
+	if err := WriteAuditSARIF(&sarif, "0.5.0", auditFindings, nil); err != nil {
 		t.Fatal(err)
 	}
 	golden(t, "audit.sarif", sarif.String())

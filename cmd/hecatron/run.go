@@ -189,7 +189,7 @@ func (c *cli) runCommand() (int, bool) {
 	defer stop()
 	r.ctx = ctx
 	var cleanup func()
-	r.reports, cleanup = newReportSettings(c.command, stdoutReport)
+	r.reports, cleanup = newReportSettings(c.command, stdoutReport, format)
 	defer cleanup()
 	status := r.run()
 	if ctx.Err() != nil {
@@ -644,6 +644,9 @@ func (r *invocation) writeReport(report *runner.Report) {
 	case runner.Agent:
 		runner.WriteAgent(os.Stdout, report)
 	case runner.JSON:
+		if r.command == "audit" {
+			report.Audit = r.auditJSON()
+		}
 		_ = runner.WriteJSON(os.Stdout, report)
 	case runner.CI:
 		runner.WriteAnnotations(os.Stdout, report, os.Getenv("GITHUB_WORKSPACE"))

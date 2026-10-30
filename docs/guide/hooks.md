@@ -22,6 +22,10 @@ Rules carried over from sayable:
 - `clean` removes build artifacts only, never installed dependencies or
   tracked files.
 - A language-specific command acts on every component of that language.
+- A hook with nothing to check in a component (an audit with no lock file
+  its auditor reads) writes why to the file `HECATRON_SKIPPED` names and
+  exits 0: the component is skipped, not passed (`skip_component` in
+  `languages/_hooks.sh` does both; [audit](audit.md)).
 
 ## Default hooks
 
