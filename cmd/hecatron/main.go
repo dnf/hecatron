@@ -108,6 +108,8 @@ func (c *cli) dispatch() int {
 		return c.auditTool()
 	case "_outdated":
 		return c.outdatedTool()
+	case "_xcode":
+		return c.xcodeTool()
 	case "_install":
 		return c.installHidden()
 	case "_gotest":
