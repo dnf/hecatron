@@ -111,6 +111,16 @@ uv_locked() {
     ' "${_dir}/uv.lock" | grep .
 }
 
+# Install the dependencies the formatter comes from, which aren't yet:
+# checking changes nothing, so it installs nothing either, and the component
+# isn't checked.
+format_deps() {
+    if format_checking; then
+        skip "not checked: dependencies not installed (hecatron deps ${HECATRON_LANG:-} installs them)"
+    fi
+    "$@"
+}
+
 # uvx: on PATH, or where uv's installer puts it (uv_install in _common.sh),
 # which isn't on PATH for languages other than Python.
 uvx_path() {
@@ -165,14 +175,22 @@ format_node() {
     # shellcheck source=languages/typescript/package-manager.sh
     source "$(dirname "${BASH_SOURCE[0]}")/typescript/package-manager.sh"
     node_pm_command
-    npm_deps
     local _bin
-    _bin="$(nearest_with "node_modules/.bin/${_tool}")/node_modules/.bin/${_tool}" ||
-        { echo "error: ${HECATRON_LANG:-}: ${_tool} isn't in node_modules after installing the dependencies" >&2; exit 1; }
+    if ! _bin="$(node_bin "${_tool}")"; then
+        format_deps node_fetch
+        _bin="$(node_bin "${_tool}")" ||
+            { echo "error: ${HECATRON_LANG:-}: ${_tool} isn't in node_modules after installing the dependencies" >&2; exit 1; }
+    fi
     case "${_tool}" in
         prettier) if format_checking; then run "${_bin}" --check .; else run "${_bin}" --write --list-different .; fi ;;
         biome) if format_checking; then run "${_bin}" format .; else run "${_bin}" format --write .; fi ;;
     esac
+}
+# The installed executable of a package, here or in the workspace above.
+node_bin() {
+    local _dir
+    _dir="$(nearest_with "node_modules/.bin/$1")" || return 1
+    echo "${_dir}/node_modules/.bin/$1"
 }
 # Whether package.json, here or in the workspace above, lists a package.
 node_depends_on() {
@@ -212,10 +230,10 @@ format_dotnet() {
 format_ruby() {
     ruby_project
     if gem_listed rubocop; then
-        bundle_deps
+        bundle_installed || format_deps bundle_fetch
         if format_checking; then ruby_run rubocop --only Layout; else ruby_run rubocop --fix-layout; fi
     elif gem_listed standard; then
-        bundle_deps
+        bundle_installed || format_deps bundle_fetch
         if format_checking; then ruby_run standardrb; else ruby_run standardrb --fix; fi
     else
         skip "neither RuboCop nor Standard is in the bundle"
@@ -226,7 +244,7 @@ format_ruby() {
 # it installs it; each from the project's vendor/bin.
 format_php() {
     [ -f composer.json ] || unknown "no composer.json"
-    composer_deps
+    composer_installed || format_deps composer_fetch
     if [ -x vendor/bin/php-cs-fixer ] && exists '.php-cs-fixer.php .php-cs-fixer.dist.php'; then
         if format_checking; then run vendor/bin/php-cs-fixer fix --dry-run --diff; else run vendor/bin/php-cs-fixer fix; fi
     elif [ -x vendor/bin/pint ]; then
@@ -241,7 +259,7 @@ format_php() {
 # dependencies.
 format_elixir() {
     [ -f mix.exs ] || unknown "no mix.exs"
-    mix_deps
+    mix_fetched || format_deps mix_fetch
     local _inputs=()
     [ -f .formatter.exs ] || _inputs=("{mix,.formatter}.exs" "{config,lib,test}/**/*.{ex,exs}")
     if format_checking; then

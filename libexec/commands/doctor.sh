@@ -18,25 +18,42 @@ _resolve() { python3 "${HECATRON_HOME}/libexec/lib/project.py" resolve "$1" "$2"
 
 if [ "${1:-}" = "help" ] || [ "${1:-}" = "--help" ]; then
     printf '%s\n' \
-        "Usage: hecatron doctor [--fix] [language ...]" \
+        "Usage: hecatron doctor [--fix [--no-deps]] [--output FORMAT] [language ...]" \
         "" \
         "Check that each language's toolchain works: its build and lint tools run, and" \
         "known breakages are absent. With no languages, checks every added, enabled one." \
         "" \
         "Flags:" \
-        "  --fix      Run each unhealthy language's installer, then check it again"
+        "  --fix      Run each unhealthy language's installer, then check it again" \
+        "  --no-deps  With --fix, repair toolchains only: don't install the project's dependencies" \
+        "  --output   human (the default), agent, or json: each language's problems and notes"
     exit 0
 fi
 
 _fix=false
 _langs=()
+_output=""
 for _arg in "$@"; do
-    if [ "${_arg}" = "--fix" ]; then
+    if [ "${_output}" = next ]; then
+        _output="${_arg}"
+    elif [ "${_arg}" = "--output" ]; then
+        _output=next
+    elif [ "${_arg#--output=}" != "${_arg}" ]; then
+        _output="${_arg#--output=}"
+    elif [ "${_arg}" = "--fix" ]; then
         _fix=true
+    elif [ "${_arg}" = "--no-deps" ]; then
+        export HECATRON_NO_DEPS=1
     else
         _langs+=("$(_check "${_arg}" doctor)")
     fi
 done
+case "${_output}" in
+    ""|human|agent) ;;
+    json) echo "hecatron: doctor --output json needs hecatron's binary (hct self update installs it)" >&2; exit 2 ;;
+    next) echo "hecatron: --output needs a format: human, agent or json" >&2; exit 2 ;;
+    *) echo "hecatron: unknown output format '${_output}' (human, agent or json)" >&2; exit 2 ;;
+esac
 if [ "${#_langs[@]}" -eq 0 ]; then
     for _lang in ${_ADDED_LANGS}; do
         _is_disabled "${_lang}" || _langs+=("${_lang}")

@@ -20,7 +20,7 @@ Set up:
   advisor [--fix] [lang...]  Recommend each ecosystem's good practices for the project
   init [dir]                 Set up a repository for hecatron
   doctor [--fix] [lang...]   Check toolchains; --fix runs installers to repair them
-  install [lang...]          Install toolchains (all of the project's when none named; --plan: only show how)
+  install [lang...]          Install toolchains (all of the project's when none named; --plan: only show how; --no-deps: toolchains only)
   uninstall <lang...>        Uninstall toolchains
   get-started                Status table and install menu
   bootstrap                  Set up a fresh machine for the project (base packages + install)
@@ -295,13 +295,15 @@ func (c *cli) doctorHelp() (int, bool) {
 	if _, err := c.project.Shell(); err != nil {
 		return 0, false
 	}
-	fmt.Print("Usage: hecatron doctor [--fix] [language ...]\n" +
+	fmt.Print("Usage: hecatron doctor [--fix [--no-deps]] [--output FORMAT] [language ...]\n" +
 		"\n" +
 		"Check that each language's toolchain works: its build and lint tools run, and\n" +
 		"known breakages are absent. With no languages, checks every added, enabled one.\n" +
 		"\n" +
 		"Flags:\n" +
-		"  --fix      Run each unhealthy language's installer, then check it again\n")
+		"  --fix      Run each unhealthy language's installer, then check it again\n" +
+		"  --no-deps  With --fix, repair toolchains only: don't install the project's dependencies\n" +
+		"  --output   human (the default), agent, or json: each language's problems and notes\n")
 	return 0, true
 }
 

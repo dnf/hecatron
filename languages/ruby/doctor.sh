@@ -4,7 +4,12 @@ source "$(dirname "$0")/../_common.sh"
 
 while IFS= read -r _dir; do
     [ -f "${_dir}/Gemfile" ] || continue
-    (cd "${_dir}" && bundle check </dev/null >/dev/null 2>&1) || problem "${_dir#"${ROOT}/"}: bundle not installed"
+    if ! has bundle; then
+        problem "Bundler isn't installed"
+        break
+    fi
+    (cd "${_dir}" && bundle check </dev/null >/dev/null 2>&1) ||
+        problem "${_dir#"${ROOT}/"}: the Gemfile's gems aren't installed (hecatron deps ruby installs them)"
 done < <(impl_dirs ruby)
 if bundle_needs_user_path; then
     problem "bundle install can't write to the system gem directory and Bundler has no path configured"

@@ -706,6 +706,24 @@ class InstallTest(Fixture):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertFalse(os.path.exists(self.path("a-deps")))
 
+    def test_no_deps_installs_toolchains_only(self):
+        self.configure(languages=["a"])
+        self.language("a", install="touch a-installed", deps="touch ../a-deps")
+        for args in (("install", "--no-deps"), ("install", "--no-deps", "a")):
+            result = self.hecatron(*args)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertTrue(os.path.exists(self.path("a-installed")))
+            self.assertFalse(os.path.exists(self.path("a-deps")), args)
+
+    def test_doctor_no_deps_repairs_toolchains_only(self):
+        self.configure(languages=["a"])
+        self.language("a", install="touch a-installed", deps="touch ../a-deps")
+        write(self.path(".hecatron", "languages", "a", "doctor.sh"),
+              '[ -e a-installed ] || echo "a not installed"\n')
+        result = self.hecatron("doctor", "--fix", "--no-deps", "a")
+        self.assertTrue(os.path.exists(self.path("a-installed")), result.stdout + result.stderr)
+        self.assertFalse(os.path.exists(self.path("a-deps")))
+
     def test_dependencies_failing_after_the_installs_fail_the_command(self):
         self.configure(languages=["a", "b"])
         self.language("a", deps="exit 1")

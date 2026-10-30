@@ -92,6 +92,8 @@ def cmd_install(args) -> int:
     languages fetches theirs as each installs."""
     if args.plan:
         needs_binary("install --plan")
+    if args.no_deps:
+        os.environ["HECATRON_NO_DEPS"] = "1"
     project = load_project()
     install_all = not args.languages
     langs = project.languages if install_all else resolve_all(project, args.languages, added_only=True)
@@ -1005,6 +1007,7 @@ def main(argv: list[str]) -> int:
             p.add_argument("--all", action="store_true", help="re-enable every language")
         if name == "install":
             p.add_argument("--plan", action="store_true", help="show what would be installed (needs the binary)")
+            p.add_argument("--no-deps", action="store_true", help="install toolchains only, not the project's dependencies")
         p.set_defaults(func=func)
 
     p = sub.add_parser("list")

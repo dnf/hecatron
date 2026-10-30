@@ -227,14 +227,18 @@ How detection works: [init and detection](init.md).
 ### doctor
 
 ```
-hct doctor [--fix] [lang...]
+hct doctor [--fix [--no-deps]] [--output json] [lang...]
 ```
 
 Checks that each language's toolchain works: its build and lint commands
 run, its version is installed, and the breakages its definition knows of
 are absent. With no languages, every added, enabled one. `--fix` runs each
 unhealthy language's installer (asking for root once, up front), then
-checks it again. See [installing toolchains](installing-toolchains.md#doctor-and-repair).
+checks it again. An installer also installs the project's dependencies
+(`hct deps`) for the languages that have them; `--no-deps` repairs the
+toolchain only. `--output json` prints `{"healthy": ..., "languages":
+[{"language", "healthy", "problems", "notes"}]}` on stdout, the rest on
+stderr. See [installing toolchains](installing-toolchains.md#doctor-and-repair).
 
 ```bash
 hct doctor
@@ -244,13 +248,14 @@ hct doctor --fix go lua
 ### install, uninstall
 
 ```
-hct install [--plan] [lang...]
+hct install [--plan] [--no-deps] [lang...]
 hct uninstall lang...
 ```
 
 Install (or repair) toolchains: every language the project has when none
 are named, continuing past failures, then each component's dependencies
-once every toolchain is in. `--plan` only prints what each would install
+once every toolchain is in (not with `--no-deps`, which installs
+toolchains only, running none of the project's code). `--plan` only prints what each would install
 and the commands it would run (binary only). Uninstall removes only what
 hecatron installed and no other language needs. `hct install secrets`
 installs gitleaks, for [the secret scan](audit.md#secrets). See

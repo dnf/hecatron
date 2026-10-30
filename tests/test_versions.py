@@ -11,6 +11,7 @@ import os
 import shlex
 import subprocess
 import sys
+import tempfile
 import unittest
 
 HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -819,6 +820,28 @@ class ShippedDefinitionsTest(unittest.TestCase):
                 config = json.load(f)
                 for entry in config.get("pinFiles", []) + config.get("supportFiles", []):
                     self.assertIn(entry["format"], versions.FORMATS, f"{lang}: {entry}")
+
+
+
+class PythonInstalledTest(unittest.TestCase):
+    """languages/python/installed.sh, from a fake uv's list."""
+
+    def test_a_home_without_bin_python3_isnt_one(self):
+        # Homebrew's python@3.11 framework has bin/python3.11 and no python3,
+        # which UV_PYTHON ({home}/bin/python3) would name.
+        with tempfile.TemporaryDirectory() as tmp:
+            entries = []
+            for version, names in (("3.12.1", ["python3.12", "python3"]), ("3.11.9", ["python3.11"])):
+                for name in names:
+                    write(os.path.join(tmp, version, "bin", name), "", 0o755)
+                entries.append({"implementation": "cpython", "version": version,
+                                "path": os.path.join(tmp, version, "bin", names[0])})
+            write(os.path.join(tmp, "fake", "uv"), f"#!/bin/sh\necho {shlex.quote(json.dumps(entries))}\n", 0o755)
+            env = {**os.environ, "PATH": f"{tmp}/fake:{os.environ['PATH']}"}
+            result = subprocess.run(["bash", os.path.join(HOME, "languages", "python", "installed.sh")],
+                                    env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout.split(), ["3.12.1", os.path.realpath(os.path.join(tmp, "3.12.1"))])
 
 
 if __name__ == "__main__":
