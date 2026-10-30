@@ -30,6 +30,9 @@ var definitions = map[string]string{
 	"beta/config.json":   `{"dependency": "no-such-tool-for-hct", "version": "=2.0"}`,
 	"gamma/config.json":  `{}`,
 	"go/config.json":     `{"dependency": "sh", "detect": ["go.mod"], "version": "=1.27.3", "pinFiles": [{"file": "go.mod", "format": "go-mod-toolchain"}]}`,
+	"node/config.json": `{"dependency": "sh", "version": "=24.22.1", "releaseLine": 1, "path": ["{home}/bin"],
+		"rangeFiles": [{"file": "package.json", "format": "npm-engines", "key": "node"}]}`,
+	"node/installed.sh": `printf '26.13.0\t%s/tc/node26\n' "$PWD"`,
 }
 
 type fixtureRepo struct {
@@ -67,6 +70,13 @@ var repos = map[string]fixtureRepo{
 		".logs/build/beta.log": 50 * time.Hour, ".logs/build/history.log": 50 * time.Hour,
 		".logs/docs/beta.log": time.Hour, ".logs/lint/beta.log": time.Hour, ".logs/audit/beta.log": time.Hour,
 	}, edit: map[string]string{"a/alpha/x": "changed\n", "a/alpha/new": "", "README.md": "changed\n"}},
+	// durabuilt's web client: engines.node >=22, Node.js 26 installed and
+	// none of the default's 24.
+	"ranged": {config: true, files: map[string]string{
+		".hecatron/config.json": `{"schema": 1, "languages": ["node"], "implPaths": {"node": "."}}`,
+		"package.json":          `{"engines": {"node": ">=22"}}`,
+		"tc/node26/bin/.keep":   "",
+	}},
 	"detected": {files: map[string]string{
 		"go/go.mod": "module x\n\ntoolchain go1.22.3\n", "go/main.go": "package main\n",
 	}, edit: map[string]string{"go/main.go": "package main // changed\n"}},

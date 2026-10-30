@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -174,6 +175,9 @@ func toolchainText(l Language) string {
 		if missing := versionsMissing(l); missing != "" {
 			return "installed, but not " + missing
 		}
+		if runs := rangeRuns(l); runs != "" {
+			return "installed: " + runs
+		}
 		return "installed"
 	case "missing":
 		return "missing (" + l.Dependency + ")"
@@ -284,4 +288,20 @@ func updateText(s *Status) string {
 		return ""
 	}
 	return "; " + s.Update.Latest + " is available: " + s.Update.Command
+}
+
+// rangeRuns says which components run a version their range allows in
+// place of the default: "26.13.0 runs (clients/web/package.json allows
+// >=22)".
+func rangeRuns(l Language) string {
+	var parts []string
+	for _, c := range l.Components {
+		if r := c.RangeRun; r != nil {
+			part := r.Version + " runs (" + r.File + " allows " + r.Allowed + ")"
+			if !slices.Contains(parts, part) {
+				parts = append(parts, part)
+			}
+		}
+	}
+	return strings.Join(parts, "; ")
 }

@@ -177,6 +177,23 @@ func (p *Project) versionRange(lang, component string) (allowed, path string, ok
 	return value.spec, strings.TrimPrefix(source, "range:"), true, nil
 }
 
+// RangeRun is what a component on the default runs instead when none of
+// the default's line is installed and its rangeFiles allow another
+// installed version (hct status says so, as hct doctor's note does): the
+// version, the range and its file; ok is false otherwise.
+func (p *Project) RangeRun(lang, component string) (version, allowed, where string, ok bool, err error) {
+	resolved, err := p.ResolveVersion(lang, component)
+	if err != nil {
+		return "", "", "", false, err
+	}
+	runs, ok, err := p.inRange(lang, component, resolved)
+	if err != nil || !ok {
+		return "", "", "", false, err
+	}
+	allowed, where, _, err = p.versionRange(lang, component)
+	return runs.Version, allowed, where, err == nil, err
+}
+
 // inRange is project.py's _in_range: for a component on the default with
 // none of the default's line installed, the newest installed version in
 // the range its rangeFiles give, which it runs instead (a package whose
