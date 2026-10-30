@@ -82,9 +82,9 @@ So it only says a release is out and updates when asked, as `gh` does:
 **A project pins its hecatron (decided 2026-10-28).** Teammates and CI
 should run the hecatron a project was set up with, as Go's `toolchain`
 line, Gradle's wrapper and mise do; auto-update was ruled out above. So
-config.json's `hecatron` takes a version as well as a minimum: `"0.6"`
-pins a series (any 0.6.x, matched on dot boundaries, so not 0.60.0),
-`"0.6.1"` a release, and `">=0.6.0"` stays a minimum. A version older than
+config.json's `hecatron` takes a version as well as a minimum: `"0.7"`
+pins a series (any 0.7.x, matched on dot boundaries, so not 0.70.0),
+`"0.7.0"` a release, and `">=0.7.0"` stays a minimum. A version older than
 the pin is refused as a minimum is, by both implementations; the rest is
 the binary's only (`internal/project/pin.go`):
 

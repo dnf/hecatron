@@ -49,7 +49,7 @@ saves it as `.hecatron/config.json` to commit and adjust.
 | Key | Meaning | Default |
 | --- | --- | --- |
 | `schema` | Config format version; hecatron refuses formats it doesn't know | required |
-| `hecatron` | The hecatron the project uses: `"0.6"` (any 0.6.x) or `"0.6.1"` pins it (binary only; [pinning](installing-hecatron.md#pinning-a-projects-hecatron)), `">=0.6.0"` sets a minimum | none |
+| `hecatron` | The hecatron the project uses: `"0.7"` (any 0.7.x) or `"0.7.0"` pins it (binary only; [pinning](installing-hecatron.md#pinning-a-projects-hecatron)), `">=0.7.0"` sets a minimum | none |
 | `project` | Name used in banners, Docker image tags and messages | directory name |
 | `components` | Component names, in order | `["."]` (one, unnamed) |
 | `implPath` | Where a component's code in a language lives | `{lang}` with one component, else `{component}/{lang}` |
