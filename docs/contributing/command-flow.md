@@ -22,18 +22,18 @@ implementations. The pieces are in [modules](modules.md).
 
    | Command | Script |
    | --- | --- |
-   | `test` ... `outdated` | `libexec/commands/run.sh <action>` |
+   | `test` ... `outdated`, `docs`, `bench` | `libexec/commands/run.sh <action>` |
    | `doctor`, `version` | `libexec/commands/doctor.sh`, `version.sh` |
    | `init`, `install`, `list`, `add`, `check`, `dockerfile`, `workflows`, `banner`... | `libexec/commands/manage.py <command>` |
    | `get-started`, `metadata`, `bootstrap` | `libexec/onboarding/`, `metadata/`, `bootstrap/` |
    | `env`, `parallel` | `project.py env`, or `helpers.sh`; `libexec/runner/run-parallel.sh` |
-   | `status`, `sync`, `advisor`, `licenses`, `skill`, `self update` | a message: these need the binary |
+   | `status`, `sync`, `advisor`, `licenses`, `sbom`, `exec`, `skill`, `self update` | a message: these need the binary |
 
 ## 2. The Go binary: `cmd/hecatron`
 
 1. **Home and PATH** as above (`findHome`, `linksOnPath`).
 2. **Native-only commands** (`status`, `sync`, `advisor`, `licenses`,
-   `skill`, `self`, `plan`, and the hidden `_audit`, `_outdated`, `_install`,
+   `sbom`, `exec`, `skill`, `self`, `plan`, and the hidden `_audit`, `_outdated`, `_install`,
    `_gotest`, `_update-check`, `_write-env`) run at once.
 3. **The project.** Every other command but `init` and `banner` finds the
    project: `project.FindRoot` and `project.Load` in Go; a git repository
@@ -70,9 +70,13 @@ The Go path (`cmd/hecatron/run.go`, `hooks.go`, `internal/runner`):
    (the resolved toolchain version's `path` and `env`, then the other
    languages' static `path` entries), and runs `bash <hook> <component>`
    there, with `HECATRON_ROOT`, `HECATRON_COMPONENT`, `HECATRON_LANG`,
-   `HECATRON_BINARY` and stdin closed. Lint then runs the format hook with
+   `HECATRON_BINARY`, `HECATRON_SKIPPED` (a file a skipping hook writes
+   its reason to) and stdin closed. Lint then runs the format hook with
    `HECATRON_FORMAT_CHECK=1`, unless the lint hook checked formatting
-   itself. Every component runs even after one fails.
+   itself. Every component runs even after one fails. The job ends with
+   the line the logs, `run-parallel.sh` and `hct status` read: `<lang>:
+   <action> failed: ...`, `... skipped for N component(s): <comp>
+   (<reason>)`, `... passed for N component(s)`.
 5. **The hook** sources `languages/_hooks.sh`, finds the component's build
    file (here, below or above), picks the ecosystem's command and runs it
    (`cargo test`, `go test ./...`, the package's `npm test`...). Audit and
@@ -84,7 +88,8 @@ The Go path (`cmd/hecatron/run.go`, `hooks.go`, `internal/runner`):
    writes `<logs>/<action>/<label>.log` and `history.log`, and renders the
    results as human, agent, JSON or CI output. Reports for CI are written
    beside them (`internal/reports`).
-7. **Exit status:** 0, 1 for a failure, 2 for usage, 3 when only missing
+7. **Exit status:** 0 (a skipped job too), 1 for a failure (or, with
+   `--fail-on-skip`, when nothing ran), 2 for usage, 3 when only missing
    toolchains failed, 130 when interrupted.
 
 The script path (`run.sh`) does the same in bash: named targets run one at
@@ -109,7 +114,9 @@ from `helpers.sh`'s language lists and hands it to
    language's version environment.
 5. With no languages named, the dependencies the installers deferred
    (`HECATRON_DEFER_DEPS`) are fetched with `hct deps` once every toolchain
-   is in.
+   is in; with languages named, each installer fetches its own. With
+   `--no-deps` (`HECATRON_NO_DEPS=1`, as for `doctor --fix --no-deps`),
+   none are.
 
 Without the binary, `manage.py install` runs each `install.sh` in turn.
 

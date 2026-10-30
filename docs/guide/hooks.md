@@ -9,7 +9,7 @@ hecatron's dispatcher.
 
 A project's `.hecatron/languages/<lang>/<action>.sh` (`test.sh`, `lint.sh`,
 `build.sh`, `clean.sh`, `deps.sh`, `format.sh`, `audit.sh`,
-`outdated.sh`) replaces the built-in default for that language
+`outdated.sh`, `docs.sh`, `bench.sh`) replaces the built-in default for that language
 ([resolving a language's files](configuration.md#resolving-a-languages-files));
 `version.sh` and `metadata.sh` serve `hct version` and `hct metadata`.
 
@@ -22,6 +22,46 @@ Rules carried over from sayable:
 - `clean` removes build artifacts only, never installed dependencies or
   tracked files.
 - A language-specific command acts on every component of that language.
+- A hook with nothing to run in a component, or that can't run there,
+  says so and is reported **skipped**, not passed ([skipping](#skipping)).
+
+## Skipping
+
+A hook that has nothing to do in a component (no tests, no linter or docs
+tool configured, no lock file to audit) or can't run there (xcodebuild
+has no lint action) shouldn't exit 0 and count as passed. It
+writes why, one line, to the file `HECATRON_SKIPPED` names, and exits 0.
+`skip` in `languages/_hooks.sh` does both, and exits the hook:
+
+```bash
+#!/usr/bin/env bash
+# .hecatron/languages/python/test.sh
+source "${HECATRON_HOME}/languages/_hooks.sh"
+compgen -G 'tests/test_*.py' >/dev/null || skip "no tests yet"
+run uv run pytest
+```
+
+prints `python: test: no tests yet (skipping)`, and the component is
+skipped with that reason ([output](output.md#skipped)). Without
+`_hooks.sh`: `echo "no tests yet" >"${HECATRON_SKIPPED}"; exit 0`.
+`skip_component "reason"` writes the reason without exiting, for a hook
+that ends by itself (`audit_nothing`, then `exit 0`). The rules:
+
+- Only an exit status of 0 with the file written is a skip: a hook that
+  writes the reason and then fails has failed.
+- `skip` must run in the hook itself, not in a subshell (`( ... skip ...
+  )`), which would exit only the subshell and leave the hook going on with
+  its component still marked skipped.
+- With `lint`, a component whose lint hook skipped is skipped only if its
+  format check skipped too (or there is none); one that ran passes.
+- A default hook that runs itself in several directories below
+  (`run_hook_in`) skips only if each of them skipped, with each one's
+  reason; else the ones that ran decide.
+- `HECATRON_SKIPPED` is set by both runners, for every run command; a hook
+  run by hand without it just exits 0.
+
+A language without a hook for a command is skipped too (`go: docs skipped:
+no docs tool for go`).
 
 ## Default hooks
 
@@ -88,7 +128,8 @@ configured runner (`vitest.config.*`, `jest.config.*`, `.mocharc.*`); else,
 and in a directory without a `package.json`, it tests the language's
 packages below (TypeScript's have a `tsconfig.json`, but for one beside
 mostly JavaScript, which is JavaScript's: detection's `detectYields`, the
-same rule through `project.py`). It sets `CI=true` (unless it's set) so watching test
+same rule through `project.py`), and skips when none of them has a test
+script either (an app without tests). It sets `CI=true` (unless it's set) so watching test
 runners run once. A package its tests need built (a native addon, from a `napi`
 key, a `binding.gyp` or a build script running napi or node-gyp, whose
 `*.node` isn't built; or a `main` or `exports` entry point that isn't
@@ -100,11 +141,136 @@ each package in turn. pytest also collects `Test*.py` files where no test
 file has its default names (`test_*.py`, `*_test.py`) and the project sets
 no `python_files`, and leaves out the Python projects inside the one it tests
 (`--ignore=pydantic-core`: their environments aren't the outer one's) unless
-the project sets `testpaths`. Where there is no `python`, only `python3`, Python's
+the project sets `testpaths`. Without a `pyproject.toml` or `setup.py` (an
+app with a `requirements.txt`), pytest runs with the packages of the
+directory's `requirements*.txt` (`uv run --with-requirements`), and the
+hook skips where there are no test files. An app's Xcode project builds
+as [below](#xcode-projects). Where there is no `python`, only `python3`, Python's
 installer links one to it in `~/.local/share/hecatron/python/bin`, a static
 `path` entry of Python's, so the builds of a project's other languages that
 call `python` (a Rust build script, a CMake project's) find it, and nothing
 outside hecatron's hooks does.
+
+### Xcode projects
+
+An app's Xcode project builds on macOS with `xcodebuild`, unsigned
+(`CODE_SIGNING_ALLOWED=NO`), trusting its packages' macros and plugins
+(`-skipMacroValidation -skipPackagePluginValidation`: unattended, nobody
+can enable them as Xcode asks; firefox-ios' `ModifiedCopy` macro). Where
+hct's binary runs the hooks, it reads what to build from the project's
+files, without Xcode (`hct _xcode plan`: `project.pbxproj`, the shared
+schemes, `contents.xcworkspacedata`, the `.xcconfig` files); what it can't
+tell, and everything on the bash-only path, `xcodebuild -list` and
+`-showBuildSettings` decide, as described with each step:
+
+- **What it builds:** the root `*.xcworkspace` when there is one (a
+  CocoaPods app's: the bare project doesn't link without its Pods; the
+  `project.xcworkspace` inside an `.xcodeproj` doesn't count), else the
+  `*.xcodeproj`. Of several, the one named like the directory, the project
+  (`HECATRON_PROJECT`) or the repository; otherwise the build skips.
+- **Missing files:** when the build needs a file that isn't there, it skips
+  saying which and what makes it: "the Pods aren't installed
+  (Pods/Pods.xcodeproj is missing): run pod install" for CocoaPods'
+  (`Pods/` is often not committed, as with eidolon; `xcodebuild -list`
+  succeeds without it, and the build fails), "Config/Secrets.xcconfig is
+  missing: the project's own setup (see its README)" for an `.xcconfig`
+  the project's configurations name (wikipedia-ios). Without the binary,
+  only a workspace's projects are checked, and a `Podfile.lock` without
+  `Pods/Pods.xcodeproj`.
+- **The scheme** that builds the app, not "the only one" (each Swift
+  package the project uses adds one, and a CocoaPods workspace one per
+  pod). Of the shared schemes (`xcshareddata/xcschemes/*.xcscheme` in the
+  project, or in the workspace and the projects it refers to) whose build
+  action builds an application target (`productType`
+  `com.apple.product-type.application`): the one named like the workspace
+  or project, else the only one, else the only one whose first build entry
+  is an app no other app embeds (not an extension's scheme, which lists
+  the extension first and builds its host app too: focus-ios'
+  `ContentBlocker`; not a watchOS or helper app's). From the files, then
+  the only one that runs the Debug configuration (home-assistant's
+  `App-Debug`, not `App-Release`), else the only one named after its app.
+  Without a shared one, the scheme of the only application target
+  (xcodebuild makes one per target), else the one named like the
+  workspace or project. Where several remain (focus-ios' `Focus` and
+  `Klar`), the build skips naming them: which app to check is the
+  project's choice. The log says which scheme and why.
+- **The destination:** for the platform the scheme's app is for. From the
+  files: the target's `SDKROOT` (`iphoneos` builds for
+  `generic/platform=iOS Simulator`: a simulator SDK needs no signing or
+  provisioning; `macosx` for `generic/platform=macOS`), and for a
+  multiplatform target (`SDKROOT = auto`) its `SUPPORTED_PLATFORMS`.
+  From `xcodebuild -showBuildSettings`, whose `SDKROOT` isn't the app's:
+  without a destination it describes the first xcodebuild would build
+  for, which for an iOS app supporting Mac Catalyst is the Mac (GoMap,
+  home-assistant and IceCubesApp have the macOS SDK's path there). So
+  `generic/platform=macOS` only for an app whose `SUPPORTED_PLATFORMS` is
+  `macosx` alone (NetNewsWire), else the iOS Simulator where it includes
+  `iphonesimulator` or the app supports Mac Catalyst
+  (`SUPPORTS_MACCATALYST = YES`), else the first other simulator
+  (visionOS, tvOS, watchOS), else macOS when it's one of them; the build
+  skips when there is none. A Catalyst app builds for the simulator, not
+  its Catalyst variant, which can fail where iOS wouldn't. Without a
+  destination, xcodebuild can't choose among a multiplatform target's
+  platforms.
+- **Beside a `Package.swift`:** where the Xcode project has an
+  application target and `xcodebuild` is installed, the app is the
+  product, and Swift's build and clean are the Xcode app's (isowords'
+  `App/`: `isowords.xcodeproj` beside the `Package.swift` of the app's
+  modules). The package's tests, docs and benchmarks stay SwiftPM's,
+  where it builds on the host (on macOS, its `platforms:` include
+  `.macOS`). Without `xcodebuild`, or without an app target (a library's
+  project), SwiftPM builds the package.
+- **Apps below:** a language's hooks also build and clean the apps below
+  its directory with Xcode projects of their own, after its own build:
+  the outermost `.xcodeproj`s and `.xcworkspace`s below (none when there
+  is one in the directory itself), outside hidden directories, build
+  output, dependencies (`Pods`, `Carthage`, `node_modules`) and vendored
+  code (`ThirdParty`, `third_party`, `Vendor`, `External`: firefox-ios'
+  `ThirdParty/Deferred`), examples and tests, in directories holding the
+  language's sources: firefox-ios' root `Package.swift`, then
+  `firefox-ios/Client.xcodeproj` and `focus-ios/Blockzilla.xcodeproj`
+  (SwiftPM builds only the targets `Package.swift` names, so nothing
+  builds twice). It's a scan of the directories (the binary's plan lists
+  them), not of every file. A directory with no build of its own (no
+  `Package.swift` or Xcode project for Swift; no Xcode project, CMake,
+  Meson or make for Objective-C) builds only the apps, and Objective-C's
+  other hooks skip there, saying so. An app with Objective-C below
+  Swift's directory is Swift's to build too.
+- **Dependencies:** `hct deps` runs `pod install` where there is a
+  `Podfile` and CocoaPods' `pod` is installed (hecatron doesn't install
+  it), and skips saying so otherwise; Swift's hook installs the pods of a
+  project the two languages share.
+- **The output:** `-derivedDataPath .build/xcode`, not `./build` or
+  `~/Library/Developer/Xcode/DerivedData`; `hct clean` removes it (and
+  `.build/` when that leaves it empty), without running `xcodebuild`. Add
+  `.build/` to `.gitignore` if it isn't there.
+- **Swift and Objective-C together:** an app with both kinds of source (NetNewsWire)
+  has both languages at the project's directory, and `hct build` runs
+  languages at once; two `xcodebuild`s of one project would race on its
+  build database. Swift's hook builds and cleans it, and Objective-C's skips
+  ("built with swift's hook"), unless Swift is disabled
+  (`hct disable swift`) or neither its component directory nor the apps
+  below it include the project.
+- **Tests** skip: they need a simulator to run on, and which one is the
+  project's choice. So do Swift's docs and bench there, and the local
+  packages below aren't tested with SwiftPM (`swift test` builds them for
+  the Mac, and an app's are often iOS-only); lint and deps still act on
+  them. Elsewhere, on macOS, SwiftPM's build, test, docs and bench skip a
+  package whose `platforms:` leaves out `.macOS`.
+
+Where a build skips (several schemes, workspaces or projects, an unknown
+platform), it says so, naming the hooks to write:
+`.hecatron/languages/<lang>/build.sh` and `test.sh`, e.g.
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+xcodebuild test -scheme NetNewsWire -destination 'platform=macOS' \
+    -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO
+```
+
+For iOS: `-destination 'platform=iOS Simulator,name=iPhone 17'` (one
+`xcrun simctl list devices available` lists).
 
 ## Dependencies
 
@@ -117,7 +283,8 @@ Shards') install them when they're missing through the same function
 never a required first step; where the build tool fetches by itself (go,
 cargo, dotnet, `uv run`, SwiftPM, Maven, Gradle) the hooks leave it to the
 tool. Installers install each component's dependencies by running
-`hct deps`, so a project's own `deps.sh` applies there too.
+`hct deps` (not with `--no-deps`), so a project's own `deps.sh` applies
+there too.
 
 ## Formatting
 
@@ -133,11 +300,35 @@ Spotless), since a default would rewrite every file of a project that
 doesn't use it. (Owner's brief, 2026-10-27; the per-formatter choices are
 the implementation's, in [format.md](format.md).)
 
+## Docs and benchmarks
+
+A `docs` hook builds the component's API documentation with the
+ecosystem's tool into the tool's default directory (`cargo doc --no-deps`
+into the target directory's `doc/`, Sphinx into `docs/_build/html`) and
+ends by saying where, with `docs_written <dir>` from `languages/_hooks.sh`:
+`hct docs` repeats those lines after a parallel run, and puts them in agent
+and JSON output (`"docs"`). A `bench` hook runs the component's benchmarks
+(`cargo bench`, `go test -run '^$' -bench . ./...`). Both run only what the
+component already has (the toolchain's tool, or one among its dependencies
+or configuration) and otherwise `skip`, saying what they looked for. The
+shared functions are in `languages/_docs.sh` and `_bench.sh`. A project
+hook replaces the default, here MkDocs for Sphinx:
+
+```bash
+#!/usr/bin/env bash
+# .hecatron/languages/python/docs.sh
+source "${HECATRON_HOME}/languages/_hooks.sh"
+run uv run --with mkdocs mkdocs build --strict
+docs_written site
+```
+
 ## Environment
 
 Environment for hooks: `HECATRON_ROOT` (project root), `HECATRON_COMPONENT`,
-`HECATRON_LANG`, `HECATRON_HOME`, and `_common.sh` helpers available by
-sourcing `$HECATRON_HOME/languages/_common.sh`.
+`HECATRON_LANG`, `HECATRON_HOME`, `HECATRON_SKIPPED` (the file a skipping
+hook writes its reason to, [above](#skipping)), `HECATRON_FORMAT_CHECK=1`
+for a format hook that must only check, and `_common.sh` helpers available
+by sourcing `$HECATRON_HOME/languages/_common.sh`.
 
 ## Trust
 

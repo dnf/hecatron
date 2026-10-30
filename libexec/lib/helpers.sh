@@ -4,7 +4,7 @@
 # Loads the project model from libexec/lib/project.py: the language lists
 # (_ALL_LANGS, _ADDED_LANGS, _COMPILED_LANGS, _CLEAN_LANGS, _LINT_LANGS,
 # _TEST_LANGS, _AUDIT_LANGS, _DEPS_LANGS, _FORMAT_LANGS, _LINT_FORMAT_LANGS,
-# _OUTDATED_LANGS, _NO_BUILD_LANGS, _DISABLED_LANGS, _TOOLS), the lookups _name, _abbr, _dep,
+# _OUTDATED_LANGS, _DOCS_LANGS, _BENCH_LANGS, _NO_BUILD_LANGS, _DISABLED_LANGS, _TOOLS), the lookups _name, _abbr, _dep,
 # _lint_dep and _is_disabled, and HECATRON_ROOT, _COMPONENTS, _IMPL_PATH and
 # _LOGS. Requires HECATRON_HOME (set by bin/hecatron).
 

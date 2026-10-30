@@ -1,0 +1,76 @@
+{
+  "results": [
+    {
+      "source": {
+        "path": "/tmp/licenses-fixtures/npm-workspaces/package-lock.json",
+        "type": "lockfile"
+      },
+      "packages": [
+        {
+          "package": {
+            "name": "@ws/app",
+            "version": "0.1.0",
+            "ecosystem": "npm",
+            "purl": "pkg:npm/%40ws/app@0.1.0?source=LOCAL"
+          },
+          "licenses": [
+            "UNKNOWN"
+          ]
+        },
+        {
+          "package": {
+            "name": "@ws/util",
+            "version": "0.2.0",
+            "ecosystem": "npm",
+            "purl": "pkg:npm/%40ws/util@0.2.0?source=LOCAL"
+          },
+          "licenses": [
+            "UNKNOWN"
+          ]
+        },
+        {
+          "package": {
+            "name": "is-number",
+            "version": "7.0.0",
+            "ecosystem": "npm",
+            "purl": "pkg:npm/is-number@7.0.0?source=PUBLIC_REGISTRY"
+          },
+          "licenses": [
+            "MIT"
+          ]
+        },
+        {
+          "package": {
+            "name": "left-pad",
+            "version": "1.3.0",
+            "ecosystem": "npm",
+            "purl": "pkg:npm/left-pad@1.3.0?source=PUBLIC_REGISTRY"
+          },
+          "licenses": [
+            "WTFPL"
+          ]
+        }
+      ]
+    }
+  ],
+  "experimental_config": {
+    "licenses": {
+      "summary": true,
+      "allowlist": []
+    }
+  },
+  "license_summary": [
+    {
+      "name": "MIT",
+      "count": 1
+    },
+    {
+      "name": "WTFPL",
+      "count": 1
+    },
+    {
+      "name": "UNKNOWN",
+      "count": 2
+    }
+  ]
+}

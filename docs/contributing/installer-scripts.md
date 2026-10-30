@@ -35,7 +35,7 @@ A language definition has these files (see
 | -------------- | ------------------------------------------------------------- | -------- |
 | `config.json`  | Dependency commands, abbreviation, detection globs, PATH entries | Yes   |
 | `install.json` | Install as data, which the binary runs (above)                | No       |
-| `install.sh`   | Install toolchain + deps; idempotent, repairs                 | Yes      |
+| `install.sh`   | Install toolchain + deps (`impl_deps`; none with `HECATRON_NO_DEPS=1`); idempotent, repairs | Yes      |
 | `uninstall.sh` | Remove toolchain                                              | Yes      |
 | `doctor.sh`    | Detect breakages beyond a missing command (`hct doctor`) | No       |
 | `dockerfile`   | Snippet for `hct dockerfile`                             | No       |

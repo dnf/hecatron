@@ -54,6 +54,8 @@
   "testing": "ExUnit",
   "linting": "mix format, Credo",
   "formatting": "mix format",
+  "docs": "ExDoc",
+  "benchmarks": "Benchee",
   "shared": {
     "deps": [
       {

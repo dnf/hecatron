@@ -27,7 +27,7 @@ echo "  stub=${STUB_VAR:-} path=${PATH%%:*}"
 
 var runProject = map[string]string{
 	".hecatron/config.json": `{"schema": 1, "project": "stubs", "components": ["a", "b"],
-		"languages": ["alpha", "beta", "gamma", "missing", "off"],
+		"languages": ["alpha", "beta", "gamma", "delta", "missing", "off"],
 		"tasks": {"test": {"docs": "echo docs ran in .${PWD#\"${HECATRON_ROOT}\"}", "flaky": "echo flaky failed >&2; exit 4"},
 			"lint": {"style": "echo style"}}}`,
 	".hecatron/local.json":                  `{"disabled": ["off"]}`,
@@ -38,12 +38,24 @@ var runProject = map[string]string{
 	".hecatron/languages/alpha/audit.sh":    stubHook,
 	".hecatron/languages/alpha/outdated.sh": stubHook,
 	".hecatron/languages/alpha/deps.sh":     stubHook,
+	".hecatron/languages/alpha/docs.sh":     stubHook + `echo "${HECATRON_LANG}: docs: written to $1/docs"` + "\n",
+	".hecatron/languages/gamma/bench.sh":    stubHook + `[ "$1" = b ] && exit 3; echo "no benchmarks in a" >"${HECATRON_SKIPPED}"` + "\n",
+	// delta's hooks skip with _hooks.sh's skip: its tests, benchmarks
+	// and linter everywhere, its format check in a only.
+	".hecatron/languages/delta/config.json": `{}`,
+	".hecatron/languages/delta/test.sh":     stubHook + skippingHook + `skip "no tests in $1"` + "\n",
+	".hecatron/languages/delta/bench.sh":    stubHook + skippingHook + `skip "no benchmarks"` + "\n",
+	".hecatron/languages/delta/lint.sh":     stubHook + skippingHook + `skip "no linter"` + "\n",
+	".hecatron/languages/delta/format.sh": stubHook + skippingHook +
+		`[ "${HECATRON_FORMAT_CHECK:-}" = 1 ] && [ "$1" = b ] && exit 0; skip "no formatter"` + "\n",
 	".hecatron/languages/beta/config.json": `{"dependency": "sh", "env": {"STUB_VAR": "x"},
 		"errorPatterns": [{"regex": "^(?P<file>\\S+\\.src):(?P<line>\\d+): (?P<message>.+)$"}]}`,
 	".hecatron/languages/beta/test.sh":        stubHook + `[ "$1" = a ] && { echo "beta.src:3: broken" >&2; exit 2; }; exit 0` + "\n",
 	".hecatron/languages/beta/lint.sh":        stubHook,
 	".hecatron/languages/beta/format.sh":      stubHook,
 	".hecatron/languages/gamma/config.json":   `{}`,
+	".hecatron/languages/gamma/audit.sh":      stubHook + `echo "nothing to audit: no gamma.lock" >"${HECATRON_SKIPPED}"` + "\n",
+	".hecatron/languages/beta/audit.sh":       stubHook + `[ "$1" = b ] && echo "nothing to audit: no beta.lock" >"${HECATRON_SKIPPED}"; exit 0` + "\n",
 	".hecatron/languages/gamma/test.sh":       stubHook,
 	".hecatron/languages/gamma/lint.sh":       stubHook + `[ "$1" = a ] && echo gamma >>"${HECATRON_FORMAT_CHECKED}"; exit 0` + "\n",
 	".hecatron/languages/gamma/format.sh":     stubHook + `[ "${HECATRON_FORMAT_CHECK:-}" = 1 ] && [ "$1" = b ] && exit 1; exit 0` + "\n",
@@ -58,6 +70,8 @@ var runProject = map[string]string{
 	"b/gamma/x":                               "",
 	"a/gamma/x":                               "",
 	"a/missing/x":                             "",
+	"a/delta/x":                               "",
+	"b/delta/x":                               "",
 	"a/off/x":                                 "",
 }
 
@@ -65,10 +79,21 @@ var runInvocations = [][]string{
 	{"test"}, {"test", "-j", "1"}, {"test", "-c", "b"}, {"test", "alpha"}, {"test", "al", "beta"},
 	{"test", "beta", "-c", "a"}, {"test", "--component=b", "beta"}, {"test", "docs", "flaky"}, {"test", "off"},
 	{"test", "missing"}, {"lint"}, {"lint", "gamma"}, {"lint", "beta", "gamma"}, {"format", "--check"}, {"format"},
-	{"audit", "--fail-on", "low"}, {"audit", "--fail-on=moderate", "alpha"}, {"outdated", "--fail"}, {"deps"},
+	{"audit", "--fail-on", "low"}, {"audit", "--fail-on=moderate", "alpha"}, {"audit", "gamma", "beta"}, {"outdated", "--fail"}, {"deps"},
 	{"build"}, {"build", "beta"}, {"clean"}, {"rebuild", "alpha"}, {"retest", "alpha"}, {"test", "gamma", "-c", "a", "-c", "b"},
 	{"test", "-c", "zz"}, {"test", "nope"}, {"test", "alpha", "nope"},
+	{"docs"}, {"docs", "alpha", "beta"}, {"bench"}, {"bench", "gamma", "-c", "a"}, {"bench", "alpha"},
+	// Skipped: by the hooks (delta), for some components (gamma's bench,
+	// delta's lint), for want of a hook (alpha's lint, gamma's docs).
+	{"test", "delta"}, {"test", "delta", "--fail-on-skip"}, {"test", "delta", "alpha", "--fail-on-skip"},
+	{"test", "--fail-on-skip"}, {"lint", "delta"}, {"lint", "alpha"}, {"docs", "gamma", "--fail-on-skip"},
+	{"bench", "-c", "a"}, {"bench", "-c", "a", "--fail-on-skip"}, {"retest", "delta", "--fail-on-skip"},
 }
+
+// skippingHook makes a stub hook one that can skip (skip in
+// languages/_hooks.sh).
+const skippingHook = `source "${HECATRON_HOME}/languages/_hooks.sh"
+`
 
 var (
 	durations = regexp.MustCompile(`\d+\.\ds`)
@@ -199,7 +224,8 @@ func TestAgentOutput(t *testing.T) {
 	}
 	env := []string{"HECATRON_HOME=" + home, "HECATRON_BUILTIN_LANGUAGES=", "CLAUDECODE=1", "HECATRON_OUTPUT=", "GITHUB_ACTIONS="}
 	got := runIn(t, root, env, binary, "test")
-	want := "hct test: 3 passed, 2 failed, 2 skipped (T)\n" +
+	want := "hct test: 3 passed, 2 failed, 3 skipped (T)\n" +
+		"SKIP delta (a/delta/, b/delta/): a: no tests in a; b: no tests in b\n" +
 		"FAIL beta (a/beta/) exit 1, T, log .logs/test/beta.log\n" +
 		"  beta.src:3: broken\n" +
 		"FAIL flaky exit 4, T, log .logs/test/flaky.log\n" +
@@ -218,6 +244,25 @@ func TestAgentOutput(t *testing.T) {
 		if !strings.Contains(jsonRun.stdout, part) {
 			t.Errorf("no %s in:\n%s", part, jsonRun.stdout)
 		}
+	}
+	// Skipped: a job, by its hooks, and for want of a hook.
+	skipped := runIn(t, root, append(env, "HECATRON_OUTPUT=json"), binary, "test", "delta")
+	for _, part := range []string{`"status": "skipped"`, `"exitCode": 0`, `"reason": "a: no tests in a; b: no tests in b"`,
+		`"skipped": "no tests in a"`, `"skipped": 1`} {
+		if !strings.Contains(skipped.stdout, part) || skipped.status != 0 {
+			t.Errorf("no %s in (status %d):\n%s", part, skipped.status, skipped.stdout)
+		}
+	}
+	noHook := runIn(t, root, env, binary, "lint", "alpha")
+	if want := "hct lint: 0 passed, 1 skipped (T)\nSKIP alpha: alpha has no separate linter: its build treats warnings as errors (hecatron test alpha)\n"; times.ReplaceAllString(noHook.stdout, "T") != want || noHook.status != 0 {
+		t.Errorf("lint alpha: %+v, want:\n%s", noHook, want)
+	}
+	strict := runIn(t, root, append(env, "HECATRON_OUTPUT=json", "HECATRON_FAIL_ON_SKIP=1"), binary, "test", "delta")
+	if strict.status != 1 || !strings.Contains(strict.stdout, `"exitCode": 1`) || strict.stderr != "hecatron: nothing ran: every job skipped (--fail-on-skip)\n" {
+		t.Errorf("HECATRON_FAIL_ON_SKIP=1: %+v", strict)
+	}
+	if mixed := runIn(t, root, env, binary, "test", "delta", "alpha", "--fail-on-skip"); mixed.status != 0 {
+		t.Errorf("--fail-on-skip with a job that passed: %+v", mixed)
 	}
 	ci := runIn(t, root, append(env, "HECATRON_OUTPUT=", "CLAUDECODE=", "GITHUB_ACTIONS=true", "GITHUB_WORKSPACE="+root), binary, "test", "beta")
 	if !strings.Contains(ci.stdout, "::error file=a/beta/beta.src,line=3,title=hct test beta::broken\n") {

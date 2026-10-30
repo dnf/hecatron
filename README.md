@@ -237,10 +237,9 @@ For a library in ten languages ([full comparison](docs/guide/hecatron-vs-ad-hoc.
 - **Safe by default.** Commands that change the machine (`install`,
   `doctor --fix`) are separate from those that only run the project's
   tools, and the agent reference says to ask before the former.
-
-Coming next: running only what a change touched
-([#91](https://github.com/dnf/hecatron/issues/91)), and catching up after a
-pull ([#92](https://github.com/dnf/hecatron/issues/92)).
+- **Only what a change touched.** `--changed` runs only the languages and
+  components a branch's changes touch, and `hct sync` catches up after a
+  pull ([runner](docs/guide/runner.md#only-what-changed)).
 
 ## From one language to fifty
 
@@ -313,7 +312,7 @@ Adding another is a directory of small scripts; see
 
 ## Status
 
-Hecatron is young: version 0.6. It works and runs sayable's checks, but
+Hecatron is young: version 0.7. It works and runs sayable's checks, but
 expect changes before 1.0. Changes are listed in
 [CHANGELOG.md](CHANGELOG.md).
 

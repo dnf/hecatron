@@ -28,9 +28,12 @@ type installStep struct {
 // ones), stopping at the first that fails, or every added one, carrying on
 // past failures and fetching the dependencies the installers deferred.
 func (c *cli) install() (int, bool) {
-	args, ok := parseManageArgs(c.args, []string{"--plan"}, nil, -1)
+	args, ok := parseManageArgs(c.args, []string{"--plan", "--no-deps"}, nil, -1)
 	if !ok {
 		return 0, false
+	}
+	if args.flags["--no-deps"] {
+		skipDeps()
 	}
 	if status := c.requirePython(); status != 0 {
 		return status, true
@@ -139,6 +142,11 @@ func (c *cli) install() (int, bool) {
 	}
 	return 0, true
 }
+
+// skipDeps keeps the installers this process runs from fetching the
+// project's dependencies (impl_deps in languages/_common.sh): toolchains
+// only.
+func skipDeps() { _ = os.Setenv("HECATRON_NO_DEPS", "1") }
 
 // uninstall is `hecatron uninstall LANG...`: each named (added) language's
 // uninstall.sh, stopping with the status of the first that fails.

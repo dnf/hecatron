@@ -130,7 +130,7 @@ class FormatCommandTest(Fixture):
             f.write(json.dumps({"dependency": "bash"}))
         result = self.hecatron("format", "fixture")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("No formatter for fixture", result.stdout)
+        self.assertIn("fixture: format skipped: no formatter for fixture", result.stdout)
         lint = self.hecatron("lint", "fixture")
         self.assertEqual(lint.returncode, 0, lint.stderr)
 
@@ -206,6 +206,22 @@ source = { registry = "https://pypi.org/simple" }
         result = self.shell("node_depends_on prettier && echo yes; node_depends_on @biomejs/biome || echo no",
                             cwd=self.path("packages", "a"))
         self.assertEqual(result.stdout.split(), ["yes", "no"])
+
+    def test_checking_installs_no_dependencies(self):
+        write(self.path("package.json"), json.dumps({"devDependencies": {"prettier": "3.3.3"}}))
+        write(self.path("package-lock.json"), "{}")
+        npm = self.path("bin", "npm")
+        write(npm, f"#!/bin/sh\ntouch {self.path('installed')}\n")
+        os.chmod(npm, 0o755)
+        result = self.shell(f"PATH={self.path('bin')}:$PATH\nHECATRON_FORMAT_CHECK=1\nformat_node")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("not checked: dependencies not installed", result.stdout)
+        self.assertFalse(os.path.exists(self.path("installed")))
+
+    def test_formatting_installs_the_missing_dependencies(self):
+        result = self.shell("format_deps echo installing")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("installing", result.stdout)
 
     def test_a_formatter_without_configuration_skips(self):
         write(self.path("src", "a.c"), "int x;\n")

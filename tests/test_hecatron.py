@@ -296,19 +296,63 @@ class InitTest(Fixture):
         self.assertEqual(found, {"javascript": {"."}})
         self.assertEqual(not_added, {"typescript": "its tsconfig.json only sits beside mostly JavaScript"})
 
-    def test_a_package_without_a_test_script_isnt_a_language(self):
+    def test_a_package_without_any_detect_key_isnt_a_language(self):
         # Cucumber messages: jsonschema/package.json is tooling with no tests.
-        defs = {"javascript": {"detect": ["package.json"], "detectScript": "test"}}
+        defs = {"javascript": {"detect": ["package.json"], "detectKeys": ["dependencies", "scripts.test"]}}
         found, not_added = self.detect({"js/package.json": '{"scripts": {"test": "mocha"}}',
                                         "jsonschema/package.json": '{"scripts": {"build": "x"}}'}, defs)
         self.assertEqual(found, {"javascript": {"js"}})
         self.assertEqual(not_added, {})
 
-    def test_a_language_whose_packages_have_no_test_script_isnt_added(self):
-        defs = {"javascript": {"detect": ["package.json"], "detectScript": "test"}}
-        found, not_added = self.detect({"jsonschema/package.json": "{}"}, defs)
+    def test_a_language_whose_packages_are_all_tooling_isnt_added(self):
+        defs = {"javascript": {"detect": ["package.json"], "detectKeys": ["dependencies", "scripts.test"]}}
+        found, not_added = self.detect({"jsonschema/package.json": '{"dependencies": {}}'}, defs)
         self.assertEqual(found, {})
-        self.assertEqual(not_added, {"javascript": "no test script"})
+        self.assertEqual(not_added, {"javascript": "its package.json has none of dependencies, scripts.test"})
+
+    def test_an_application_without_a_test_script_is_javascript(self):
+        # Express apps: a start or dev script, or only runtime dependencies.
+        found, _ = self.detect({"api/package.json": '{"scripts": {"start": "node .", "dev": "nodemon"}}',
+                                "api/package-lock.json": "{}", "api/index.js": "",
+                                "web/package.json": '{"type": "module", "dependencies": {"express": "^4"}}',
+                                "web/yarn.lock": "", "web/index.js": "",
+                                "cli/package.json": '{"bin": {"x": "cli.js"}}', "cli/cli.js": ""}, None)
+        self.assertEqual(found, {"javascript": {"api", "web", "cli"}})
+
+    def test_a_package_json_for_commit_hooks_isnt_javascript(self):
+        # An iOS SDK's root package-lock.json, for husky and commitlint.
+        found, not_added = self.detect({
+            "package.json": '{"type": "module", "devDependencies": {"husky": "^9", "@commitlint/cli": "^19"},'
+                            ' "scripts": {"prepare": "husky", "lint": "x", "format": "prettier -w ."}}',
+            "package-lock.json": "{}", "commitlint.config.js": "", "Package.swift": "",
+            "Sources/A/a.swift": ""}, None)
+        self.assertEqual(found, {"swift": {"."}})
+        self.assertIn("has none of dependencies", not_added["javascript"])
+
+    def test_a_requirements_file_beside_python_code_is_python(self):
+        found, _ = self.detect({"requirements.txt": "flask\n", "app.py": "", "Dockerfile": "",
+                                "worker/requirements.txt": "celery\n", "worker/src/tasks.py": ""}, None)
+        self.assertEqual(found, {"python": {".", "worker"}})
+
+    def test_a_requirements_file_without_python_code_isnt_python(self):
+        # A docs build's requirements (Sphinx, MkDocs) in a Go repository.
+        found, _ = self.detect({"go.mod": "", "main.go": "", "requirements.txt": "mkdocs\n",
+                                "docs/requirements.txt": "sphinx\n", "docs/conf.py": "",
+                                "site/requirements.txt": "mkdocs-material\n", "site/mkdocs.yml": "",
+                                ".github/scripts/requirements.txt": "", ".github/scripts/x.py": ""}, None)
+        self.assertEqual(found, {"go": {"."}})
+
+    def test_an_xcode_project_is_swift_or_objective_c_by_its_sources(self):
+        found, _ = self.detect({"App.xcodeproj/project.pbxproj": "", "App/AppDelegate.swift": "",
+                                "Legacy/Legacy.xcodeproj/project.pbxproj": "", "Legacy/Sources/a.m": "",
+                                "Legacy/Sources/a.h": "", "Gemfile": "gem 'fastlane'\n", "Gemfile.lock": "",
+                                "Pods/Pods.xcodeproj/project.pbxproj": "", "Pods/Alamofire/a.swift": ""}, None)
+        # Legacy's Objective-C is its own project's, not the root's.
+        self.assertEqual(found, {"swift": {"."}, "objectivec": {"Legacy"}, "ruby": {"."}})
+
+    def test_an_xcode_workspace_without_sources_isnt_a_language(self):
+        found, _ = self.detect({"App.xcworkspace/contents.xcworkspacedata": "", "README.md": ""}, None)
+        self.assertEqual(found, {})
 
     def test_a_shared_build_file_marks_c_and_cpp_at_the_root(self):
         # flatbuffers: CMakeLists.txt at the root and C++ in src/, not the
@@ -362,6 +406,21 @@ class InitTest(Fixture):
             write(self.path(path), content)
         self.commit()
         return manage.detected_config(self.root)[0]
+
+    def test_an_xcode_project_below_the_root_is_where_its_languages_live(self):
+        # bryceco/GoMap: src/GoMap.xcodeproj, nothing at the root.
+        config = self.detected({"src/GoMap.xcodeproj/project.pbxproj": "", "src/iOS/AppDelegate.swift": "",
+                                "src/Shared/OsmMapData.m": "", "src/Shared/OsmMapData.h": "", "README.md": ""})
+        self.assertEqual((config["languages"], config["implPath"], config.get("implPaths")),
+                         (["objectivec", "swift"], ".", {"objectivec": "src", "swift": "src"}))
+
+    def test_apps_beside_a_root_package_leave_swift_at_the_root(self):
+        # mozilla-mobile/firefox-ios: the root's hook builds the package,
+        # then each app (xcode_apps_below in languages/_hooks.sh).
+        config = self.detected({"Package.swift": "", "BrowserKit/Sources/Common/a.swift": "",
+                                "firefox-ios/Client.xcodeproj/project.pbxproj": "", "firefox-ios/Client/a.swift": "",
+                                "focus-ios/Blockzilla.xcodeproj/project.pbxproj": "", "focus-ios/Blockzilla/a.swift": ""})
+        self.assertEqual((config["languages"], config["implPath"], config.get("implPaths")), (["swift"], ".", None))
 
     def test_a_build_file_at_the_root_beats_a_directory_named_for_the_language(self):
         # hecatron itself: the Go module at the root, Go's and Tcl's
@@ -435,7 +494,9 @@ class InitTest(Fixture):
         self.commit()
         result = self.hecatron("list", cwd=self.path("go", "sub"))
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("detected go", result.stderr)
+        # The note that it was detected is for a person at a terminal: stderr
+        # here is a pipe.
+        self.assertNotIn("detected go", result.stderr)
         self.assertIn("go", result.stdout)
         self.assertFalse(os.path.exists(self.path(".hecatron")))
         status = subprocess.run(["git", "status", "--porcelain"], cwd=self.root, capture_output=True, text=True)
@@ -643,6 +704,24 @@ class InstallTest(Fixture):
         self.language("a", deps="touch ../a-deps", fetches=False)
         result = self.hecatron("install")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertFalse(os.path.exists(self.path("a-deps")))
+
+    def test_no_deps_installs_toolchains_only(self):
+        self.configure(languages=["a"])
+        self.language("a", install="touch a-installed", deps="touch ../a-deps")
+        for args in (("install", "--no-deps"), ("install", "--no-deps", "a")):
+            result = self.hecatron(*args)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertTrue(os.path.exists(self.path("a-installed")))
+            self.assertFalse(os.path.exists(self.path("a-deps")), args)
+
+    def test_doctor_no_deps_repairs_toolchains_only(self):
+        self.configure(languages=["a"])
+        self.language("a", install="touch a-installed", deps="touch ../a-deps")
+        write(self.path(".hecatron", "languages", "a", "doctor.sh"),
+              '[ -e a-installed ] || echo "a not installed"\n')
+        result = self.hecatron("doctor", "--fix", "--no-deps", "a")
+        self.assertTrue(os.path.exists(self.path("a-installed")), result.stdout + result.stderr)
         self.assertFalse(os.path.exists(self.path("a-deps")))
 
     def test_dependencies_failing_after_the_installs_fail_the_command(self):

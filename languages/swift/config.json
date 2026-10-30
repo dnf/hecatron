@@ -8,12 +8,24 @@
   "detect": [
     "Package.swift"
   ],
+  "detectWithSources": {
+    "dirs": [
+      "*.xcodeproj",
+      "*.xcworkspace"
+    ],
+    "sources": [
+      "*.swift"
+    ]
+  },
   "buildSystems": [
-    "Swift Package Manager"
+    "Swift Package Manager",
+    "Xcode (xcodebuild build and clean)"
   ],
   "testing": "XCTest, Swift Testing",
   "linting": null,
   "formatting": "swift-format",
+  "docs": "DocC",
+  "benchmarks": "package-benchmark",
   "cache": {
     "dependencies": [
       "~/.cache/org.swift.swiftpm"

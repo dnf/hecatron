@@ -50,7 +50,7 @@ HECATRON_HOME = os.environ.get(
 # HECATRON_BUILTIN_LANGUAGES points the tests at fixture definitions.
 BUILTIN_LANGUAGES = os.environ.get("HECATRON_BUILTIN_LANGUAGES") or os.path.join(HECATRON_HOME, "languages")
 # Built-in default hooks live in languages/<lang>/hooks/ (docs/guide/hooks.md).
-HOOKS = ("test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh", "format.sh", "deps.sh", "outdated.sh")
+HOOKS = ("test.sh", "lint.sh", "build.sh", "clean.sh", "audit.sh", "format.sh", "deps.sh", "outdated.sh", "docs.sh", "bench.sh")
 
 
 class ProjectError(Exception):
@@ -92,10 +92,10 @@ def ignore_project_files(root: str) -> None:
 # hooks, build hooks) and a generator's templates, whatever their case
 # (Examples/), and hidden directories (.jenkins/, .github/): detection
 # doesn't count them (manage.py).
-SKIPPED_DIRS = {"android", "benchmarks", "buildsrc", "demo", "demos", "doc", "docs", "example", "examples",
-                "external", "fixtures", "hooks", "node_modules", "playground", "sample", "samples", "templates", "test",
-                "test-data", "test_data", "testdata", "tests", "tests_data", "third_party", "tools", "tutorial",
-                "tutorials", "vendor", "vendored"}
+SKIPPED_DIRS = {"android", "benchmarks", "buildsrc", "carthage", "demo", "demos", "doc", "docs", "example", "examples",
+                "external", "fixtures", "hooks", "node_modules", "playground", "pods", "sample", "samples", "templates",
+                "test", "test-data", "test_data", "testdata", "tests", "tests_data", "third-party", "third_party", "thirdparty",
+                "tools", "tutorial", "tutorials", "vendor", "vendored"}
 
 
 def yields(rule: dict, paths, build_file: str | None = None) -> bool:
@@ -273,11 +273,35 @@ def detected_config(root: str) -> dict:
     import manage  # noqa: E402 - only when detecting: it is the init command's module
     config, _ = manage.detected_config(root)
     del config["logs"]
-    if cached is None:
+    if cached is None and _for_a_person():
         print(f"hecatron: {root} has no .hecatron/config.json; detected "
               f"{', '.join(config['languages']) or 'no languages'} (hecatron init saves this)", file=sys.stderr)
     _write_json(cache, {"key": key, "config": config})
     return config
+
+
+def _for_a_person() -> bool:
+    """Whether a note meant for a person may go to stderr: stderr a terminal
+    and human output (the binary's runner.ForAPerson): no --output, --json
+    or HECATRON_OUTPUT naming another format, not an AI agent's session,
+    not GitHub Actions."""
+    if not sys.stderr.isatty():
+        return False
+    output = os.environ.get("HECATRON_OUTPUT", "")
+    args = sys.argv[1:]
+    for i, arg in enumerate(args):
+        if arg == "--":
+            break
+        if arg == "--output" and i + 1 < len(args):
+            output = args[i + 1]
+        elif arg.startswith("--output="):
+            output = arg[len("--output="):]
+        elif arg == "--json":
+            output = "json"
+    if output:
+        return output == "human"
+    agent = os.environ.get("CLAUDECODE") == "1" and not sys.stdout.isatty()
+    return not agent and os.environ.get("GITHUB_ACTIONS") != "true"
 
 
 def _read_json(path: str, default):
@@ -974,6 +998,8 @@ def shell_env(project: Project) -> str:
         _emit_list("_AUDIT_LANGS", [lang for lang in added if has_hook(lang, "audit.sh")]),
         _emit_list("_OUTDATED_LANGS", [lang for lang in added if has_hook(lang, "outdated.sh")]),
         _emit_list("_DEPS_LANGS", [lang for lang in added if has_hook(lang, "deps.sh")]),
+        _emit_list("_DOCS_LANGS", [lang for lang in added if has_hook(lang, "docs.sh")]),
+        _emit_list("_BENCH_LANGS", [lang for lang in added if has_hook(lang, "bench.sh")]),
         _emit_list("_FORMAT_LANGS", [lang for lang in added if has_hook(lang, "format.sh")]),
         _emit_list("_LINT_FORMAT_LANGS", [lang for lang in added
                                           if has_hook(lang, "format.sh") and lint_checks_format(project.config, lang)]),

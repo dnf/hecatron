@@ -34,4 +34,14 @@ for _dir in "${_fixtures}"/*; do
     (cd "${_dir}" && "${_work}/osv-scanner" scan source --recursive --all-packages --licenses --format json .) \
         >"${_out}/osv-scanner/${_OSV_SCANNER_VERSION}/licenses-${_lang}.json" 2>/dev/null || _status=$?
     echo "captured licenses-${_lang}.json (status ${_status})"
+    # A fixture with components in subdirectories lists them in capture-dirs:
+    # hct licenses scans each component's directory too.
+    [ -f "${_dir}/capture-dirs" ] || continue
+    while IFS= read -r _sub; do
+        _name="licenses-${_lang}--$(echo "${_sub}" | tr / -).json"
+        _status=0
+        (cd "${_dir}/${_sub}" && "${_work}/osv-scanner" scan source --recursive --all-packages --licenses --format json .) \
+            >"${_out}/osv-scanner/${_OSV_SCANNER_VERSION}/${_name}" 2>/dev/null || _status=$?
+        echo "captured ${_name} (status ${_status})"
+    done <"${_dir}/capture-dirs"
 done

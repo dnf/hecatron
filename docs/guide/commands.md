@@ -12,26 +12,27 @@ binary, which [install.sh](installing-hecatron.md) downloads with a release;
 run through the scripts alone (a checkout on a branch, `HECATRON_NO_GO=1`),
 they say so.
 
-**Exit status:** 0 when everything run passed, 1 when anything failed, 2
+**Exit status:** 0 when nothing failed (a [skipped](output.md#skipped) job
+doesn't fail), 1 when anything failed, 2
 for a usage error, and, for the run commands with the binary, 3 when the
 only failures were toolchains not installed ([output](output.md)). A
 language whose toolchain is missing is reported as "not installed" and
 doesn't fail a parallel run.
 
 - [Run commands](#run-commands): `test`, `lint`, `build`, `clean`,
-  `rebuild`, `retest`, `deps`, `format`, `audit`, `outdated`
-- [Dependency reports](#dependency-reports): `licenses`
+  `rebuild`, `retest`, `deps`, `format`, `audit`, `outdated`, `docs`, `bench`
+- [Dependency reports](#dependency-reports): `licenses`, `sbom`
 - [The project at a glance](#the-project-at-a-glance): `status`, `sync`, `advisor`
 - [Setting up](#setting-up): `init`, `doctor`, `install`, `uninstall`, `get-started`, `bootstrap`
 - [Languages](#languages): `list`, `add`, `remove`, `enable`, `disable`
 - [Generated files](#generated-files): `dockerfile`, `workflows`, `check`, `banner`
-- [The project's own scripts](#the-projects-own-scripts): `env`, `parallel`, `version`, `metadata`
+- [The project's own scripts](#the-projects-own-scripts): `env`, `exec`, `parallel`, `version`, `metadata`
 - [Hecatron itself](#hecatron-itself): `self`, `skill`, `help`, `--version`
 
 ## Run commands
 
 ```
-hct test|lint|build|clean|rebuild|retest|deps|format|audit|outdated [flags] [target ...]
+hct test|lint|build|clean|rebuild|retest|deps|format|audit|outdated|docs|bench [flags] [target ...]
 ```
 
 Each runs the language's hook for the action ([hooks](hooks.md)) once for
@@ -53,10 +54,23 @@ streamed. Each job's output is saved to `<logs>/<action>/<target>.log`.
 | `format` | Rewrite the code with each language's formatter ([format](format.md)) |
 | `audit` | Check dependencies for known vulnerabilities, and the files for committed secrets ([audit](audit.md)) |
 | `outdated` | Report direct dependencies with a newer version; passes unless a tool fails ([outdated](outdated.md)) |
+| `docs` | Build API documentation with each ecosystem's tool, into the tool's own directory, and say where |
+| `bench` | Run benchmarks with each ecosystem's harness; the numbers are the tools' own output |
 
 Which languages an action covers follows from their hooks: a language with
 a `build.sh` (the project's or the default) is built, one with a `lint.sh`
 is linted, and so on.
+
+`docs` and `bench` run only the tools a component already has: those in the
+toolchain, or in its dependencies or configuration (`cargo doc`, Sphinx
+with a `docs/conf.py`, TypeDoc as a dependency; `cargo bench`, `go test
+-bench`, pytest-benchmark, JMH, BenchmarkDotNet). `hct install` installs
+none. A language with no default (Go has no docs generator in its
+toolchain) is skipped ("go: docs skipped: no docs tool for go"), and a component without
+the tool or without benchmarks is skipped, saying why; neither fails ([skipped](output.md#skipped)). `hct docs`
+ends with where each language's docs were written. Neither is part of `hct
+check`, generated CI or `hct test`. Each language's defaults:
+[languages](languages.md#api-docs-and-benchmarks).
 
 Flags every run command takes:
 
@@ -65,6 +79,7 @@ Flags every run command takes:
 | `-j VALUE` | Jobs at once: a number, a share of the CPUs (`50%`, the default), `pcores` or `unlimited` ([runner](runner.md#how-many-jobs-run-at-once)) |
 | `-s MODE` | The live display's time scale: `scroll` (default), `full` or `zoom` |
 | `-c NAME` | Only this component (repeatable) |
+| `--fail-on-skip` | Exit 1 when nothing ran: every job [skipped](output.md#skipped) (by its hooks, not installed or disabled); else `HECATRON_FAIL_ON_SKIP=1` |
 | `--output FORMAT` | `human`, `agent`, `json`, `ci`, `junit` or `sarif`; else `HECATRON_OUTPUT`, else chosen for whoever is calling ([output](output.md)). Binary only |
 | `--timeout DURATION` | Stop a job after `DURATION` (`90s`, `30m`, `1h30m`; `0`: no limit); else `HECATRON_TIMEOUT`, else 5× its usual time ([runner](runner.md#time-limits)). Binary only |
 | `--changed [REF]` | Only what the files changed since `REF` touch; not for `audit`, `outdated` or `clean` ([runner](runner.md#only-what-changed)). Binary only |
@@ -73,7 +88,7 @@ Flags of one command:
 
 | Flag | Command | Meaning |
 | --- | --- | --- |
-| `--check` | `format` | Change nothing; fail, listing the files the formatter would change |
+| `--check` | `format` | Change nothing; fail, listing the files the formatter would change. Installs no dependencies: a component whose formatter comes from them is skipped until `hct deps` ([format](format.md#dependencies)) |
 | `--fail-on SEVERITY` | `audit` | Fail on a finding at or above `critical`, `high` (default), `moderate` or `low`; the project's own is `"audit": {"failOn": ...}` |
 | `--json` | `outdated` | Print one JSON array of every outdated dependency (component, language, package, current, wanted, latest); the languages run one at a time |
 | `--fail` | `outdated` | Fail when anything is outdated |
@@ -88,6 +103,8 @@ hct format --check        # what the formatters would change
 hct audit --fail-on critical
 hct audit secrets --history   # only the secret scan, over every commit
 hct outdated --json py
+hct docs rs               # cargo doc --no-deps; says where (target/doc)
+hct bench go              # go test -run '^$' -bench . ./...
 hct test --changed        # only what this branch changed
 hct test --output agent   # a summary line and only the failures
 ```
@@ -97,19 +114,40 @@ hct test --output agent   # a summary line and only the failures
 ### licenses
 
 ```
-hct licenses [lang...] [-c COMPONENT] [--output human|agent|json] [--json]
+hct licenses [lang...] [-c COMPONENT] [--output human|agent|json] [--json] [--timeout DURATION]
 ```
 
 Every dependency's license, in every component of each language (those
 named, or all the project's), from the lock files, rolled up per SPDX
-license. With a `"licenses"` policy in `.hecatron/config.json` (`allow`,
-`deny`, `ignore`, `includeDev`), a package the policy doesn't permit fails
-the command. Needs OSV-Scanner and the network. Binary only. See
-[licenses](licenses.md).
+expression and per identifier, with how far each one's copyleft reaches;
+the project's own packages are listed apart. With a `"licenses"` policy in
+`.hecatron/config.json` (`allow`, `deny`, `ignore`, `includeDev`), a
+package the policy doesn't permit fails the command. `--timeout` (else
+`HECATRON_TIMEOUT`) stops it after `DURATION`, as it stops `hct audit`;
+there's no limit by default. Needs OSV-Scanner and the network. Binary
+only. See [licenses](licenses.md).
 
 ```bash
 hct licenses              # every language
 hct licenses go --json
+```
+
+### sbom
+
+```
+hct sbom [lang...] [-c COMPONENT] [--format cyclonedx|spdx] [-o FILE] [--no-dev] [--timeout DURATION]
+```
+
+A software bill of materials for every component of each language (those
+named, or all the project's), from what `hct licenses` reads: each
+package's purl, SPDX license where known, direct or transitive, dev
+dependencies marked. CycloneDX 1.6 JSON by default, or SPDX 2.3 JSON;
+`SOURCE_DATE_EPOCH` makes it reproducible; `--timeout` as for `licenses`.
+Needs OSV-Scanner and the network. Binary only. See [sbom](sbom.md).
+
+```bash
+hct sbom -o bom.cdx.json
+hct sbom --format spdx --no-dev > sbom.spdx.json
 ```
 
 ## The project at a glance
@@ -190,14 +228,18 @@ How detection works: [init and detection](init.md).
 ### doctor
 
 ```
-hct doctor [--fix] [lang...]
+hct doctor [--fix [--no-deps]] [--output json] [lang...]
 ```
 
 Checks that each language's toolchain works: its build and lint commands
 run, its version is installed, and the breakages its definition knows of
 are absent. With no languages, every added, enabled one. `--fix` runs each
 unhealthy language's installer (asking for root once, up front), then
-checks it again. See [installing toolchains](installing-toolchains.md#doctor-and-repair).
+checks it again. An installer also installs the project's dependencies
+(`hct deps`) for the languages that have them; `--no-deps` repairs the
+toolchain only. `--output json` prints `{"healthy": ..., "languages":
+[{"language", "healthy", "problems", "notes"}]}` on stdout, the rest on
+stderr. See [installing toolchains](installing-toolchains.md#doctor-and-repair).
 
 ```bash
 hct doctor
@@ -207,13 +249,14 @@ hct doctor --fix go lua
 ### install, uninstall
 
 ```
-hct install [--plan] [lang...]
+hct install [--plan] [--no-deps] [lang...]
 hct uninstall lang...
 ```
 
 Install (or repair) toolchains: every language the project has when none
 are named, continuing past failures, then each component's dependencies
-once every toolchain is in. `--plan` only prints what each would install
+once every toolchain is in (not with `--no-deps`, which installs
+toolchains only, running none of the project's code). `--plan` only prints what each would install
 and the commands it would run (binary only). Uninstall removes only what
 hecatron installed and no other language needs. `hct install secrets`
 installs gitleaks, for [the secret scan](audit.md#secrets). See
@@ -347,6 +390,26 @@ as shell exports.
 
 ```bash
 eval "$(hct env java -c age)"
+```
+
+### exec
+
+```
+hct exec LANG [-c COMPONENT] -- CMD [ARGS...]
+```
+
+**Binary only.** Runs CMD with the language's environment for a component,
+what `hct env LANG -c COMPONENT` prints, without changing your shell: handy
+when components use different versions of one toolchain. Without `-c`, the
+component whose directory for the language holds the working directory,
+else the only component in the language. CMD runs in the working directory,
+with your terminal; the exit status is CMD's (127 when it isn't found).
+When the component's version isn't installed, it says so (exit 3): `hct
+install LANG` installs it.
+
+```bash
+hct exec zig -c parser -- zig build
+cd age/python && hct exec python -- python -m pytest -x
 ```
 
 ### parallel

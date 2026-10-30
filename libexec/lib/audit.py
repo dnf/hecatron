@@ -330,7 +330,47 @@ def parse(fmt: str, text: str) -> list[Finding]:
     unique = {}
     for finding in PARSERS[fmt](text):
         unique.setdefault(finding.key(), finding)
-    return sorted(unique.values(), key=lambda f: (f.rank(), f.package, f.id))
+    return _with_installed(fmt, sorted(unique.values(), key=lambda f: (f.rank(), f.package, f.id)))
+
+
+_NPM_LOCK_FILES = ("package-lock.json", "npm-shrinkwrap.json")
+
+
+def _npm_installed() -> dict:
+    """The versions each package has in the npm lock file in the working
+    directory (lockfileVersion 2 and 3: "packages"), sorted and joined."""
+    for name in _NPM_LOCK_FILES:
+        try:
+            with open(name, encoding="utf-8") as f:
+                text = f.read()
+        except (OSError, ValueError):
+            continue
+        try:
+            packages = json.loads(text).get("packages")
+        except (ValueError, AttributeError):
+            return {}
+        if not isinstance(packages, dict):
+            return {}
+        versions: dict = {}
+        for path, entry in packages.items():
+            _, found, package = path.rpartition("node_modules/")
+            version = entry.get("version") if isinstance(entry, dict) else None
+            if found and package and isinstance(version, str) and version:
+                versions.setdefault(package, set()).add(version)
+        return {package: ", ".join(sorted(found)) for package, found in versions.items()}
+    return {}
+
+
+def _with_installed(fmt: str, findings: list[Finding]) -> list[Finding]:
+    """npm's findings with the installed version its report leaves out (it
+    names the advisory's range), from the lock file it read."""
+    if fmt != "npm":
+        return findings
+    installed = _npm_installed()
+    for finding in findings:
+        if isinstance(finding.package, str) and not finding.version and finding.package in installed:
+            finding.version = installed[finding.package]
+    return findings
 
 
 # -- accepted risks ----------------------------------------------------------

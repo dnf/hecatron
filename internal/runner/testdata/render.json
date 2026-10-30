@@ -4,10 +4,10 @@
   "exitCode": 1,
   "duration": 271.3,
   "summary": {
-    "passed": 3,
+    "passed": 4,
     "failed": 2,
     "timedOut": 1,
-    "skipped": 2
+    "skipped": 4
   },
   "logs": "/repo/.logs/test",
   "jobs": [
@@ -134,6 +134,63 @@
         "source": "--timeout",
         "description": "--timeout"
       }
+    },
+    {
+      "label": "javascript",
+      "kind": "language",
+      "language": "javascript",
+      "status": "skipped",
+      "reason": "web: package.json has no test script; api: package.json has no test script",
+      "exitCode": 0,
+      "duration": 0.4,
+      "log": "/repo/.logs/test/javascript.log",
+      "components": [
+        {
+          "name": "web",
+          "dir": "/repo/web/js",
+          "failed": false,
+          "skipped": "package.json has no test script"
+        },
+        {
+          "name": "api",
+          "dir": "/repo/api/js",
+          "failed": false,
+          "skipped": "package.json has no test script"
+        }
+      ]
+    },
+    {
+      "label": "ruby",
+      "kind": "language",
+      "language": "ruby",
+      "status": "passed",
+      "reason": "api: no spec or test directory",
+      "exitCode": 0,
+      "duration": 3,
+      "log": "/repo/.logs/test/ruby.log",
+      "components": [
+        {
+          "name": "web",
+          "dir": "/repo/web/ruby",
+          "failed": false
+        },
+        {
+          "name": "api",
+          "dir": "/repo/api/ruby",
+          "failed": false,
+          "skipped": "no spec or test directory"
+        }
+      ]
+    },
+    {
+      "label": "elm",
+      "kind": "language",
+      "language": "elm",
+      "status": "skipped",
+      "reason": "no test runner for elm",
+      "exitCode": 0,
+      "duration": 0.1,
+      "log": "/repo/.logs/test/elm.log"
     },
     {
       "label": "docs",

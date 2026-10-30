@@ -47,12 +47,25 @@ run() {
     "$@"
 }
 
-# The hook has nothing to do here: say why, and succeed. For an action the
-# directory's build system doesn't have (no linter configured, nothing to
-# build for an interpreted library).
+# The hook has nothing to do here, or can't run: say why, and exit, so the
+# component is reported skipped rather than passed (HECATRON_SKIPPED, as
+# skip_component). For an action the directory's build system doesn't have
+# (no linter configured, nothing to build for an interpreted library, no
+# tests). It exits the hook: called in a subshell, the hook would go on and
+# its component still count as skipped.
 skip() {
     echo "${HECATRON_LANG:-}: ${_hook_action}: $* (skipping)"
+    if [ -n "${HECATRON_SKIPPED:-}" ]; then echo "$*" >"${HECATRON_SKIPPED}"; fi
     exit 0
+}
+
+# The hook had nothing to check in this component, so it neither passed nor
+# failed (an audit without a lock file the auditor reads): say why, and tell
+# the runner (HECATRON_SKIPPED), which shows it skipped rather than passed.
+# The caller exits.
+skip_component() {
+    echo "${HECATRON_LANG:-}: ${_hook_action}: $*"
+    if [ -n "${HECATRON_SKIPPED:-}" ]; then echo "$*" >"${HECATRON_SKIPPED}"; fi
 }
 
 # The hook can't tell how to act on this directory: fail, saying what it
@@ -61,6 +74,20 @@ unknown() {
     echo "error: ${HECATRON_LANG:-}: no ${_hook_action} command for $(pwd): $*" >&2
     echo "Write .hecatron/languages/${HECATRON_LANG:-<lang>}/${_hook_action}.sh to say how." >&2
     exit 1
+}
+
+# Where a docs hook's tool wrote the documentation (a directory relative to
+# this one, or absolute), relative to the project; said last, so the log
+# ends with it. A second argument qualifies it ("in each project").
+docs_written() {
+    local _dir="$1" _root
+    case "${_dir}" in
+        /*) ;;
+        .) _dir="$(pwd -P)" ;;
+        *) _dir="$(pwd -P)/${_dir#./}" ;;
+    esac
+    if _root="$(cd "${HECATRON_ROOT:-.}" 2>/dev/null && pwd -P)"; then _dir="${_dir#"${_root}"/}"; fi
+    echo "${HECATRON_LANG:-}: docs: written to ${_dir}${2:+ ($2)}"
 }
 
 # Whether a format hook only checks (hecatron format --check, and hecatron
@@ -142,16 +169,30 @@ dirs_below_with() {
             END { for (i = 1; i <= NR; i++) if (depth[i] == least) print dir[i] }'
 }
 
-# Run this hook again in each directory, and exit: failing if any fails.
+# Run this hook again in each directory, and exit: failing if any fails,
+# skipping if every one skipped (saying why for each), else passing.
 run_hook_in() {
-    local _dir _failed_dirs=()
+    local _dir _failed_dirs=() _skipped=() _ran=0 _skip_file="" _reasons
+    [ -z "${HECATRON_SKIPPED:-}" ] || _skip_file="${HECATRON_SKIPPED}.in"
     for _dir in "$@"; do
         echo "--- ${HECATRON_LANG:-}: ${_hook_action} in ${_dir#./}"
-        (cd "${_dir}" && bash "${_hook_script}" ${_hook_args[@]+"${_hook_args[@]}"}) || _failed_dirs+=("${_dir#./}")
+        [ -z "${_skip_file}" ] || : >"${_skip_file}"
+        if ! (cd "${_dir}" && HECATRON_SKIPPED="${_skip_file}" bash "${_hook_script}" ${_hook_args[@]+"${_hook_args[@]}"}); then
+            _failed_dirs+=("${_dir#./}")
+        elif [ -n "${_skip_file}" ] && [ -s "${_skip_file}" ]; then
+            _skipped+=("${_dir#./}: $(head -n 1 "${_skip_file}")")
+        else
+            _ran=$((_ran + 1))
+        fi
     done
+    [ -z "${_skip_file}" ] || rm -f "${_skip_file}"
     if [ "${#_failed_dirs[@]}" -gt 0 ]; then
         echo "error: ${HECATRON_LANG:-}: ${_hook_action} failed in ${_failed_dirs[*]}" >&2
         exit 1
+    fi
+    if [ "${_ran}" -eq 0 ] && [ "${#_skipped[@]}" -gt 0 ]; then
+        _reasons="$(printf '%s; ' "${_skipped[@]}")"
+        skip "${_reasons%; }"
     fi
     exit 0
 }
@@ -285,13 +326,53 @@ dotnet_hook() {
 # SwiftPM: the package here, each package below, or the one above whose
 # targets include this directory's sources (FlatBuffers' Package.swift at the
 # root builds swift/Sources), which swift_package_args points SwiftPM at.
+# An app's Xcode project here, without a Package.swift, goes to xcode_hook:
+# for what compiles first (it builds the local packages below too, for the
+# app's platform: SwiftPM on the host can't build IceCubesApp's iOS-only
+# packages), for the rest (lint, deps) when there's no package below or
+# above to act on. The apps below with Xcode projects of their own
+# (xcode_apps_below) build and clean as well. Beside a Package.swift, an
+# Xcode project with an app target builds and cleans the app, the product,
+# where xcodebuild is installed (isowords' App/: the package is the app's
+# modules); SwiftPM keeps the tests, docs and benchmarks, where the package
+# builds on the host (swift_package_builds_on_host).
 # shellcheck disable=SC2034 # read by the swift hooks
 swift_package_args=()
 swift_package() {
-    find_build Package.swift || unknown "no Package.swift here, below, or above it in the project"
+    case "${_hook_action}" in
+        build|clean) xcode_apps_below Package.swift ;;
+    esac
+    if [ ! -f Package.swift ] && xcode_project; then
+        case "${_hook_action}" in
+            build|clean|test|docs|bench) xcode_hook "${_hook_action}" ;;
+        esac
+    fi
+    if xcode_builds_app_beside_package; then
+        case "${_hook_action}" in
+            build|clean) xcode_hook "${_hook_action}" ;;
+        esac
+    fi
+    if ! find_build Package.swift; then
+        xcode_project && xcode_hook "${_hook_action}"
+        unknown "no Package.swift here, below, or above it in the project"
+    fi
     note_build_dir
+    case "${_hook_action}" in
+        build|test|docs|bench) swift_package_builds_on_host ;;
+    esac
     # shellcheck disable=SC2034 # read by the swift hooks
     [ "${build_dir}" = . ] || swift_package_args=(--package-path "${build_dir}")
+}
+
+# On macOS, SwiftPM builds for macOS: a package whose platforms: names
+# others but not macOS (an iOS app's local package) builds at macOS's
+# oldest deployment target, where the newer APIs it uses aren't available.
+# Its app's Xcode project builds it instead.
+swift_package_builds_on_host() {
+    [ "$(uname -s)" = Darwin ] || return 0
+    grep -qs 'platforms[[:space:]]*:' "${build_dir}/Package.swift" || return 0
+    grep -qs '\.macOS' "${build_dir}/Package.swift" ||
+        skip "the package's platforms don't include macOS, which SwiftPM here builds for (an Xcode project builds it for its platform)"
 }
 
 # Janet's jpm, in the project's local tree (jpm -l) when it keeps its
@@ -487,8 +568,9 @@ npm_deps() {
 # Mix: deps.get, which installs what mix.lock locks.
 mix_fetch() { run mix deps.get; }
 # A locked project's dependencies, when they aren't fetched yet.
+mix_fetched() { [ ! -f mix.lock ] || [ -d deps ]; }
 mix_deps() {
-    if [ -f mix.lock ] && [ ! -d deps ]; then mix_fetch; fi
+    mix_fetched || mix_fetch
 }
 
 # Whether composer.json defines a script, e.g. `composer_script test`.
@@ -502,8 +584,9 @@ sys.exit(0 if sys.argv[1] in (json.load(open("composer.json")).get("scripts") or
 # one, resolves and writes it).
 composer_fetch() { run composer install --no-interaction; }
 # When they aren't installed yet.
+composer_installed() { [ -d vendor ]; }
 composer_deps() {
-    if [ ! -d vendor ]; then composer_fetch; fi
+    composer_installed || composer_fetch
 }
 
 # Ruby: the bundle and Rakefile here, else the nearest above (Bundler and
@@ -524,8 +607,9 @@ bundle_fetch() {
 }
 # The bundle, when it isn't installed yet; then a command through it (or
 # directly, without a Gemfile).
+bundle_installed() { [ ! -f "${ruby_root}/Gemfile" ] || bundle check >/dev/null 2>&1; }
 bundle_deps() {
-    if [ -f "${ruby_root}/Gemfile" ] && ! bundle check >/dev/null 2>&1; then bundle_fetch; fi
+    bundle_installed || bundle_fetch
 }
 ruby_run() {
     if [ -f "${ruby_root}/Gemfile" ]; then run bundle exec "$@"; else run "$@"; fi
@@ -817,8 +901,10 @@ node_hook() {
                 node_build_first
                 run "${node_runner[@]}"
             else
+                # An app (start and dev scripts, dependencies) can have no
+                # tests: detection takes it for JavaScript all the same.
                 node_below test
-                unknown "package.json has no test script, nor do its workspace packages or the packages below"
+                skip "package.json has no test script, nor do its workspace packages or the packages below"
             fi ;;
         lint)
             npm_deps
@@ -833,6 +919,29 @@ node_hook() {
         clean)
             if npm_script clean; then run "${node_pm[@]}" run clean
             else skip "package.json has no clean script"; fi ;;
+        # The package's own docs script, else TypeDoc when it's a
+        # dependency, into its default ./docs.
+        docs)
+            if npm_script docs; then
+                npm_deps
+                run "${node_pm[@]}" run docs
+            elif grep -qs '"typedoc"' package.json; then
+                npm_deps
+                run node_modules/.bin/typedoc
+                docs_written docs
+            else
+                skip "package.json has no docs script, and TypeDoc isn't among its dependencies"
+            fi ;;
+        bench)
+            local _script
+            for _script in bench benchmark; do
+                if npm_script "${_script}"; then
+                    npm_deps
+                    run "${node_pm[@]}" run "${_script}"
+                    return
+                fi
+            done
+            skip "package.json has no bench or benchmark script" ;;
     esac
 }
 
@@ -873,6 +982,8 @@ jvm_hook() {
             lint) skip "Maven has no standard lint goal" ;;
             format) jvm_format_maven ;;
             deps) maven dependency:go-offline ;;
+            docs) jvm_docs_maven ;;
+            bench) skip "Maven has no standard benchmark goal" ;;
         esac
     elif is_gradle || [ -n "${_gradle_above}" ]; then
         case "$1" in
@@ -884,6 +995,8 @@ jvm_hook() {
             # Resolving the dependency report downloads what it lists
             # (held to gradle.lockfile where the build locks).
             deps) gradle_ dependencies ;;
+            docs) jvm_docs_gradle "${_gradle_above:-.}" ;;
+            bench) jvm_bench_gradle "${_gradle_above:-.}" ;;
         esac
     elif [ -f build.sbt ]; then
         case "$1" in
@@ -893,6 +1006,12 @@ jvm_hook() {
             lint) skip "sbt has no standard lint task" ;;
             format) jvm_format_sbt ;;
             deps) run sbt update ;;
+            docs)
+                run sbt doc
+                docs_written "target/scala-*/api" "in each project" ;;
+            bench)
+                grep -qs 'sbt-jmh' project/plugins.sbt || skip "no sbt-jmh in project/plugins.sbt"
+                run sbt Jmh/run ;;
         esac
     elif [ -f build.mill ] || [ -f build.sc ]; then
         case "$1" in
@@ -902,6 +1021,8 @@ jvm_hook() {
             lint) skip "Mill has no standard lint task" ;;
             format) skip "Mill has no standard format task" ;;
             deps) skip "Mill has no standard dependency task" ;;
+            docs) skip "Mill has no standard docs task" ;;
+            bench) skip "Mill has no standard benchmark task" ;;
         esac
     else
         unknown "no pom.xml, build.gradle(.kts), build.sbt or build.mill"
@@ -986,23 +1107,97 @@ jvm_format_maven() {
         skip "no Spotless or fmt-maven-plugin in pom.xml"
     fi
 }
-# The build's own files: this project's, and the root's (its settings file,
-# version catalog and buildSrc convention plugins) when that is above.
-jvm_format_gradle() {
-    local _root _build_files=() _file
+# The build's own files, into gradle_files: this project's, and the root's
+# (its settings file, version catalog and buildSrc convention plugins) when
+# that is above.
+gradle_files=()
+gradle_build_files() {
+    local _root _file
     _root="$(nearest_with settings.gradle settings.gradle.kts || echo "$1")"
-    while IFS= read -r -d '' _file; do _build_files+=("${_file}"); done < <(
+    gradle_files=()
+    while IFS= read -r -d '' _file; do gradle_files+=("${_file}"); done < <(
         find . "${_root}" -maxdepth 3 \( -name build -o -name .gradle -o -name node_modules \) -prune -o \
             -type f \( -name '*.gradle' -o -name '*.gradle.kts' -o -name '*.versions.toml' \) -print0 2>/dev/null)
-    if grep -qs 'spotless' ${_build_files[@]+"${_build_files[@]}"}; then
+}
+# Whether the Gradle build's files name a plugin (gradle_build_files first).
+gradle_uses() { grep -qsE "$1" ${gradle_files[@]+"${gradle_files[@]}"}; }
+jvm_format_gradle() {
+    gradle_build_files "$1"
+    if gradle_uses 'spotless'; then
         if format_checking; then gradle_ spotlessCheck; else gradle_ spotlessApply; fi
-    elif grep -qs 'org.jlleitschuh.gradle.ktlint' ${_build_files[@]+"${_build_files[@]}"}; then
+    elif gradle_uses 'org.jlleitschuh.gradle.ktlint'; then
         if format_checking; then gradle_ ktlintCheck; else gradle_ ktlintFormat; fi
-    elif grep -qs 'org.jmailen.kotlinter' ${_build_files[@]+"${_build_files[@]}"}; then
+    elif gradle_uses 'org.jmailen.kotlinter'; then
         if format_checking; then gradle_ lintKotlin; else gradle_ formatKotlin; fi
     else
         skip "no Spotless, ktlint-gradle or Kotlinter in the Gradle build"
     fi
+}
+# API docs through the build: Javadoc for Java and Groovy, Dokka for Kotlin
+# and Scaladoc for Scala, where the build has their plugin; each project's
+# into the tool's own directory.
+jvm_docs_maven() {
+    case "${HECATRON_LANG:-}" in
+        kotlin)
+            grep -qs 'dokka-maven-plugin' pom.xml || skip "no dokka-maven-plugin in pom.xml"
+            maven dokka:dokka
+            docs_written target/dokka "in each module" ;;
+        scala)
+            grep -qs 'scala-maven-plugin' pom.xml || skip "no scala-maven-plugin in pom.xml"
+            maven scala:doc
+            docs_written target/site/scaladocs "in each module" ;;
+        *)
+            maven javadoc:javadoc
+            # Newer maven-javadoc-plugins write to target/reports/apidocs,
+            # older ones to target/site/apidocs.
+            if [ -d target/site/apidocs ] && [ ! -d target/reports/apidocs ]; then
+                docs_written target/site/apidocs "in each module"
+            else
+                docs_written target/reports/apidocs "in each module"
+            fi ;;
+    esac
+}
+jvm_docs_gradle() {
+    case "${HECATRON_LANG:-}" in
+        kotlin)
+            gradle_build_files "$1"
+            gradle_uses 'org\.jetbrains\.dokka' || skip "no Dokka in the Gradle build"
+            # Dokka 2's task, else Dokka 1's.
+            gradle_task_or dokkaGenerate dokkaHtml
+            docs_written build/dokka/html "in each project" ;;
+        scala)
+            gradle_ scaladoc
+            docs_written build/docs/scaladoc "in each project" ;;
+        groovy)
+            gradle_ groovydoc
+            docs_written build/docs/groovydoc "in each project" ;;
+        *)
+            gradle_ javadoc
+            docs_written build/docs/javadoc "in each project" ;;
+    esac
+}
+# JMH through its Gradle plugin, or kotlinx-benchmark's.
+jvm_bench_gradle() {
+    gradle_build_files "$1"
+    if gradle_uses 'org\.jetbrains\.kotlinx\.benchmark'; then
+        gradle_ benchmark
+    elif gradle_uses 'me\.champeau\.(gradle\.)?jmh'; then
+        gradle_ jmh
+    else
+        skip "no JMH or kotlinx-benchmark plugin in the Gradle build"
+    fi
+}
+# The first of the Gradle tasks the build has, as gradle_test finds them.
+gradle_task_or() {
+    local _log _status _task
+    _log="$(mktemp)"
+    for _task in "$@"; do
+        _status=0
+        gradle_ "${_task}" 2>&1 | tee "${_log}" || _status=$?
+        if [ "${_status}" -eq 0 ] || ! grep -q "Task '${_task}' not found" "${_log}"; then break; fi
+    done
+    rm -f "${_log}"
+    return "${_status}"
 }
 jvm_format_sbt() {
     grep -qs 'sbt-scalafmt' project/plugins.sbt || skip "no sbt-scalafmt in project/plugins.sbt"
@@ -1140,6 +1335,9 @@ native_hook() {
             build) cmake_build ;;
             clean) run rm -rf "${native_build}" ;;
             lint) skip "no standard linter for CMake builds" ;;
+            bench)
+                cmake_build
+                cmake_bench ;;
         esac
     elif [ -f meson.build ]; then
         case "$1" in
@@ -1147,6 +1345,11 @@ native_hook() {
             build) meson_setup; run meson compile -C "${native_build}" ;;
             clean) run rm -rf "${native_build}" ;;
             lint) skip "no standard linter for Meson builds" ;;
+            bench)
+                grep -rqsE --include=meson.build '(^|[^[:alnum:]_])benchmark[[:space:]]*\(' . ||
+                    skip "the Meson build declares no benchmark()"
+                meson_setup
+                run meson test -C "${native_build}" --benchmark ;;
         esac
     elif [ -f configure ] || [ -f configure.ac ] || [ -f Makefile ] || [ -f makefile ] || [ -f GNUmakefile ]; then
         [ -f Makefile ] || [ -f makefile ] || [ -f GNUmakefile ] || autotools_configure
@@ -1162,6 +1365,10 @@ native_hook() {
             build) run make ;;
             clean) if make_has clean; then run make clean; else skip "the Makefile has no clean target"; fi ;;
             lint) if make_has lint; then run make lint; else skip "the Makefile has no lint target"; fi ;;
+            bench)
+                if make_has bench; then run make bench
+                elif make_has benchmark; then run make benchmark
+                else skip "the Makefile has no bench or benchmark target"; fi ;;
         esac
     else
         unknown "no CMakeLists.txt, meson.build, configure or Makefile"
@@ -1362,6 +1569,24 @@ cmake_test() {
     fi
     run ctest --test-dir "${_part}" --output-on-failure --no-tests=error
 }
+# A CMake project's benchmarks: its bench or benchmark target, else the
+# Google Benchmark programs the build made, each.
+cmake_bench() {
+    local _target _binary _binaries=() _failed=0
+    for _target in bench benchmark benchmarks; do
+        if grep -rqsiE --include=CMakeLists.txt --include='*.cmake' --exclude-dir=_deps \
+            "add_custom_target[[:space:]]*\([[:space:]]*${_target}([[:space:]]|\))" "$(cmake_source_dir)"; then
+            run cmake --build "${native_build}" --target "${_target}"
+            return
+        fi
+    done
+    while IFS= read -r _binary; do _binaries+=("${_binary}"); done < <(cmake_programs_with "$(cmake_binary_dir)" --benchmark_filter)
+    [ "${#_binaries[@]}" -gt 0 ] || skip "no bench or benchmark target, and the build made no Google Benchmark programs"
+    for _binary in "${_binaries[@]}"; do
+        run "${_binary}" || _failed=1
+    done
+    [ "${_failed}" -eq 0 ] || exit 1
+}
 # GoogleTest programs the build made but CTest doesn't know of (LightGBM's
 # testlightgbm, built with BUILD_CPP_TEST and never add_test()ed): run each,
 # failing if any fails. Returns 1 when there are none.
@@ -1378,16 +1603,17 @@ cmake_gtest_run() {
 # The executables in a build directory (outside fetched dependencies and
 # CMake's own checks) and at the top of the source directory, where some
 # projects put them, that carry GoogleTest's command-line flags: read, not
-# run, to tell.
-cmake_gtest_binaries() {
-    local _file
+# run, to tell. cmake_programs_with takes the flag (Google Benchmark's).
+cmake_gtest_binaries() { cmake_programs_with "$1" --gtest_list_tests; }
+cmake_programs_with() {
+    local _file _flag="$2"
     # The build's first, then the source directory's, each in a fixed
     # order whatever the locale; a program found twice runs once.
     { find "$1" \( -name _deps -o -name CMakeFiles \) -prune -o -type f -perm -u+x -print 2>/dev/null | LC_ALL=C sort
       find "$(cmake_source_dir)" -maxdepth 1 -type f -perm -u+x -print 2>/dev/null | LC_ALL=C sort; } |
         grep -Ev '\.(so|dylib|a|sh|py)(\.[0-9.]*)?$' | awk '!seen[$0]++' |
         while IFS= read -r _file; do
-            if grep -qaF -- '--gtest_list_tests' "${_file}" 2>/dev/null; then echo "${_file}"; fi
+            if grep -qaF -- "${_flag}" "${_file}" 2>/dev/null; then echo "${_file}"; fi
         done
 }
 # The topmost directories below a build directory that CTest runs from
@@ -1470,19 +1696,310 @@ build_jobs() {
     echo "${_cpus}"
 }
 
-# Objective-C: xcodebuild for an Xcode project on macOS (untested: no macOS
-# here; it acts on the project's default scheme and target), GNUstep make for
-# a GNUmakefile that includes GNUstep's common.make (which needs
+# An Xcode project or workspace here (Swift's and Objective-C's apps).
+xcode_project() { exists '*.xcodeproj' || exists '*.xcworkspace'; }
+# Where xcodebuild puts a build (its -derivedDataPath): inside SwiftPM's
+# hidden .build/, not xcodebuild's default ./build or ~/Library's
+# DerivedData, so clean knows what to remove.
+xcode_derived_data=.build/xcode
+
+# Xcode projects, on macOS (untested here: no macOS): xcodebuild builds one
+# scheme, unsigned (a check, not a release), for its platform's generic
+# device; clean removes the build's derived data. Tests need a simulator to
+# run on, which only the project knows, so test skips saying how to write
+# the hook. Exits.
+xcode_hook() {
+    case "$1" in
+        build|clean)
+            ! swift_builds_xcode_here || skip "built with swift's hook (Swift and Objective-C share this Xcode project)"
+            if [ "$1" = clean ]; then
+                run rm -rf "${xcode_derived_data}"
+                rmdir .build 2>/dev/null || true
+                exit
+            fi
+            has xcodebuild || skip "an Xcode project builds with xcodebuild (Xcode, on macOS), which isn't installed"
+            xcode_build ;;
+        test)
+            ! swift_builds_xcode_here || skip "tested with swift's hook (Swift and Objective-C share this Xcode project)"
+            skip "an Xcode project's tests need a scheme and a destination to run on: write $(xcode_hook_path test) (xcodebuild test -scheme <scheme> -destination 'platform=macOS' for a Mac app, 'platform=iOS Simulator,name=<device>' for an iOS one)" ;;
+        *)
+            skip "an Xcode project has no standard $1 command" ;;
+    esac
+}
+
+# The apps below this directory with an Xcode project of their own, as
+# ./paths, into xcode_apps: firefox-ios' firefox-ios/Client.xcodeproj and
+# focus-ios/Blockzilla.xcodeproj, beside the root's Package.swift, whose
+# SwiftPM build doesn't reach them. They are the outermost Xcode projects
+# and workspaces below, none when there is one here (hct _xcode plan's
+# nested lines, else xcode.py's scan of the directories, which finds the
+# same), outside hidden, vendored, example and test directories
+# (firefox-ios/ThirdParty/Deferred), that hold the language's sources: a
+# scan of a few directories, not detection's pass over every file. None
+# inside one of those runs.
+xcode_apps=()
+xcode_find_apps() {
+    local _dir
+    xcode_apps=()
+    [ -z "${HECATRON_XCODE_APPS:-}" ] || return 0
+    ! xcode_project || return 0
+    if xcode_read_plan; then
+        [ "${#xcode_plan_nested[@]}" -gt 0 ] || return 0
+    fi
+    while IFS= read -r _dir; do
+        [ -z "${_dir}" ] || xcode_apps+=("${_dir}")
+    done < <(xcode_py apps "${HECATRON_LANG:-}" ${xcode_plan_nested[@]+"${xcode_plan_nested[@]}"} 2>/dev/null)
+}
+
+# When there are apps below (xcode_find_apps), run the hook in each, and
+# here when this directory has one of the build files given (the
+# language's own), and exit. Packages and builds below, outside a build
+# here, are then left to the apps that use them.
+xcode_apps_below() {
+    xcode_find_apps
+    [ "${#xcode_apps[@]}" -gt 0 ] || return 0
+    local _dirs=("${xcode_apps[@]}")
+    if has_any "$@"; then _dirs=(. "${_dirs[@]}"); fi
+    export HECATRON_XCODE_APPS=1
+    run_hook_in "${_dirs[@]}"
+}
+
+xcode_hook_path() { echo ".hecatron/languages/${HECATRON_LANG:-<lang>}/$1.sh"; }
+xcode_write_hooks() {
+    echo "write $(xcode_hook_path build) (xcodebuild build -scheme <scheme> -destination <destination>) and $(xcode_hook_path test)"
+}
+
+# Swift and Objective-C both find an app's Xcode project (NetNewsWire's),
+# and hct runs their builds at once: two xcodebuilds of one project race on
+# its build database. Swift's hook builds it where Swift is added (and not
+# disabled) for this directory, or for one above it whose apps below
+# include this one (xcode_apps_below), without a Package.swift here that
+# its hook builds instead (xcode_builds_app_beside_package); Objective-C's
+# then skips.
+swift_builds_xcode_here() {
+    [ "${HECATRON_LANG:-}" = objectivec ] || return 1
+    [ ! -f Package.swift ] || xcode_builds_app_beside_package || return 1
+    xcode_py swift-builds 2>/dev/null
+}
+
+# A Package.swift here beside an Xcode project with an app target, where
+# xcodebuild is installed: the app is the product, which xcodebuild builds
+# (isowords' App/), and the package its modules. Without xcodebuild,
+# SwiftPM builds what it can.
+xcode_builds_app_beside_package() {
+    [ -f Package.swift ] && xcode_project && has xcodebuild && xcode_py has-app 2>/dev/null
+}
+
+# The Xcode file of a kind here ('*.xcworkspace' or '*.xcodeproj') to build:
+# the only one, else the one named like this directory, the project
+# (HECATRON_PROJECT) or its repository; "several: <names>" when none is so
+# named, nothing when there is none.
+xcode_pick() {
+    local _found=() _match _name
+    for _match in $1; do
+        [ -e "${_match}" ] && _found+=("${_match}")
+    done
+    case "${#_found[@]}" in
+        0) return 0 ;;
+        1) echo "${_found[0]}"; return 0 ;;
+    esac
+    for _name in "$(basename "$(pwd)")" "${HECATRON_PROJECT:-}" "$(basename "${HECATRON_ROOT:-.}")"; do
+        for _match in "${_found[@]}"; do
+            [ "${_match%.*}" != "${_name}" ] || { echo "${_match}"; return 0; }
+        done
+    done
+    echo "several: ${_found[*]}"
+}
+
+# hecatron's reader of Xcode's files (libexec/lib/xcode.py).
+xcode_py() { python3 "${HECATRON_HOME:-${_hooks_home}}/libexec/lib/xcode.py" "$@"; }
+
+# The scheme to build, and why, tab-separated, from xcodebuild -list -json's
+# report (stdin) and the files of the workspace or project ($1), the project
+# ($2, or empty) and the names to match ($3...): the shared scheme building
+# the project's app target (named like the project, else the only one, else
+# the only one whose first build entry is an app no other app embeds: not
+# an extension's or a helper app's), else the scheme of its only app target
+# (xcodebuild's own, when none is shared), else the one named like the
+# workspace or project. Not "the only one": each Swift package the project
+# uses adds a scheme (NetNewsWire lists 27), and CocoaPods' workspace one
+# per pod. Prints nothing when none fits, and only why (after the tab) when
+# several do.
+xcode_scheme() { xcode_py scheme "$@"; }
+
+# A setting's value in xcodebuild -showBuildSettings' report ($1): the
+# first target's.
+xcode_setting() { printf '%s\n' "$1" | sed -n "s/^[[:space:]]*$2 = //p" | sed -n 1p; }
+
+# The generic destination to build for, from xcodebuild -showBuildSettings'
+# report (stdin; the first target's settings): macOS for a Mac-only app
+# (NetNewsWire), else the iOS simulator for an iOS app (a simulator SDK
+# needs no signing or provisioning), else the first other simulator, else
+# macOS when it's one of the platforms. Not SDKROOT: without a destination,
+# xcodebuild reports the settings for the first it would build for, which
+# for an iOS app supporting Mac Catalyst is the Mac (SDKROOT is the macOS
+# SDK's path for GoMap, home-assistant and IceCubesApp), and the Catalyst
+# variant can fail where iOS wouldn't. Without a destination, xcodebuild
+# can't choose among a multiplatform target's platforms.
+xcode_destination() {
+    local _settings _platforms _platform
+    _settings="$(cat)"
+    _platforms=" $(xcode_setting "${_settings}" SUPPORTED_PLATFORMS) "
+    case "${_platforms}" in
+        " macosx ") echo "generic/platform=macOS"; return ;;
+        *" iphonesimulator "*) echo "generic/platform=iOS Simulator"; return ;;
+    esac
+    if [ "$(xcode_setting "${_settings}" SUPPORTS_MACCATALYST)" = YES ]; then
+        echo "generic/platform=iOS Simulator"
+        return
+    fi
+    for _platform in ${_platforms}; do
+        case "${_platform}" in
+            xrsimulator) echo "generic/platform=visionOS Simulator"; return ;;
+            appletvsimulator) echo "generic/platform=tvOS Simulator"; return ;;
+            watchsimulator) echo "generic/platform=watchOS Simulator"; return ;;
+        esac
+    done
+    case "${_platforms}" in
+        *" macosx "*) echo "generic/platform=macOS" ;;
+    esac
+}
+
+# The build plan hct's binary (HECATRON_BINARY, which it gives the hooks)
+# reads from the Xcode files here, without Xcode (hct _xcode plan,
+# internal/xcode): the container and its kind, the scheme that builds the
+# app, its platform's destination, the files the build needs that aren't
+# there (missing) and what makes them (setup), the projects below (nested),
+# and why it can't tell what it leaves empty (unsure). Fails without the
+# binary, or where it can't read the files (it says why on stderr), and
+# xcodebuild decides. The names a container may be named like are
+# xcode_pick's.
+xcode_plan_kind="" xcode_plan_container="" xcode_plan_scheme="" xcode_plan_destination=""
+xcode_plan_setup="" xcode_plan_unsure="" xcode_plan_missing=() xcode_plan_nested=()
+xcode_read_plan() {
+    local _plan _key _value
+    xcode_plan_kind="" xcode_plan_container="" xcode_plan_scheme="" xcode_plan_destination=""
+    xcode_plan_setup="" xcode_plan_unsure="" xcode_plan_missing=() xcode_plan_nested=()
+    [ -n "${HECATRON_BINARY:-}" ] && [ -x "${HECATRON_BINARY}" ] || return 1
+    _plan="$("${HECATRON_BINARY}" _xcode plan . "$(basename "$(pwd)")" "${HECATRON_PROJECT:-}" \
+        "$(basename "${HECATRON_ROOT:-.}")")" || return 1
+    while IFS=$'\t' read -r _key _value; do
+        case "${_key}" in
+            kind) xcode_plan_kind="${_value}" ;;
+            container) xcode_plan_container="${_value}" ;;
+            scheme) xcode_plan_scheme="${_value}" ;;
+            destination) xcode_plan_destination="${_value}" ;;
+            setup) xcode_plan_setup="${_value}" ;;
+            unsure) xcode_plan_unsure="${_value}" ;;
+            missing) xcode_plan_missing+=("${_value}") ;;
+            nested) xcode_plan_nested+=("${_value}") ;;
+        esac
+    done <<<"${_plan}"
+}
+
+# A build whose files aren't all there skips: xcodebuild -list succeeds
+# without them, and the build fails. CocoaPods' Pods/ is made by pod
+# install, and often not committed (eidolon's Kiosk.xcworkspace refers to
+# Pods/Pods.xcodeproj); a project's .xcconfig can be its own setup's
+# (wikipedia's). The missing files are the plan's ($1 is "plan":
+# xcode_read_plan), else the projects the workspace ($2) refers to that
+# aren't there.
+xcode_build_complete() {
+    local _missing="" _setup=""
+    if [ "$1" = plan ]; then
+        _missing="${xcode_plan_missing[*]+"${xcode_plan_missing[*]}"}"
+        _setup="${xcode_plan_setup}"
+    elif [ "${2##*.}" = xcworkspace ]; then
+        _missing="$(xcode_py missing "$2" | paste -sd ' ' -)"
+    fi
+    if [ -z "${_missing}" ] && [ "${2##*.}" = xcworkspace ] && [ -f Podfile.lock ] && [ ! -d Pods/Pods.xcodeproj ]; then
+        _missing=Pods/Pods.xcodeproj
+    fi
+    [ -n "${_missing}" ] || return 0
+    case " ${_missing}" in
+        *" Pods/"*) skip "the Pods aren't installed (${_missing} $(xcode_is_or_are "${_missing}") missing): run pod install (hct deps runs it, with CocoaPods installed)" ;;
+    esac
+    [ -z "${_setup}" ] || skip "${_missing} $(xcode_is_or_are "${_missing}") missing: ${_setup}"
+    skip "$2 refers to projects that aren't here (${_missing}): $(xcode_write_hooks)"
+}
+xcode_is_or_are() { case "$1" in *" "*) echo are ;; *) echo is ;; esac; }
+
+# Through the root workspace when there is one (CocoaPods': the bare project
+# doesn't link without its Pods), else the project; with its scheme, for
+# its platform's generic destination: as the files say (xcode_read_plan),
+# else, for what they leave unsure, as xcodebuild's report of the schemes
+# (xcode_scheme; a scheme also resolves the project's Swift packages) and
+# of the scheme's settings (xcode_destination) say. Unattended, the build
+# trusts the packages' macros and plugins (firefox-ios' ModifiedCopy),
+# which Xcode would ask about.
+xcode_build() {
+    local _container="" _kind="" _project _chosen _scheme="" _why="" _list _settings _destination="" _tab=$'\t'
+    local _missing_from=workspace
+    if xcode_read_plan; then
+        _missing_from=plan
+        _kind="${xcode_plan_kind}" _container="${xcode_plan_container}"
+        _scheme="${xcode_plan_scheme}" _destination="${xcode_plan_destination}"
+        _why="the scheme building the app, from the project's files"
+        [ -z "${xcode_plan_unsure}" ] ||
+            echo "${HECATRON_LANG:-}: ${_hook_action}: the project's files leave it unsure (${xcode_plan_unsure}): asking xcodebuild"
+    fi
+    _project="$(xcode_pick '*.xcodeproj')"
+    if [ -z "${_container}" ]; then
+        _kind=-workspace
+        _container="$(xcode_pick '*.xcworkspace')"
+        if [ -z "${_container}" ]; then
+            _kind=-project
+            _container="${_project}"
+        fi
+    fi
+    case "${_container}" in
+        "several: "*)
+            skip "several Xcode ${_kind#-}s here (${_container#several: }), none named like the directory: $(xcode_write_hooks)" ;;
+    esac
+    case "${_project}" in "several: "*) _project="" ;; esac
+    xcode_build_complete "${_missing_from}" "${_container}"
+    if [ -z "${_scheme}" ]; then
+        echo "+ xcodebuild -list -json ${_kind} ${_container}"
+        _list="$(xcodebuild -list -json "${_kind}" "${_container}")" || exit 1
+        _chosen="$(printf '%s\n' "${_list}" |
+            xcode_scheme "${_container}" "${_project}" "${_container%.*}" ${_project:+"${_project%.*}"})"
+        _scheme="${_chosen%%"${_tab}"*}"
+        _why="${_chosen#*"${_tab}"}"
+        [ -n "${_scheme}" ] || [ -z "${_why}" ] || skip "${_container}: ${_why}: $(xcode_write_hooks)"
+        [ -n "${_scheme}" ] ||
+            skip "${_container} has no shared scheme building its app, nor one named like it (${_container%.*}): $(xcode_write_hooks)"
+    fi
+    echo "${HECATRON_LANG:-}: ${_hook_action}: scheme ${_scheme}: ${_why}"
+    if [ -z "${_destination}" ]; then
+        echo "+ xcodebuild -showBuildSettings ${_kind} ${_container} -scheme ${_scheme}"
+        _settings="$(xcodebuild -showBuildSettings "${_kind}" "${_container}" -scheme "${_scheme}")" || exit 1
+        _destination="$(printf '%s\n' "${_settings}" | xcode_destination)"
+        [ -n "${_destination}" ] ||
+            skip "can't tell a destination for scheme ${_scheme} from its SUPPORTED_PLATFORMS: $(xcode_write_hooks)"
+    fi
+    run xcodebuild build "${_kind}" "${_container}" -scheme "${_scheme}" -destination "${_destination}" \
+        -derivedDataPath "${xcode_derived_data}" -skipMacroValidation -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO
+    exit
+}
+
+# Objective-C: an Xcode project through xcodebuild (xcode_hook), unless
+# another build is here and there is no xcodebuild; with nothing that builds
+# here, the Xcode apps below (xcode_apps_below: firefox-ios' Objective-C is
+# all in its apps), skipping what they don't do on their own; GNUstep make for a
+# GNUmakefile that includes GNUstep's common.make (which needs
 # GNUSTEP_MAKEFILES, from gnustep-config), else CMake, Meson or make as for C.
 objc_hook() {
-    if exists '*.xcodeproj' && has xcodebuild; then
-        case "$1" in
-            test) run xcodebuild test ;;
-            build) run xcodebuild build ;;
-            clean) run xcodebuild clean ;;
-            lint) skip "xcodebuild has no standard lint action" ;;
-        esac
-        return
+    local _builds=(CMakeLists.txt meson.build configure configure.ac Makefile makefile GNUmakefile)
+    case "$1" in
+        build|clean) xcode_apps_below "${_builds[@]}" ;;
+    esac
+    if ! xcode_project && ! has_any "${_builds[@]}"; then
+        xcode_find_apps
+        [ "${#xcode_apps[@]}" -eq 0 ] ||
+            skip "the Objective-C here is in the Xcode apps below (${xcode_apps[*]#./}), which build and clean on their own; write $(xcode_hook_path "$1") for their $1"
+    fi
+    if xcode_project && { has xcodebuild || ! has_any "${_builds[@]}"; }; then
+        xcode_hook "$1"
     fi
     if is_gnustep_make && [ -z "${GNUSTEP_MAKEFILES:-}" ]; then
         has gnustep-config || unknown "the GNUmakefile uses GNUstep make, and gnustep-config is not installed"

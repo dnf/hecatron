@@ -9,6 +9,14 @@
     "pyproject.toml",
     "setup.py"
   ],
+  "detectWithSources": {
+    "files": [
+      "requirements.txt"
+    ],
+    "sources": [
+      "*.py"
+    ]
+  },
   "dirNames": [
     "python",
     "py",
@@ -67,12 +75,14 @@
     "UV_PYTHON": "{home}/bin/python3"
   },
   "buildSystems": [
-    "uv (pyproject.toml)",
+    "uv (pyproject.toml, requirements.txt)",
     "setuptools"
   ],
   "testing": "pytest",
   "linting": "Ruff",
   "formatting": "Ruff, Black",
+  "docs": "Sphinx, pdoc",
+  "benchmarks": "pytest-benchmark",
   "actions": {
     "test": {
       "find": "below-else-here",

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
@@ -82,6 +83,8 @@ func WriteChart(w io.Writer, r *Report, slotMode bool, width int) {
 			bar := min(max(int(ds*int64(maxBar)/longest), 1), maxBar)
 			mark, note := "✓", ""
 			switch result.Status {
+			case Skipped:
+				mark, note = "-", " skipped"
 			case Failed:
 				mark = "✗"
 			case TimedOut:
@@ -121,18 +124,23 @@ func writeAxis(w io.Writer, longest int64, prefixW, maxBar int) {
 // job's log, as run-parallel.sh ends.
 func WriteTally(w io.Writer, r *Report) {
 	passed, failed, timedOut, _ := r.counts()
-	notInstalled, disabled := 0, 0
+	notInstalled, disabled, skipped := 0, 0, 0
 	for _, result := range r.Results {
 		switch result.Status {
 		case StatusNotInstall:
 			notInstalled++
 		case StatusDisabled:
 			disabled++
+		case Skipped:
+			skipped++
 		}
 	}
 	extra := ""
 	if timedOut > 0 {
 		extra += fmt.Sprintf(", %d timed out", timedOut)
+	}
+	if skipped > 0 {
+		extra += fmt.Sprintf(", %d skipped", skipped)
 	}
 	if notInstalled > 0 {
 		extra += fmt.Sprintf(", %d not installed", notInstalled)
@@ -142,6 +150,7 @@ func WriteTally(w io.Writer, r *Report) {
 	}
 	_, _ = fmt.Fprintf(w, "\n%d/%d passed%s (%s wall time)\nLogs: %s/\n", passed, passed+failed+timedOut, extra,
 		formatDeciseconds(Deciseconds(r.Wall)), r.LogDir)
+	writeSkipLines(w, r)
 	if failed+timedOut == 0 {
 		return
 	}
@@ -155,5 +164,24 @@ func WriteTally(w io.Writer, r *Report) {
 			_, _ = w.Write(data)
 		}
 		_, _ = fmt.Fprintln(w)
+	}
+}
+
+// skipLine is the line each-component.sh and languageExec end a job's
+// components with when some had nothing to do, with why.
+var skipLine = regexp.MustCompile(`(?m)^\S+: \S+ skipped(?: for \d+ component\(s\))?: .*$`)
+
+// writeSkipLines writes each job's skip line from its log, after the
+// tally, as run-parallel.sh does: not scanned isn't clean.
+func writeSkipLines(w io.Writer, r *Report) {
+	for _, result := range r.Results {
+		if !result.Ran() || result.Unsuccessful() || result.SkipReason() == "" {
+			continue
+		}
+		if data, err := os.ReadFile(result.Log); err == nil {
+			for _, line := range skipLine.FindAll(data, -1) {
+				_, _ = fmt.Fprintln(w, strings.TrimRight(string(line), "\r"))
+			}
+		}
 	}
 }

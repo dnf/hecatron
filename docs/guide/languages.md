@@ -28,10 +28,10 @@ The languages at least 5% of developers use, from the
 | [Lua](https://www.lua.org) | Lightweight embeddable scripting language. | [LuaRocks](https://luarocks.org) | [busted](https://lunarmodules.github.io/busted/) | [luacheck](https://github.com/lunarmodules/luacheck) | [StyLua](https://github.com/JohnnyMorganz/StyLua)[^4] | – |
 | [PHP](https://www.php.net) | The web's server-side workhorse. | [Composer](https://getcomposer.org) | [PHPUnit](https://phpunit.de) | [PHPStan](https://phpstan.org), [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer), [PHP CS Fixer](https://cs.symfony.com) | [PHP CS Fixer](https://cs.symfony.com), [Laravel Pint](https://laravel.com/docs/pint)[^5] | 8.5.12 |
 | [PowerShell](https://learn.microsoft.com/powershell/) | Cross-platform shell and scripting language built on .NET. | PowerShell modules | [Pester](https://pester.dev) | [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer) | – | – |
-| [Python](https://www.python.org) | Readable general-purpose language with a vast ecosystem. | [uv](https://docs.astral.sh/uv/) (pyproject.toml), [setuptools](https://setuptools.pypa.io) | [pytest](https://docs.pytest.org) | [Ruff](https://docs.astral.sh/ruff/) | [Ruff](https://docs.astral.sh/ruff/), [Black](https://black.readthedocs.io)[^6] | 3.15.1 |
+| [Python](https://www.python.org) | Readable general-purpose language with a vast ecosystem. | [uv](https://docs.astral.sh/uv/) (pyproject.toml, requirements.txt), [setuptools](https://setuptools.pypa.io) | [pytest](https://docs.pytest.org) | [Ruff](https://docs.astral.sh/ruff/) | [Ruff](https://docs.astral.sh/ruff/), [Black](https://black.readthedocs.io)[^6] | 3.15.1 |
 | [Ruby](https://www.ruby-lang.org) | Expressive, object-oriented language behind Rails. | [Bundler](https://bundler.io), [Rake](https://ruby.github.io/rake/), [RubyGems](https://rubygems.org) | [RSpec](https://rspec.info), [Minitest](https://github.com/minitest/minitest) | [RuboCop](https://rubocop.org), [Standard](https://github.com/standardrb/standard) | [RuboCop](https://rubocop.org), [Standard](https://github.com/standardrb/standard)[^7] | 4.0.9 |
 | [Rust](https://www.rust-lang.org) | Memory safety without garbage collection, and fearless concurrency. | [Cargo](https://doc.rust-lang.org/cargo/) | [cargo test](https://doc.rust-lang.org/cargo/commands/cargo-test.html) | [Clippy](https://doc.rust-lang.org/clippy/), [rustfmt](https://github.com/rust-lang/rustfmt) | [rustfmt](https://github.com/rust-lang/rustfmt) | 1.99.1 |
-| [Swift](https://www.swift.org) | Apple's safe, fast language, also on Linux. | [Swift Package Manager](https://www.swift.org/documentation/package-manager/) | [XCTest](https://developer.apple.com/documentation/xctest), [Swift Testing](https://developer.apple.com/xcode/swift-testing/) | – | [swift-format](https://github.com/swiftlang/swift-format) | – |
+| [Swift](https://www.swift.org) | Apple's safe, fast language, also on Linux. | [Swift Package Manager](https://www.swift.org/documentation/package-manager/), [Xcode](https://developer.apple.com/xcode/) (xcodebuild build and clean) | [XCTest](https://developer.apple.com/documentation/xctest), [Swift Testing](https://developer.apple.com/xcode/swift-testing/) | – | [swift-format](https://github.com/swiftlang/swift-format) | – |
 | [TypeScript](https://www.typescriptlang.org) | JavaScript with static types. | [npm](https://docs.npmjs.com/cli), [pnpm](https://pnpm.io), [Yarn](https://yarnpkg.com) or [Bun](https://bun.sh) ([tsc](https://www.typescriptlang.org/docs/handbook/compiler-options.html)) | [npm](https://docs.npmjs.com/cli) test | [npm](https://docs.npmjs.com/cli) run lint, [tsc](https://www.typescriptlang.org/docs/handbook/compiler-options.html) --noEmit | [Prettier](https://prettier.io), [Biome](https://biomejs.dev)[^3] | 24.22.1 (LTS) |
 
 ## Additional languages
@@ -75,6 +75,47 @@ The languages at least 5% of developers use, from the
 | [VB.NET](https://learn.microsoft.com/dotnet/visual-basic/) | Visual Basic for .NET. | [.NET SDK](https://dotnet.microsoft.com) (dotnet) | [dotnet test](https://learn.microsoft.com/dotnet/core/tools/dotnet-test) | [dotnet format](https://learn.microsoft.com/dotnet/core/tools/dotnet-format) | [dotnet format](https://learn.microsoft.com/dotnet/core/tools/dotnet-format) | 10.0.403 (LTS) |
 | [Wren](https://wren.io) | Small, fast, class-based scripting language for embedding. | [wren_cli](https://github.com/wren-lang/wren-cli) | test scripts | – | – | – |
 | [Zig](https://ziglang.org) | Simple systems language and C toolchain, with comptime. | [zig build](https://ziglang.org/learn/build-system/) | [zig build](https://ziglang.org/learn/build-system/) test | zig fmt | zig fmt | 0.17.0 |
+
+## API docs and benchmarks
+
+What `hct docs` and `hct bench` run by default ([commands](commands.md#run-commands)).
+Most run only where the project has the tool already: a dependency, a
+configuration file (`docs/conf.py`, a `Doxyfile`), a build step or script
+named for it. A language not listed, or a component without the tool, has
+nothing to run and is skipped.
+
+| Language | API docs | Benchmarks |
+| --- | --- | --- |
+| C | [Doxygen](https://www.doxygen.nl) | [Google Benchmark](https://github.com/google/benchmark), [Meson](https://mesonbuild.com) benchmarks, [make](https://www.gnu.org/software/make/) bench |
+| C# | [DocFX](https://dotnet.github.io/docfx/) | [BenchmarkDotNet](https://benchmarkdotnet.org) |
+| C++ | [Doxygen](https://www.doxygen.nl) | [Google Benchmark](https://github.com/google/benchmark), [Meson](https://mesonbuild.com) benchmarks, [make](https://www.gnu.org/software/make/) bench |
+| Clojure | [Codox](https://github.com/weavejester/codox) | – |
+| Crystal | [crystal docs](https://crystal-lang.org/reference/latest/syntax_and_semantics/documenting_code.html) | – |
+| D | [dub](https://dub.pm) build -b docs | – |
+| Dart | [dart doc](https://dart.dev/tools/dart-doc) | – |
+| Elixir | [ExDoc](https://hexdocs.pm/ex_doc/) | [Benchee](https://github.com/bencheeorg/benchee) |
+| Erlang | [EDoc](https://www.erlang.org/doc/apps/edoc/) | – |
+| F# | [fsdocs](https://fsprojects.github.io/FSharp.Formatting/) | [BenchmarkDotNet](https://benchmarkdotnet.org) |
+| Gleam | [gleam docs](https://gleam.run/command-line-reference/) | – |
+| Go | – | [go test](https://pkg.go.dev/cmd/go#hdr-Test_packages) -bench |
+| Groovy | [Groovydoc](https://groovy-lang.org/groovydoc.html), [Javadoc](https://docs.oracle.com/en/java/javase/21/docs/specs/man/javadoc.html) | [JMH](https://github.com/openjdk/jmh) |
+| Haskell | [Haddock](https://haskell-haddock.readthedocs.io) | [cabal](https://www.haskell.org/cabal/) bench, [Stack](https://docs.haskellstack.org) bench |
+| Java | [Javadoc](https://docs.oracle.com/en/java/javase/21/docs/specs/man/javadoc.html) | [JMH](https://github.com/openjdk/jmh) |
+| JavaScript | [npm](https://docs.npmjs.com/cli) run docs, [TypeDoc](https://typedoc.org) | [npm](https://docs.npmjs.com/cli) run bench |
+| Julia | [Documenter](https://documenter.juliadocs.org) | [BenchmarkTools](https://juliaci.github.io/BenchmarkTools.jl/) |
+| Kotlin | [Dokka](https://kotlinlang.org/docs/dokka-introduction.html) | [JMH](https://github.com/openjdk/jmh), [kotlinx-benchmark](https://github.com/Kotlin/kotlinx-benchmark) |
+| Nim | [nim doc](https://nim-lang.org/docs/docgen.html) | – |
+| Objective-C | [Doxygen](https://www.doxygen.nl) | – |
+| OCaml | [odoc](https://ocaml.github.io/odoc/) | [dune](https://dune.build) build @bench |
+| PHP | – | [PHPBench](https://phpbench.readthedocs.io) |
+| Python | [Sphinx](https://www.sphinx-doc.org), [pdoc](https://pdoc.dev) | [pytest-benchmark](https://pytest-benchmark.readthedocs.io) |
+| Ruby | [YARD](https://yardoc.org), [RDoc](https://ruby.github.io/rdoc/) | [Rake](https://ruby.github.io/rake/) bench task |
+| Rust | [cargo doc](https://doc.rust-lang.org/cargo/commands/cargo-doc.html) | [cargo bench](https://doc.rust-lang.org/cargo/commands/cargo-bench.html) |
+| Scala | [Scaladoc](https://docs.scala-lang.org/scala3/guides/scaladoc/) | [JMH](https://github.com/openjdk/jmh) |
+| Swift | [DocC](https://www.swift.org/documentation/docc/) | [package-benchmark](https://github.com/ordo-one/package-benchmark) |
+| TypeScript | [npm](https://docs.npmjs.com/cli) run docs, [TypeDoc](https://typedoc.org) | [npm](https://docs.npmjs.com/cli) run bench |
+| VB.NET | – | [BenchmarkDotNet](https://benchmarkdotnet.org) |
+| Zig | [zig build](https://ziglang.org/learn/build-system/) docs | [zig build](https://ziglang.org/learn/build-system/) bench |
 
 [^1]: Only when the project has a `.clang-format` file: C-family code has no single standard style.
 [^2]: Only when the build applies one; hecatron runs it through the build.

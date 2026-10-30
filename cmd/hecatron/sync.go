@@ -390,6 +390,7 @@ var depsOutcome = map[string]string{
 	string(runner.TimedOut):         "timed out",
 	string(runner.StatusNotInstall): "toolchain not installed",
 	string(runner.StatusDisabled):   "disabled (hct enable)",
+	string(runner.Skipped):          "nothing to fetch",
 	"no hook":                       "no deps hook",
 }
 

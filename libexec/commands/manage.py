@@ -92,6 +92,8 @@ def cmd_install(args) -> int:
     languages fetches theirs as each installs."""
     if args.plan:
         needs_binary("install --plan")
+    if args.no_deps:
+        os.environ["HECATRON_NO_DEPS"] = "1"
     project = load_project()
     install_all = not args.languages
     langs = project.languages if install_all else resolve_all(project, args.languages, added_only=True)
@@ -531,6 +533,18 @@ def holds_language(by_dir: dict[str, set[str]], defs: dict[str, dict]):
     return holds
 
 
+def holds_project_dir(by_dir: dict[str, set[str]], defs: dict[str, dict]):
+    """(lang, directory) → whether one of the language's "detectWithSources"
+    "dirs" (an Xcode project, App.xcodeproj/) sits in the directory itself:
+    xcodebuild acts on the project where it runs, and the hooks don't look
+    for one below."""
+    def holds(lang: str, directory: str) -> bool:
+        patterns = (defs.get(lang, {}).get("detectWithSources") or {}).get("dirs", [])
+        return any(posixpath.dirname(sub) == ("" if directory == "." else directory)
+                   and _matches({posixpath.basename(sub)}, patterns) for sub in by_dir if sub != ".")
+    return holds
+
+
 # How many levels below a directory the default hooks look for a build file
 # (dirs_below_with in languages/_hooks.sh).
 HOOK_SEARCH_DEPTH = 3
@@ -558,9 +572,14 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
       TypeScript), and where its "detectYields" rule holds, which makes it
       the other language's even beside that one's "detectUnless" files
       (a tsconfig.json beside mostly JavaScript is a JavaScript package's),
-      and, for a language with a "detectScript", where its
-      package.json has no such npm script (Cucumber's jsonschema/, tooling
-      with no test script).
+      and, for a language with "detectKeys", where its build file (JSON)
+      has none of those keys: a package.json with no dependencies, entry
+      point, workspaces or start, dev, serve or test script is tooling
+      (commit hooks, Cucumber's jsonschema/), not a package.
+    - A directory holding one of "detectWithSources"' "files", or holding a
+      directory named like its "dirs" (an Xcode project, App.xcodeproj/), is
+      a hit when a file matching its "sources" is tracked in it or below: a
+      requirements.txt beside Python code, not one for a docs build.
     - Nothing under SKIPPED_DIRS counts, except a language's "detectTests"
       (Bats' *.bats) in a test/ or tests/ directory, for a language
       otherwise not found: it is the language of the directory tested.
@@ -584,6 +603,28 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
         return {directory for directory, names in dirs.items()
                 if _matches({name for name in names if not name.startswith(".")}, sources)
                 and not _matches(names, unless)}
+
+    def with_sources_hits(rule: dict | None, unless: list[str]) -> set[str]:
+        """The directories holding one of the rule's "files", or a directory
+        named like its "dirs", with its "sources" in them or below."""
+        if not rule:
+            return set()
+        candidates = hits(by_dir, rule.get("files", []), unless)
+        for sub in by_dir:
+            parts = sub.split("/")
+            for i, part in enumerate(parts):
+                parent = "/".join(parts[:i]) or "."
+                if (any(fnmatch.fnmatch(part, pattern) for pattern in rule.get("dirs", []))
+                        and not _matches(by_dir.get(parent, set()), unless)):
+                    candidates.add(parent)
+        # Sources count for the innermost candidate holding them: a nested
+        # Xcode project's Objective-C isn't the Swift app's above it.
+        found = set()
+        for sub in source_hits(by_dir, rule.get("sources", []), []):
+            holding = [c for c in candidates if c == "." or _under(sub, c)]
+            if holding:
+                found.add(max(holding, key=lambda c: _depth_below(c, ".")))
+        return found
 
     def count(names: set[str], patterns: list[str]) -> int:
         return sum(1 for name in names if any(fnmatch.fnmatch(name, pattern) for pattern in patterns))
@@ -633,12 +674,17 @@ def detect_languages(root: str, defs: dict[str, dict] | None = None) -> tuple[di
         directories = (hits(by_dir, d.get("detect", []), unless) - yielded.get(lang, set())
                        | hits(by_dir, d.get("detect", []), []) & granted.get(lang, set())
                        | shared_hits(lang))
-        script = d.get("detectScript")
-        if script and directories:
-            directories = {directory for directory in directories if _has_npm_script(root, directory, script)}
+        keys = d.get("detectKeys")
+        tooling = None
+        if keys and directories:
+            directories = {directory for directory in directories
+                           if _has_detect_key(root, directory, by_dir[directory], d.get("detect", []), keys)}
             if not directories:
-                not_added[lang] = f"no {script} script"
-                continue
+                tooling = f"its {', '.join(d.get('detect', []))} has none of {', '.join(keys)}"
+        directories |= with_sources_hits(d.get("detectWithSources"), unless)
+        if not directories and tooling:
+            not_added[lang] = tooling
+            continue
         if not directories and sources:
             directories = source_hits(by_dir, sources, unless)
             from_sources.add(lang)
@@ -684,15 +730,27 @@ def _tested_directory(directory: str) -> str | None:
     return None
 
 
-def _has_npm_script(root: str, directory: str, script: str) -> bool:
-    """Whether the directory's package.json has the npm script; one that
-    can't be read counts as having it."""
-    try:
-        with open(os.path.join(root, directory, "package.json"), encoding="utf-8") as f:
-            scripts = json.load(f).get("scripts") or {}
-    except (OSError, ValueError, AttributeError):
+def _has_detect_key(root: str, directory: str, names: set[str], detect: list[str], keys: list[str]) -> bool:
+    """Whether the directory's build file (JSON: the first of its names a
+    "detect" pattern matches) has one of the keys, non-empty; a dotted key is
+    a path (scripts.test). One that can't be read counts as having one."""
+    build_file = projectlib.build_file_in(os.path.join(root, directory), names, detect)
+    if build_file is None:
         return True
-    return isinstance(scripts, dict) and script in scripts
+    try:
+        with open(build_file, encoding="utf-8") as f:
+            document = json.load(f)
+    except (OSError, ValueError):
+        return True
+    if not isinstance(document, dict):
+        return True
+    for key in keys:
+        value = document
+        for part in key.split("."):
+            value = value.get(part) if isinstance(value, dict) else None
+        if value:
+            return True
+    return False
 
 
 def _language_roots(directories: set[str], names: list[str]) -> set[str]:
@@ -732,7 +790,7 @@ def _own_directory(directories: set[str]) -> str:
 
 
 def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None = None,
-                 holds=None) -> tuple[list[str], str, dict[str, str]]:
+                 holds=None, holds_project=None) -> tuple[list[str], str, dict[str, str]]:
     """Components, implPath and per-language implPaths from where each
     language's files sit.
 
@@ -745,6 +803,9 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
     directory)`, see holds_language) that no other language was found in:
     Thrift's lib/go, whose go.mod is at the root, but not Cucumber's
     javascript/, which is TypeScript's, nor a languages/go/ holding no Go.
+    A language found only in and below a directory holding its project
+    directory (`holds_project(lang, directory)`, see holds_project_dir) lives
+    there, not at the root: GoMap's src/, holding src/GoMap.xcodeproj.
     """
     names = names or {}
     roots = {lang: _language_roots(dirs, names.get(lang, [lang])) for lang, dirs in found.items()}
@@ -754,10 +815,13 @@ def infer_layout(found: dict[str, set[str]], names: dict[str, list[str]] | None 
             templates.setdefault(_as_template(root), set()).add(lang)
     if not templates:
         # Every language at the root, unless its hooks would find no build
-        # from there: one whose files are all deeper than they look.
+        # from there: one whose files are all deeper than they look, or
+        # whose project directory sits below.
         return ["."], ".", {lang: _own_directory(dirs) for lang, dirs in sorted(found.items())
                             if holds and not holds(lang, ".")
-                            and all(_depth_below(d, ".") > HOOK_SEARCH_DEPTH for d in dirs)}
+                            and all(_depth_below(d, ".") > HOOK_SEARCH_DEPTH for d in dirs)
+                            or _own_directory(dirs) != "." and holds_project
+                            and holds_project(lang, _own_directory(dirs))}
     split = [t.split("/") for t in templates]
     if len(templates) > 1 and len({len(parts) for parts in split}) == 1 and all(roots.values()):
         varying = [i for i in range(len(split[0])) if len({parts[i] for parts in split}) > 1]
@@ -866,7 +930,8 @@ def detected_config(root: str, components: str | None = None, impl_path: str | N
     found, not_added = detect_languages(root, defs)
     by_dir, _ = _names_by_dir(tracked_files(root))
     found_components, found_impl_path, impl_paths = infer_layout(found, dir_names(defs),
-                                                                 holds_language(by_dir, defs))
+                                                                 holds_language(by_dir, defs),
+                                                                 holds_project_dir(by_dir, defs))
     chosen_components = [c for c in components.split(",") if c] if components else found_components
     if impl_path:
         found_impl_path, impl_paths = impl_path, {}
@@ -942,6 +1007,7 @@ def main(argv: list[str]) -> int:
             p.add_argument("--all", action="store_true", help="re-enable every language")
         if name == "install":
             p.add_argument("--plan", action="store_true", help="show what would be installed (needs the binary)")
+            p.add_argument("--no-deps", action="store_true", help="install toolchains only, not the project's dependencies")
         p.set_defaults(func=func)
 
     p = sub.add_parser("list")

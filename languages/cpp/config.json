@@ -33,6 +33,8 @@
   "testing": "CTest, Meson test, make check",
   "linting": null,
   "formatting": "clang-format",
+  "docs": "Doxygen",
+  "benchmarks": "Google Benchmark, Meson benchmarks, make bench",
   "errorPatterns": [
     {
       "tool": "gcc",

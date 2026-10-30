@@ -1,0 +1,8 @@
+{
+  "name": "@ws/app",
+  "version": "0.1.0",
+  "dependencies": {
+    "@ws/util": "*",
+    "left-pad": "1.3.0"
+  }
+}

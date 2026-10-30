@@ -1,4 +1,4 @@
-### hct test: 1 passed, 3 failed, 1 skipped (14s)
+### hct test: 1 passed, 3 failed, 3 skipped (14s)
 
 | Language | Component | Status | Time |
 | --- | --- | --- | --- |
@@ -6,6 +6,8 @@
 | go | date | passed | 5.0s |
 | python | . | **failed** | 1.5s |
 | rust |  | not installed |  |
+| javascript | . | skipped: package.json has no test script | 0.2s |
+| elm |  | skipped: no test runner for elm | 0.1s |
 | docs |  | passed | 0.3s |
 | flaky |  | **failed** | 0.1s |
 

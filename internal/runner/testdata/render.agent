@@ -1,4 +1,7 @@
-hct test: 3 passed, 2 failed, 1 timed out, 2 skipped (4m31s)
+hct test: 4 passed, 2 failed, 1 timed out, 4 skipped (4m31s)
+SKIP javascript (web/js/, api/js/): web: package.json has no test script; api: package.json has no test script
+SKIP ruby (api/ruby/): api: no spec or test directory
+SKIP elm: no test runner for elm
 FAIL go (go/) exit 1, 12s, log .logs/test/go.log
   --- FAIL: TestAdd (0.00s)
   calc_test.go:7: Add(2, 3) = -1, want 5

@@ -49,6 +49,7 @@
   "testing": "dotnet test",
   "linting": "dotnet format",
   "formatting": "dotnet format",
+  "benchmarks": "BenchmarkDotNet",
   "cache": {
     "dependencies": [
       "~/.nuget/packages"

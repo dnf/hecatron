@@ -17,7 +17,7 @@ import (
 )
 
 // The run commands (test, lint, build, clean, rebuild, retest, audit,
-// format, deps, outdated), as run.sh runs them: named targets one at a
+// format, deps, outdated, docs, bench), as run.sh runs them: named targets one at a
 // time, streaming their output; none, every language and project task in
 // parallel with internal/runner. Each language job runs the language's hook
 // for each component as each-component.sh does (hooks.go). What run.sh
@@ -36,6 +36,7 @@ type runArgs struct {
 	timeoutGiven  bool
 	env           []string // what the flags export to the hooks
 	outdatedJSON  bool
+	failOnSkip    bool     // --fail-on-skip, else HECATRON_FAIL_ON_SKIP=1
 	history       bool     // audit --history: the secret scan reads the commits
 	rest          []string // the arguments without --output, for run.sh
 }
@@ -96,6 +97,8 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 			a.env = append(a.env, "HECATRON_FORMAT_CHECK=1")
 		case arg == "--json" && action == "outdated":
 			a.outdatedJSON = true
+		case arg == "--fail-on-skip":
+			a.failOnSkip = true
 		case arg == "--fail" && action == "outdated":
 			a.env = append(a.env, "HECATRON_OUTDATED_FAIL=1")
 		default:
@@ -122,9 +125,10 @@ func (c *cli) runCommand() (int, bool) {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 2, true
 	}
+	a.failOnSkip = a.failOnSkip || os.Getenv("HECATRON_FAIL_ON_SKIP") == "1"
 	if a.changed {
 		if !changedActions[c.command] {
-			fmt.Fprintf(os.Stderr, "hecatron: --changed works with test, lint, build, format, deps, rebuild and retest, not %s\n", c.command)
+			fmt.Fprintf(os.Stderr, "hecatron: --changed works with test, lint, build, format, deps, rebuild, retest, docs and bench, not %s\n", c.command)
 			return 2, true
 		}
 		if len(a.targets) > 0 {
@@ -189,7 +193,7 @@ func (c *cli) runCommand() (int, bool) {
 	defer stop()
 	r.ctx = ctx
 	var cleanup func()
-	r.reports, cleanup = newReportSettings(c.command, stdoutReport)
+	r.reports, cleanup = newReportSettings(c.command, stdoutReport, format)
 	defer cleanup()
 	status := r.run()
 	if ctx.Err() != nil {
@@ -201,7 +205,8 @@ func (c *cli) runCommand() (int, bool) {
 // changedActions are the commands --changed narrows: those whose result
 // follows from the files (not audit's or outdated's, which follow the
 // advisories and releases; nor clean).
-var changedActions = map[string]bool{"test": true, "lint": true, "build": true, "format": true, "deps": true, "rebuild": true, "retest": true}
+var changedActions = map[string]bool{"test": true, "lint": true, "build": true, "format": true, "deps": true, "rebuild": true, "retest": true,
+	"docs": true, "bench": true}
 
 // declineChanged leaves the command to run.sh, which has no --changed: an
 // error with it, else delegated.
@@ -375,6 +380,9 @@ func (r *invocation) sub(action string) *invocation {
 	c := *r.cli
 	c.command = action
 	s := &invocation{cli: &c, ctx: r.ctx, shell: r.shell, args: r.args, format: r.format, timeout: r.timeout, patterns: r.patterns, selection: r.selection, reports: r.reports}
+	if action == "clean" {
+		s.args.failOnSkip = false // run.sh passes --fail-on-skip to the build or test only
+	}
 	s.resolveTargets()
 	return s
 }
@@ -438,7 +446,7 @@ func (r *invocation) runNamed() int {
 			fmt.Fprintln(os.Stderr, "hecatron:", err)
 		}
 		result.Duration, result.ExitCode, result.Components = time.Since(began), outcome.ExitCode, outcome.Components
-		result.Status = status
+		result.Status, result.Skipped = status, outcome.Skipped
 		results = append(results, result)
 		if r.ctx.Err() != nil {
 			break
@@ -446,12 +454,27 @@ func (r *invocation) runNamed() int {
 	}
 	report := r.report(results, time.Since(start))
 	r.writeReport(report)
-	return runner.ExitStatus(results)
+	return r.exitStatus(report)
+}
+
+// exitStatus is the run's exit status, saying why when it fails only
+// because nothing ran (--fail-on-skip).
+func (r *invocation) exitStatus(report *runner.Report) int {
+	status := report.ExitStatus()
+	if status != runner.ExitStatus(report.Results) {
+		fmt.Fprintln(os.Stderr, runner.NothingRanMessage)
+	}
+	return status
 }
 
 // report adds each failure's excerpt.
 func (r *invocation) report(results []runner.Result, wall time.Duration) *runner.Report {
 	for i := range results {
+		if r.command == "docs" && results[i].Ran() && results[i].Lang != "" {
+			if log, err := os.ReadFile(results[i].Log); err == nil {
+				results[i].Docs = runner.DocsWritten(log)
+			}
+		}
 		if !results[i].Unsuccessful() {
 			continue
 		}
@@ -461,7 +484,8 @@ func (r *invocation) report(results []runner.Result, wall time.Duration) *runner
 	}
 	cwd, _ := workingDir()
 	return &runner.Report{Action: r.command, Targets: r.args.targets, Components: r.args.components,
-		Results: results, Wall: wall, LogDir: r.logDir(), Root: r.root, Cwd: cwd, Changed: r.changedReport()}
+		Results: results, Wall: wall, LogDir: r.logDir(), Root: r.root, Cwd: cwd, Changed: r.changedReport(),
+		FailOnSkip: r.args.failOnSkip}
 }
 
 // errorPatterns are a language's, from its definition; nil for none.
@@ -558,11 +582,11 @@ func (r *invocation) runAll() int {
 		case r.selection != nil && !r.selection.Empty() && len(r.args.components) > 0:
 			fmt.Printf("%s; none in -c %s\n", r.selection.Line(), strings.Join(r.args.components, " "))
 		case r.selection != nil && !r.selection.Empty():
-			fmt.Printf("%s; nothing to %s there\n", r.selection.Line(), r.command)
+			fmt.Printf("%s; %s there\n", r.selection.Line(), nothingTo(r.command))
 		case r.selection != nil:
 			fmt.Println(r.selection.Line())
 		default:
-			fmt.Printf("Nothing to %s.\n", r.command)
+			fmt.Printf("%s.\n", capitalize(nothingTo(r.command)))
 		}
 		return 0
 	}
@@ -602,7 +626,7 @@ func (r *invocation) runAll() int {
 		} else {
 			r.writeReport(report)
 		}
-		return 0
+		return r.exitStatus(report)
 	}
 	var live *runner.Live
 	options := runner.Options{Slots: slots, LogDir: r.logDir()}
@@ -621,9 +645,10 @@ func (r *invocation) runAll() int {
 			runner.WriteChart(os.Stdout, report, runner.SlotMode(slots, jobs), chartWidth())
 		}
 		runner.WriteTally(os.Stdout, report)
+		runner.WriteDocs(os.Stdout, report)
 	}
 	r.writeReport(report)
-	return runner.ExitStatus(results)
+	return r.exitStatus(report)
 }
 
 // writeReport writes what follows human output, or replaces it, and the
@@ -637,6 +662,9 @@ func (r *invocation) writeReport(report *runner.Report) {
 	case runner.Agent:
 		runner.WriteAgent(os.Stdout, report)
 	case runner.JSON:
+		if r.command == "audit" {
+			report.Audit = r.auditJSON()
+		}
 		_ = runner.WriteJSON(os.Stdout, report)
 	case runner.CI:
 		runner.WriteAnnotations(os.Stdout, report, os.Getenv("GITHUB_WORKSPACE"))
@@ -654,4 +682,17 @@ func chartWidth() int {
 		return columns
 	}
 	return 80
+}
+
+// nothingTo says a command has nothing to run: "nothing to test", and for
+// the commands whose name isn't a verb, "no docs to build", "nothing to
+// benchmark". run.sh says the same.
+func nothingTo(command string) string {
+	switch command {
+	case "docs":
+		return "no docs to build"
+	case "bench":
+		return "nothing to benchmark"
+	}
+	return "nothing to " + command
 }

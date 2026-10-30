@@ -110,7 +110,7 @@ has one, implicitly. Each language's code for a component lives at a path
 built from a template, e.g. `{component}/impl/{lang}`.
 
 **Action.** Something done to one component in one language: `test`, `lint`,
-`build`, `clean`, `audit`, `format`, `deps`, `outdated`. A project hook script implements it; hecatron runs it once
+`build`, `clean`, `audit`, `format`, `deps`, `outdated`, `docs`, `bench`. A project hook script implements it; hecatron runs it once
 per component (the "every library" rule sayable adopted: a command for one
 language acts on all of that language's components).
 
@@ -168,7 +168,7 @@ commands and the sayable `just` recipes or scripts they replaced:
 
 | Command | From |
 | --- | --- |
-| `init`, `outdated`, `deps`, `format`, `--version`, `self` | new |
+| `init`, `outdated`, `deps`, `format`, `audit`, `docs`, `bench`, `licenses`, `sbom`, `status`, `sync`, `advisor`, `exec`, `skill`, `--version`, `self` | new |
 | `test`, `lint`, `build`, `clean`, `rebuild`, `retest` | `just test`, `just lint`, `just build`, `just clean`, same |
 | `install`, `uninstall`, `doctor` | `just install`, `just doctor` |
 | `add`, `remove`, `enable`, `disable`, `list languages` | the same recipes, `just list` |
@@ -300,6 +300,8 @@ Decided since, and recorded where the behaviour is described:
 - **A project pins its hecatron** (2026-10-28;
   [installing hecatron](../guide/installing-hecatron.md#pinning-a-projects-hecatron)).
 - **Root is asked for once** (2026-10-28; §19).
+- **Xcode projects are read from their files; xcodebuild still builds**
+  (2026-10-29; §21).
 - **New features are Go only** (2026-10-27; §19, Migration).
 - **Install data, macOS downloads and the links directory** (2026-10-28;
   [the install engine](install-engine.md)).
@@ -469,12 +471,32 @@ entry points' output byte for byte. Decided with the first port
   the embedded SPDX list (deprecated GNU identifiers made `-only` or
   `-or-later`); several declared licenses are read as a choice (`OR`).
   Direct or transitive comes from the lock file or manifest where it says,
-  dev from OSV-Scanner's dependency groups. The `"licenses"` policy is
-  checked by the binary's `hct check` only. Tests read OSV-Scanner's
+  dev from OSV-Scanner's dependency groups. Copyleft classes come from
+  Blue Oak Council's copyleft and permissive lists (vendored as
+  `internal/spdx/copyleft.txt`; the SPDX list doesn't classify), an
+  expression's from its parts (`OR` the least restrictive, `AND` the most).
+  The project's own packages, which lock files list too (workspace members,
+  editable roots, local replaces), are reported apart and not counted. The
+  `"licenses"` policy is checked by the binary's `hct check` only, and is
+  by identifier (it doesn't read the classes yet). `--timeout` uses
+  `hct audit`'s parsing; with no history, there's no default limit. Tests read OSV-Scanner's
   output on fixture projects (`tests/licenses/fixtures`), captured once in
   Docker (`tests/licenses/capture.sh`) into
   `tests/output/osv-scanner/2.7.0/`. `bin/hecatron licenses` without the
   binary says so.
+- **`hct sbom`** (#226; `internal/sbom`) is native only and reuses hct
+  licenses' pipeline (`licenses.GatherAll`: the same scan, also listing
+  the registries deps.dev has no licenses for) rather than a second
+  scanner. CycloneDX 1.6 (default) and SPDX 2.3 JSON, written as maps
+  without a library. Purls are built from OSV-Scanner's ecosystem, name and
+  version. The lock files hecatron reads say direct or transitive but not
+  through which package, so CycloneDX's graph has each component's direct
+  dependencies and is declared incomplete; SPDX's `DEPENDS_ON` carries
+  `direct`/`transitive` as a comment. Unknown licenses are omitted or
+  `NOASSERTION`. The serial number and namespace are a name-based UUID of
+  the content, so `SOURCE_DATE_EPOCH` gives a reproducible document. The
+  golden SBOMs of the license fixtures are checked against the official
+  schemas vendored in `tests/schemas/` (`tests/test_sbom.py`).
 - **Secret scanning** (#191; `internal/secrets`) is native only: a
   `secrets` job in `hct audit` beside the languages' (as `shell` is in
   lint), and the target `hct audit secrets`. It wraps gitleaks (pinned,
@@ -494,7 +516,8 @@ entry points' output byte for byte. Decided with the first port
   `enable`, `disable`, `check`, `dockerfile` and `workflows` (with
   `--check`), with detection (`detect_languages`, `infer_layout`,
   `detected_config`: `detectSources`, `detectUnless`, `sharedBuildFiles`,
-  `dirNames`, `detectScript`) in `internal/project` and the generated files
+  `dirNames`, `detectScript`, since replaced by `detectKeys`, and later
+  `detectWithSources`) in `internal/project` and the generated files
   in `internal/generate`. Each command works out everything it will print
   and write before doing any of it, so a project the model declines is
   handed to `manage.py` untouched; files are written as Python writes them
@@ -755,6 +778,20 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
   component, a bad `-j`, `-s` or `--output`) exit 2; run-parallel.sh's `-j`
   and `-s` errors exited 1.
 - `rebuild` and `retest` keep `-c` for both steps (run.sh drops it).
+- **Skipped** (#236, building on #239's nothing-to-audit) is a third
+  outcome: a hook says it by writing its reason to the file
+  `HECATRON_SKIPPED` names and exiting 0 (`skip`, `skip_component`), not by
+  a reserved exit status, which a tool could return by itself and which
+  every caller of a hook would have to know. Each runner reads the file
+  per component and ends the job's log with a `skipped for N
+  component(s)` line, which run-parallel.sh and `hct status` read; a job is
+  skipped when every component was, or when the language has no hook for
+  the command. `history.log` records it as 77, so it sets no time limit
+  and isn't scheduled as a failure. It never fails a run; `--fail-on-skip`
+  (a flag and `HECATRON_FAIL_ON_SKIP`, not a config setting: what a run
+  must achieve is the caller's) fails one in which nothing passed or
+  failed, rather than one with any skip, so a monorepo with one package
+  without tests can still turn it on in CI.
 - **Reports for CI** (#100, #101; `internal/reports`, §20) are written
   beside these formats, not as one of them: `HECATRON_REPORT_DIR` (JUnit,
   SARIF, Code Quality) and `GITHUB_STEP_SUMMARY`. `--output junit` and
@@ -798,8 +835,8 @@ The bash 3.2 rule (§14) then applies only to hooks and install scripts.
 
 ## 20. Source control backends
 
-Status: **planned** (#99–#103), except where marked as working today
-(#100–#103 are done).
+Status: **done** (#99–#103); Bitbucket and Azure pipelines are generated
+on demand.
 Hecatron runs the same everywhere; what differs between GitHub, GitLab,
 Bitbucket and Azure DevOps is where CI is configured and where results are
 shown. Hecatron meets each forge with thin adapters (an environment variable
@@ -812,11 +849,11 @@ on a laptop and in CI.
 
 Moved to the user guide: [hecatron in CI](../guide/ci.md).
 
-### Planned
+### What was planned
 
 | Feature | GitHub | GitLab | Others | Issue |
 | --- | --- | --- | --- | --- |
-| Test only what a pull or merge request changed (`--changed` with the base from the CI environment) | `GITHUB_BASE_REF` | `CI_MERGE_REQUEST_DIFF_BASE_SHA` | Bitbucket, Azure variables | #99 (needs #91) |
+| Test only what a pull or merge request changed (`--changed` with the base from the CI environment) | `GITHUB_BASE_REF` | `CI_MERGE_REQUEST_DIFF_BASE_SHA` | Bitbucket, Azure variables | #99 (done) |
 | Per-test results (JUnit XML, `--output junit`) | through a reporting action | merge request test widget | Jenkins, Azure, Buildkite, CircleCI | #100 (done) |
 | Findings on the change (SARIF from `audit` and `lint`; GitLab Code Quality JSON) | code scanning | security and code quality widgets | any SARIF reader | #100 (done) |
 | A results page per run | job summary (`GITHUB_STEP_SUMMARY`) | the JUnit report | | #101 (done) |
@@ -833,3 +870,69 @@ prints its log and leaves the forge's files in `HECATRON_REPORT_DIR`.
   know.
 - **Publishing with a forge's trusted-publishing credentials (OIDC):** part
   of a `hecatron publish` design, not yet decided.
+
+## 21. Reading Xcode projects
+
+`internal/xcode` reads an Xcode project's files without Xcode:
+`project.pbxproj` (in the old-style plist format), shared `.xcscheme`
+files, a workspace's `contents.xcworkspacedata`, and `.xcconfig` files.
+From them, `hct _xcode plan` says how to build the project in a directory:
+the container, the scheme, the generic destination, the files the build
+needs that aren't there yet (and what makes them), and the projects below
+when there are none in it. The Swift and Objective-C hooks call it
+(`HECATRON_BINARY`); the bash route asks `xcodebuild -list` and
+`-showBuildSettings` instead.
+
+Why: building nine open-source apps (#243) showed that the questions a
+build needs answered are in the files, and that answering them through
+`xcodebuild` alone fails in ways the files explain:
+
+- **The scheme.** A project has a scheme per Swift package it uses
+  (NetNewsWire lists 27) and an app may be named neither like its project
+  nor its target (home-assistant's `App-Debug`). The app's scheme is the one
+  whose first build entry is an app no other app embeds (not an extension's
+  scheme, which builds its host app too, nor a watchOS app's), then the one
+  that runs Debug, then the one named after its app. Two brands of one app
+  (focus-ios's Focus and Klar) stay the project's choice.
+- **The destination.** A target's `SDKROOT` (its own, its `.xcconfig`'s,
+  the project's) says the platform: `macosx` builds for the Mac, an iOS app
+  for its simulator even where it also builds with Catalyst (a separate
+  build its dependencies may not support).
+- **What's missing.** A configuration based on an `.xcconfig` that isn't
+  there, or a workspace naming a project that isn't, fails deep in
+  `xcodebuild`. CocoaPods' (`pod install`) and an app's own setup script
+  (wikipedia-ios's) both fail this way; the plan names the files and what
+  makes them.
+- **Projects below.** GoMap's project is in `src/`, firefox-ios's apps
+  beside its Swift package; the plan lists them.
+- **Off a Mac.** Detection, `hct status` and generated CI can read an iOS
+  project on Linux.
+
+It reads structure, not every build setting: conditional settings
+(`SDKROOT[sdk=...]`), Xcode's defaults and the settings a build derives are
+left to `xcodebuild`, which stays the authority for a build. When the files
+don't say (no shared scheme builds an app; a target whose `SDKROOT` is set
+only conditionally), the plan says so (`unsure`) and the hook falls back to
+asking `xcodebuild`. Standard library only, like the rest of the Go core.
+
+The fallback follows the same rules where it can without the files' full
+reading: for the destination it doesn't trust `-showBuildSettings`'
+`SDKROOT`, which without a destination describes the first xcodebuild
+would build for (for a Catalyst app, the Mac), and takes macOS only for an
+app whose `SUPPORTED_PLATFORMS` is `macosx` alone; for the scheme, with
+several building the app, it keeps the one whose first build entry is an
+app no other app embeds, and skips naming them when several remain rather
+than picking by name. Builds pass `-skipMacroValidation
+-skipPackagePluginValidation`: a check runs unattended, and nobody can
+enable a package's macro as Xcode asks.
+
+An app's Xcode project beside a `Package.swift` (isowords' `App/`) is the
+product: where `xcodebuild` is installed and the project has an
+application target, Swift's build and clean are the app's, and the
+package (the app's modules) keeps SwiftPM for its tests where it builds on
+the host. Without `xcodebuild`, SwiftPM builds what it can. The apps below
+a directory are the plan's nested projects (or the same scan in
+`libexec/lib/xcode.py`) in directories holding the language's sources,
+outside examples, tests and vendored code: a scan of the directories, not
+detection's pass over every tracked file, which took seconds on
+firefox-ios.

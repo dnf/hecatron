@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hecatron test|lint|build|clean|rebuild|retest|audit|format|deps|outdated [-j N] [-s MODE] [-c COMPONENT]... [target ...]
+# hecatron test|lint|build|clean|rebuild|retest|audit|format|deps|outdated|docs|bench [-j N] [-s MODE] [-c COMPONENT]... [target ...]
 #
 # With targets, runs each one in turn, streaming its output and saving it to
 # <logs>/<action>/<target>.log. A target is a language (every component), a
@@ -15,6 +15,11 @@ _action="${1:?usage: run.sh <action> [flags] [target ...]}"
 shift
 
 _jflag="" _sflag="" _prev="" _json=0
+# --fail-on-skip, else HECATRON_FAIL_ON_SKIP=1: fail when nothing ran. The
+# jobs this run starts mustn't see it: each would fail on its own skip.
+_fail_on_skip=0
+[ "${HECATRON_FAIL_ON_SKIP:-}" != 1 ] || _fail_on_skip=1
+unset HECATRON_FAIL_ON_SKIP
 _targets=()
 _components=()
 for _a in "$@"; do
@@ -30,6 +35,7 @@ for _a in "$@"; do
         --json) [ "${_action}" = outdated ] && _json=1 || _targets+=("${_a}") ;;
         --fail) [ "${_action}" = outdated ] && export HECATRON_OUTDATED_FAIL=1 || _targets+=("${_a}") ;;
         --component=*) _components+=("${_a#--component=}") ;;
+        --fail-on-skip) _fail_on_skip=1 ;;
         *) _targets+=("${_a}") ;;
     esac
 done
@@ -55,6 +61,8 @@ _describe() {
         format) echo "Format each language's code with its formatter in every component" ;;
         deps) echo "Fetch each language's dependencies for every component, held to its lock file" ;;
         outdated) echo "Report newer versions of each language's dependencies in every component" ;;
+        docs) echo "Build each language's API documentation for every component" ;;
+        bench) echo "Run each language's benchmarks for every component" ;;
     esac
 }
 
@@ -69,6 +77,8 @@ _action_langs() {
         format) echo "${_FORMAT_LANGS}" ;;
         deps) echo "${_DEPS_LANGS}" ;;
         outdated) echo "${_OUTDATED_LANGS}" ;;
+        docs) echo "${_DOCS_LANGS}" ;;
+        bench) echo "${_BENCH_LANGS}" ;;
     esac
 }
 
@@ -93,9 +103,12 @@ _usage() {
     printf '%s\n' \
         "" \
         "Flags:" \
-        "  -j VALUE   Concurrency: integer, percentage (default 50%), or 'unlimited'" \
+        "  -j VALUE   Concurrency: integer, percentage (default 50%), 'pcores' or 'unlimited'" \
         "  -s MODE    Display: scroll (default), full, or zoom" \
-        "  -c NAME    Only this component (repeatable); components: ${HECATRON_COMPONENTS}"
+        "  -c NAME    Only this component (repeatable); components: ${HECATRON_COMPONENTS}" \
+        "  --fail-on-skip" \
+        "             Fail when nothing ran: every job skipped (no tests, no tool, not installed);" \
+        "             else HECATRON_FAIL_ON_SKIP=1"
     if [ "${_action}" = "audit" ]; then
         printf '%s\n' \
             "  --fail-on SEVERITY" \
@@ -126,7 +139,7 @@ _usage() {
         printf '%s\n' "  --history  The secrets scan reads every commit instead of the working tree"
     fi
     case "${_action}" in
-        test|lint|build|format|deps|rebuild|retest)
+        test|lint|build|format|deps|rebuild|retest|docs|bench)
             printf '%s\n' \
                 "  --changed [REF]" \
                 "             Only the languages, components and project tasks the files changed" \
@@ -154,7 +167,10 @@ case "${_action}" in
     rebuild|retest)
         _then="build"; [ "${_action}" = "retest" ] && _then="test"
         "${HECATRON_JOB_COMMAND}" clean ${_targets[@]+"${_targets[@]}"}
-        exec "${HECATRON_JOB_COMMAND}" "${_then}" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} ${_targets[@]+"${_targets[@]}"}
+        _then_flags=()
+        [ "${_fail_on_skip}" -eq 0 ] || _then_flags+=(--fail-on-skip)
+        exec "${HECATRON_JOB_COMMAND}" "${_then}" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} \
+            ${_then_flags[@]+"${_then_flags[@]}"} ${_targets[@]+"${_targets[@]}"}
         ;;
 esac
 
@@ -209,11 +225,38 @@ if [ "${#_targets[@]}" -eq 0 ]; then
         _jobs+=("---" "${_extra[@]}")
     fi
     if [ "${#_jobs[@]}" -eq 0 ]; then
-        echo "Nothing to ${_action}."
+        # As the binary's nothingTo says it.
+        case "${_action}" in
+            docs) echo "No docs to build." ;;
+            bench) echo "Nothing to benchmark." ;;
+            *) echo "Nothing to ${_action}." ;;
+        esac
         exit 0
     fi
-    exec "${HECATRON_HOME}/libexec/runner/run-parallel.sh" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} \
-        "${_action}" "${_jobs[@]}"
+    _runner_flags=()
+    [ "${_fail_on_skip}" -eq 0 ] || _runner_flags+=(--fail-on-skip)
+    if [ "${_action}" != docs ]; then
+        exec "${HECATRON_HOME}/libexec/runner/run-parallel.sh" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} \
+            ${_runner_flags[@]+"${_runner_flags[@]}"} "${_action}" "${_jobs[@]}"
+    fi
+    # hct docs ends with where each language's docs are, from the lines its
+    # hooks end with (docs_written in languages/_hooks.sh), as the binary does.
+    _status=0
+    "${HECATRON_HOME}/libexec/runner/run-parallel.sh" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} \
+        ${_runner_flags[@]+"${_runner_flags[@]}"} "${_action}" "${_jobs[@]}" || _status=$?
+    _written=()
+    for _job in "${_jobs[@]}"; do
+        case "${_job}" in
+            *::*)
+                while IFS= read -r _line; do _written+=("${_line}"); done < <(
+                    grep -hE '^[^[:space:]]+: docs: written to ' "${HECATRON_LOGS}/docs/${_job%%::*}.log" 2>/dev/null) ;;
+        esac
+    done
+    if [ "${#_written[@]}" -gt 0 ]; then
+        printf '\n'
+        printf '%s\n' "${_written[@]}"
+    fi
+    exit "${_status}"
 fi
 
 # --- Named targets, one at a time -----------------------------------------
@@ -233,19 +276,28 @@ _run_target() {
             ${_components[@]+"${_components[@]}"}
         return
     fi
+    # Skipped, in the line each-component.sh ends with (the binary's noHook).
     case "${_action}" in
-        lint) echo "${name} has no separate linter: its build treats warnings as errors (hecatron test ${name})" ;;
-        build) echo "No build step for: ${name}" ;;
-        clean) echo "No build artifacts for: ${name}" ;;
-        audit) echo "Nothing to audit for: ${name} (hecatron has no auditor for its dependencies)" ;;
-        format) echo "No formatter for ${name} (skipping)" ;;
-        deps) echo "No dependency manager for ${name} (skipping)" ;;
-        outdated) echo "No outdated report for ${name} (skipping)" ;;
+        lint) echo "${name}: lint skipped: ${name} has no separate linter: its build treats warnings as errors (hecatron test ${name})" ;;
+        build) echo "${name}: build skipped: no build step for ${name}" ;;
+        clean) echo "${name}: clean skipped: no build artifacts for ${name}" ;;
+        audit) echo "${name}: audit skipped: nothing to audit for ${name} (hecatron has no auditor for its dependencies)" ;;
+        format) echo "${name}: format skipped: no formatter for ${name}" ;;
+        deps) echo "${name}: deps skipped: no dependency manager for ${name}" ;;
+        outdated) echo "${name}: outdated skipped: no outdated report for ${name}" ;;
+        docs) echo "${name}: docs skipped: no docs tool for ${name}" ;;
+        bench) echo "${name}: bench skipped: no benchmark runner for ${name}" ;;
         *) echo "error: ${name} has no ${_action} hook (.hecatron/languages/${name}/${_action}.sh)" >&2; return 1 ;;
     esac
 }
 
+# Whether a target's run skipped: its log ends with the line saying so.
+_skipped_run() {
+    tail -n 1 "$1" 2>/dev/null | grep -E "^[^ ]+: ${_action} skipped( for [0-9]+ component\\(s\\))?: " >/dev/null
+}
+
 _status=0
+_passed=0
 mkdir -p "${HECATRON_LOGS}/${_action}"
 for _target in "${_targets[@]}"; do
     _log="${HECATRON_LOGS}/${_action}/$(_name "${_target}").log"
@@ -253,6 +305,14 @@ for _target in "${_targets[@]}"; do
     ( _run_target "${_target}" ) 2>&1 | tee "${_log}"
     _rc="${PIPESTATUS[0]}"
     set -e
-    [ "${_rc}" -ne 0 ] && _status=1
+    if [ "${_rc}" -ne 0 ]; then
+        _status=1
+    elif ! _skipped_run "${_log}"; then
+        _passed=$((_passed + 1))
+    fi
 done
+if [ "${_status}" -eq 0 ] && [ "${_passed}" -eq 0 ] && [ "${_fail_on_skip}" -eq 1 ]; then
+    echo "hecatron: nothing ran: every job skipped (--fail-on-skip)" >&2
+    _status=1
+fi
 exit "${_status}"

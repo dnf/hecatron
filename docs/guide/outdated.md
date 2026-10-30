@@ -41,7 +41,9 @@ their logs on stderr.
 | Java, Kotlin, Scala, Groovy | Maven: the versions plugin's `display-dependency-updates`, at a pinned version. Gradle has no report of its own: where the build applies the [Versions plugin](https://github.com/ben-manes/gradle-versions-plugin), its `dependencyUpdates`; otherwise it says so. sbt has none. |
 | Haskell | `cabal outdated` (Stack has none) |
 
-Other languages have no report: `hct outdated <lang>` says so and
-succeeds. Dependencies are installed first where the report reads them
-(npm's, Bundler's, Hex's, pub's). `HECATRON_OUTDATED_REPORT_DIR=<dir>`
+Other languages have no report: `hct outdated <lang>` says so and is
+[skipped](output.md#skipped), as is a component the report has nothing to
+read in. Dependencies are installed first where the report reads them
+(npm's, Bundler's, Hex's, pub's), which runs the packages' install
+scripts as `hct deps` would. `HECATRON_OUTDATED_REPORT_DIR=<dir>`
 saves each tool's raw report there.

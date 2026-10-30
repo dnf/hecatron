@@ -141,7 +141,9 @@ say "Waiting for #${_pr}'s checks..."
 sleep 10
 gh pr checks "${_pr}" --watch --fail-fast >/dev/null || fail "#${_pr}'s checks failed; fix them and rerun"
 say "Merging #${_pr}..."
-gh pr merge "${_pr}" --squash --delete-branch >/dev/null
+gh pr merge "${_pr}" --squash >/dev/null
+# The repository may delete a merged pull request's branch itself.
+git push --quiet origin --delete "${_branch}" 2>/dev/null || true
 _commit="$(gh pr view "${_pr}" --json mergeCommit --jq .mergeCommit.oid)"
 git checkout --quiet main
 git pull --quiet --ff-only origin main

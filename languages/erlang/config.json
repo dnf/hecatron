@@ -18,6 +18,7 @@
   "testing": "EUnit, Common Test",
   "linting": "Dialyzer",
   "formatting": "erlfmt",
+  "docs": "EDoc",
   "notes": {
     "formatting": "As a rebar3 plugin, when the project's rebar.config has it."
   },

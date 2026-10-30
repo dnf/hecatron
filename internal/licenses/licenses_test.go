@@ -3,8 +3,10 @@ package licenses
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
@@ -156,6 +158,34 @@ func TestEachEcosystem(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(r.Warnings, "\n"), "python-app: python: python/requirements.txt isn't a lock file") {
 		t.Errorf("no approximate warning for requirements.txt: %q", r.Warnings)
+	}
+}
+
+// GatherAll (hct sbom) lists the registries deps.dev lacks too, their
+// licenses unknown.
+func TestGatherAll(t *testing.T) {
+	root, targets, scan := fixtureProject(t)
+	all, err := GatherAll(root, targets, scan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"pub:lints", "hex:jason"} {
+		if p := find(all, key, ""); p == nil || !p.Unknown() || len(p.Declared) != 0 {
+			t.Errorf("%s: %+v", key, p)
+		}
+	}
+	if p := find(all, "pub:lints", ""); p == nil || !p.Dev {
+		t.Errorf("pub:lints is dev: %+v", p)
+	}
+	if len(all.Packages) != len(gather(t).Packages)+5 {
+		t.Errorf("%d packages; want those of Gather and dart's and elixir's 5", len(all.Packages))
+	}
+	reasons := map[string]bool{}
+	for _, n := range all.NotCovered {
+		reasons[n.Language] = true
+	}
+	if !reasons["zig"] || !reasons["dart"] {
+		t.Errorf("not covered: %+v", all.NotCovered)
 	}
 }
 
@@ -323,5 +353,50 @@ func TestNormalize(t *testing.T) {
 	}
 	if e := Normalize(nil); e != nil {
 		t.Error("nothing declared")
+	}
+}
+
+// Each package's identifiers and class, and the counts per identifier and
+// class: a compound expression counts for each identifier it names.
+func TestLicenseIDsAndCopyleft(t *testing.T) {
+	r := gather(t)
+	for key, want := range map[string]struct{ ids, class string }{
+		"crates.io:serde_json": {"Apache-2.0 MIT", "none"},
+		"pypi:pyqt5":           {"GPL-3.0-only", "strong"},
+		"pypi:pyqt5-qt5":       {"LGPL-3.0-only", "weak"},
+		"npm:caniuse-lite":     {"CC-BY-4.0", "unclassified"},
+		"pypi:pycrypto":        {"", "unknown"},
+	} {
+		p := find(r, key, "")
+		if p == nil || strings.Join(p.LicenseIDs, " ") != want.ids || p.Copyleft != want.class {
+			t.Errorf("%s: %+v", key, p)
+		}
+	}
+	counts := map[string]int{}
+	for _, l := range r.LicenseIDs {
+		counts[l.License+" "+l.Copyleft] = l.Packages
+	}
+	if counts["MIT none"] != 19 || counts["Apache-2.0 none"] != 9 || counts["GPL-3.0-only strong"] != 1 || counts["BSL-1.0 none"] != 1 {
+		t.Errorf("per identifier: %v", counts)
+	}
+	if want := (CopyleftCounts{None: 32, Weak: 3, Strong: 1, Unclassified: 1, Unknown: 7}); r.Copyleft != want {
+		t.Errorf("copyleft: %+v, want %+v", r.Copyleft, want)
+	}
+
+	compound := []Package{{Ecosystem: "npm", Name: "a", Version: "1"}, {Ecosystem: "npm", Name: "b", Version: "1"}}
+	for i, text := range []string{"BSD-3-Clause OR GPL-2.0-only", "Apache-2.0 AND LGPL-3.0-or-later"} {
+		compound[i].setLicense(Normalize([]string{text}))
+	}
+	ids := rollup(compound, func(p Package) []string { return p.LicenseIDs })
+	var got []string
+	for _, l := range ids {
+		got = append(got, fmt.Sprintf("%s:%s:%d", l.License, l.Copyleft, l.Packages))
+	}
+	sort.Strings(got)
+	if strings.Join(got, " ") != "Apache-2.0:none:1 BSD-3-Clause:none:1 GPL-2.0-only:strong:1 LGPL-3.0-or-later:weak:1" {
+		t.Errorf("compound per identifier: %v", got)
+	}
+	if c := copyleftCounts(compound); c != (CopyleftCounts{None: 1, Weak: 1}) {
+		t.Errorf("compound classes: %+v", c)
 	}
 }

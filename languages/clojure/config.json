@@ -20,6 +20,7 @@
   "testing": "clojure.test",
   "linting": "clj-kondo",
   "formatting": "cljfmt",
+  "docs": "Codox",
   "notes": {
     "formatting": "Only when the project has a `cljfmt.edn`."
   },

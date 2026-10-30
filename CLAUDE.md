@@ -39,7 +39,7 @@ cmd/hecatron/            # the Go core's entry point (docs/contributing/design.m
 internal/                # Go packages: project (the model and version resolution, a port of project.py and
                          # versions.py, and detection), generate (Dockerfile, workflows), runner (jobs, output),
                          # status (hct status), deps (audit and outdated reports), licenses and spdx
-                         # (hct licenses), advisor (hct advisor), reports (JUnit, SARIF, job summary),
+                         # (hct licenses), sbom (hct sbom), advisor (hct advisor), reports (JUnit, SARIF, job summary),
                          # actions, install, selfupdate (hct self update and the update notice)
 ```
 

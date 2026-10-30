@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -22,7 +23,7 @@ import (
 )
 
 // Actions are the run commands whose last run status reports, in order.
-var Actions = []string{"test", "lint", "build", "format", "deps", "audit", "outdated", "clean"}
+var Actions = []string{"test", "lint", "build", "format", "deps", "audit", "outdated", "docs", "bench", "clean"}
 
 // Status is everything status reports.
 type Status struct {
@@ -92,7 +93,7 @@ type Version struct {
 
 // Run is an action's last run for the language.
 type Run struct {
-	Status   string    `json:"status"` // "passed", "failed" or "unknown"
+	Status   string    `json:"status"` // "passed", "failed", "skipped" (nothing ran: no tests, no tool) or "unknown"
 	Finished time.Time `json:"finished"`
 	Duration *float64  `json:"durationSeconds"` // when history.log recorded that run
 	Log      string    `json:"log"`
@@ -257,34 +258,57 @@ func lastRun(p *project.Project, action, lang string, now time.Time) (Run, bool)
 			seconds := duration.Seconds()
 			run.Duration = &seconds
 			if run.Status == "unknown" {
-				run.Status = map[bool]string{true: "passed", false: "failed"}[code == 0]
+				run.Status = historyStatus(code)
 			}
 		}
 	}
 	return run, true
 }
 
-// logStatus reads the "<lang>: <action> passed for N component(s)" or
-// "<lang>: <action> failed: ..." line a language job's log ends with.
+// historyStatus is a status history.log records, as status reports it.
+func historyStatus(code int) string {
+	switch code {
+	case 0:
+		return "passed"
+	case 77: // runner's skippedStatus
+		return "skipped"
+	}
+	return "failed"
+}
+
+// logStatus reads the line a language job's log ends with:
+// "<lang>: <action> passed for N component(s)", "<lang>: <action> failed:
+// ...", or, when every component (or the job) had nothing to do,
+// "<lang>: <action> skipped for N component(s): ..." or "<lang>: <action>
+// skipped: ...". A job some of whose components skipped ends with its
+// passed line.
 func logStatus(path, lang, action string) string {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return "unknown"
 	}
-	passed, failed := lang+": "+action+" passed for ", lang+": "+action+" failed: "
+	prefix := lang + ": " + action + " "
 	status := "unknown"
 	scanner := bufio.NewScanner(bytes.NewReader(data))
 	scanner.Buffer(make([]byte, 0, 64*1024), 16*1024*1024)
 	for scanner.Scan() {
-		switch line := scanner.Text(); {
-		case strings.HasPrefix(line, passed):
+		line, ok := strings.CutPrefix(scanner.Text(), prefix)
+		switch {
+		case !ok:
+		case strings.HasPrefix(line, "passed for "):
 			status = "passed"
-		case strings.HasPrefix(line, failed):
+		case strings.HasPrefix(line, "failed: "):
 			status = "failed"
+		case strings.HasPrefix(line, "skipped: "), skippedFor.MatchString(line):
+			status = "skipped"
 		}
 	}
 	return status
 }
+
+// skippedFor is the rest of each-component.sh's line naming the
+// components that had nothing to do.
+var skippedFor = regexp.MustCompile(`^skipped for \d+ component\(s\): `)
 
 // changedFiles are the files git status lists as changed or untracked
 // under root, relative to it, from one `git status`; false outside a git

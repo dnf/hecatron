@@ -31,7 +31,21 @@ type sarifRun struct {
 	Tool              sarifTool              `json:"tool"`
 	AutomationDetails sarifAutomation        `json:"automationDetails"`
 	OriginalURIBaseID map[string]sarifURIRef `json:"originalUriBaseIds,omitempty"`
+	Invocations       []sarifInvocation      `json:"invocations,omitempty"`
 	Results           []sarifResult          `json:"results"`
+}
+
+// sarifInvocation carries notes on the run: audit's components that had
+// nothing to scan, so a clean SARIF isn't mistaken for a clean project.
+type sarifInvocation struct {
+	ExecutionSuccessful bool                `json:"executionSuccessful"`
+	Notifications       []sarifNotification `json:"toolExecutionNotifications,omitempty"`
+}
+
+type sarifNotification struct {
+	Level      string            `json:"level"`
+	Message    sarifMessage      `json:"message"`
+	Properties map[string]string `json:"properties,omitempty"`
 }
 
 type sarifURIRef struct {
@@ -242,7 +256,8 @@ type AuditFinding struct {
 	Aliases   []string `json:"aliases,omitempty"`
 	Package   string   `json:"package"`
 	Version   string   `json:"version"`
-	Severity  string   `json:"severity"` // critical, high, moderate, low; "" unrated
+	Fixed     []string `json:"fixed,omitempty"` // the versions that fix it, where the auditor says
+	Severity  string   `json:"severity"`        // critical, high, moderate, low; "" unrated
 	Title     string   `json:"title"`
 	URL       string   `json:"url,omitempty"`
 	Lang      string   `json:"lang"`
@@ -300,9 +315,18 @@ func securitySeverity(severity string) string {
 // (its ID, title and link, tagged security with a security-severity), a
 // result per package affected at its lock file or manifest, an accepted
 // risk as a suppressed result with its reason.
-func WriteAuditSARIF(w io.Writer, version string, findings []AuditFinding) error {
+func WriteAuditSARIF(w io.Writer, version string, findings []AuditFinding, skips []AuditSkip) error {
 	run := sarifRun{Tool: sarifTool{Driver: sarifDriver{Name: "hecatron", Version: version, InformationURI: informationURI}},
 		AutomationDetails: sarifAutomation{ID: "hct-audit/"}}
+	if len(skips) > 0 {
+		invocation := sarifInvocation{ExecutionSuccessful: true}
+		for _, s := range skips {
+			invocation.Notifications = append(invocation.Notifications, sarifNotification{Level: "note",
+				Message:    sarifMessage{Text: fmt.Sprintf("%s/%s not scanned: %s", s.Lang, s.Component, s.Reason)},
+				Properties: map[string]string{"language": s.Lang, "component": s.Component, "status": "skipped"}})
+		}
+		run.Invocations = []sarifInvocation{invocation}
+	}
 	index := map[string]int{}
 	for _, f := range sortedFindings(findings) {
 		i, ok := index[f.ID]
@@ -332,6 +356,10 @@ func WriteAuditSARIF(w io.Writer, version string, findings []AuditFinding) error
 		result := sarifResult{RuleID: f.ID, RuleIndex: i, Level: sarifLevel(f.Severity),
 			Message:    sarifMessage{Text: fmt.Sprintf("%s %s is affected by %s (%s): %s", f.Package, f.Version, f.ID, severity, f.Title)},
 			Properties: map[string]string{"package": f.Package, "version": f.Version, "language": f.Lang, "component": f.Component}}
+		if len(f.Fixed) > 0 {
+			result.Message.Text += " (fixed in " + strings.Join(f.Fixed, ", ") + ")"
+			result.Properties["fixed"] = strings.Join(f.Fixed, ", ")
+		}
 		if f.IsSecret() {
 			result.Message.Text = fmt.Sprintf("Possible secret (%s); fingerprint %s", f.ID, f.Fingerprint)
 			result.Properties = map[string]string{"fingerprint": f.Fingerprint}

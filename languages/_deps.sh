@@ -96,8 +96,21 @@ deps_dotnet() {
     run dotnet restore ${_target:+"${_target}"} ${_locked[@]+"${_locked[@]}"}
 }
 
-# Swift: SwiftPM's resolve, held to Package.resolved when there is one.
+# CocoaPods: pod install for the Podfile here, which installs the versions
+# in Podfile.lock when there is one, and makes Pods/ and the workspace an
+# Xcode build needs. CocoaPods isn't one of hecatron's toolchains: without
+# pod, this skips. Exits.
+deps_pods() {
+    has pod || skip "the Podfile's pods install with pod install (CocoaPods), which isn't installed"
+    run pod install
+    exit 0
+}
+
+# Swift: SwiftPM's resolve, held to Package.resolved when there is one; an
+# app's pods first (deps_pods), with CocoaPods installed.
 deps_swift() {
+    if [ -f Podfile ] && [ ! -f Package.swift ]; then deps_pods; fi
+    if [ -f Podfile ] && has pod; then run pod install; fi
     swift_package
     local _resolved=()
     if [ -f "${build_dir}/Package.resolved" ]; then _resolved=(--force-resolved-versions); fi
@@ -256,4 +269,13 @@ deps_haxe() {
         _found=1
     done
     [ "${_found}" -eq 1 ] || skip "no .hxml files"
+}
+
+# Objective-C: an app's pods (deps_pods), unless Swift's hook installs them
+# for this Xcode project (swift_builds_xcode_here). Objective-C's other
+# builds (GNUstep, CMake, make) have no dependency manager.
+deps_objectivec() {
+    [ -f Podfile ] || skip "no Podfile: Objective-C's dependencies come from CocoaPods only"
+    ! swift_builds_xcode_here || skip "installed with swift's hook (Swift and Objective-C share this Xcode project)"
+    deps_pods
 }

@@ -1,0 +1,94 @@
+# Builds one open-source Xcode app every two hours with hct as a newcomer
+# would: an app whose issue is labelled real-app-retry, else the next on
+# tests/real-apps/apps.txt in turn. Files an issue (label real-app) when
+# something goes wrong or nothing was built, or comments on the app's open
+# one. No AI: tests/real-apps/try-next.sh and report.py.
+name: real apps
+
+on:
+  schedule:
+    - cron: "23 */2 * * *"
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "owner/repo to build (default: whose turn it is)"
+        required: false
+
+concurrency:
+  group: real-apps
+  cancel-in-progress: false
+
+jobs:
+  # Which app: the manual input, a retry, or whose turn it is.
+  pick:
+    if: github.repository == 'dnf/hecatron'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+    outputs:
+      app: ${{ steps.pick.outputs.app }}
+      retry_issue: ${{ steps.pick.outputs.retry_issue }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - id: pick
+        env:
+          APP: ${{ inputs.app }}
+          GH_TOKEN: ${{ github.token }}
+        run: bash tests/real-apps/try-next.sh pick
+
+  # Runs the app's own build scripts, so it gets no token that can write.
+  build:
+    needs: pick
+    runs-on: macos-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build the next app
+        env:
+          APP: ${{ needs.pick.outputs.app }}
+        run: bash tests/real-apps/try-next.sh build "${RUNNER_TEMP}/real-app"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: real-app-logs
+          path: |
+            ${{ runner.temp }}/real-app/meta.tsv
+            ${{ runner.temp }}/real-app/steps.tsv
+            ${{ runner.temp }}/real-app/plan.json
+            ${{ runner.temp }}/real-app/build.json
+            ${{ runner.temp }}/real-app/logs
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # Files or updates the issue from what the build recorded; runs none of
+  # the app's code.
+  report:
+    needs: [pick, build]
+    if: always() && needs.pick.result == 'success' && needs.build.result != 'cancelled'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: real-app-logs
+          path: ${{ runner.temp }}/real-app
+      - name: File or update the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RETRY_ISSUE: ${{ needs.pick.outputs.retry_issue }}
+        run: bash tests/real-apps/try-next.sh report "${RUNNER_TEMP}/real-app"

@@ -1,7 +1,7 @@
 # The parallel runner
 
-`hct test`, `lint`, `build`, `clean`, `format`, `deps`, `audit` and
-`outdated` with no language named run every language at once. The runner
+`hct test`, `lint`, `build`, `clean`, `format`, `deps`, `audit`,
+`outdated`, `docs` and `bench` with no language named run every language at once. The runner
 decides how many jobs run together and in what order, from the machine it
 runs on and from how long each job took before, so a run gives its answers
 as early as it can and finishes as soon as it can.
@@ -38,6 +38,8 @@ the last 50 runs), and the next run uses them:
 
 1. **Failures first.** Jobs that failed last time start first, so a fix is
    confirmed, or the failure seen again, in the first moments of the run.
+   A [skipped](output.md#skipped) job is recorded with status 77: neither a
+   failure nor a passing run (whose time would set a time limit).
 2. **Longest first.** Among the rest, the job expected to take longest
    starts first (expected = the median of its last 5 runs). Starting long
    jobs early keeps the run from ending with one long job running alone,
@@ -115,7 +117,7 @@ instead of holding the run, or the agent waiting on it, forever.
 ## Only what changed
 
 `hct test --changed [REF]` (also `lint`, `build`, `format`, `deps`,
-`rebuild` and `retest`) runs only the languages, components and project
+`rebuild`, `retest`, `docs` and `bench`) runs only the languages, components and project
 tasks that the files changed since `REF` touch.
 
 - **The base** is the merge base of `HEAD` with `REF`; with no `REF`, in CI
@@ -202,9 +204,11 @@ hct sync: since 3f2a1c9e01 (HEAD@{1}, 12 commits): 31 files changed
 
 ## With the Go binary
 
-The Go core ([design record §19](../contributing/design.md#19-a-go-core-and-native-windows)), built from a checkout, has the same
-scheduling and history, and adds output for whoever reads it:
-`--output human|agent|json|ci` (or `HECATRON_OUTPUT`), and reports for CI
+The Go core ([design record §19](../contributing/design.md#19-a-go-core-and-native-windows)),
+which `install.sh` downloads with a release (or `hct self build` builds
+in a checkout), has the same scheduling and history, and adds output for
+whoever reads it: `--output human|agent|json|ci|junit|sarif` (or
+`HECATRON_OUTPUT`), and reports for CI
 (below). Agent output is a
 summary line and only the failures, each with its log path and the error
 lines that matter, under a third of the size of the human summary; CI
@@ -236,7 +240,8 @@ disabled. Where the tool reports its own tests, they are the suite's test
 cases (a failed component none of whose cases failed, such as a build
 error before any test ran, adds a case for the component); otherwise the
 suite has one case for the component, its failure's text the component's
-error lines and log. Merged today:
+error lines and log. A [skipped](output.md#skipped) component's (or
+language's) case is `<skipped message="skipped: <reason>"/>`. Merged today:
 
 - **Maven (Surefire, Failsafe), Gradle and sbt:** any `TEST-*.xml` under a
   `surefire-reports`, `failsafe-reports`, `test-results` or `test-reports`
@@ -266,7 +271,7 @@ root), as an `error` under the rule `lint/<language>`; in Code Quality, a
 
 **Job summary:** when `GITHUB_STEP_SUMMARY` names a file, each run
 appends Markdown: its summary line, a table of languages and components
-with their status and time, then each failure with its error lines (agent
+with their status (`skipped: <reason>` for a skipped one) and time, then each failure with its error lines (agent
 output's), its log and the command that reruns them; `hct audit` adds a
 table of findings, `hct licenses` its violations and licenses, `hct
 advisor` its findings.

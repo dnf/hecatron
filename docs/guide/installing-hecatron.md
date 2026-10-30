@@ -70,7 +70,7 @@ So it only says a release is out and updates when asked, as `gh` does:
   10-second timeout and caches the answer, so no command waits on the
   network. A newer release than this one is said in one line on stderr
   after the command (before a delegated one), only with stderr a terminal
-  and human output: never in CI (`CI` set), with `--output` or
+  and human output: never in CI (`CI` set), with `--output`, `--json` or
   `HECATRON_OUTPUT` naming another format, in an agent's session, in
   GitHub Actions, or with `HECATRON_NO_UPDATE_CHECK=1`, which also stops
   the check. `hct status` reports the cached newer release in every format

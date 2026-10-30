@@ -8,7 +8,7 @@ Each language's build artifacts land in directories named by its toolchain. Thes
 |------------|-----------|-----------|
 | `build/` | CMake, Gradle, Gleam | Ada, C, COBOL, Fortran, Groovy, Java, Kotlin, Scala |
 | `_build/` | Mix, rebar3, dune | Elixir, Erlang, OCaml |
-| `.build/` | Swift Package Manager | Swift |
+| `.build/` | Swift Package Manager; xcodebuild's derived data in `.build/xcode/` (the default Xcode hook's `-derivedDataPath`) | Swift, Objective-C |
 | `target/` | Cargo | Rust |
 | `dist-newstyle/` | Cabal | Haskell |
 | `zig-out/` | Zig build system | Zig |

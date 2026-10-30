@@ -9,6 +9,7 @@ import contextlib
 import io
 import json
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -164,6 +165,43 @@ class ReportTest(unittest.TestCase):
             self.assertEqual(outdated.collect(directory), [{
                 "component": "comp", "language": "typescript", "package": "left-pad",
                 "current": "1.2.0", "wanted": "1.2.0", "latest": "1.3.0"}])
+
+
+class RunTest(unittest.TestCase):
+    """outdated_run in languages/_outdated.sh: a tool's status and its report."""
+
+    def run_tool(self, tool: str) -> subprocess.CompletedProcess:
+        hooks = os.path.join(HOME, "languages", "_hooks.sh")
+        helpers = os.path.join(HOME, "languages", "_outdated.sh")
+        script = f"source {hooks}\nsource {helpers}\noutdated_run bash -c '{tool}'\necho ran"
+        env = {**os.environ, "HECATRON_LANG": "fixture"}
+        return subprocess.run(["bash", "-c", script], env=env, capture_output=True, text=True)
+
+    def test_a_tool_failing_with_a_report_carries_on(self):
+        # npm outdated, Bundler and Hex exit 1 when something is outdated.
+        result = self.run_tool('echo "{}"; exit 1')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("ran", result.stdout)
+
+    def test_a_tool_failing_without_a_report_is_an_error(self):
+        # uv tree, its pinned interpreter gone, says so on stderr only.
+        result = self.run_tool("echo no interpreter >&2; exit 2")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn("ran", result.stdout)
+        self.assertIn("failed (exit 2) without a report", result.stderr)
+
+    def test_nothing_to_check_skips(self):
+        hooks = os.path.join(HOME, "languages", "_hooks.sh")
+        helpers = os.path.join(HOME, "languages", "_outdated.sh")
+        with tempfile.NamedTemporaryFile("r") as skipped:
+            env = {**os.environ, "HECATRON_LANG": "fixture", "HECATRON_SKIPPED": skipped.name}
+            result = subprocess.run(["bash", "-c", f"source {hooks}\nsource {helpers}\noutdated_nothing no lock\necho ran"],
+                                    env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertNotIn("ran", result.stdout)
+            self.assertIn("nothing to check: no lock", result.stdout)
+            # The runner reports the component skipped, not passed (#241).
+            self.assertEqual(skipped.read().strip(), "nothing to check: no lock")
 
 
 class JsonCommandTest(Fixture):

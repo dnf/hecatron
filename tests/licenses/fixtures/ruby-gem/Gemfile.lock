@@ -1,0 +1,19 @@
+PATH
+  remote: .
+  specs:
+    mygem (0.3.0)
+      rack (= 2.2.8)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rack (2.2.8)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  mygem!
+
+BUNDLED WITH
+   2.4.22

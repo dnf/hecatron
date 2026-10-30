@@ -27,6 +27,7 @@ type reportSettings struct {
 	stdout  string // "junit" or "sarif" (--output), else ""
 	dir     string // HECATRON_REPORT_DIR, absolute; "" for none
 	summary string // GITHUB_STEP_SUMMARY
+	json    bool   // JSON output, which lists audit's findings
 	scratch string // the hooks' test reports and audit findings; "" for none
 
 	suitesOf *runner.Report // the report suites were made for
@@ -56,8 +57,9 @@ func reportOutput(action, output string) (string, error) {
 
 // newReportSettings reads the environment; the scratch directory, made
 // when hooks have something to leave in it, is removed by cleanup.
-func newReportSettings(action, stdout string) (*reportSettings, func()) {
-	s := &reportSettings{action: action, stdout: stdout, summary: os.Getenv("GITHUB_STEP_SUMMARY")}
+func newReportSettings(action, stdout string, format runner.Format) (*reportSettings, func()) {
+	s := &reportSettings{action: action, stdout: stdout, summary: os.Getenv("GITHUB_STEP_SUMMARY"),
+		json: format == runner.JSON && stdout == ""}
 	if dir := os.Getenv("HECATRON_REPORT_DIR"); dir != "" {
 		if abs, err := filepath.Abs(dir); err == nil {
 			s.dir = abs
@@ -81,10 +83,10 @@ func (s *reportSettings) testReports() bool {
 	return (s.action == "test" || s.action == "retest") && (s.stdout == "junit" || s.dir != "")
 }
 
-// auditFindings says whether _audit saves its findings (for SARIF and the
-// job summary).
+// auditFindings says whether _audit saves its findings (for SARIF, the
+// job summary and JSON output).
 func (s *reportSettings) auditFindings() bool {
-	return s.action == "audit" && (s.stdout == "sarif" || s.dir != "" || s.summary != "")
+	return s.action == "audit" && (s.stdout == "sarif" || s.dir != "" || s.summary != "" || s.json)
 }
 
 // testReportDir is the HECATRON_TEST_REPORTS a component's hooks get,
@@ -171,7 +173,7 @@ func (r *invocation) writeReportFormat(w io.Writer, format string, report *runne
 		return reports.WriteJUnit(w, r.command, report.Wall, r.suites(report))
 	case "sarif":
 		if r.command == "audit" {
-			return reports.WriteAuditSARIF(w, r.home.Version(), r.auditFindings())
+			return reports.WriteAuditSARIF(w, r.home.Version(), r.auditFindings(), reports.AuditSkips(report))
 		}
 		return reports.WriteLintSARIF(w, r.home.Version(), reports.LintFindings(report, r.errorPatterns, r.workspace()))
 	case "codequality":
@@ -198,6 +200,31 @@ func (r *invocation) auditFindings() []reports.AuditFinding {
 		}
 		return ""
 	})
+}
+
+// auditJSON is every finding the audit hooks and the secret scan saved,
+// for JSON output.
+func (r *invocation) auditJSON() *runner.Audit {
+	audit := &runner.Audit{}
+	for _, f := range r.auditFindings() {
+		if f.IsSecret() {
+			audit.Secrets = append(audit.Secrets, runner.Secret{Rule: f.ID, Description: f.Title, File: f.File, Line: f.Line,
+				Commit: f.Commit, Fingerprint: f.Fingerprint})
+			continue
+		}
+		severity, tool := f.Severity, f.Format
+		if severity == "" {
+			severity = "unrated"
+		}
+		if tool == "osv" {
+			tool = "osv-scanner"
+		}
+		audit.Vulnerabilities = append(audit.Vulnerabilities, runner.Vulnerability{Component: f.Component, Language: f.Lang,
+			Package: f.Package, Version: f.Version, Fixed: append([]string{}, f.Fixed...), ID: f.ID,
+			Aliases: append([]string{}, f.Aliases...), Severity: severity, Title: f.Title, URL: f.URL, Tool: tool,
+			File: f.File, Line: f.Line, Accepted: f.Accepted, Reason: f.Reason, Until: f.Until})
+	}
+	return audit
 }
 
 // finishReports writes HECATRON_REPORT_DIR's files and the job summary.
@@ -303,11 +330,12 @@ func recordAudit(dir, format, text, lang, component string) {
 	if format == "osv" {
 		sources = reports.OSVSources(text)
 	}
+	fixes := deps.FixedVersions(format, text)
 	findings := []reports.AuditFinding{}
 	for _, c := range classified {
 		f := c.Finding
 		finding := reports.AuditFinding{ID: deps.Text(f.ID), Package: deps.Text(f.Package), Version: deps.Text(f.Version),
-			Severity: f.Severity, Title: deps.Text(f.Title), URL: deps.Text(f.URL), Lang: lang, Component: component,
+			Fixed: fixes.For(f), Severity: f.Severity, Title: deps.Text(f.Title), URL: deps.Text(f.URL), Lang: lang, Component: component,
 			Format: format, File: file, Accepted: c.Accepted, Reason: c.Reason, Until: c.Until}
 		for _, alias := range f.Aliases {
 			finding.Aliases = append(finding.Aliases, deps.Text(alias))

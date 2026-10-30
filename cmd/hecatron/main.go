@@ -7,14 +7,15 @@
 // user but the speed.
 //
 // Ported: --version, help, the run commands (test, lint, build, clean,
-// rebuild, retest, audit, format, deps, outdated: run.go), doctor
+// rebuild, retest, audit, format, deps, outdated, docs, bench: run.go), doctor
 // (doctor.go; each language's doctor.sh stays bash), version (version.go; each
 // language's version.sh stays bash), list,
 // env (with a language, its environment for a component), status, sync, advisor, the
 // project commands (init, add, remove, enable, disable, check, dockerfile,
 // workflows: manage.go, init.go), banner (banner.go), and install and uninstall
 // (install.go; each language's install.sh and uninstall.sh stay bash),
-// and self update (selfupdate.go), which only the binary has. The
+// and the commands only the binary has: licenses, sbom, exec, skill, self
+// update and self uninstall (selfupdate.go, selfuninstall.go). The
 // prototype's `hecatron plan <lang> <action> [dir]` is kept, unlisted.
 package main
 
@@ -28,6 +29,7 @@ import (
 
 	"github.com/dnf/hecatron/internal/install"
 	"github.com/dnf/hecatron/internal/project"
+	"github.com/dnf/hecatron/internal/runner"
 )
 
 func main() {
@@ -89,6 +91,10 @@ func (c *cli) dispatch() int {
 		return c.sync()
 	case "licenses":
 		return c.licenses()
+	case "sbom":
+		return c.sbomCommand()
+	case "exec":
+		return c.execCommand()
 	case "skill":
 		return c.skill()
 	case "self":
@@ -103,6 +109,8 @@ func (c *cli) dispatch() int {
 		return c.auditTool()
 	case "_outdated":
 		return c.outdatedTool()
+	case "_xcode":
+		return c.xcodeTool()
 	case "_install":
 		return c.installHidden()
 	case "_gotest":
@@ -149,6 +157,8 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"format":     (*cli).runCommand,
 	"deps":       (*cli).runCommand,
 	"outdated":   (*cli).runCommand,
+	"docs":       (*cli).runCommand,
+	"bench":      (*cli).runCommand,
 	"doctor":     (*cli).doctor,
 	"init":       (*cli).init,
 	"add":        (*cli).add,
@@ -202,7 +212,7 @@ func (c *cli) detectProject() bool {
 	if err != nil {
 		return false
 	}
-	if p.Announcement != "" {
+	if p.Announcement != "" && runner.ForAPerson(os.Getenv, c.args, runner.IsTerminal(os.Stdout), runner.IsTerminal(os.Stderr)) {
 		fmt.Fprintln(os.Stderr, p.Announcement)
 	}
 	c.root, c.project = top, p

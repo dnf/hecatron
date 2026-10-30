@@ -16,6 +16,7 @@ var installDefinitions = map[string]string{
 	"ok/config.json": `{"abbreviation": "o", "dependency": "sh"}`,
 	"ok/install.sh": `echo "ok: ${HECATRON_PROJECT} [${HECATRON_COMPONENTS}] ${HECATRON_IMPL_PATH} from ${PWD#"${HECATRON_ROOT}"}"
 [ -n "${HECATRON_DEFER_DEPS:-}" ] && echo ok >> "${HECATRON_DEFER_DEPS}" && echo "ok: deferring"
+[ -z "${HECATRON_NO_DEPS:-}" ] || echo "ok: no deps"
 printf '2.0.1\t/opt/v20\n' > "${HECATRON_ROOT}/.installed-ver"
 echo "ok to stderr" >&2`,
 	"ok/uninstall.sh":     `echo "uninstalling ok"; touch "${HECATRON_ROOT}/.uninstalled-ok"`,
@@ -43,10 +44,10 @@ echo "ok to stderr" >&2`,
 var installArgs = [][]string{
 	{"install", "ok"}, {"install", "o", "ver"}, {"install", "ver"}, {"install", "bad", "ok"}, {"install", "none"},
 	{"install", "nope"}, {"install", "spare"}, {"install", "ok", "nope"}, {"install", "sig"}, {"install", "OK"},
-	{"install", "help"}, {"install", "--x"}, {"install", "ok", "--", "ver"},
+	{"install", "help"}, {"install", "--x"}, {"install", "ok", "--", "ver"}, {"install", "--no-deps", "ok"},
 	{"uninstall"}, {"uninstall", "ok"}, {"uninstall", "ok", "bad", "ver"}, {"uninstall", "none"}, {"uninstall", "sig"},
 	{"uninstall", "ver"}, {"uninstall", "spare"}, {"uninstall", "--help"},
-	{"install"},
+	{"install"}, {"install", "--no-deps"},
 }
 
 func TestInstallMatchesBinHecatron(t *testing.T) {

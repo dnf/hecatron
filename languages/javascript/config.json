@@ -11,7 +11,19 @@
   "detectUnless": [
     "tsconfig.json"
   ],
-  "detectScript": "test",
+  "detectKeys": [
+    "dependencies",
+    "main",
+    "bin",
+    "exports",
+    "module",
+    "browser",
+    "workspaces",
+    "scripts.start",
+    "scripts.dev",
+    "scripts.serve",
+    "scripts.test"
+  ],
   "dirNames": [
     "javascript",
     "js",
@@ -63,6 +75,8 @@
   "testing": "npm test (node:test, Jest...)",
   "linting": "npm run lint (ESLint...)",
   "formatting": "Prettier, Biome",
+  "docs": "npm run docs, TypeDoc",
+  "benchmarks": "npm run bench",
   "errorPatterns": [
     {
       "tool": "tsc",

@@ -79,7 +79,8 @@ otherwise.
 | Julia | JuliaFormatter | with a `.JuliaFormatter.toml` |
 
 Other languages have no formatter hecatron runs: `hct format <lang>` says
-so and succeeds. A project adds or replaces one with its own
+so and is [skipped](output.md#skipped), as is a component whose formatter
+the project doesn't show it uses. A project adds or replaces one with its own
 `.hecatron/languages/<lang>/format.sh`, which formats when run and only
 checks when `HECATRON_FORMAT_CHECK=1`.
 
@@ -94,3 +95,14 @@ clang-format likewise, from LLVM's PyPI build. `hct install <lang>`
 installs the others at pinned versions where a component uses them
 (elm-format, StyLua, Air, Fourmolu, Ormolu, perltidy, JuliaFormatter), and
 `hct doctor` reports any missing.
+
+## Dependencies
+
+Where the formatter comes from the project's dependencies (Prettier,
+Biome, RuboCop, Standard, PHP CS Fixer, Pint, and `mix format`'s plugins),
+`hct format` installs them first if they aren't yet (`npm ci`, `bundle
+install`, `composer install`, `mix deps.get`). The check, `hct format
+--check` and the one in `hct lint`, installs nothing: without them it skips
+the component, saying it wasn't checked, so run `hct deps <lang>` first.
+The JVM plugins are the exception: they run through the build (Gradle or
+Maven), which fetches what it needs.

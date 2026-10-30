@@ -128,7 +128,7 @@ var cliArgs = [][]string{
 	{"list"}, {"list", "languages"}, {"list", "--all"}, {"list", "--all", "languages"}, {"list", "languages", "--all"},
 	{"list", "--al"}, {"list", "help"}, {"list", "-h"}, {"list", "nope"}, {"list", "languages", "languages"},
 	{"test", "help"}, {"test", "--help"}, {"lint", "help"}, {"build", "help"}, {"clean", "help"},
-	{"rebuild", "help"}, {"retest", "help"}, {"audit", "help"}, {"format", "help"}, {"deps", "help"}, {"outdated", "help"}, {"outdated", "--help"}, {"format", "--help"}, {"test", "-c", "nope", "help"},
+	{"rebuild", "help"}, {"retest", "help"}, {"audit", "help"}, {"format", "help"}, {"deps", "help"}, {"outdated", "help"}, {"outdated", "--help"}, {"docs", "help"}, {"bench", "--help"}, {"format", "--help"}, {"test", "-c", "nope", "help"},
 	{"doctor", "help"}, {"doctor", "--help", "go"},
 	{"version"}, {"version", "help"}, {"version", "--help"}, {"version", ""},
 	{"env"}, {"env", "go"}, {"env", "go", "-c", "age"},

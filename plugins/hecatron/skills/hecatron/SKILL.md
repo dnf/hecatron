@@ -4,7 +4,7 @@ description: Sets up, builds, tests, lints and formats code in almost any progra
 license: MIT
 compatibility: Needs the hct command (macOS or Linux), installed with hecatron's install.sh.
 metadata:
-  hecatron-version: "0.6.0"
+  hecatron-version: "0.7.0"
 allowed-tools: Bash(HECATRON_OUTPUT=agent hct status) Bash(hct status:*) Bash(hct --version) Bash(hct help:*) Bash(hct list:*) Bash(hct check) Bash(hct doctor)
 ---
 
@@ -50,6 +50,8 @@ each language's test, lint or build command.
 - Read the summary; open a log (`<logs>/<action>/<lang>.log`, path in the
   output) only for a failure whose excerpt isn't enough.
 - Exit status: 0 passed, 1 failed, 2 usage error, 3 a toolchain is missing.
+  A `SKIP` line means that language or component had nothing to run (no
+  tests, no linter): it exits 0, but don't report it as tested.
 
 ## Ask the user first
 
@@ -72,11 +74,13 @@ without `--fix` only checks and is safe.
 ## Changing how a language runs
 
 A script at `.hecatron/languages/<lang>/<action>.sh` (`test`, `lint`,
-`build`, `clean`, `format`, `deps`, `audit`, `outdated`) replaces hecatron's
-default for that language. It runs once per component, in the component's
-directory, with `HECATRON_LANG`, `HECATRON_COMPONENT` and `HECATRON_ROOT`
-set. `hct init` saves the detected layout as `.hecatron/config.json`, to
-commit and adjust.
+`build`, `clean`, `format`, `deps`, `audit`, `outdated`, `docs`,
+`bench`) replaces hecatron's default for that language. It runs once per
+component, in the component's directory, with `HECATRON_LANG`,
+`HECATRON_COMPONENT` and `HECATRON_ROOT` set; with nothing to run, it
+sources `${HECATRON_HOME}/languages/_hooks.sh` and calls `skip "reason"`.
+`hct init` saves the
+detected layout as `.hecatron/config.json`, to commit and adjust.
 
 ## More
 

@@ -17,6 +17,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -48,6 +50,9 @@ type Job struct {
 type Outcome struct {
 	ExitCode   int
 	Components []Component
+	// Skipped is why the whole job had nothing to do, with no component
+	// run (a language without a hook for the action); "" otherwise.
+	Skipped string
 }
 
 // Component is one component a language job ran for.
@@ -56,6 +61,10 @@ type Component struct {
 	Dir              string `json:"dir"`
 	Failed           bool   `json:"failed"`
 	ToolchainMissing bool   `json:"toolchainMissing,omitempty"`
+	// Skipped is why its hook had nothing to do (audit's "nothing to
+	// audit": no lock file the auditor reads), which it wrote to
+	// HECATRON_SKIPPED; "" when it ran.
+	Skipped string `json:"skipped,omitempty"`
 
 	// When its hooks started and how long they took, for the reports
 	// (JUnit, the job summary); zero where unknown.
@@ -70,6 +79,7 @@ const (
 	Passed            Status = "passed"
 	Failed            Status = "failed"
 	TimedOut          Status = "timed out" // stopped at its time limit
+	Skipped           Status = "skipped"   // it ran, but every component's hook had nothing to do
 	StatusNotInstall  Status = "not installed"
 	StatusDisabled    Status = "disabled"
 	StatusSeparator   Status = ""
@@ -89,6 +99,39 @@ type Result struct {
 	Components []Component
 	Excerpt    Excerpt
 	Started    time.Duration // after the run started
+	// Docs are where hct docs wrote each component's documentation, as
+	// its hooks said (DocsWritten).
+	Docs []string
+	// Skipped is Outcome.Skipped: why the job ran no component.
+	Skipped string
+}
+
+// docsWritten is the line a docs hook ends with (docs_written in
+// languages/_hooks.sh).
+var docsWritten = regexp.MustCompile(`(?m)^\S+: docs: written to (.+)$`)
+
+// DocsWritten are the directories a docs job's log says it wrote.
+func DocsWritten(log []byte) []string {
+	var dirs []string
+	for _, match := range docsWritten.FindAllSubmatch(log, -1) {
+		dirs = append(dirs, strings.TrimRight(string(match[1]), "\r"))
+	}
+	return dirs
+}
+
+// WriteDocs writes where each language's docs are, after a parallel hct
+// docs (run.sh prints the same lines from the logs).
+func WriteDocs(w io.Writer, r *Report) {
+	first := true
+	for _, result := range r.Results {
+		for _, dir := range result.Docs {
+			if first {
+				_, _ = fmt.Fprintln(w)
+				first = false
+			}
+			_, _ = fmt.Fprintf(w, "%s: docs: written to %s\n", result.Label, dir)
+		}
+	}
 }
 
 // ToolchainMissing reports whether the job failed in components whose
@@ -107,9 +150,43 @@ func (r *Result) ToolchainMissing() bool {
 	return missing
 }
 
-// Ran reports whether the job ran: it passed, failed or timed out.
+// Ran reports whether the job ran: it passed, failed, timed out, or had
+// nothing to do.
 func (r *Result) Ran() bool {
-	return r.Status == Passed || r.Status == Failed || r.Status == TimedOut
+	return r.Status == Passed || r.Status == Failed || r.Status == TimedOut || r.Status == Skipped
+}
+
+// SkipReason is why a job, or some of its components, had nothing to do:
+// each component's reason, prefixed with the component when there are
+// several; "" when none skipped.
+func (r *Result) SkipReason() string {
+	if r.Skipped != "" {
+		return r.Skipped
+	}
+	var reasons []string
+	for _, c := range r.Components {
+		if c.Skipped == "" {
+			continue
+		}
+		reason := c.Skipped
+		if len(r.Components) > 1 {
+			reason = c.Name + ": " + reason
+		}
+		if !slices.Contains(reasons, reason) {
+			reasons = append(reasons, reason)
+		}
+	}
+	return strings.Join(reasons, "; ")
+}
+
+// allSkipped says whether every component had nothing to do.
+func allSkipped(components []Component) bool {
+	for _, c := range components {
+		if c.Skipped == "" || c.Failed {
+			return false
+		}
+	}
+	return len(components) > 0
 }
 
 // Unsuccessful reports whether the job failed or timed out.
@@ -206,7 +283,7 @@ func Run(ctx context.Context, jobs []Job, opts Options) ([]Result, time.Duration
 			r := &results[i]
 			r.Duration = now().Sub(began)
 			r.ExitCode = outcome.ExitCode
-			r.Components = outcome.Components
+			r.Components, r.Skipped = outcome.Components, outcome.Skipped
 			r.Status = status
 			finished <- done{slot, i}
 		}()
@@ -334,7 +411,7 @@ func (h History) Order(jobs []Job, queue []int) ([]int, map[int]bool) {
 		for _, pair := range strings.Fields(recent[len(recent)-1]) {
 			label, data, _ := strings.Cut(pair, "=")
 			_, status, hasStatus := strings.Cut(data, ":")
-			if n, err := strconv.Atoi(status); hasStatus && err == nil && n != 0 {
+			if n, err := strconv.Atoi(status); hasStatus && err == nil && n != 0 && n != skippedStatus {
 				for _, i := range queue {
 					if jobs[i].Label == label {
 						failedLast[i] = true
@@ -390,6 +467,8 @@ func (h History) Append(path string, results []Result) {
 				status = 1
 			case TimedOut:
 				status = timedOutStatus
+			case Skipped:
+				status = skippedStatus
 			}
 			pairs = append(pairs, fmt.Sprintf("%s=%d:%d", r.Label, Deciseconds(r.Duration), status))
 		}
@@ -416,6 +495,26 @@ func Lock(logDir string) (unlock func(), err error) {
 	}
 	return func() { _ = os.Remove(lock) }, nil
 }
+
+// NothingRan reports whether there were jobs and none passed or failed:
+// each skipped (by its hooks), not installed or disabled.
+func NothingRan(results []Result) bool {
+	jobs := 0
+	for i := range results {
+		switch results[i].Status {
+		case Passed, Failed, TimedOut:
+			return false
+		case StatusSeparator:
+		default:
+			jobs++
+		}
+	}
+	return jobs > 0
+}
+
+// NothingRanMessage is what a run with --fail-on-skip says when it fails
+// for that (run.sh and run-parallel.sh say the same).
+const NothingRanMessage = "hecatron: nothing ran: every job skipped (--fail-on-skip)"
 
 // ExitStatus is a run's exit status: 0 when nothing failed, 3 when every
 // failure is a component whose toolchain command wasn't on PATH, else 1 (a

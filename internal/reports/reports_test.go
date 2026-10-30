@@ -67,6 +67,10 @@ func testReport() *runner.Report {
 			{Label: "python", Lang: "python", Status: runner.Failed, ExitCode: 1, Duration: 1500 * time.Millisecond, Log: "testdata/logs/none.log",
 				Components: []runner.Component{{Name: ".", Dir: "/repo/python", Failed: true}}},
 			{Label: "rust", Lang: "rust", Status: runner.StatusNotInstall},
+			{Label: "javascript", Lang: "javascript", Status: runner.Skipped, Duration: 200 * time.Millisecond, Log: "/repo/.logs/test/javascript.log",
+				Components: []runner.Component{{Name: ".", Dir: "/repo/js", Skipped: "package.json has no test script"}}},
+			{Label: "elm", Lang: "elm", Status: runner.Skipped, Duration: 100 * time.Millisecond, Log: "/repo/.logs/test/elm.log",
+				Skipped: "no test runner for elm"},
 			{Label: "---", Status: runner.StatusSeparator},
 			{Label: "docs", Task: true, Status: runner.Passed, Duration: 300 * time.Millisecond, Log: "/repo/.logs/test/docs.log"},
 			{Label: "flaky", Task: true, Status: runner.Failed, ExitCode: 4, Duration: 100 * time.Millisecond, Log: "testdata/logs/test-flaky.log",
@@ -220,7 +224,7 @@ var auditFindings = []AuditFinding{
 
 func TestAuditReports(t *testing.T) {
 	var sarif bytes.Buffer
-	if err := WriteAuditSARIF(&sarif, "0.5.0", auditFindings); err != nil {
+	if err := WriteAuditSARIF(&sarif, "0.5.0", auditFindings, nil); err != nil {
 		t.Fatal(err)
 	}
 	golden(t, "audit.sarif", sarif.String())

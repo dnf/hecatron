@@ -20,7 +20,7 @@ Set up:
   advisor [--fix] [lang...]  Recommend each ecosystem's good practices for the project
   init [dir]                 Set up a repository for hecatron
   doctor [--fix] [lang...]   Check toolchains; --fix runs installers to repair them
-  install [lang...]          Install toolchains (all of the project's when none named; --plan: only show how)
+  install [lang...]          Install toolchains (all of the project's when none named; --plan: only show how; --no-deps: toolchains only)
   uninstall <lang...>        Uninstall toolchains
   get-started                Status table and install menu
   bootstrap                  Set up a fresh machine for the project (base packages + install)
@@ -34,8 +34,11 @@ Run (every component of each language; no languages means all, in parallel):
   audit [lang...]            Check dependencies for known vulnerabilities (--fail-on SEVERITY)
   outdated [lang...]         Report newer versions of dependencies (--json, --fail)
   licenses [lang...]         Every dependency's license, rolled up; fails on the project's policy
+  sbom [lang...]             A software bill of materials (CycloneDX or SPDX JSON) for every component
   deps [lang...]             Fetch dependencies, held to each component's lock file
   format [--check] [lang...] Format the code with each language's formatter (--check: change nothing)
+  docs [lang...]             Build API documentation with each ecosystem's tool
+  bench [lang...]            Run benchmarks
 
 Languages:
   list [languages] [--all]   Show the project's (or every known) language
@@ -55,6 +58,7 @@ Project:
   env LANG [-c COMPONENT]    Print a language's environment (its version's PATH and variables)
                              gives HECATRON_* variables, the language lists and helpers
                              (_name, _check, _dep_available, _lang_grid, _ada_env, ...)
+  exec LANG [-c C] -- CMD    Run CMD with a language's environment, in this directory
   version <version>          Bump versions through each language's version.sh
   metadata                   Update package metadata through metadata.sh hooks
 
@@ -175,6 +179,8 @@ var runActions = map[string]struct{ description, hook string }{
 	"deps":     {"Fetch each language's dependencies for every component, held to its lock file", "deps.sh"},
 	"outdated": {"Report newer versions of each language's dependencies in every component", "outdated.sh"},
 	"format":   {"Format each language's code with its formatter in every component", "format.sh"},
+	"docs":     {"Build each language's API documentation for every component", "docs.sh"},
+	"bench":    {"Run each language's benchmarks for every component", "bench.sh"},
 }
 
 // runHelpText is `hecatron test help` and the other run commands' help, as
@@ -211,9 +217,12 @@ func (c *cli) runHelpText() (text string, ok bool) {
 		out.WriteString("\nTools:\n  secrets    gitleaks: committed credentials in the working tree (with hecatron's binary)\n")
 	}
 	out.WriteString("\nFlags:\n" +
-		"  -j VALUE   Concurrency: integer, percentage (default 50%), or 'unlimited'\n" +
+		"  -j VALUE   Concurrency: integer, percentage (default 50%), 'pcores' or 'unlimited'\n" +
 		"  -s MODE    Display: scroll (default), full, or zoom\n" +
-		"  -c NAME    Only this component (repeatable); components: " + strings.Join(c.project.Components, " ") + "\n")
+		"  -c NAME    Only this component (repeatable); components: " + strings.Join(c.project.Components, " ") + "\n" +
+		"  --fail-on-skip\n" +
+		"             Fail when nothing ran: every job skipped (no tests, no tool, not installed);\n" +
+		"             else HECATRON_FAIL_ON_SKIP=1\n")
 	if c.command == "audit" {
 		out.WriteString("  --fail-on SEVERITY\n" +
 			"             Fail on a finding at or above critical, high (default), moderate or low;\n" +
@@ -286,13 +295,15 @@ func (c *cli) doctorHelp() (int, bool) {
 	if _, err := c.project.Shell(); err != nil {
 		return 0, false
 	}
-	fmt.Print("Usage: hecatron doctor [--fix] [language ...]\n" +
+	fmt.Print("Usage: hecatron doctor [--fix [--no-deps]] [--output FORMAT] [language ...]\n" +
 		"\n" +
 		"Check that each language's toolchain works: its build and lint tools run, and\n" +
 		"known breakages are absent. With no languages, checks every added, enabled one.\n" +
 		"\n" +
 		"Flags:\n" +
-		"  --fix      Run each unhealthy language's installer, then check it again\n")
+		"  --fix      Run each unhealthy language's installer, then check it again\n" +
+		"  --no-deps  With --fix, repair toolchains only: don't install the project's dependencies\n" +
+		"  --output   human (the default), agent, or json: each language's problems and notes\n")
 	return 0, true
 }
 

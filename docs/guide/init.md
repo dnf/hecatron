@@ -7,7 +7,13 @@ configuration what init would write, detected and cached in
 `.git/hecatron/detected.json`, keyed on the commit, git's index and
 hecatron's version, so a command pays for detection only after the tracked
 files change (about 17 µs a file: 4 ms for 100 files, 0.8 s for 47,000), and
-nothing appears in the working tree or `git status`. Logs and `local.json`
+nothing appears in the working tree or `git status`. The first command to
+detect it says so in one line on stderr (`... has no .hecatron/config.json;
+detected javascript (hecatron init saves this)`), only for a person at a
+terminal, as the update notice is: not when stderr isn't a terminal, with
+`--output` or `--json` or `HECATRON_OUTPUT` naming another format than
+human, in an agent's session or in GitHub Actions; `hct status` says
+`config detected, not saved` in every format. Logs and `local.json`
 go in `.git/hecatron/` too. Changing the configuration (`add`, `remove`)
 saves it, as init would. Init itself:
 
@@ -34,13 +40,27 @@ saves it, as init would. Init itself:
    directly below, the `compilerOptions.outDir` its `tsconfig.json` names
    (read with comments and trailing commas), and a `.js` beside a `.ts` of
    the same name. A
-   `package.json` without the definition's `detectScript` npm script doesn't
-   count (JavaScript's `test`: Cucumber's `jsonschema/` is tooling).
+   `package.json` counts only with one of the definition's `detectKeys`
+   (JavaScript's: runtime `dependencies`, an entry point `main`, `bin`,
+   `exports`, `module` or `browser`, `workspaces`, or a `start`, `dev`,
+   `serve` or `test` script), so an Express app without tests is
+   JavaScript, and a `package.json` carrying only tooling (husky,
+   commitlint and Prettier in `devDependencies`, `prepare` and `lint`
+   scripts: an iOS SDK's commit hooks, Cucumber's `jsonschema/`) isn't. Some
+   build files count only beside the language's code, in their directory or
+   below (`detectWithSources`): a `requirements.txt` with `*.py` files is
+   Python (an app with no `pyproject.toml`), one for a docs build isn't; an
+   Xcode project or workspace (`*.xcodeproj/`, `*.xcworkspace/`) is Swift
+   with `*.swift` files and Objective-C with `*.m` or `*.mm`, each source
+   counting for the innermost project holding it. A `Gemfile` is Ruby even
+   when it only installs fastlane: that is Ruby tooling the project runs.
    Dotfiles aren't sources (a `.nvim.lua` configures an editor).
    Examples, tests and test data, docs, tools, hooks, a generator's
    templates and vendored code (`examples/`, `tests/`, `tests_data/`,
    `tools/`, `hooks/`, `templates/`, `fixtures/`, `android/`,
-   `third_party/`, `vendor/`, `vendored/`, `node_modules/` and the like, in any case:
+   `third_party/` (`ThirdParty/`, `third-party/`), `vendor/`, `vendored/`,
+   `node_modules/`, CocoaPods' `Pods/`, Carthage's `Carthage/` and the
+   like, in any case:
    `Examples/`) and hidden directories (`.jenkins/`) are skipped, except a
    definition's `detectTests` files (Bash's `*.bats`) in a `test/` or
    `tests/` directory, which, for a language not otherwise found, make it
@@ -65,7 +85,15 @@ saves it, as init would. Init itself:
    build files the directory doesn't fit, and the language gets the
    directory holding them (antlr4's `runtime/Go/antlr/v4`, not the root). A directory another language was found in
    doesn't fit (Cucumber's `javascript/` is TypeScript's, so JavaScript found
-   in `jsonschema/` gets `implPaths` `jsonschema`). `--components` and
+   in `jsonschema/` gets `implPaths` `jsonschema`). A language found only in
+   and below a directory holding its Xcode project (a `detectWithSources`
+   `dirs` match) gets that directory, since `xcodebuild` acts on the project
+   where it runs: GoMap's Swift and Objective-C get `implPaths` `src`, for
+   `src/GoMap.xcodeproj`. Apps with Xcode projects of their own below a
+   language's directory (firefox-ios' `firefox-ios/Client.xcodeproj` and
+   `focus-ios/Blockzilla.xcodeproj` beside the root's `Package.swift`)
+   leave the language there; its hooks build each app
+   ([hooks](hooks.md#xcode-projects)). `--components` and
    `--impl-path` set the layout explicitly.
 4. Writes `.hecatron/config.json`, adds `.hecatron/local.json` and the log
    directory to `.gitignore`.
