@@ -286,6 +286,8 @@ class XcodeTest(BuildHookTest):
             self.assertIn(f"objectivec: {action}: built with swift's hook", result.stdout)
             with open(skipped) as reason:
                 self.assertIn("built with swift's hook", reason.read())
+        result = self.hook("objectivec", "test", ".")
+        self.assertIn("objectivec: test: tested with swift's hook", result.stdout)
         self.assertEqual(self.calls(), [])
         self.assertEqual(self.hook("swift", "build", ".").returncode, 0)
         self.assertEqual(len(self.builds()), 1)
@@ -353,7 +355,8 @@ class XcodeTest(BuildHookTest):
             self.only(lang)
             result = self.hook(lang, "test", ".")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            self.assertIn(f"{lang}: test: an Xcode project's tests need a scheme and a simulator", result.stdout)
+            self.assertIn(f"{lang}: test: an Xcode project's tests need a scheme and a destination", result.stdout)
+            self.assertIn("'platform=macOS' for a Mac app", result.stdout)
             self.assertIn(f".hecatron/languages/{lang}/test.sh", result.stdout)
         self.assertEqual(self.calls(), [])
 

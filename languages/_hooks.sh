@@ -1704,7 +1704,8 @@ xcode_hook() {
             has xcodebuild || skip "an Xcode project builds with xcodebuild (Xcode, on macOS), which isn't installed"
             xcode_build ;;
         test)
-            skip "an Xcode project's tests need a scheme and a simulator destination: write $(xcode_hook_path test) (xcodebuild test -scheme <scheme> -destination 'platform=iOS Simulator,name=<device>')" ;;
+            ! swift_builds_xcode_here || skip "tested with swift's hook (Swift and Objective-C share this Xcode project)"
+            skip "an Xcode project's tests need a scheme and a destination to run on: write $(xcode_hook_path test) (xcodebuild test -scheme <scheme> -destination 'platform=macOS' for a Mac app, 'platform=iOS Simulator,name=<device>' for an iOS one)" ;;
         *)
             skip "an Xcode project has no standard $1 command" ;;
     esac
