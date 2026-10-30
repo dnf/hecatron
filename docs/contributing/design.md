@@ -300,6 +300,8 @@ Decided since, and recorded where the behaviour is described:
 - **A project pins its hecatron** (2026-10-28;
   [installing hecatron](../guide/installing-hecatron.md#pinning-a-projects-hecatron)).
 - **Root is asked for once** (2026-10-28; §19).
+- **Xcode projects are read from their files; xcodebuild still builds**
+  (2026-10-29; §21).
 - **New features are Go only** (2026-10-27; §19, Migration).
 - **Install data, macOS downloads and the links directory** (2026-10-28;
   [the install engine](install-engine.md)).
@@ -867,3 +869,47 @@ prints its log and leaves the forge's files in `HECATRON_REPORT_DIR`.
   know.
 - **Publishing with a forge's trusted-publishing credentials (OIDC):** part
   of a `hecatron publish` design, not yet decided.
+
+## 21. Reading Xcode projects
+
+`internal/xcode` reads an Xcode project's files without Xcode:
+`project.pbxproj` (in the old-style plist format), shared `.xcscheme`
+files, a workspace's `contents.xcworkspacedata`, and `.xcconfig` files.
+From them, `hct _xcode plan` says how to build the project in a directory:
+the container, the scheme, the generic destination, the files the build
+needs that aren't there yet (and what makes them), and the projects below
+when there are none in it. The Swift and Objective-C hooks call it
+(`HECATRON_BINARY`); the bash route asks `xcodebuild -list` and
+`-showBuildSettings` instead.
+
+Why: building nine open-source apps (#243) showed that the questions a
+build needs answered are in the files, and that answering them through
+`xcodebuild` alone fails in ways the files explain:
+
+- **The scheme.** A project has a scheme per Swift package it uses
+  (NetNewsWire lists 27) and an app may be named neither like its project
+  nor its target (home-assistant's `App-Debug`). The app's scheme is the one
+  whose first build entry is an app no other app embeds (not an extension's
+  scheme, which builds its host app too, nor a watchOS app's), then the one
+  that runs Debug, then the one named after its app. Two brands of one app
+  (focus-ios's Focus and Klar) stay the project's choice.
+- **The destination.** A target's `SDKROOT` (its own, its `.xcconfig`'s,
+  the project's) says the platform: `macosx` builds for the Mac, an iOS app
+  for its simulator even where it also builds with Catalyst (a separate
+  build its dependencies may not support).
+- **What's missing.** A configuration based on an `.xcconfig` that isn't
+  there, or a workspace naming a project that isn't, fails deep in
+  `xcodebuild`. CocoaPods' (`pod install`) and an app's own setup script
+  (wikipedia-ios's) both fail this way; the plan names the files and what
+  makes them.
+- **Projects below.** GoMap's project is in `src/`, firefox-ios's apps
+  beside its Swift package; the plan lists them.
+- **Off a Mac.** Detection, `hct status` and generated CI can read an iOS
+  project on Linux.
+
+It reads structure, not every build setting: conditional settings
+(`SDKROOT[sdk=...]`), Xcode's defaults and the settings a build derives are
+left to `xcodebuild`, which stays the authority for a build. When the files
+don't say (no shared scheme builds an app; a target whose `SDKROOT` is set
+only conditionally), the plan says so (`unsure`) and the hook falls back to
+asking `xcodebuild`. Standard library only, like the rest of the Go core.

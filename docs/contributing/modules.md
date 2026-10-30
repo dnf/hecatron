@@ -30,6 +30,7 @@ through them.
 | `execute.go` | `exec`: a command run with a component's language environment (`project.LanguageEnv`), replacing the binary's process where the platform allows |
 | `selfupdate.go`, `selfuninstall.go` | `self update` (and the hidden `_update-check`, `_write-env`) and `self uninstall` |
 | `pin.go` | The warning when the running hecatron isn't the project's pinned one (once per command tree: `HECATRON_PIN_WARNED`) |
+| `xcode.go` | The hidden `_xcode plan` command: `internal/xcode`'s build plan for the Xcode hooks |
 | `plan.go` | `hct plan <lang> <action> [dir]`: what a declarative definition's default hook would run (prototype, #83) |
 
 ## Go packages: `internal/`
@@ -49,6 +50,7 @@ through them.
 | `secrets` | `hct audit`'s secret scan: runs gitleaks with `--redact` and a generated config (what git ignores, `audit.secrets.ignore`), decoding only each finding's rule, file, line, commit and fingerprint |
 | `advisor` | `hct advisor`: rules from `advice.json` and `languages/_advice.json`, conditions, the rules written in Go (toolchain support, lock freshness, CI coverage, audit acceptances) |
 | `status` | `hct status` |
+| `xcode` | Reads Xcode projects without Xcode: the old-style plist format (`plist.go`), `project.pbxproj`'s targets, configurations and build settings (`project.go`), `.xcconfig` files, shared schemes and workspaces (`scheme.go`), and the build plan: container, scheme, destination, missing files (`plan.go`). See [design §21](design.md#21-reading-xcode-projects) |
 | `selfupdate` | Finding releases, verifying and swapping in a new one, writing `env` as install.sh does, uninstalling, the cached update check and its notice |
 
 ## The scripts: `libexec/`
