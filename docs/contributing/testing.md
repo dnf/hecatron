@@ -166,8 +166,11 @@ open-source app every two hours on each of its tracks:
 | `android` | [`android.txt`](../../tests/real-apps/android.txt) | Linux, the runner's Android SDK | Kotlin, Java | `install --no-deps`, `deps`, `build` |
 
 Each run takes an app whose issue is labelled `real-app-retry`, oldest
-first, else the next on the track's list in turn (the clock's two-hour slot
-modulo the list's length, so nothing is stored between runs). It clones the
+first, else the app after the track's last build on its list (read from
+that run's small `real-app-meta` artifact; the clock's two-hour slot picks
+when there is none). GitHub drops scheduled runs when it's busy, so each
+track is scheduled every half hour and a run stops at its pick job when the
+track built in the last 110 minutes; a retry goes ahead at once. It clones the
 app, runs its steps in
 [`tests/real-apps/fixups.txt`](../../tests/real-apps/fixups.txt) (the manual
 getting-started steps its README asks for), then hct, as a newcomer would.
@@ -204,7 +207,7 @@ TRACK=android APP=owner/repo bash tests/real-apps/try-next.sh build /tmp/real-ap
 TRACK=android DRY_RUN=1 bash tests/real-apps/try-next.sh report /tmp/real-app
 ```
 
-Add apps to the end of a track's list, with a comment saying what each is
+Add apps anywhere on a track's list, with a comment saying what each is
 there for. A new track is a list, a `case` in `try-next.sh` (its runner,
 languages and whether it installs toolchains), and a schedule in the
 workflow.

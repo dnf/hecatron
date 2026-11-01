@@ -4,6 +4,7 @@ what a run's outcome was, and the issue and job summary that report it. No
 network and no judgement: what it writes is what the run recorded.
 
   report.py pick LIST [--slot N]   the app whose turn it is on a track's list (slot: the clock's two-hour slot)
+  report.py next LIST APP          the app after APP on the list (fails when APP isn't on it)
   report.py fixups FIXUPS APP TRACK  the app's setup steps on the track, one per line
   report.py outcome WORK           kind<TAB>file|quiet<TAB>one line saying what happened
   report.py issue WORK             the issue's title, a line, then its body
@@ -59,6 +60,16 @@ def fixups(path: str, app: str, track: str) -> list[str]:
     except OSError:
         pass
     return steps
+
+
+def next_after(path: str, app: str) -> str | None:
+    """The app after one on the list, round to the start; None when it
+    isn't on the list (taken off since)."""
+    listed = apps(path)
+    lowered = [a.lower() for a in listed]
+    if app.lower() not in lowered:
+        return None
+    return listed[(lowered.index(app.lower()) + 1) % len(listed)]
 
 
 def pick(path: str, slot: int | None = None) -> str:
@@ -225,6 +236,12 @@ def main(argv: list[str]) -> int:
     if len(argv) == 4 and argv[0] == "fixups":
         for step in fixups(argv[1], argv[2], argv[3]):
             print(step)
+        return 0
+    if len(argv) == 3 and argv[0] == "next":
+        found = next_after(argv[1], argv[2])
+        if found is None:
+            return 1
+        print(found)
         return 0
     if len(argv) >= 2 and argv[0] == "pick":
         slot = int(argv[3]) if len(argv) == 4 and argv[2] == "--slot" else None

@@ -2,8 +2,8 @@
 # one every two hours in turn (.github/workflows/real-apps.yml,
 # try-next.sh), on Linux with the runner's Android SDK. One GitHub
 # owner/repo per line; # starts a comment, which says what the app is there
-# for. Add to the end: the turn is the clock's two-hour slot modulo the
-# list's length, so inserting earlier only shifts whose turn it is.
+# for. Each run takes the app after the last one
+# built, so a new app can go anywhere.
 
 android/nowinandroid                 # Google's reference app: Compose, many modules, convention plugins
 android/architecture-samples         # small Compose app
