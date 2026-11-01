@@ -92,6 +92,41 @@ class JvmTest(unittest.TestCase):
         self.wrapper("9.1.0")
         self.assertIsNone(jvm.ceiling(self.component))
 
+    def test_the_java_a_build_compiles_for_is_its_floor(self):
+        # nextcloud's Android app: compileOptions and Kotlin's jvmTarget.
+        write(os.path.join(self.component, "app", "build.gradle.kts"),
+              "android { compileOptions { sourceCompatibility = JavaVersion.VERSION_21\n"
+              "targetCompatibility = JavaVersion.VERSION_21 } }\n"
+              "kotlin.compilerOptions.jvmTarget.set(JvmTarget.JVM_17)\n")
+        write(os.path.join(self.component, "settings.gradle.kts"), 'include(":app")\n')
+        self.assertEqual(jvm.floor(self.component, self.root)[0], 21)
+        self.assertIn("it compiles for Java 21 (lang/java/app/build.gradle.kts)", jvm.floor(self.component, self.root)[1])
+
+    def test_a_floor_from_the_version_catalog(self):
+        # Lawnchair: sourceCompatibility = libs.versions.jdkRelease.get().
+        write(os.path.join(self.component, "build.gradle"),
+              "compileOptions {\n  sourceCompatibility = libs.versions.jdkRelease.get()\n}\n")
+        write(os.path.join(self.component, "gradle", "libs.versions.toml"), '[versions]\njdkRelease = "21"\nagp = "8"\n')
+        self.assertEqual(jvm.floor(self.component)[0], 21)
+
+    def test_a_floor_set_in_a_convention_plugin(self):
+        # Now in Android's build-logic sets it in Kotlin source.
+        write(os.path.join(self.component, "build.gradle.kts"), "")
+        write(os.path.join(self.component, "build-logic", "convention", "src", "main", "kotlin", "KotlinAndroid.kt"),
+              "compileOptions { sourceCompatibility = JavaVersion.VERSION_17 }\n")
+        self.assertEqual(jvm.floor(self.component)[0], 17)
+
+    def test_maven_and_old_targets(self):
+        write(os.path.join(self.component, "pom.xml"),
+              "<properties><maven.compiler.release>17</maven.compiler.release></properties>\n")
+        self.assertEqual(jvm.floor(self.component, self.root)[0], 17)
+        write(os.path.join(self.component, "pom.xml"),
+              "<properties><maven.compiler.source>1.8</maven.compiler.source></properties>\n")
+        self.assertIsNone(jvm.floor(self.component, self.root))  # Java 8: any JDK hecatron runs compiles it
+        write(os.path.join(self.component, "pom.xml"), "<project/>\n")
+        write(os.path.join(self.component, "build.gradle"), "java { sourceCompatibility = '11' }\n")
+        self.assertEqual(jvm.floor(self.component, self.root)[0], 11)
+
     def test_a_wrapper_properties_file_without_gradlew_is_not_run(self):
         write(os.path.join(self.component, "gradle", "wrapper", "gradle-wrapper.properties"),
               "distributionUrl=https\\://services.gradle.org/distributions/gradle-5.2.1-bin.zip\n")

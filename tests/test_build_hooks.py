@@ -141,12 +141,61 @@ class JdkTest(BuildHookTest):
         self.assertIn("has no javac", result.stdout)
         self.assertIn("JAVA_HOME=" + self.jdk, result.stdout)
 
+    def java_on_path(self, version: str) -> None:
+        write(os.path.join(self.bin, "java"), f"#!/bin/sh\necho 'openjdk version \"{version}\"' >&2\n", 0o755)
+        write(os.path.join(self.bin, "javac"), "#!/bin/sh\n", 0o755)
+
+    def test_a_build_for_a_newer_java_runs_on_a_jdk_that_compiles_it(self):
+        # nextcloud's app compiles for Java 21: on JDK 17, "invalid source release: 21".
+        self.java_on_path("17.0.11")
+        write(self.path("build.gradle.kts"), "android { compileOptions { sourceCompatibility = JavaVersion.VERSION_21 } }\n")
+        result = self.hook("kotlin", "test", ".", HECATRON_HOME=self.home, JAVA_HOME="")
+        self.assertIn("it compiles for Java 21 (build.gradle.kts), which needs JDK 21 or later.", result.stdout)
+        self.assertIn("JAVA_HOME=" + self.jdk, result.stdout)
+
+    def test_a_jdk_at_the_floor_or_later_is_kept(self):
+        self.java_on_path("21.0.4")
+        write(self.path("build.gradle.kts"), "java { sourceCompatibility = JavaVersion.VERSION_17 }\n")
+        result = self.hook("kotlin", "test", ".", HECATRON_HOME=self.home, JAVA_HOME="")
+        self.assertNotIn("Using JDK", result.stdout)
+        self.assertIn("JAVA_HOME=\n", result.stdout)
+
+    def test_no_jdk_new_enough_warns(self):
+        self.java_on_path("17.0.11")
+        write(self.path("build.gradle.kts"), "java { sourceCompatibility = JavaVersion.VERSION_25 }\n")
+        result = self.hook("kotlin", "test", ".", HECATRON_HOME=self.home, JAVA_HOME="")
+        self.assertIn("which needs JDK 25 or later, and no such JDK is installed (hecatron install kotlin)", result.stderr)
+
     def test_a_jdk_with_javac_is_kept(self):
         write(os.path.join(self.bin, "java"), "#!/bin/sh\n", 0o755)
         write(os.path.join(self.bin, "javac"), "#!/bin/sh\n", 0o755)
         result = self.hook("kotlin", "test", ".", HECATRON_HOME=self.home, JAVA_HOME="")
         self.assertNotIn("Using JDK", result.stdout)
         self.assertIn("JAVA_HOME=\n", result.stdout)
+
+
+class JdksMissingTest(BuildHookTest):
+    """jvm_jdks_missing (languages/_common.sh): the JDKs hct install adds."""
+
+    def missing(self, installed: str, build: str) -> list[str]:
+        home = self.path(".fakehome")
+        os.makedirs(os.path.join(home, "libexec", "lib"), exist_ok=True)
+        if not os.path.exists(os.path.join(home, "libexec", "lib", "jvm.py")):
+            os.symlink(os.path.join(HOME, "libexec", "lib", "jvm.py"), os.path.join(home, "libexec", "lib", "jvm.py"))
+        write(os.path.join(home, "languages", "java", "installed.sh"), f'printf "{installed}"\n')
+        write(self.path("java", "build.gradle.kts"), build)
+        script = f'source {COMMON}\nimpl_dirs() {{ echo "{self.path("java")}"; }}\njvm_jdks_missing java'
+        env = {**os.environ, "HECATRON_HOME": home, "HECATRON_ROOT": self.root}
+        result = subprocess.run(["bash", "-c", script], cwd=self.root, env=env, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return result.stdout.split()
+
+    def test_a_build_for_a_newer_java_gets_the_oldest_lts_that_compiles_it(self):
+        self.assertEqual(self.missing("17.0.11\\t/jdk17\\n", "java { sourceCompatibility = JavaVersion.VERSION_19 }\n"), ["21"])
+
+    def test_nothing_when_an_installed_jdk_compiles_it(self):
+        self.assertEqual(self.missing("21.0.2\\t/jdk21\\n", "java { sourceCompatibility = JavaVersion.VERSION_21 }\n"), [])
+        self.assertEqual(self.missing("17.0.11\\t/jdk17\\n", ""), [])
 
 
 class DotnetTest(BuildHookTest):

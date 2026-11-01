@@ -888,19 +888,33 @@ jvm_build_tools() {
 # the one they run on, and that aren't installed, one per line: the ones
 # their Gradle or Maven toolchains name, which Gradle and Maven find among the
 # installed JDKs, and, for a build whose Gradle wrapper or Kotlin compiler
-# predates the default JDK, the newest LTS JDK it runs on, which the hooks
-# run it on (jvm_select_jdk in _hooks.sh). See libexec/lib/jvm.py.
+# predates the default JDK, the newest LTS JDK it runs on, or for one that
+# compiles for a newer Java than any installed JDK, the oldest LTS that
+# compiles it: the hooks run it on that (jvm_select_jdk in _hooks.sh). See
+# libexec/lib/jvm.py.
 jvm_jdks_missing() {
     [ -n "${HECATRON_HOME:-}" ] || return 0
-    local _dir _installed _feature _ceiling _why
+    local _dir _installed _feature _ceiling _floor _why
     _installed="$(bash "${HECATRON_HOME}/languages/java/installed.sh" 2>/dev/null | cut -f1 |
         sed 's/^1\.\([0-9]*\).*/\1/; s/[^0-9].*//' | sort -un)"
     while IFS= read -r _dir; do
         while IFS= read -r _feature; do
             grep -qx "${_feature}" <<<"${_installed}" || echo "${_feature}"
         done < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" toolchains "${_dir}" "${ROOT}")
-        IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling "${_dir}" "${ROOT}") || continue
-        [ -n "$(awk -v ceiling="${_ceiling}" '$1 <= ceiling' <<<"${_installed}")" ] || echo "${_ceiling}"
+        _ceiling="" _floor=""
+        IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling "${_dir}" "${ROOT}") || true
+        IFS=$'\t' read -r _floor _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" floor "${_dir}" "${ROOT}") || true
+        [ -n "${_ceiling}${_floor}" ] || continue
+        # An installed JDK within both, else the LTS the ceiling names or
+        # the oldest LTS at the floor or later.
+        [ -z "$(awk -v floor="${_floor:-0}" -v ceiling="${_ceiling:-999}" '$1 >= floor && $1 <= ceiling' <<<"${_installed}")" ] || continue
+        if [ -n "${_ceiling}" ]; then
+            echo "${_ceiling}"
+        else
+            for _feature in 11 17 21 25; do
+                if [ "${_feature}" -ge "${_floor}" ]; then echo "${_feature}"; break; fi
+            done
+        fi
     done < <(impl_dirs "$1") | sort -un
 }
 jvm_jdks() {
