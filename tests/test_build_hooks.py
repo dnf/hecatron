@@ -57,6 +57,45 @@ class GradleTest(BuildHookTest):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("gradle allTests", result.stdout)
 
+    def android_app(self) -> None:
+        write(self.path("settings.gradle.kts"), 'include(":app", ":core")\n')
+        write(self.path("build.gradle.kts"), "")
+        write(self.path("app", "build.gradle.kts"), "plugins { alias(libs.plugins.android.application) }\n")
+        write(self.path("app", "src", "main", "AndroidManifest.xml"), "<manifest/>\n")
+        write(self.path("core", "build.gradle.kts"), "")
+
+    def test_an_android_app_builds_its_debug_variants(self):
+        # Release needs a signing config and services files only the
+        # maintainers have (AntennaPod's validateSigningFreeRelease).
+        self.android_app()
+        self.fake("gradle")
+        result = self.hook("kotlin", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("gradle assembleDebug", result.stdout)
+        self.assertNotIn("gradle assemble\n", result.stdout)
+
+    def test_an_android_app_runs_its_debug_unit_tests(self):
+        self.android_app()
+        self.fake("gradle")
+        result = self.hook("kotlin", "test", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("gradle testDebugUnitTest", result.stdout)
+        self.assertNotIn("gradle test\n", result.stdout)
+
+    def test_an_android_build_without_debug_unit_tests_runs_test(self):
+        self.android_app()
+        self.fake("gradle", "case \"$1\" in testDebugUnitTest) echo \"Task 'testDebugUnitTest' not found in root project 'x'.\"; exit 1 ;; esac")
+        result = self.hook("kotlin", "test", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("no testDebugUnitTest task\n", result.stdout)
+        self.assertIn("gradle test\n", result.stdout)
+
+    def test_a_manifest_in_build_output_isnt_android(self):
+        write(self.path("build.gradle.kts"), "")
+        write(self.path("build", "intermediates", "src", "main", "AndroidManifest.xml"), "<manifest/>\n")
+        self.fake("gradle")
+        self.assertIn("gradle assemble\n", self.hook("kotlin", "build", ".").stdout)
+
     def test_another_failure_is_not_retried(self):
         write(self.path("build.gradle"), "")
         self.fake("gradle", "exit 1")

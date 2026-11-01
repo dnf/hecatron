@@ -94,7 +94,11 @@ whose sources it holds (`moshi` for `moshi/src/main/java`), or the root of a
 build of one project. JVM tests run Maven's package phase in a
 multi-module build (its modules can need each other's jars), Gradle's
 `jvmTest`, else `allTests`, in a Kotlin Multiplatform build (no `test`
-task), and Mill's `__.test` where the build is `build.mill`; .NET tests roll forward to the
+task), and Mill's `__.test` where the build is `build.mill`. An Android
+build (a module with `src/main/AndroidManifest.xml`) builds and
+unit-tests its debug variants (`assembleDebug`, `testDebugUnitTest`), as a
+newcomer would: release needs a signing config and services files only the
+maintainers have; .NET tests roll forward to the
 installed runtime, and a directory with several projects and no solution
 tests each test project. CMake and Meson build in `build/`, or `_build/`
 when the project keeps files of its own in `build/` (Zstandard's CMake
