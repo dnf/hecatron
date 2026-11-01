@@ -764,9 +764,13 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
   pattern to the versions of `tool` found in the log by the definition's
   `"errorToolVersions"` (`{"pytest": "pytest-(\\S+)"}`; a version not found
   doesn't exclude a pattern). Lines matching no language pattern are tried
-  against built-in generic ones (`file:line[:col]: error`, `error:`,
-  `FAIL`). An excerpt is at most 10 distinct lines of at most 240
-  characters; else the log's last 15 lines, without blank lines, download
+  against built-in generic ones (`file:line[:col]: error`, `file: error:`,
+  `error:`, `FAIL`, make's `*** ... Error 2`, `No such file or directory`,
+  xcodebuild's `** BUILD FAILED **` and the failed commands it lists). Of
+  the lines matched, those reporting errors come before those reporting
+  only a warning or a note, wherever they are in the log (xcodebuild warns
+  about every script phase before the error). An excerpt is at most 10
+  distinct lines of at most 240 characters; else the log's last 15 lines, without blank lines, download
   and progress lines or repeated lines. hecatron's own `=== test a (go) ===`
   and `go: test failed: a` lines are left out of both. A pattern that
   doesn't compile is skipped, never failing a run.

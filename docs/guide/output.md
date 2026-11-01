@@ -5,8 +5,10 @@ duration, log path, error excerpt) in one of four formats:
 
 - **human** (default on a terminal): today's live display and summary;
 - **agent**: one summary line, then only the failures, each with its log
-  path and up to ten lines matching the language's error patterns (else the
-  last fifteen, without colour codes or download noise), and a `Rerun:`
+  path and up to ten lines matching the language's error patterns (else
+  generic ones: a compiler's `error:`, make's `***`, a missing file,
+  xcodebuild's `** BUILD FAILED **`; errors before warnings and notes;
+  else the last fifteen, without colour codes or download noise), and a `Rerun:`
   line; one line when everything passes;
 - **json**, for scripts: the run's `command`, `status` (`passed`,
   `failed` or `skipped`), `exitCode`, `duration`, `summary` (`passed`,
