@@ -56,8 +56,8 @@ gnachman/iTerm2                      # large Objective-C and Swift Mac app
 Clipy/Clipy                          # Mac app, CocoaPods
 sindresorhus/Gifski                  # Mac app with a Rust library
 OpenEmu/OpenEmu                      # Mac app, submodules
-LoopKit/Loop                         # workspace of several repositories
 signalapp/Signal-iOS                 # very large, CocoaPods, submodules
 ProtonVPN/ios-mac-app                # iOS and macOS apps in one repository
 mullvad/mullvadvpn-app               # app in ios/ of a Rust monorepo
 duckduckgo/apple-browsers            # iOS/ and macOS/ apps in one repository
+LoopKit/LoopWorkspace                # Loop and its packages as submodules, the way Loop is built (#268)
