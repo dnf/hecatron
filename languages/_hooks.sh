@@ -1753,10 +1753,21 @@ build_jobs() {
 
 # An Xcode project or workspace here (Swift's and Objective-C's apps).
 xcode_project() { exists '*.xcodeproj' || exists '*.xcworkspace'; }
-# Where xcodebuild puts a build (its -derivedDataPath): inside SwiftPM's
-# hidden .build/, not xcodebuild's default ./build or ~/Library's
-# DerivedData, so clean knows what to remove.
-xcode_derived_data=.build/xcode
+# Where xcodebuild puts a build (its -derivedDataPath): outside the
+# repository, where Xcode puts its own, in a directory named after this one
+# and a hash of its path, so clean knows what to remove. Not inside it: a
+# project's SwiftLint run-script phase lints what's below it, the package
+# checkouts in the derived data too (Gifski's failed on DockProgress' and
+# sentry-cocoa's sources). HECATRON_XCODE_DERIVED_DATA sets the directory
+# it goes in instead of ~/Library/Developer/Xcode/DerivedData.
+xcode_derived_data() {
+    local _here _hash
+    _here="$(pwd -P)"
+    _hash="$(printf '%s' "${_here}" | cksum | cut -d ' ' -f 1)"
+    echo "${HECATRON_XCODE_DERIVED_DATA:-${HOME:-/tmp}/Library/Developer/Xcode/DerivedData}/hecatron-$(basename "${_here}")-${_hash}"
+}
+# Where earlier versions put it, which clean removes too.
+xcode_old_derived_data=.build/xcode
 
 # Xcode projects, on macOS (untested here: no macOS): xcodebuild builds one
 # scheme, unsigned (a check, not a release), for its platform's generic
@@ -1768,8 +1779,11 @@ xcode_hook() {
         build|clean)
             ! swift_builds_xcode_here || skip "built with swift's hook (Swift and Objective-C share this Xcode project)"
             if [ "$1" = clean ]; then
-                run rm -rf "${xcode_derived_data}"
-                rmdir .build 2>/dev/null || true
+                run rm -rf "$(xcode_derived_data)"
+                if [ -d "${xcode_old_derived_data}" ]; then
+                    run rm -rf "${xcode_old_derived_data}"
+                    rmdir .build 2>/dev/null || true
+                fi
                 exit
             fi
             has xcodebuild || skip "an Xcode project builds with xcodebuild (Xcode, on macOS), which isn't installed"
@@ -1809,14 +1823,29 @@ xcode_find_apps() {
 # When there are apps below (xcode_find_apps), run the hook in each, and
 # here when this directory has one of the build files given (the
 # language's own), and exit. Packages and builds below, outside a build
-# here, are then left to the apps that use them.
+# here, are then left to the apps that use them; so is the package here
+# when an app uses it and builds with xcodebuild (isowords' root
+# Package.swift, whose iOS modules App/isowords.xcodeproj builds for the
+# iOS simulator, and SwiftPM on the Mac can't).
 xcode_apps_below() {
     xcode_find_apps
     [ "${#xcode_apps[@]}" -gt 0 ] || return 0
     local _dirs=("${xcode_apps[@]}")
-    if has_any "$@"; then _dirs=(. "${_dirs[@]}"); fi
+    if has_any "$@"; then
+        if [ "${_hook_action}" = build ] && xcode_apps_build_package_here; then
+            echo "${HECATRON_LANG:-}: ${_hook_action}: the package here is built by the apps below that use it (${xcode_apps[*]#./})"
+        else
+            _dirs=(. "${_dirs[@]}")
+        fi
+    fi
     export HECATRON_XCODE_APPS=1
     run_hook_in "${_dirs[@]}"
+}
+
+# Whether the apps below (xcode_apps) use the Swift package here as a
+# local package, and build with xcodebuild, which is installed.
+xcode_apps_build_package_here() {
+    [ -f Package.swift ] && has xcodebuild && xcode_py uses-package "${xcode_apps[@]}" 2>/dev/null
 }
 
 xcode_hook_path() { echo ".hecatron/languages/${HECATRON_LANG:-<lang>}/$1.sh"; }
@@ -2013,6 +2042,7 @@ xcode_build() {
     esac
     case "${_project}" in "several: "*) _project="" ;; esac
     xcode_build_complete "${_missing_from}" "${_container}"
+    xcode_select_version
     if [ -z "${_scheme}" ]; then
         echo "+ xcodebuild -list -json ${_kind} ${_container}"
         _list="$(xcodebuild -list -json "${_kind}" "${_container}")" || exit 1
@@ -2032,9 +2062,99 @@ xcode_build() {
         [ -n "${_destination}" ] ||
             skip "can't tell a destination for scheme ${_scheme} from its SUPPORTED_PLATFORMS: $(xcode_write_hooks)"
     fi
+    local _status=0
     run xcodebuild build "${_kind}" "${_container}" -scheme "${_scheme}" -destination "${_destination}" \
-        -derivedDataPath "${xcode_derived_data}" -skipMacroValidation -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO
-    exit
+        -derivedDataPath "$(xcode_derived_data)" -skipMacroValidation -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO ||
+        _status=$?
+    [ "${_status}" -eq 0 ] || xcode_newer_than_installed "${_container}"
+    exit "${_status}"
+}
+
+# The version of Xcode an xcodebuild ($1, else the one xcode-select or
+# DEVELOPER_DIR picks) belongs to: 26.6.
+xcode_version() { { "${1:-xcodebuild}" -version 2>/dev/null || true; } | sed -n '1s/^Xcode //p'; }
+
+# Whether Xcode version $1 is version $2: each of $2's components the same
+# (27.0 is 27.0.1; 27 is 27.1).
+xcode_version_is() {
+    awk -v have="$1" -v want="$2" 'BEGIN {
+        if (have == "") exit 1
+        n = split(want, w, "."); split(have, h, ".")
+        for (i = 1; i <= n; i++) if (h[i] + 0 != w[i] + 0) exit 1
+    }'
+}
+
+# Whether Xcode version $1 is older than $2 (missing components are 0).
+xcode_version_older() {
+    awk -v have="$1" -v want="$2" 'BEGIN {
+        n = split(have, h, "."); m = split(want, w, "."); if (m > n) n = m
+        for (i = 1; i <= n; i++) {
+            if (h[i] + 0 < w[i] + 0) exit 0
+            if (h[i] + 0 > w[i] + 0) exit 1
+        }
+        exit 1
+    }'
+}
+
+# The .xcode-version file here or in the nearest directory above, up to
+# the project's root: the Xcode the project builds with (the convention
+# of xcodes, fastlane and Xcode Cloud; woocommerce-ios' says 27.0).
+xcode_version_file() {
+    local _dir
+    if [ -f .xcode-version ]; then
+        echo .xcode-version
+        return 0
+    fi
+    while IFS= read -r _dir; do
+        if [ -f "${_dir}/.xcode-version" ]; then
+            echo "${_dir}/.xcode-version"
+            return 0
+        fi
+    done < <(dirs_above)
+    return 1
+}
+
+# Builds with the Xcode the project's .xcode-version asks for: the one
+# selected when it's that version, else an installed one that is
+# (/Applications/Xcode_27.0.app, as GitHub's macOS runners name them;
+# Xcode-27.0.app, as xcodes does), through DEVELOPER_DIR. Without it,
+# skips when the selected Xcode is older (its SDK lacks the APIs the
+# project uses), and says so when it's newer, which usually builds.
+xcode_select_version() {
+    local _file _wanted _here _app _version
+    _file="$(xcode_version_file)" || return 0
+    _wanted="$(sed -n 's/^[[:space:]]*\([0-9][0-9.]*\).*/\1/p' "${_file}" | sed -n 1p)"
+    [ -n "${_wanted}" ] || return 0
+    _here="$(xcode_version)"
+    ! xcode_version_is "${_here}" "${_wanted}" || return 0
+    for _app in /Applications/Xcode*.app "${HOME:-}/Applications"/Xcode*.app; do
+        [ -x "${_app}/Contents/Developer/usr/bin/xcodebuild" ] || continue
+        _version="$(xcode_version "${_app}/Contents/Developer/usr/bin/xcodebuild")"
+        if xcode_version_is "${_version}" "${_wanted}"; then
+            DEVELOPER_DIR="${_app}/Contents/Developer"
+            export DEVELOPER_DIR
+            echo "${HECATRON_LANG:-}: ${_hook_action}: Xcode ${_version}, as ${_file} asks (DEVELOPER_DIR=${DEVELOPER_DIR})"
+            return 0
+        fi
+    done
+    if xcode_version_older "${_here}" "${_wanted}"; then
+        skip "the project builds with Xcode ${_wanted} (${_file}), and this is Xcode ${_here:-of an unknown version}: install Xcode ${_wanted} (xcodes install ${_wanted}) and select it (xcode-select -s, or DEVELOPER_DIR)"
+    fi
+    echo "${HECATRON_LANG:-}: ${_hook_action}: the project builds with Xcode ${_wanted} (${_file}), which isn't installed: building with Xcode ${_here}"
+}
+
+# After a failed build: when the project was last upgraded by a newer
+# Xcode than this one (its LastUpgradeCheck), its errors are likely APIs of
+# the newer SDK (home-assistant's systemExtraLargePortrait, on Xcode 26.6
+# for a project at 27.0), so say so, naming the Xcode to build with.
+xcode_newer_than_installed() {
+    local _upgraded _here
+    _upgraded="$(xcode_py last-upgrade "$1" 2>/dev/null)"
+    _here="$(xcode_version)"
+    if [ -z "${_upgraded}" ] || [ -z "${_here}" ] || ! xcode_version_older "${_here}" "${_upgraded}"; then
+        return 0
+    fi
+    echo "${HECATRON_LANG:-}: ${_hook_action}: $1 was last upgraded by Xcode ${_upgraded} (its LastUpgradeCheck), newer than this Xcode ${_here}: errors about APIs that aren't there may be the newer SDK's; build with Xcode ${_upgraded} (a .xcode-version file saying ${_upgraded} selects it where it's installed)"
 }
 
 # Objective-C: an Xcode project through xcodebuild (xcode_hook), unless

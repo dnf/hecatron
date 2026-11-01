@@ -261,8 +261,8 @@ func TestDefaultPatternsAndVersions(t *testing.T) {
 	}
 	old := &Patterns{
 		List: []Pattern{
-			{Tool: "tool", Versions: "<2", Regex: DefaultPatterns.List[2].Regex},
-			{Tool: "tool", Versions: ">=2", Regex: DefaultPatterns.List[1].Regex},
+			{Tool: "tool", Versions: "<2", Regex: DefaultPatterns.List[3].Regex},
+			{Tool: "tool", Versions: ">=2", Regex: DefaultPatterns.List[2].Regex},
 		},
 		ToolVersions: map[string]*regexp.Regexp{"tool": regexp.MustCompile(`^tool v(\S+)$`)},
 	}

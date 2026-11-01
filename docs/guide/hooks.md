@@ -190,7 +190,9 @@ tell, and everything on the bash-only path, `xcodebuild -list` and
   or project, else the only one, else the only one whose first build entry
   is an app no other app embeds (not an extension's scheme, which lists
   the extension first and builds its host app too: focus-ios'
-  `ContentBlocker`; not a watchOS or helper app's). From the files, then
+  `ContentBlocker`; not a watchOS or helper app's). An aggregate or legacy
+  target listed first builds no product, so the entry after it counts
+  (Loop's `Loop` scheme runs its `Cartfile` target first). From the files, then
   the only one that runs the Debug configuration (home-assistant's
   `App-Debug`, not `App-Release`), else the only one named after its app.
   Without a shared one, the scheme of the only application target
@@ -234,8 +236,14 @@ tell, and everything on the bash-only path, `xcodebuild -list` and
   language's sources: firefox-ios' root `Package.swift`, then
   `firefox-ios/Client.xcodeproj` and `focus-ios/Blockzilla.xcodeproj`
   (SwiftPM builds only the targets `Package.swift` names, so nothing
-  builds twice). It's a scan of the directories (the binary's plan lists
-  them), not of every file. A directory with no build of its own (no
+  builds twice). When an app below uses the directory's package as a
+  local package (an `XCLocalSwiftPackageReference`, or a folder reference
+  to it) and `xcodebuild` is installed, the app's build builds the
+  package, for the app's platform, and SwiftPM doesn't build it on the
+  host (isowords' root `Package.swift`, whose iOS modules
+  `App/isowords.xcodeproj` uses: SwiftPM on the Mac can't build them);
+  clean and test still act on it. It's a scan of the directories (the
+  binary's plan lists them), not of every file. A directory with no build of its own (no
   `Package.swift` or Xcode project for Swift; no Xcode project, CMake,
   Meson or make for Objective-C) builds only the apps, and Objective-C's
   other hooks skip there, saying so. An app with Objective-C below
@@ -244,10 +252,27 @@ tell, and everything on the bash-only path, `xcodebuild -list` and
   `Podfile` and CocoaPods' `pod` is installed (hecatron doesn't install
   it), and skips saying so otherwise; Swift's hook installs the pods of a
   project the two languages share.
-- **The output:** `-derivedDataPath .build/xcode`, not `./build` or
-  `~/Library/Developer/Xcode/DerivedData`; `hct clean` removes it (and
-  `.build/` when that leaves it empty), without running `xcodebuild`. Add
-  `.build/` to `.gitignore` if it isn't there.
+- **The Xcode:** a `.xcode-version` file in the directory or above it
+  (up to the project's root; the convention of xcodes and fastlane, e.g.
+  `27.0`) says which Xcode builds the project. When the selected Xcode
+  (`xcode-select`, or `DEVELOPER_DIR`) isn't that version, the build uses
+  an installed one that is (`/Applications/Xcode*.app` or
+  `~/Applications/Xcode*.app`: `Xcode_27.0.app` on GitHub's runners,
+  `Xcode-27.0.app` from xcodes) through `DEVELOPER_DIR`. Without one, it
+  skips when the selected Xcode is older, naming the version to install,
+  and builds saying so when it's newer. Without the file, when a build
+  fails and the project's `LastUpgradeCheck` names a newer Xcode than the
+  one building it, the log says so after the errors: they may be APIs of
+  the newer SDK (home-assistant's project, at Xcode 27.0, on Xcode 26.6).
+- **The output:** outside the repository, where Xcode puts its own:
+  `-derivedDataPath ~/Library/Developer/Xcode/DerivedData/hecatron-<directory>-<hash>`,
+  named after the directory built and a hash (`cksum`) of its path.
+  `HECATRON_XCODE_DERIVED_DATA` names another directory to put it in.
+  Not inside the repository: a project's own SwiftLint run-script phase
+  lints what's below it, the package checkouts in the derived data
+  included (Gifski's failed on its dependencies' sources). `hct clean`
+  removes it, and `.build/xcode`, where earlier versions put it (and
+  `.build/` when that leaves it empty), without running `xcodebuild`.
 - **Swift and Objective-C together:** an app with both kinds of source (NetNewsWire)
   has both languages at the project's directory, and `hct build` runs
   languages at once; two `xcodebuild`s of one project would race on its
@@ -270,7 +295,7 @@ platform), it says so, naming the hooks to write:
 #!/usr/bin/env bash
 set -euo pipefail
 xcodebuild test -scheme NetNewsWire -destination 'platform=macOS' \
-    -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO
+    CODE_SIGNING_ALLOWED=NO
 ```
 
 For iOS: `-destination 'platform=iOS Simulator,name=iPhone 17'` (one

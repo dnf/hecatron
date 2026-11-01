@@ -116,12 +116,29 @@ func stringField(object *project.Object, key string) (string, bool) {
 
 // DefaultPatterns are tried for a job whose language's patterns match
 // nothing, and for project tasks: a compiler's file:line[:col]: error, a
-// line starting with error or fatal, and test runners' FAIL lines.
+// file's error without a line (xcodebuild's "Foo.xcodeproj: error:"), a
+// line starting with error or fatal, test runners' FAIL lines, make's
+// "*** ... Error 2", a missing file, and xcodebuild's "** BUILD FAILED **"
+// and the failed commands it lists after it (mullvad's build script
+// running a cargo that isn't there, which its warnings had buried).
 var DefaultPatterns = &Patterns{List: []Pattern{
 	{Regex: regexp.MustCompile(`^\s*(?P<file>[^\s:]+):(?P<line>\d+)(?::(?P<col>\d+))?:?\s+(?:fatal )?[Ee]rror\b:?\s*(?P<message>.*)$`)},
+	{Regex: regexp.MustCompile(`^\s*(?P<file>[^\s:]+): (?:fatal )?error: (?P<message>.+)$`)},
 	{Regex: regexp.MustCompile(`^\s*(?:[Ee]rror|ERROR|[Ff]atal|FATAL)(?:\[[^\]]*\])?:\s+(?P<message>.+)$`)},
 	{Regex: regexp.MustCompile(`^\s*(?:FAIL|FAILED|FAILURE)\b[: ]\s*(?P<message>.+)$`)},
+	{Regex: regexp.MustCompile(`^\S*make(?:\[\d+\])?: \*\*\* (?P<message>.+)$`)},
+	{Regex: regexp.MustCompile(`^(?P<message>\S.*: No such file or directory)$`)},
+	{Regex: regexp.MustCompile(`^\*\* (?P<message>[A-Z ]+ FAILED) \*\*$`)},
+	{Regex: regexp.MustCompile(`^\t(?P<message>\S.* \(in target '[^']+' from project '[^']+'\))$`)},
 }}
+
+// warningLine is a line that reports a warning or a note, which an
+// excerpt puts after the lines that report errors, wherever they are in
+// the log: xcodebuild warns about every script phase before the error.
+var (
+	warningLine = regexp.MustCompile(`(?i)\bwarning\b|(?:^|:\s*)note:`)
+	errorLine   = regexp.MustCompile(`(?i)\berror\b|\bfatal\b|\bfailed\b|\*\*\*|no such file`)
+)
 
 // MissingCommandPatterns are a shell's "command not found" (bash, sh, zsh),
 // reported before any language's own patterns.
@@ -258,8 +275,23 @@ func ComponentLogs(log []byte) map[string][]byte {
 	return parts
 }
 
+// match is the first ExcerptLines lines patterns match, those reporting
+// errors before those reporting warnings or notes.
 func match(lines, components []string, patterns *Patterns) []ErrorLine {
-	return matchUpTo(lines, components, patterns, ExcerptLines)
+	found := matchUpTo(lines, components, patterns, MaxLocated)
+	var errors, warnings []ErrorLine
+	for _, line := range found {
+		if warningLine.MatchString(line.Text) && !errorLine.MatchString(line.Text) {
+			warnings = append(warnings, line)
+		} else {
+			errors = append(errors, line)
+		}
+	}
+	found = append(errors, warnings...)
+	if len(found) > ExcerptLines {
+		found = found[:ExcerptLines]
+	}
+	return found
 }
 
 // matchUpTo is the first limit distinct lines patterns match.

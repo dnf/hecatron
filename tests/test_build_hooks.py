@@ -30,8 +30,10 @@ class BuildHookTest(Fixture):
         write(os.path.join(self.bin, tool), f'#!/bin/sh\n{body}\necho "{tool} $*"\n', 0o755)
 
     def hook(self, lang: str, action: str, directory: str, **env) -> subprocess.CompletedProcess:
+        # xcodebuild's derived data in the fixture, not ~/Library.
         environment = {**os.environ, "PATH": self.bin + os.pathsep + os.environ["PATH"], "HECATRON_LANG": lang,
-                       "HECATRON_ROOT": self.root, "HECATRON_HOME": "", **env}
+                       "HECATRON_ROOT": self.root, "HECATRON_HOME": "",
+                       "HECATRON_XCODE_DERIVED_DATA": self.path(".derived-data"), **env}
         # The hooks ask hct's binary when it runs them: a test gives a fake.
         if "HECATRON_BINARY" not in env:
             environment.pop("HECATRON_BINARY", None)
@@ -324,14 +326,26 @@ class XcodeTest(BuildHookTest):
         self.xcodebuild(self.PACKAGES + ["App"])
 
     def xcodebuild(self, schemes: list[str], platforms: str = IOS_AND_VISION, kind: str = "project",
-                   sdk: str = "iPhoneOS", catalyst: str = "NO") -> None:
+                   sdk: str = "iPhoneOS", catalyst: str = "NO", version: str = "26.6", status: int = 0) -> None:
+        """The fake xcodebuild: of Xcode version, its builds exiting with
+        status, and recording the DEVELOPER_DIR they ran with."""
         write(self.path(".list.json"), json.dumps({kind: {"name": "App", "schemes": schemes}}))
         write(self.path(".settings.txt"), self.SETTINGS.format(scheme="App", platforms=platforms, catalyst=catalyst,
                                                                platform=sdk.lower(), sdkroot=self.SDKS.format(sdk)))
-        body = (f'echo "$*" >>"{self.log}"\n'
+        body = (f'[ "$1" != -version ] || {{ printf "Xcode {version}\\nBuild version 1\\n"; exit; }}\n'
+                f'echo "$*" >>"{self.log}"\n'
                 f'case "$*" in *-list*) cat "{self.path(".list.json")}"; exit ;; '
-                f'*-showBuildSettings*) cat "{self.path(".settings.txt")}"; exit ;; esac')
+                f'*-showBuildSettings*) cat "{self.path(".settings.txt")}"; exit ;; esac\n'
+                f'echo "${{DEVELOPER_DIR:-}}" >"{self.path(".developer-dir")}"\n'
+                f'exit {status}')
         self.fake("xcodebuild", body)
+
+    def derived_data(self, directory: str = ".", parent: str = "") -> str:
+        """Where the hook puts the derived data of a build in directory:
+        hecatron-<its name>-<cksum of its real path> in parent."""
+        real = os.path.realpath(self.path(directory))
+        hashed = subprocess.run(["cksum"], input=real, capture_output=True, text=True).stdout.split()[0]
+        return os.path.join(parent or self.path(".derived-data"), f"hecatron-{os.path.basename(real)}-{hashed}")
 
     def calls(self) -> list[str]:
         if not os.path.exists(self.log):
@@ -360,7 +374,7 @@ class XcodeTest(BuildHookTest):
             result = self.hook(lang, "build", ".")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual(self.builds(), ["build -project App.xcodeproj -scheme App -destination generic/platform=iOS "
-                                             "Simulator -derivedDataPath .build/xcode -skipMacroValidation "
+                                             f"Simulator -derivedDataPath {self.derived_data()} -skipMacroValidation "
                                              "-skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO"])
             self.assertIn("-list -json -project App.xcodeproj", self.calls())
             self.assertIn("-showBuildSettings -project App.xcodeproj -scheme App", self.calls())
@@ -453,14 +467,30 @@ class XcodeTest(BuildHookTest):
         self.assertEqual(self.hook("swift", "build", "App").returncode, 0)
         self.assertIn("build -project App.xcodeproj ", self.builds()[0])
 
+    def test_the_derived_data_is_outside_the_repository(self):
+        # Gifski's SwiftLint phase linted the package checkouts in
+        # .build/xcode. Xcode's own place, named after the directory and
+        # its path: ~/Library/Developer/Xcode/DerivedData.
+        self.only("swift")
+        home = self.path(".home")
+        result = self.hook("swift", "build", ".", HOME=home, HECATRON_XCODE_DERIVED_DATA="")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        derived = self.derived_data(parent=os.path.join(home, "Library", "Developer", "Xcode", "DerivedData"))
+        self.assertIn(f" -derivedDataPath {derived} ", self.builds()[0])
+
     def test_clean_removes_the_derived_data(self):
+        # And .build/xcode, where earlier versions put it.
+        write(os.path.join(self.derived_data(), "Build", "App.o"), "")
         write(self.path(".build", "xcode", "Build", "App.o"), "")
         self.only("swift")
         result = self.hook("swift", "clean", ".")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"+ rm -rf {self.derived_data()}", result.stdout)
+        self.assertFalse(os.path.exists(self.derived_data()))
         self.assertIn("+ rm -rf .build/xcode", result.stdout)
         self.assertFalse(os.path.exists(self.path(".build")))
         self.assertEqual(self.calls(), [])
+        self.assertNotIn(".build/xcode", self.hook("swift", "clean", ".").stdout)
 
     def test_tests_skip_saying_how_to_run_them(self):
         for lang in ("swift", "objectivec"):
@@ -485,6 +515,75 @@ class XcodeTest(BuildHookTest):
         result = self.hook("swift", "build", ".")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("builds with xcodebuild (Xcode, on macOS), which isn't installed", result.stdout)
+
+    def installed_xcode(self, name: str, version: str) -> str:
+        """An Xcode in ~/Applications (the hook's HOME is .home): its
+        developer directory."""
+        developer = self.path(".home", "Applications", name, "Contents", "Developer")
+        write(os.path.join(developer, "usr", "bin", "xcodebuild"), f'#!/bin/sh\nprintf "Xcode {version}\\n"\n')
+        os.chmod(os.path.join(developer, "usr", "bin", "xcodebuild"), 0o755)
+        return developer
+
+    def developer_dir(self) -> str:
+        with open(self.path(".developer-dir")) as f:
+            return f.read().strip()
+
+    def test_the_xcode_version_file_selects_the_installed_xcode(self):
+        # woocommerce-ios' .xcode-version says 27.0. Versions no real Xcode
+        # has, so a Mac's own /Applications doesn't answer.
+        self.only("swift")
+        os.makedirs(self.path("Sub", "App.xcodeproj"))
+        write(self.path("Sub", "App.swift"), "")
+        self.installed_xcode("Xcode_98.0.app", "98.0")
+        wanted = self.installed_xcode("Xcode_99.1.app", "99.1")
+        write(self.path(".xcode-version"), "99.1\n")
+        result = self.hook("swift", "build", "Sub", HOME=self.path(".home"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("swift: build: Xcode 99.1, as ", result.stdout)
+        self.assertEqual(os.path.realpath(self.developer_dir()), os.path.realpath(wanted))
+        self.assertEqual(len(self.builds()), 1)
+
+    def test_the_selected_xcode_of_the_version_asked_for_is_kept(self):
+        self.only("swift")
+        self.installed_xcode("Xcode_99.1.app", "99.1")
+        write(self.path(".xcode-version"), "26.6")
+        result = self.hook("swift", "build", ".", HOME=self.path(".home"), DEVELOPER_DIR="")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("as .xcode-version asks", result.stdout)
+        self.assertEqual(self.developer_dir(), "")
+
+    def test_an_xcode_older_than_the_version_asked_for_skips_the_build(self):
+        self.only("swift")
+        write(self.path(".xcode-version"), "99.2\n")
+        result = self.hook("swift", "build", ".", HOME=self.path(".home"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("swift: build: the project builds with Xcode 99.2 (.xcode-version), and this is Xcode 26.6: "
+                      "install Xcode 99.2 (xcodes install 99.2)", result.stdout)
+        self.assertEqual(self.builds(), [])
+
+    def test_an_xcode_newer_than_the_version_asked_for_builds(self):
+        self.only("swift")
+        write(self.path(".xcode-version"), "1.0\n")
+        result = self.hook("swift", "build", ".", HOME=self.path(".home"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("the project builds with Xcode 1.0 (.xcode-version), which isn't installed: building with "
+                      "Xcode 26.6", result.stdout)
+        self.assertEqual(len(self.builds()), 1)
+
+    def test_a_failed_build_of_a_project_upgraded_by_a_newer_xcode_says_so(self):
+        # home-assistant/iOS: LastUpgradeCheck 2700, built with Xcode 26.6,
+        # failing on an API of the iOS 27 SDK.
+        self.only("swift")
+        write(self.path("App.xcodeproj", "project.pbxproj"),
+              "{\n\tobjects = {\n\t\tP = {\n\t\t\tisa = PBXProject;\n\t\t\tattributes = {\n"
+              "\t\t\t\tLastSwiftUpdateCheck = 2700;\n\t\t\t\tLastUpgradeCheck = 2700;\n\t\t\t};\n\t\t};\n\t};\n}\n")
+        self.xcodebuild(["App"], status=65)
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 65, result.stdout + result.stderr)
+        self.assertIn("App.xcodeproj was last upgraded by Xcode 27.0 (its LastUpgradeCheck), newer than this Xcode 26.6",
+                      result.stdout)
+        self.xcodebuild(["App"], status=65, version="27.1")
+        self.assertNotIn("last upgraded", self.hook("swift", "build", ".").stdout)
 
     APP_TARGET, FRAMEWORK_TARGET, TESTS_TARGET = "B657A8E51CCC1F9F00A8AEBC", "1164C3D624D9C1C100E0A0F1", "B657A8FD1CCC1F9F00A8AEBC"
 
@@ -597,6 +696,24 @@ class XcodeTest(BuildHookTest):
         self.xcodebuild(self.PACKAGES + ["Main", "Watch"])
         self.assertEqual(self.built_scheme(), "Main")
 
+    def test_a_script_target_listed_first_doesnt_hide_the_app(self):
+        # LoopKit/Loop: its Loop scheme runs the Cartfile aggregate target
+        # before the app; WatchApp's scheme is for the app Loop embeds.
+        self.only("swift")
+        self.targets(app="Main", others=((self.HELPER_TARGET, "Watch", "application"),), embeds=(self.HELPER_TARGET,))
+        cartfile = "C0FFEE000000000000000001"
+        with open(self.path("App.xcodeproj", "project.pbxproj")) as f:
+            text = f.read()
+        write(self.path("App.xcodeproj", "project.pbxproj"), text.replace(
+            "/* Begin PBXNativeTarget section */\n",
+            f"/* Begin PBXAggregateTarget section */\n\t\t{cartfile} /* Cartfile */ = {{\n"
+            "\t\t\tisa = PBXAggregateTarget;\n\t\t\tname = Cartfile;\n\t\t};\n"
+            "/* End PBXAggregateTarget section */\n\n/* Begin PBXNativeTarget section */\n"))
+        self.scheme("App.xcodeproj", "Main", cartfile, self.APP_TARGET)
+        self.scheme("App.xcodeproj", "Watch", self.HELPER_TARGET)
+        self.xcodebuild(self.PACKAGES + ["Main", "Watch"])
+        self.assertEqual(self.built_scheme(), "Main")
+
     def test_a_workspaces_shared_scheme_builds_its_projects_app(self):
         self.only("swift")
         self.targets()
@@ -628,7 +745,7 @@ class XcodeTest(BuildHookTest):
         result = self.hook("swift", "build", ".", **env)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(self.builds(), ["build -project App.xcodeproj -scheme App-Debug -destination generic/platform=iOS "
-                                         "Simulator -derivedDataPath .build/xcode -skipMacroValidation "
+                                         f"Simulator -derivedDataPath {self.derived_data()} -skipMacroValidation "
                                          "-skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO"])
         self.assertEqual(len(self.calls()), 1)
         self.assertIn("scheme App-Debug: the scheme building the app, from the project's files", result.stdout)
@@ -842,6 +959,30 @@ class XcodeAppsBelowTest(BuildHookTest):
                                          "focus-ios build -project Blockzilla.xcodeproj -scheme Blockzilla"])
         self.assertIn("--- swift: build in firefox-ios", result.stdout)
 
+    def test_a_package_the_apps_use_is_left_to_their_builds(self):
+        # pointfreeco/isowords: App/isowords.xcodeproj refers to the root
+        # package's folder (path = ..), whose iOS modules SwiftPM on the
+        # Mac can't build; Xcode 15's projects name it with an
+        # XCLocalSwiftPackageReference instead.
+        write(self.path("firefox-ios", "Client.xcodeproj", "project.pbxproj"),
+              "{\n\tobjects = {\n\t\tF0 /* isowords */ = {isa = PBXFileReference; lastKnownFileType = folder; "
+              "name = isowords; path = ..; sourceTree = \"<group>\"; };\n\t};\n}\n")
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("swift: build: the package here is built by the apps below that use it (firefox-ios focus-ios)",
+                      result.stdout)
+        self.assertNotIn("+ swift build", result.stdout)
+        self.assertEqual(len(self.builds()), 2)
+        self.assertIn("swift package clean", self.hook("swift", "clean", ".").stdout)
+        write(self.path("firefox-ios", "Client.xcodeproj", "project.pbxproj"),
+              "{\n\tobjects = {\n\t\tL0 /* XCLocalSwiftPackageReference \"..\" */ = {\n"
+              "\t\t\tisa = XCLocalSwiftPackageReference;\n\t\t\trelativePath = ..;\n\t\t};\n\t};\n}\n")
+        self.assertNotIn("+ swift build", self.hook("swift", "build", ".").stdout)
+        # A package of its own beside the app's isn't the root's.
+        write(self.path("firefox-ios", "Client.xcodeproj", "project.pbxproj"),
+              "{\n\tobjects = {\n\t\tL0 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Core; };\n\t};\n}\n")
+        self.assertIn("+ swift build", self.hook("swift", "build", ".").stdout)
+
     def test_the_plans_nested_projects_are_the_apps(self):
         # hct's binary lists the projects below; those outside examples
         # and vendored code, with Swift in them, are the apps.
@@ -858,7 +999,7 @@ class XcodeAppsBelowTest(BuildHookTest):
         result = self.hook("swift", "clean", ".")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("swift package clean", result.stdout)
-        self.assertEqual(result.stdout.count("+ rm -rf .build/xcode"), 2)
+        self.assertEqual(result.stdout.count("+ rm -rf " + self.path(".derived-data", "hecatron-")), 2)
 
     def test_an_app_alone_builds_itself(self):
         result = self.hook("swift", "build", "focus-ios")
