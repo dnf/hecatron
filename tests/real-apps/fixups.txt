@@ -7,3 +7,8 @@
 # real-app-retry: the next run tries the app again (docs/contributing/testing.md#real-apps).
 
 Dimillian/IceCubesApp: cp IceCubesApp.xcconfig.template IceCubesApp.xcconfig   # its README: copy the template
+sindresorhus/Gifski: brew install swiftlint   # its README's "Building from source": the SwiftLint build phase needs it
+pointfreeco/isowords: make bootstrap-client   # its README's Getting Started for the iOS client: audio, fonts, words, Secrets.swift from the example
+xcode mullvad/mullvadvpn-app: for f in ios/Configurations/*.xcconfig.template; do cp "$f" "${f%.template}"; done   # ios/BuildInstructions.md: copy the templates
+xcode mullvad/mullvadvpn-app: ./scripts/setup-rust ios   # ios/BuildInstructions.md: Rust's iOS targets
+xcode mullvad/mullvadvpn-app: brew install protobuf ripgrep   # ios/BuildInstructions.md: protoc for the Rust build, ripgrep for a build script
