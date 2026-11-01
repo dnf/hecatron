@@ -6,6 +6,331 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+## 0.8.0 (2026-11-01)
+
+- **`hct audit --output json` lists every finding:** a top-level
+  `vulnerabilities` array, one record per finding (component, language,
+  package, installed version, fixed versions, advisory ID and aliases,
+  severity, title, link, auditor, lock file), complete rather than the
+  log's last lines in `jobs[].errors`; the secret scan's are `secrets`.
+  Fixed versions come from each auditor (pip-audit, govulncheck,
+  OSV-Scanner, bundler-audit) or the advisory's patched or vulnerable range
+  (npm, pnpm, Yarn, Bun, Composer); SARIF results name them too. `npm
+  audit`'s findings show the installed version, read from
+  `package-lock.json`.
+- **Nothing to audit is skipped, not passed:** a component without a lock
+  file its auditor reads is shown as skipped, with why and how to write
+  one (for Gradle, `gradle dependencies --write-locks`), in human, agent
+  and JSON output (`"status": "skipped"`, `"reason"`), JUnit (`<skipped>`),
+  SARIF (a note) and the job summary. It doesn't fail the audit, but it
+  isn't counted as passed.
+- **OSV-Scanner audits only the language's own lock files:** Swift reads
+  `Package.resolved`, Rust `Cargo.lock`, the JVM languages `pom.xml` and
+  Gradle's lock files, and so on, each named with `--lockfile`, instead of
+  a recursive scan that reported every ecosystem's packages (a root
+  `package-lock.json`'s npm findings in Swift's audit) once per language.
+  Dependencies, build output and nested components of the same language
+  are left out.
+
+- **`hct licenses` and `hct sbom` take `--timeout DURATION`** (and
+  `HECATRON_TIMEOUT`), with `hct audit`'s syntax: `90s`, `30m`, `1h30m`, a
+  number of seconds, `0` for none. Past it, OSV-Scanner is stopped and the
+  command exits 1. There's no limit by default.
+- **`hct licenses` lists the project's own packages apart**, out of the
+  dependencies, the unknown count and the policy: uv's editable root (a dev
+  version like `0.27.0.post18.dev0+g1a2b3c4` used to show as `UNKNOWN`) and
+  workspace members, npm workspaces, Cargo workspace members, a
+  `Gemfile.lock`'s `PATH` gems, Go's `replace` with a directory, Composer
+  path repositories, NuGet project references, Poetry directory
+  dependencies, and any package a component's manifest names. JSON: `own`.
+- **`hct licenses` classifies copyleft.** Each package's JSON has
+  `licenseIds` (the expression's identifiers) and `copyleft` (`none`,
+  `weak`, `strong`, `network`, `maximal`, `unclassified`, or `unknown`),
+  from Blue Oak Council's copyleft and permissive lists, for the expression
+  as a whole (`OR`: the least restrictive choice; `AND`: the most
+  restrictive part). Licenses are rolled up per identifier too
+  (`licenseIds`, so `Apache-2.0 AND LGPL-3.0-or-later` counts for each),
+  every rollup says its class, and the summary counts copyleft packages
+  (`copyleft` in JSON).
+- **`hct licenses` and `hct sbom` warn of a lock file outside every
+  component** of its language (a root `package-lock.json` in a monorepo
+  whose components are its subdirectories), whose packages they don't read.
+- **The "detected" note is for a person at a terminal.** `... has no
+  .hecatron/config.json; detected javascript` is no longer printed when
+  stderr isn't a terminal, with `--output` or `--json` or `HECATRON_OUTPUT`
+  naming another format than human, in an agent's session or in GitHub
+  Actions, as the update notice already wasn't (which now also heeds
+  `--json`). `hct status` still says the config is detected.
+
+- **Skipped is a third outcome for every run command, not a pass** (#236):
+  a hook with nothing to run or that can't run (no tests, no linter or
+  docs tool configured, no benchmarks, nothing to build or clean, nothing
+  to audit) calls `skip "reason"` from `languages/_hooks.sh`, which now
+  marks the component skipped (`HECATRON_SKIPPED`, the file `hct audit`'s
+  nothing-to-audit uses) instead of passed. A language without a hook for
+  the command (`hct docs go`, `hct lint` of a language whose build is its
+  lint) is skipped too: `go: docs skipped: no docs tool for go`. Every
+  default hook that already said "(skipping)" now reports skipped, in
+  human output (`- go ... skipped`, `3/3 passed, 1 skipped`, then why),
+  agent output (`SKIP <lang> (<dirs>): <reason>`), JSON (`"status":
+  "skipped"`, `"reason"`), JUnit (`<skipped message=...>`), the job summary
+  and `hct status` (`test: skipped 2h ago`). A component skips only when
+  its hook does, lint only when its format check skips too, and a hook run
+  in several directories below (`run_hook_in`) only when each of them
+  skips. Skipped jobs are recorded in `history.log` with status 77, so a
+  skipped run neither sets a job's time limit nor runs it first. Writing
+  project hooks: [hooks](docs/guide/hooks.md#skipping).
+- **`--fail-on-skip`** (or `HECATRON_FAIL_ON_SKIP=1`) on every run
+  command: exit 1 when nothing ran, every job skipped, not installed or
+  disabled, for CI that must have tested something
+  ([output](docs/guide/output.md#skipped)).
+
+- **`hct format --check` installs nothing:** where the formatter comes from
+  the project's dependencies (Prettier, Biome, RuboCop, Standard, PHP CS
+  Fixer, Pint, `mix format`'s plugins) and they aren't installed, the check
+  (and the one in `hct lint`) skips the component, saying it wasn't checked,
+  instead of running `npm ci`, `bundle install`, `composer install` or `mix
+  deps.get`. `hct format` still installs them first.
+- **`--no-deps` for `hct install` and `hct doctor --fix`:** repairs
+  toolchains without installing the project's dependencies.
+- **`hct doctor --output json`:** each language's problems and notes, for
+  scripts and agents.
+- **`hct install javascript` installs the Node.js version the project
+  resolves**, as TypeScript's already did; on macOS it installed only
+  Homebrew's latest, and `hct doctor` went on reporting the version missing.
+- **Python: Homebrew's versioned Pythons (`python@3.11`) no longer count as
+  installed.** They have no `bin/python3`, so uv, pointed at it, failed with
+  "No interpreter found" in `hct outdated`, `hct format` and `hct audit`
+  while `hct doctor` said ok; now the installer installs uv's own.
+- **`hct outdated` fails when the tool fails without a report**, rather than
+  reporting nothing outdated.
+- **Ruby's `hct doctor`** says when the Gemfile's gems aren't installed
+  (`hct deps ruby`), or Bundler isn't, rather than "bundle not installed".
+
+- **Node.js apps without tests are JavaScript:** a `package.json` counts
+  when it has runtime `dependencies`, an entry point (`main`, `bin`,
+  `exports`, `module`, `browser`), `workspaces`, or a `start`, `dev`,
+  `serve` or `test` script, instead of only with a `test` script, so an
+  Express app is detected and audit, outdated and licenses cover it. A
+  `package.json` carrying only tooling (husky, commitlint, Prettier in
+  `devDependencies`) still isn't a language. `hct test` skips a package
+  with no test script ("package.json has no test script") instead of
+  failing.
+
+- **Python apps with only a `requirements.txt` are Python,** where `*.py`
+  files sit beside it or below (one for a docs build in a Go repository
+  isn't). Their tests run with the requirements' packages
+  (`uv run --with-requirements`), and skip where there are no test files.
+
+- **Xcode apps are Swift or Objective-C:** an `*.xcodeproj` or
+  `*.xcworkspace` with `*.swift` sources is Swift, with `*.m` or `*.mm`
+  Objective-C, without a `Package.swift` or Podfile. On macOS `hct build`
+  runs `xcodebuild` on the root workspace (CocoaPods') or project, with
+  the scheme named like it, for a generic destination its supported
+  platforms give (`generic/platform=macOS`, else `iOS Simulator`...), into
+  `.build/xcode`, which `hct clean` removes; where it can't tell (no such
+  scheme, several projects), it skips, saying to write a hook. An app with
+  both Swift and Objective-C builds once, with Swift's hook. Tests skip,
+  saying to write a hook with the scheme and simulator destination, and
+  the app's local Swift packages aren't tested on the Mac with SwiftPM;
+  nor, on macOS, is any package whose `platforms:` leaves out macOS. CocoaPods' `Pods/` and
+  Carthage's `Carthage/` are vendored code to detection.
+
+- **An Xcode project below the root is found:** a language found only in
+  and below a directory holding its Xcode project gets that directory
+  (`hct init` writes `implPaths`), so GoMap's `src/GoMap.xcodeproj`
+  builds instead of failing with "no Package.swift here, below, or above".
+
+- **Apps below a package build too:** Swift's build and clean act on the
+  root `Package.swift`, then on each app below with an Xcode project of its
+  own and Swift sources (firefox-ios' `Client.xcodeproj` and
+  `Blockzilla.xcodeproj`, isowords' `App/isowords.xcodeproj`), outside
+  examples, tests and vendored code (`ThirdParty/`, `third_party/`,
+  `Vendor/`, `External/`, `Pods/`, `Carthage/`: firefox-ios'
+  `ThirdParty/Deferred` no longer builds as an app). Finding them scans
+  the directories instead of detecting every file's language, which made
+  `hct clean swift` take seconds on firefox-ios. Objective-C found only
+  inside such apps leaves them to Swift, and its other hooks skip at the
+  root instead of failing with "no CMakeLists.txt, meson.build, configure
+  or Makefile". Detection skips `ThirdParty/` and `third-party/` as it does
+  `third_party/`.
+
+- **An app beside its package builds as the app:** where an Xcode project
+  with an application target sits beside a `Package.swift` (isowords'
+  `App/`), Swift's build and clean are the Xcode app's where `xcodebuild`
+  is installed; SwiftPM keeps the package's tests where it builds on the
+  host.
+
+- **Xcode builds read the project's files:** where hct's binary runs the
+  hooks, the workspace or project, the scheme and the destination come
+  from the project's files (`hct _xcode plan`), and xcodebuild decides
+  only what they leave unsure. A build missing a file it needs skips
+  saying which and what makes it: "the Pods aren't installed
+  (Pods/Pods.xcodeproj is missing): run pod install" (eidolon), an
+  `.xcconfig` the project's own setup makes (wikipedia-ios). `hct deps`
+  runs `pod install` for Swift and Objective-C where there is a `Podfile`
+  and CocoaPods is installed.
+
+- **The scheme that builds the app:** an Xcode build picks the shared
+  scheme whose build action builds the project's application target
+  (named like the project, else the only one, else the only one for an app
+  no other app embeds: not an extension's, such as focus-ios'
+  `ContentBlocker`, or a watchOS app's), else the scheme of the only
+  application target, else the one named like the project; with several
+  left (focus-ios' `Focus` and `Klar`) it skips naming them instead of
+  picking the first by name. The log says which and why.
+
+- **Mac Catalyst apps build for the iOS Simulator:** macOS is the
+  destination only for a Mac-only app (NetNewsWire), not for an iOS app
+  that also supports Mac Catalyst, whose settings xcodebuild reports for
+  the Mac (GoMap, which failed on `MACOSX_DEPLOYMENT_TARGET`,
+  home-assistant, IceCubesApp).
+
+- **Packages' macros and plugins:** Xcode builds pass
+  `-skipMacroValidation -skipPackagePluginValidation`, so a package's
+  macro builds unattended instead of failing with "Macro ... must be
+  enabled before it can be used" (firefox-ios).
+
+- **Tested on 149 open-source projects:** [docs/real-projects.md](docs/real-projects.md)
+  shows hecatron run as a newcomer would, on public repositories (polyglot
+  ones such as Protocol Buffers, Thrift, Avro and gRPC first, then
+  well-known projects in each language and some large monorepos): each
+  cloned on a fresh Ubuntu machine and run through `hct init`, `install`,
+  `doctor` and `test` with no configuration, every month. It lists the
+  results per project and per language, why languages fail, and a badge
+  for each project that follows its latest result; the data is in
+  `tests/real-projects/` (`projects.json`, `results.json`,
+  `results-by-language.json`, described by `schema.json`) (#163).
+
+- **A missing lint tool no longer fails `hct doctor`:** golangci-lint (Go),
+  luacheck (Lua) and ShellCheck (Bash) not on PATH is a note under the
+  language ("lint tool golangci-lint not found: hct lint go needs it"), not
+  a FAIL, and `doctor --fix` no longer installs one by itself; `hct
+  install` still does, and `hct lint` still needs it. A repository that
+  lints its own way (a project `lint.sh`) is healthy without it. Go's
+  default linter is unchanged (#254).
+- **The .NET runtime check asks only for runtimes something runs on:** a
+  test project, an executable or a web or worker app targeting `net8.0`
+  needs the .NET 8 runtime; a class library multi-targeting `net8.0` only
+  builds, with the targeting pack the SDK restores, and no longer makes the
+  doctor fail or the installer install that runtime. Frameworks come from
+  the project file, else the nearest `Directory.Build.props` (#256).
+- **`package.json`'s `engines.node` is read as a range:** a component on
+  the default Node.js with none of the default's line installed runs the
+  newest installed Node.js in the range (`>=22`, `^20 || ^22`, `20 - 22`),
+  and the doctor counts it as installed and says so, instead of failing
+  "typescript =24.22.1 not installed (from default)". A definition lists
+  such files in `rangeFiles` (format `npm-engines`) (#257).
+- **`hct status` agrees with the doctor about versions:** a toolchain on
+  PATH without the version a component needs shows as "installed, but not
+  24.22.1 (web)" (`versionMissing` in JSON), with `hct install` suggested.
+- **In a checkout, binary-only commands say to run `hct self build`:**
+  `hct status`, `sync`, `advisor`, `self update` and the rest, without the
+  binary, add "in this checkout, run hct self build" (#258).
+
+- **`hct status` says when a range picks the version:** a component on the
+  default whose `package.json` `engines.node` allows another installed
+  Node.js, with none of the default's line installed, shows
+  `installed: 26.13.0 runs (package.json allows >=22)`, as `hct doctor`'s
+  note does, instead of the default it doesn't run (`rangeRun` in JSON).
+
+- **A git worktree of hecatron runs its own binary:** `bin/hecatron` read
+  `.git/HEAD`, which a worktree doesn't have (its `.git` is a file naming
+  the git directory), so after `hct self build` in a worktree, `hct status`
+  and the other binary-only commands still said they need the binary.
+
+- **A workspace at the root is its language's component:** a Cargo
+  workspace whose members sit in `server/`, `crates/` and `clients/rust/`
+  is Rust's at the root, so `hct test rust` runs `cargo test` for every
+  member instead of `clients/rust/` alone (#255). The same holds for
+  `go.work`, Gradle's `settings.gradle(.kts)`, a Maven `pom.xml` with
+  `<modules>`, a `.sln` or `.slnx`, npm, Yarn and pnpm workspaces, and uv
+  workspaces, whenever some of the language's packages sit outside the
+  directory named for it.
+
+- **A root package beside packages below it is a component too:** a
+  `package.json` with dependencies above serverless layers
+  (`layers/a/nodejs/`, `layers/b/nodejs/`) gives components `.`,
+  `layers/a/nodejs` and `layers/b/nodejs`, so the root's dependencies are
+  tested, audited and licensed (#238); a root `go.mod` or Cargo package
+  beside one in `clients/go/` or `clients/rust/` does the same. A
+  workspaces root and a `package.json` carrying only tooling stay as
+  they were. The Node hooks at the root no longer run packages below that
+  are components of their own, and a directory several components share
+  (a language whose `implPath` doesn't vary by component) runs once.
+
+- **A language around other components claims only its own files:** with a Cargo
+  workspace at the root, `hct status` and `--changed` give Rust only Rust's
+  changes (`*.rs`, `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`...);
+  a crash dump or a README beside the crates is another change, not a
+  reason to run `hct test rust`. This holds for any directory of a
+  language that holds other components, for every definition with the new
+  `sourceFiles` key (C#, Go, Java, JavaScript, Kotlin, Python, Rust); a
+  single package at the root still claims every file in it.
+  Files inside another git repository or worktree below the root (an
+  agent's worktree in `.claude/worktrees/`, a clone) are no longer counted
+  as the project's changes at all.
+
+- **Android apps build and test their debug variants.** In a Gradle build
+  with an Android module, `hct build` runs `assembleDebug` and `hct test`
+  `testDebugUnitTest`, as a newcomer would, instead of `assemble` and
+  `test`, which also build the release variants: those need a signing
+  config and services files only the app's maintainers have. Found by the
+  real-apps workflow (AntennaPod, Pokedex, bitwarden).
+
+- **`--plan` on the run commands:** `hct test --changed --plan` (and
+  `lint`, `build`, `retest` and the others, with or without `--changed`)
+  prints what the run would do and runs nothing: the base, every changed
+  file with what it selects and why (its directory's language and
+  component, a build file above languages' directories, hooks, the
+  configuration, a task's `taskPaths`, nothing, or inside another git
+  repository), the jobs with their components' directories, and the jobs
+  skipped up front (disabled, not installed, no hook). Exit 0. Agent
+  output gives a line per file, job and skip; `--output json` gives
+  `base`, `files`, `jobs` and `skipped` (#263). The bash runner says
+  `--plan` and `--changed` need the binary instead of taking them for
+  targets.
+
+- **A JVM build runs on a JDK new enough for the Java it compiles for.**
+  A build that targets Java 21 (`sourceCompatibility`,
+  `JavaVersion.VERSION_21`, Kotlin's `jvmTarget`, `options.release`,
+  `maven.compiler.release`, also from a convention plugin or the version
+  catalog) now runs on an installed JDK 21 or later instead of an older
+  default ("invalid source release: 21"), and `hct install` adds one when
+  none is installed. Found by the real-apps workflow (nextcloud, Pocket
+  Casts and Lawnchair's Android apps).
+
+- **Xcode builds use the Xcode a `.xcode-version` file asks for:** where
+  the selected Xcode isn't that version, `hct build` picks an installed one
+  that is (`/Applications/Xcode_27.0.app`, `Xcode-27.0.app`) through
+  `DEVELOPER_DIR`; without one, it skips when the selected Xcode is older,
+  naming the version to install. A failed build of a project last upgraded
+  by a newer Xcode (`LastUpgradeCheck`) says so after its errors.
+- **xcodebuild's derived data is outside the repository:** in
+  `~/Library/Developer/Xcode/DerivedData/hecatron-<directory>-<hash>`
+  (`HECATRON_XCODE_DERIVED_DATA` names another parent), not `.build/xcode`,
+  where an app's own SwiftLint build phase linted the package checkouts
+  and failed (Gifski). `hct clean` removes it, and a leftover
+  `.build/xcode`.
+- **A failed job's excerpt shows its errors before its warnings:** of the
+  lines it matches, those reporting only a warning or a note come last,
+  and the generic patterns also find make's `*** ... Error 2`, `No such
+  file or directory`, a file's `error:` without a line, and xcodebuild's
+  `** BUILD FAILED **` with the commands it lists as failed. An xcodebuild
+  log no longer gives an excerpt of its warnings about script phases
+  (mullvadvpn-app's missing `cargo`).
+- **`hct _xcode plan` says the apps below build on their own** where a
+  directory has no Xcode project but has apps below it.
+- **A scheme that runs a script target first is still the app's:** an
+  aggregate or legacy target listed before the app (LoopKit/Loop's
+  `Cartfile`) no longer hides the app's scheme, so `hct build` builds
+  `Loop`, not its watchOS app's `WatchApp`.
+- **A Swift package an Xcode app below uses is built by the app:** where
+  `xcodebuild` is installed, the root `Package.swift` that an app's
+  project below refers to as a local package (isowords'
+  `App/isowords.xcodeproj`) is built for the app's platform by the app's
+  build, not by SwiftPM for the Mac, where its iOS modules don't compile.
+
 ## 0.7.0 (2026-10-29)
 
 - **`curl … | sh` on macOS** says how to put `hct` on PATH in the current
