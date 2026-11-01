@@ -165,6 +165,32 @@ func (d *download) fetchVerified(system System, cacheDir string) (string, error)
 	if err := d.resolveURL(system); err != nil {
 		return "", err
 	}
+	// Fetch retries a failed connection or answer; a transfer that drops
+	// partway (proxy.golang.org's "stream error") is retried here, from
+	// the start.
+	var partial string
+	for try := 0; ; try++ {
+		partial, err = d.fetchOnce(system, cacheDir)
+		if err == nil || try+1 >= downloadTries || !errors.Is(err, errTransfer) {
+			break
+		}
+		time.Sleep(retryDelay)
+	}
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = os.Remove(partial) }()
+	if got := fileSHA256(partial); got != sum {
+		return "", fmt.Errorf("%s doesn't match its checksum: sha256 %s, want %s", d.URL, got, sum)
+	}
+	return path, os.Rename(partial, path)
+}
+
+// errTransfer marks a download that failed while its body was read.
+var errTransfer = errors.New("the transfer failed")
+
+// fetchOnce downloads the URL into a new partial file in cacheDir.
+func (d *download) fetchOnce(system System, cacheDir string) (string, error) {
 	body, err := system.Fetch(d.URL)
 	if err != nil {
 		return "", err
@@ -174,19 +200,16 @@ func (d *download) fetchVerified(system System, cacheDir string) (string, error)
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = os.Remove(partial.Name()) }()
-	hash := sha256.New()
-	_, err = io.Copy(io.MultiWriter(partial, hash), body)
-	if closeErr := partial.Close(); err == nil {
-		err = closeErr
+	_, err = io.Copy(partial, body)
+	if closeErr := partial.Close(); err == nil && closeErr != nil {
+		_ = os.Remove(partial.Name())
+		return "", closeErr
 	}
 	if err != nil {
-		return "", fmt.Errorf("%s: %w", d.URL, err)
+		_ = os.Remove(partial.Name())
+		return "", fmt.Errorf("%s: %w: %w", d.URL, errTransfer, err)
 	}
-	if got := hex.EncodeToString(hash.Sum(nil)); got != sum {
-		return "", fmt.Errorf("%s doesn't match its checksum: sha256 %s, want %s", d.URL, got, sum)
-	}
-	return path, os.Rename(partial.Name(), path)
+	return partial.Name(), nil
 }
 
 func fileSHA256(path string) string {
@@ -378,12 +401,15 @@ var downloadClient = &http.Client{Transport: &http.Transport{
 
 const downloadTries = 5
 
+// retryDelay is the wait between tries (tests shorten it).
+var retryDelay = 3 * time.Second
+
 // Fetch implements System: the URL's body, after up to five tries.
 func (OS) Fetch(url string) (io.ReadCloser, error) {
 	var lastErr error
 	for try := 0; try < downloadTries; try++ {
 		if try > 0 {
-			time.Sleep(3 * time.Second)
+			time.Sleep(retryDelay)
 		}
 		response, err := downloadClient.Get(url)
 		if err != nil {

@@ -11,7 +11,7 @@ install_linux() { apt_install racket; }
 # installation scope, and installing them again in user scope fails.)
 deps() {
     raco test --help >/dev/null 2>&1 && racket -l rackunit -e '' >/dev/null 2>&1 && return
-    raco pkg install --auto --skip-installed rackunit-lib compiler-lib
+    retry raco pkg install --auto --skip-installed rackunit-lib compiler-lib
 }
 
 log "Installing Racket..."

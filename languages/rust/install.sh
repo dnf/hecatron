@@ -13,7 +13,7 @@ _install() {
     _rustc_works && return
     if has rustup; then
         log "Repairing rustup: installing Rust $(default_version) as its default..."
-        rustup toolchain install "$(default_version)" --profile default </dev/null
+        retry rustup toolchain install "$(default_version)" --profile default </dev/null
         rustup default "$(default_version)" </dev/null
     else
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
@@ -46,7 +46,7 @@ _install_versions() {
         [ -n "${spec}" ] || continue
         toolchain="$(_toolchain "${spec}")"
         log "Installing Rust ${toolchain} with rustup..."
-        rustup toolchain install "${toolchain}" --profile default </dev/null
+        retry rustup toolchain install "${toolchain}" --profile default </dev/null
     done <<<"${specs}"
 }
 # Components rustup leaves out of the default profile that crates need:
@@ -58,7 +58,7 @@ _install_components() {
     log "Adding rust-src, which ui_test's UI tests need..."
     while IFS= read -r toolchain; do
         [ -n "${toolchain}" ] || continue
-        rustup component add rust-src --toolchain "${toolchain}" </dev/null
+        retry rustup component add rust-src --toolchain "${toolchain}" </dev/null
     done < <(rustup toolchain list | sed 's/ .*//')
 }
 deps() {

@@ -31,9 +31,9 @@ _npm_global() {
     local prefix tool
     prefix="$(npm prefix -g)"
     if [ -w "${prefix}/lib" ]; then
-        npm install -g "$@"
+        retry npm install -g "$@"
     else
-        $SUDO npm install -g "$@"
+        retry $SUDO npm install -g "$@"
     fi
     # Every command the install added (elm, elm-test, elm-review...) that
     # isn't on PATH yet.

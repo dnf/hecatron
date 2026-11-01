@@ -24,8 +24,8 @@ install_linux() {
 _uv_python_install() {
     uv python install "$1" </dev/null && return
     log "Updating uv, which has no build of Python $1..."
-    uv self update </dev/null
-    uv python install "$1" </dev/null
+    retry uv self update </dev/null
+    retry uv python install "$1" </dev/null
 }
 
 # Every Python version the project's components resolve to (pin files, the
