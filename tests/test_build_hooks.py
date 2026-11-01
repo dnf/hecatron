@@ -130,6 +130,31 @@ class GradleTest(BuildHookTest):
         self.assertIn("is in the Gradle project " + os.path.realpath(self.path("core")), result.stdout)
         self.assertIn(os.path.realpath(self.path("core")) + "\n", result.stdout)
 
+    def test_one_gradle_run_at_a_time_in_a_build(self):
+        # Lawnchair's java and kotlin jobs ran one Gradle build at once and
+        # overwrote each other's generated sources.
+        write(self.path("build.gradle"), "")
+        write(self.path("gradlew"), '#!/bin/sh\n'
+              'if [ -e running ]; then echo overlap; exit 1; fi\n'
+              'touch running; sleep 1; rm running; echo "gradlew $*"\n', 0o755)
+        environment = {**os.environ, "HECATRON_ROOT": self.root, "HECATRON_HOME": ""}
+        jobs = [subprocess.Popen(["bash", os.path.join(HOME, "languages", lang, "hooks", "build.sh")],
+                                 cwd=self.root, env={**environment, "HECATRON_LANG": lang},
+                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                for lang in ("java", "kotlin")]
+        outputs = [job.communicate()[0] for job in jobs]
+        self.assertEqual([job.returncode for job in jobs], [0, 0], outputs)
+        self.assertIn("waiting for another Gradle run in " + os.path.realpath(self.root), "".join(outputs))
+        self.assertFalse(os.path.exists(self.path(".gradle", "hecatron.lock")))
+
+    def test_a_lock_left_by_a_killed_run_is_taken_over(self):
+        write(self.path("build.gradle"), "")
+        write(self.path(".gradle", "hecatron.lock", "pid"), "999999\n")
+        self.fake("gradle")
+        result = self.hook("java", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("waiting", result.stdout)
+
     def test_the_jvm_gets_a_utf8_locale_when_none_is_set(self):
         write(self.path("build.gradle"), "")
         self.fake("gradle", 'echo "LANG=${LANG:-}"')

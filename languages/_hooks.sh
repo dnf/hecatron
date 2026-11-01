@@ -237,7 +237,41 @@ maven() { if [ -x ./mvnw ]; then run ./mvnw -B "$@"; else run mvn -B "$@"; fi; }
 gradle_() {
     local _wrapper=./gradlew
     [ -x "${_wrapper}" ] || _wrapper="$(dir_above_with gradlew || true)/gradlew"
-    if [ "${_wrapper}" != /gradlew ] && [ -x "${_wrapper}" ]; then run "${_wrapper}" "$@"; else run gradle "$@"; fi
+    local _status=0
+    if [ "${_wrapper}" != /gradlew ] && [ -x "${_wrapper}" ]; then
+        gradle_lock "$(dirname "${_wrapper}")"
+        run "${_wrapper}" "$@" || _status=$?
+    else
+        gradle_lock .
+        run gradle "$@" || _status=$?
+    fi
+    rm -rf "${_gradle_lock:?}"
+    return "${_status}"
+}
+# One Gradle run at a time in a build: Java and Kotlin sources in one build
+# (Lawnchair) make two jobs, and two Gradle runs at once in one project
+# overwrite each other's generated sources (KSP's Dagger components) and
+# double the memory. The second waits, then finds most tasks up to date. A
+# lock whose holder was killed is taken over.
+_gradle_lock=""
+gradle_lock() {
+    local _lock _holder _said=""
+    _lock="$(cd "$1" && pwd -P)/.gradle/hecatron.lock"
+    mkdir -p "$(dirname "${_lock}")"
+    until mkdir "${_lock}" 2>/dev/null; do
+        _holder="$(cat "${_lock}/pid" 2>/dev/null || true)"
+        if [ -n "${_holder}" ] && ! kill -0 "${_holder}" 2>/dev/null; then
+            rm -rf "${_lock:?}"
+            continue
+        fi
+        if [ -z "${_said}" ]; then
+            echo "${HECATRON_LANG:-}: ${_hook_action}: waiting for another Gradle run in $(dirname "$(dirname "${_lock}")")"
+            _said=1
+        fi
+        sleep 2
+    done
+    echo "$$" >"${_lock}/pid"
+    _gradle_lock="${_lock}"
 }
 is_gradle() { exists 'build.gradle' || exists 'build.gradle.kts'; }
 # An Android build: a module with an AndroidManifest.xml in src/main (or
