@@ -99,7 +99,10 @@ build (a module with `src/main/AndroidManifest.xml`, or an
 `AndroidManifest.xml` beside its `build.gradle` as in AOSP's layout) builds and
 unit-tests its debug variants (`assembleDebug`, `testDebugUnitTest`), as a
 newcomer would: release needs a signing config and services files only the
-maintainers have; .NET tests roll forward to the
+maintainers have; Gradle runs one at a time in a build: a build with
+Java and Kotlin sources is two jobs, and the second waits for the first
+(two runs at once overwrite each other's generated sources), then finds
+most tasks up to date; .NET tests roll forward to the
 installed runtime, and a directory with several projects and no solution
 tests each test project. CMake and Meson build in `build/`, or `_build/`
 when the project keeps files of its own in `build/` (Zstandard's CMake
