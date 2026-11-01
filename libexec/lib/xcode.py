@@ -81,6 +81,10 @@ LOCAL_PACKAGE = re.compile(
 # (firefox-ios/ThirdParty/Deferred). Compared lowercased.
 NOT_APPS = {"build", "carthage", "deriveddata", "external", "node_modules", "pods", "third-party", "third_party",
             "thirdparty", "vendor"}
+# The words that, first or last in a directory's name, make it an example
+# app's, beside the project's own: firefox-ios' SampleBrowser, which its CI
+# doesn't build and which lags BrowserKit, or a library's DemoApp.
+EXAMPLE_WORDS = {"demo", "demos", "example", "examples", "sample", "samples"}
 # How many levels below a directory its apps' containers can be
 # (internal/xcode's Below()).
 APPS_DEPTH = 5
@@ -237,7 +241,14 @@ def language_sources(lang: str) -> list[str]:
 
 def _skipped(name: str) -> bool:
     lowered = name.lower()
-    return name.startswith(".") or lowered in NOT_APPS or lowered in project.SKIPPED_DIRS
+    return name.startswith(".") or lowered in NOT_APPS or lowered in project.SKIPPED_DIRS or _example(name)
+
+
+def _example(name: str) -> bool:
+    """Whether a directory's name starts or ends with an example word, as
+    words go in SampleBrowser, Demo-App or ios_examples."""
+    words = [word.lower() for word in re.findall(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|[0-9]+", name)]
+    return bool(words) and (words[0] in EXAMPLE_WORDS or words[-1] in EXAMPLE_WORDS)
 
 
 def containers_below(start: str) -> list[str]:

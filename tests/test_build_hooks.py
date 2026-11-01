@@ -930,6 +930,7 @@ class XcodeAppsBelowTest(BuildHookTest):
                      "firefox-ios/Client.xcodeproj/project.pbxproj", "firefox-ios/Client/AppDelegate.swift",
                      "focus-ios/Blockzilla.xcodeproj/project.pbxproj", "focus-ios/Blockzilla/AppDelegate.swift",
                      "Example/Example.xcodeproj/project.pbxproj", "Example/Example/a.swift",
+                     "SampleBrowser/SampleBrowser.xcodeproj/project.pbxproj", "SampleBrowser/SampleBrowser/a.swift",
                      "ThirdParty/Deferred/Deferred.xcodeproj/project.pbxproj", "ThirdParty/Deferred/Deferred/a.swift",
                      "Vendor/Lib/Lib.xcodeproj/project.pbxproj", "Vendor/Lib/a.swift",
                      ".github/Tool/Tool.xcodeproj/project.pbxproj", ".github/Tool/a.swift",
@@ -989,7 +990,8 @@ class XcodeAppsBelowTest(BuildHookTest):
         binary = self.path(".hct", "hct")
         write(binary, '#!/bin/sh\n[ "$(pwd)" = "' + os.path.realpath(self.root) + '" ] || '
                       '{ printf "unsure\\tnot here\\n"; exit 0; }\nprintf "unsure\\tno Xcode project here\\n'
-                      'nested\\tExample/Example.xcodeproj\\nnested\\tfirefox-ios/Client.xcodeproj\\n'
+                      'nested\\tExample/Example.xcodeproj\\nnested\\tSampleBrowser/SampleBrowser.xcodeproj\\n'
+                      'nested\\tfirefox-ios/Client.xcodeproj\\n'
                       'nested\\tVendor/Lib/Lib.xcodeproj\\nnested\\tAssets/Assets.xcodeproj\\n"\n', 0o755)
         result = self.hook("swift", "build", ".", HECATRON_BINARY=binary)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
