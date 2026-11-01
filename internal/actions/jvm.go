@@ -108,7 +108,8 @@ var settingsInclude = regexp.MustCompile(`(?m)^[ \t]*include[ \t(]`)
 
 // androidBuild is whether an Android module is here or below
 // (is_android_build in languages/_hooks.sh): an AndroidManifest.xml in a
-// src/main or src/androidMain, outside build output. Its release variants
+// src/main or src/androidMain, or beside its build.gradle as in AOSP's
+// layout, outside build output. Its release variants
 // need a signing config and services files only the maintainers have, so
 // the debug variants are built and tested.
 func androidBuild(dir string) bool {
@@ -132,7 +133,8 @@ func androidBuild(dir string) bool {
 			return nil
 		}
 		slashed := "/" + filepath.ToSlash(rel)
-		if d.Name() == "AndroidManifest.xml" && (strings.Contains(slashed, "/src/main/") || strings.Contains(slashed, "/src/androidMain/")) {
+		besideBuild := existsAny(filepath.Dir(path), []string{"build.gradle", "build.gradle.kts"})
+		if d.Name() == "AndroidManifest.xml" && (strings.Contains(slashed, "/src/main/") || strings.Contains(slashed, "/src/androidMain/") || besideBuild) {
 			found = true
 		}
 		return nil

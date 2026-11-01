@@ -41,6 +41,12 @@ func projects() []project {
 		{name: "java android app", lang: "java", files: map[string]string{
 			"settings.gradle.kts": "include(\":app\")\n", "build.gradle.kts": "", "app/build.gradle.kts": "",
 			"app/src/main/AndroidManifest.xml": "<manifest/>\n"}},
+		// AOSP's layout (Lawnchair): the manifest beside the build file.
+		{name: "java android app, AOSP layout", lang: "java", files: map[string]string{
+			"settings.gradle": "include ':shared'\n", "build.gradle": "", "AndroidManifest.xml": "<manifest/>\n",
+			"src/com/example/Main.java": ""}},
+		{name: "java gradle, a stray manifest", lang: "java", files: map[string]string{
+			"settings.gradle": "", "build.gradle": "", "docs/AndroidManifest.xml": "<manifest/>\n"}},
 		{name: "python scripts only", lang: "python", files: map[string]string{"add.py": "", "test_add.py": ""}},
 		{name: "python projects below", lang: "python", files: map[string]string{
 			"py-polars/pyproject.toml": "", "sdk/python/setup.py": "", "sdk/python/x/pyproject.toml": "", "tests/conftest.py": ""}},

@@ -241,15 +241,26 @@ gradle_() {
 }
 is_gradle() { exists 'build.gradle' || exists 'build.gradle.kts'; }
 # An Android build: a module with an AndroidManifest.xml in src/main (or
-# Kotlin Multiplatform's src/androidMain) here or below. Its release
+# Kotlin Multiplatform's src/androidMain), or beside its build.gradle as in
+# AOSP's layout (Lawnchair), here or below. Its release
 # variants need a signing config and services files only the maintainers
 # have (AntennaPod's validateSigningFreeRelease), so hct builds and
 # unit-tests the debug variants, as a newcomer's `./gradlew assembleDebug`
 # does; Gradle runs those tasks in every project that has them.
 is_android_build() {
     find . -maxdepth 6 \( -name build -o -name .gradle -o -name .git -o -name node_modules \) -prune -o \
-        -type f -name AndroidManifest.xml \( -path '*/src/main/*' -o -path '*/src/androidMain/*' \) -print 2>/dev/null |
-        grep -q .
+        -type f -name AndroidManifest.xml -print 2>/dev/null |
+        {
+            while IFS= read -r _manifest; do
+                case "${_manifest}" in
+                    */src/main/* | */src/androidMain/*) return 0 ;;
+                esac
+                if [ -f "$(dirname "${_manifest}")/build.gradle" ] || [ -f "$(dirname "${_manifest}")/build.gradle.kts" ]; then
+                    return 0
+                fi
+            done
+            return 1
+        }
 }
 
 # The one solution or project file `dotnet` should act on, when a directory
@@ -1264,7 +1275,7 @@ jvm_select_jdk() {
     if [ -z "${_ceiling}${_floor}" ]; then
         jvm_has_compiler && return 0
     else
-        _current="$(java_feature "$( (java -version 2>&1 || true) | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -1)")"
+        _current="$(java_feature "$( ("$(jvm_java)" -version 2>&1 || true) | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -1)")"
         if [ -n "${_current}" ] && jvm_has_compiler && jvm_within "${_current}" "${_floor}" "${_ceiling}"; then
             return 0
         fi
@@ -1290,6 +1301,16 @@ jvm_select_jdk() {
     echo "Using JDK ${_version} (${_jdk_home}): ${_why}."
     export JAVA_HOME="${_jdk_home}"
     export PATH="${_jdk_home}/bin:${PATH}"
+}
+# The java a build runs on: Gradle and Maven take JAVA_HOME's over PATH's
+# (a runner's JAVA_HOME can name JDK 17 while PATH finds the 25 hecatron
+# installed).
+jvm_java() {
+    if [ -n "${JAVA_HOME:-}" ] && [ -x "${JAVA_HOME}/bin/java" ]; then
+        echo "${JAVA_HOME}/bin/java"
+    else
+        echo java
+    fi
 }
 # Whether a JDK feature version is within a floor and a ceiling (either
 # empty: no limit).

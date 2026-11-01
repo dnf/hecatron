@@ -116,6 +116,21 @@ class JvmTest(unittest.TestCase):
               "compileOptions { sourceCompatibility = JavaVersion.VERSION_17 }\n")
         self.assertEqual(jvm.floor(self.component)[0], 17)
 
+    def test_a_pinned_jdk_is_a_floor(self):
+        # pocket-casts' Android app targets 17 and pins 21: a dependency's
+        # Java 21 class files don't load in javac on JDK 17.
+        write(os.path.join(self.component, "build.gradle.kts"), 'java { sourceCompatibility = "17" }\n')
+        write(os.path.join(self.component, ".java-version"), "21.0\n")
+        self.assertEqual(jvm.floor(self.component, self.root), (21, "it pins JDK 21 (lang/java/.java-version)"))
+        os.remove(os.path.join(self.component, ".java-version"))
+        for name, text, version in ((".sdkmanrc", "# sdk env\njava=22.0.2-tem\n", 22),
+                                    (".tool-versions", "nodejs 22\njava temurin-23.0.1+11\n", 23),
+                                    (".java-version", "corretto64-11.0.2\n", 17),
+                                    (".java-version", "1.8\n", 17)):
+            write(os.path.join(self.root, name), text)
+            self.assertEqual(jvm.floor(self.component, self.root)[0], version, name)
+            os.remove(os.path.join(self.root, name))
+
     def test_maven_and_old_targets(self):
         write(os.path.join(self.component, "pom.xml"),
               "<properties><maven.compiler.release>17</maven.compiler.release></properties>\n")

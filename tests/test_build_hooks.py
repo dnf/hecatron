@@ -98,6 +98,21 @@ class GradleTest(BuildHookTest):
         self.fake("gradle")
         self.assertIn("gradle assemble\n", self.hook("kotlin", "build", ".").stdout)
 
+    def test_an_aosp_layout_android_app_builds_its_debug_variants(self):
+        # Lawnchair: Launcher3's manifest beside its build.gradle, sources in src/.
+        write(self.path("settings.gradle"), "include ':shared'\n")
+        write(self.path("build.gradle"), "")
+        write(self.path("AndroidManifest.xml"), "<manifest/>\n")
+        write(self.path("docs", "AndroidManifest.xml"), "<manifest/>\n")
+        self.fake("gradle")
+        self.assertIn("gradle assembleDebug", self.hook("java", "build", ".").stdout)
+
+    def test_a_manifest_away_from_a_build_file_isnt_android(self):
+        write(self.path("build.gradle"), "")
+        write(self.path("docs", "AndroidManifest.xml"), "<manifest/>\n")
+        self.fake("gradle")
+        self.assertIn("gradle assemble\n", self.hook("java", "build", ".").stdout)
+
     def test_another_failure_is_not_retried(self):
         write(self.path("build.gradle"), "")
         self.fake("gradle", "exit 1")
@@ -153,6 +168,24 @@ class JdkTest(BuildHookTest):
         write(self.path("build.gradle.kts"), "android { compileOptions { sourceCompatibility = JavaVersion.VERSION_21 } }\n")
         result = self.hook("kotlin", "test", ".", HECATRON_HOME=self.home, JAVA_HOME="")
         self.assertIn("it compiles for Java 21 (build.gradle.kts), which needs JDK 21 or later.", result.stdout)
+        self.assertIn("JAVA_HOME=" + self.jdk, result.stdout)
+
+    def test_java_home_is_the_jdk_the_build_runs_on(self):
+        # A runner's JAVA_HOME names JDK 17 while PATH finds a newer java:
+        # Gradle runs on JAVA_HOME's (Lawnchair's java build).
+        self.java_on_path("25.0.1")
+        old = self.path(".jdk17")
+        write(os.path.join(old, "bin", "java"), "#!/bin/sh\necho 'openjdk version \"17.0.11\"' >&2\n", 0o755)
+        write(os.path.join(old, "bin", "javac"), "#!/bin/sh\n", 0o755)
+        write(self.path("build.gradle.kts"), "java { sourceCompatibility = JavaVersion.VERSION_21 }\n")
+        result = self.hook("kotlin", "test", ".", HECATRON_HOME=self.home, JAVA_HOME=old)
+        self.assertIn("JAVA_HOME=" + self.jdk, result.stdout)
+
+    def test_a_pinned_jdk_is_used(self):
+        self.java_on_path("17.0.11")
+        write(self.path(".java-version"), "21.0\n")
+        result = self.hook("kotlin", "build", ".", HECATRON_HOME=self.home, JAVA_HOME="")
+        self.assertIn("it pins JDK 21 (.java-version), which needs JDK 21 or later.", result.stdout)
         self.assertIn("JAVA_HOME=" + self.jdk, result.stdout)
 
     def test_a_jdk_at_the_floor_or_later_is_kept(self):

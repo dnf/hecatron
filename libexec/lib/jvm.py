@@ -24,7 +24,10 @@ which is then the JDK's own: Kotlin's Gradle plugin fails on the mismatch.
 A floor is the other way round: a build that compiles for Java 21
 (sourceCompatibility, JavaVersion.VERSION_21, jvmTarget, javac's --release,
 maven.compiler.release) needs a JDK of 21 or later; on JDK 17, javac says
-"invalid source release: 21" (nextcloud's Android app).
+"invalid source release: 21" (nextcloud's Android app). So does a JDK the
+project pins (.java-version, .sdkmanrc, .tool-versions): its dependencies may
+be compiled for it (pocket-casts' Android app pins 21 and targets 17, and
+javac on JDK 17 can't read a dependency's Java 21 class files).
 """
 
 from __future__ import annotations
@@ -232,6 +235,28 @@ _TARGET_PATTERNS = (
 _TARGET_LINE = re.compile(r"Compatibility|jvmTarget|JvmTarget|JavaVersion|options\.release")
 
 
+# The JDK a project pins, in each file's spelling: .java-version's "21.0",
+# "temurin-21.0.1" or "1.8"; .sdkmanrc's "java=21.0.2-tem"; .tool-versions'
+# "java temurin-21.0.1+12".
+_PINS = (
+    (".java-version", re.compile(r"\A\s*(\S+)")),
+    (".sdkmanrc", re.compile(r"^\s*java\s*=\s*(\S+)", re.M)),
+    (".tool-versions", re.compile(r"^\s*java\s+(\S+)", re.M)),
+)
+
+
+def _pinned(directory: str, root: str | None) -> list[tuple[int, str]]:
+    found = []
+    for where in dict.fromkeys((directory, _gradle_root(directory, root), root or directory)):
+        for name, pattern in _PINS:
+            path = os.path.join(where, name)
+            match = pattern.search(_read(path))
+            version = re.match(r"(?:1\.)?(\d+)", re.sub(r"^[A-Za-z]\w*?-", "", match.group(1))) if match else None
+            if version:
+                found.append((int(version.group(1)), path))
+    return found
+
+
 def floor(directory: str, root: str | None = None) -> tuple[int, str] | None:
     gradle_root = _gradle_root(directory, root)
     catalog = _catalog_versions(gradle_root)
@@ -249,12 +274,13 @@ def floor(directory: str, root: str | None = None) -> tuple[int, str] | None:
             if _TARGET_LINE.search(line):
                 found += [(int(catalog[name]), path) for name in _CATALOG_REFERENCE.findall(line)
                           if name in catalog and catalog[name].isdigit()]
+    found = [(n, path, f"it compiles for Java {n}") for n, path in found]
+    found += [(n, path, f"it pins JDK {n}") for n, path in _pinned(directory, root)]
     found = [entry for entry in found if 8 < entry[0] < 100]
     if not found:
         return None
-    target, path = max(found)
-    where = os.path.relpath(path, root or gradle_root)
-    return target, f"it compiles for Java {target} ({where})"
+    version, path, why = max(found)
+    return version, f"{why} ({os.path.relpath(path, root or gradle_root)})"
 
 
 def ceiling(directory: str, root: str | None = None) -> tuple[int, str] | None:

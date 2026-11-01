@@ -95,7 +95,8 @@ build of one project. JVM tests run Maven's package phase in a
 multi-module build (its modules can need each other's jars), Gradle's
 `jvmTest`, else `allTests`, in a Kotlin Multiplatform build (no `test`
 task), and Mill's `__.test` where the build is `build.mill`. An Android
-build (a module with `src/main/AndroidManifest.xml`) builds and
+build (a module with `src/main/AndroidManifest.xml`, or an
+`AndroidManifest.xml` beside its `build.gradle` as in AOSP's layout) builds and
 unit-tests its debug variants (`assembleDebug`, `testDebugUnitTest`), as a
 newcomer would: release needs a signing config and services files only the
 maintainers have; .NET tests roll forward to the
