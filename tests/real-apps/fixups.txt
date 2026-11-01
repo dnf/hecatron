@@ -17,5 +17,6 @@ android home-assistant/android: cp .github/mock-google-services.json app/google-
 android home-assistant/android: cp .github/mock-google-services.json wear/google-services.json
 android home-assistant/android: cp .github/mock-google-services.json automotive/google-services.json
 android ProtonVPN/android-app: mkdir -p .hecatron/languages/kotlin && printf '#!/usr/bin/env bash\ncd "$(git rev-parse --show-toplevel)" && exec ./gradlew assembleProductionVanillaOpenSourceDebug\n' > .hecatron/languages/kotlin/build.sh   # its README's build: one flavour, as a project hook
+android LawnchairLauncher/lawnchair: for l in java kotlin; do mkdir -p .hecatron/languages/$l && printf '#!/usr/bin/env bash\nsource "${HECATRON_HOME}/languages/_hooks.sh"\ncd "$(git rev-parse --show-toplevel)" && jvm_select_jdk && gradle_ assembleLawnWithQuickstepGithubDebug\n' > .hecatron/languages/$l/build.sh; done   # its CI's build, one variant per job (all three at once exhaust the runner's memory), through hecatron's JDK choice and Gradle lock (#276)
 xcode mozilla-mobile/firefox-ios: sh ./bootstrap.sh   # its README: nimbus-fml.sh, user scripts (#285)
 xcode mozilla-mobile/firefox-ios: sh ./bootstrap.sh focus   # focus-ios's content blocker lists
