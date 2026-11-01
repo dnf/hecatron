@@ -54,7 +54,8 @@ implementations. The pieces are in [modules](modules.md).
 The Go path (`cmd/hecatron/run.go`, `hooks.go`, `internal/runner`):
 
 1. **Arguments** as `run.sh` reads them (`-j`, `-s`, `-c`, `--output`,
-   `--timeout`, `--changed`, the action's own flags); a usage error exits 2.
+   `--timeout`, `--changed`, `--plan`, the action's own flags); a usage
+   error exits 2.
 2. **Targets.** Named targets resolve to languages (abbreviations, typos),
    project tasks or `shell`; an unknown or unadded one is left to `run.sh`
    for its own message. With `--changed`, `internal/changed` selects them
@@ -62,7 +63,9 @@ The Go path (`cmd/hecatron/run.go`, `hooks.go`, `internal/runner`):
 3. **Jobs.** Without targets: one job per language with a hook for the
    action (`Shell().HookLanguages`), marked disabled (`local.json`) or not
    installed (its `dependency` isn't on PATH), then one per project task
-   and, for `lint`, `shell`.
+   and, for `lint`, `shell`. `--plan` stops here (`runplan.go`): it prints
+   the selection, each changed file's attribution and the jobs, with the
+   skips known up front, and exits 0 without running any.
 4. **Each language job** (`languageExec`) resolves the hook
    (`.hecatron/languages/<lang>/<action>.sh`, else
    `$HECATRON_HOME/languages/<lang>/hooks/<action>.sh`), then for each

@@ -5,12 +5,18 @@
 # (labels real-app, real-app:<track>) when something goes wrong or nothing
 # was built, or comments on the app's open one. No AI:
 # tests/real-apps/try-next.sh and report.py.
+#
+# GitHub drops scheduled runs when it's busy (a two-hourly cron ran about
+# every five hours), so each track is scheduled every half hour and its pick
+# job stops the run when the track built in the last 110 minutes; a retry
+# goes ahead at once.
 name: real apps
+run-name: "real apps (${{ inputs.track || (github.event.schedule == '28,58 * * * *' && 'android') || 'xcode' }})"
 
 on:
   schedule:
-    - cron: "23 */2 * * *" # xcode
-    - cron: "53 */2 * * *" # android
+    - cron: "13,43 * * * *" # xcode
+    - cron: "28,58 * * * *" # android
   workflow_dispatch:
     inputs:
       track:
@@ -29,7 +35,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  TRACK: ${{ inputs.track || (github.event.schedule == '53 */2 * * *' && 'android') || 'xcode' }}
+  TRACK: ${{ inputs.track || (github.event.schedule == '28,58 * * * *' && 'android') || 'xcode' }}
 
 jobs:
   # Which app: the manual input, a retry, or whose turn it is; and the
@@ -38,9 +44,11 @@ jobs:
     if: github.repository == 'dnf/hecatron'
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       issues: read
     outputs:
+      skip: ${{ steps.pick.outputs.skip }}
       track: ${{ steps.pick.outputs.track }}
       runner: ${{ steps.pick.outputs.runner }}
       app: ${{ steps.pick.outputs.app }}
@@ -53,11 +61,13 @@ jobs:
         env:
           APP: ${{ inputs.app }}
           GH_TOKEN: ${{ github.token }}
+          GATE: ${{ github.event_name == 'schedule' && '110' || '' }}
         run: bash tests/real-apps/try-next.sh pick
 
   # Runs the app's own build scripts, so it gets no token that can write.
   build:
     needs: pick
+    if: needs.pick.outputs.skip != 'true'
     runs-on: ${{ needs.pick.outputs.runner }}
     timeout-minutes: 120
     permissions:
@@ -86,7 +96,17 @@ jobs:
       - name: Build the next app
         env:
           APP: ${{ needs.pick.outputs.app }}
+          RETRY_ISSUE: ${{ needs.pick.outputs.retry_issue }}
         run: bash tests/real-apps/try-next.sh build "${RUNNER_TEMP}/real-app"
+      # The app and whether it was a retry, small, for the next run's pick
+      # (the rotation follows the last build, not the clock).
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: real-app-meta
+          path: ${{ runner.temp }}/real-app/meta.tsv
+          retention-days: 30
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -104,7 +124,7 @@ jobs:
   # the app's code.
   report:
     needs: [pick, build]
-    if: always() && needs.pick.result == 'success' && needs.build.result != 'cancelled'
+    if: always() && needs.pick.result == 'success' && needs.pick.outputs.skip != 'true' && needs.build.result != 'cancelled'
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -1,0 +1,11 @@
+hct test --plan: 4 jobs would run, 2 skipped; nothing was run
+
+Would run:
+  go       clients/go/
+  rust     ./
+  codegen  project task
+  always   project task
+
+Would skip:
+  missing  not installed (hecatron-no-such-tool not found)
+  off      disabled

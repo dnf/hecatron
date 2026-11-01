@@ -1,9 +1,8 @@
 # Open-source Xcode apps the real-apps workflow's xcode track builds, one
 # every two hours in turn (.github/workflows/real-apps.yml, try-next.sh),
 # on macOS. One GitHub owner/repo per line; # starts a comment, which says
-# what the app is there for. Add to the end: the turn is the clock's
-# two-hour slot modulo the list's length, so inserting earlier only shifts
-# whose turn it is.
+# what the app is there for. Each run takes the app after the
+# last one built, so a new app can go anywhere.
 
 Ranchero-Software/NetNewsWire        # Mac app, Swift and Objective-C share the project
 Dimillian/IceCubesApp                # iOS with Catalyst, local Swift packages
@@ -56,8 +55,8 @@ gnachman/iTerm2                      # large Objective-C and Swift Mac app
 Clipy/Clipy                          # Mac app, CocoaPods
 sindresorhus/Gifski                  # Mac app with a Rust library
 OpenEmu/OpenEmu                      # Mac app, submodules
-LoopKit/Loop                         # workspace of several repositories
 signalapp/Signal-iOS                 # very large, CocoaPods, submodules
 ProtonVPN/ios-mac-app                # iOS and macOS apps in one repository
 mullvad/mullvadvpn-app               # app in ios/ of a Rust monorepo
 duckduckgo/apple-browsers            # iOS/ and macOS/ apps in one repository
+LoopKit/LoopWorkspace                # Loop and its packages as submodules, the way Loop is built (#268)

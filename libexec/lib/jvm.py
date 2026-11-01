@@ -7,6 +7,9 @@ files, for the JVM languages' installers and hooks.
     jvm.py ceiling <dir> [<root>]    the newest LTS JDK the build's own tools
                                      run on, with why, when that is older
                                      than the current LTS; nothing otherwise
+    jvm.py floor <dir> [<root>]      the oldest JDK that compiles for the Java
+                                     the build targets, with why; nothing
+                                     when it targets nothing past Java 8
 
 A Gradle or Maven toolchain names a JDK the build compiles or tests with,
 which Gradle and Maven's toolchains plugin find among the installed JDKs
@@ -17,6 +20,11 @@ parsing "25.0.5", and Kotlin 2.2 can't target the JDK's bytecode version that
 Java compiles to), so the build has to run on an older JDK. So does one whose
 Kotlin targets an older JVM (jvmTarget) while nothing sets Java's target,
 which is then the JDK's own: Kotlin's Gradle plugin fails on the mismatch.
+
+A floor is the other way round: a build that compiles for Java 21
+(sourceCompatibility, JavaVersion.VERSION_21, jvmTarget, javac's --release,
+maven.compiler.release) needs a JDK of 21 or later; on JDK 17, javac says
+"invalid source release: 21" (nextcloud's Android app).
 """
 
 from __future__ import annotations
@@ -207,6 +215,48 @@ def _kotlin_jvm_target(directory: str, root: str | None) -> int | None:
     return min(targets) if targets and min(targets) >= 11 else None
 
 
+# The Java a build compiles for, in Gradle's spellings (Android's
+# compileOptions, Kotlin's jvmTarget, javac's --release) and Maven's; 1.8
+# is 8. A line naming one with a catalog version (libs.versions.jdk.get())
+# reads the catalog.
+_TARGET_PATTERNS = (
+    r"JavaVersion\.VERSION_(?:1_)?(\d+)\b",
+    r"JavaVersion\.toVersion\(\s*[\"']?(?:1\.)?(\d+)",
+    r"JvmTarget\.JVM_(?:1_)?(\d+)\b",
+    r"\bjvmTarget\s*(?:=|\.set\()\s*[\"'](?:1\.)?(\d+)[\"']",
+    r"\b(?:source|target)Compatibility\s*(?:=|\.set\()\s*[\"']?(?:1\.)?(\d+)\b",
+    r"\boptions\.release(?:\.set\()?\s*=?\s*(\d+)\b",
+    r"<maven\.compiler\.(?:release|source|target)>\s*(?:1\.)?(\d+)\s*<",
+    r"<release>\s*(\d+)\s*</release>",
+)
+_TARGET_LINE = re.compile(r"Compatibility|jvmTarget|JvmTarget|JavaVersion|options\.release")
+
+
+def floor(directory: str, root: str | None = None) -> tuple[int, str] | None:
+    gradle_root = _gradle_root(directory, root)
+    catalog = _catalog_versions(gradle_root)
+    files = _files(gradle_root, (".gradle", ".gradle.kts"), depth=4)
+    # Convention plugins (Now in Android's build-logic) set it in Kotlin.
+    for plugins in ("buildSrc", "build-logic"):
+        files += _files(os.path.join(gradle_root, plugins), (".kt",), depth=8)
+    files += _poms(directory, root or directory)
+    found = []
+    for path in files:
+        text = _read(path)
+        for pattern in _TARGET_PATTERNS:
+            found += [(int(n), path) for n in re.findall(pattern, text)]
+        for line in text.splitlines():
+            if _TARGET_LINE.search(line):
+                found += [(int(catalog[name]), path) for name in _CATALOG_REFERENCE.findall(line)
+                          if name in catalog and catalog[name].isdigit()]
+    found = [entry for entry in found if 8 < entry[0] < 100]
+    if not found:
+        return None
+    target, path = max(found)
+    where = os.path.relpath(path, root or gradle_root)
+    return target, f"it compiles for Java {target} ({where})"
+
+
 def ceiling(directory: str, root: str | None = None) -> tuple[int, str] | None:
     limits = []
     target = _kotlin_jvm_target(directory, root)
@@ -227,8 +277,8 @@ def main(argv: list[str]) -> int:
         for feature in toolchains(argv[1], argv[2]):
             print(feature)
         return 0
-    if len(argv) in (2, 3) and argv[0] == "ceiling":
-        found = ceiling(argv[1], argv[2] if len(argv) == 3 else None)
+    if len(argv) in (2, 3) and argv[0] in ("ceiling", "floor"):
+        found = (ceiling if argv[0] == "ceiling" else floor)(argv[1], argv[2] if len(argv) == 3 else None)
         if found:
             print(f"{found[0]}\t{found[1]}")
         return 0

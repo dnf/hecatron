@@ -10,5 +10,10 @@ Dimillian/IceCubesApp: cp IceCubesApp.xcconfig.template IceCubesApp.xcconfig   #
 sindresorhus/Gifski: brew install swiftlint   # its README's "Building from source": the SwiftLint build phase needs it
 pointfreeco/isowords: make bootstrap-client   # its README's Getting Started for the iOS client: audio, fonts, words, Secrets.swift from the example
 xcode mullvad/mullvadvpn-app: for f in ios/Configurations/*.xcconfig.template; do cp "$f" "${f%.template}"; done   # ios/BuildInstructions.md: copy the templates
+xcode mullvad/mullvadvpn-app: curl -sSf https://sh.rustup.rs | RUSTUP_INIT_SKIP_PATH_CHECK=yes sh -s -- -y --profile minimal && . "${HOME}/.cargo/env"   # ios/BuildInstructions.md: Rust from rustup (its WireGuardGoBridge step runs ~/.cargo/bin/cargo)
 xcode mullvad/mullvadvpn-app: ./scripts/setup-rust ios   # ios/BuildInstructions.md: Rust's iOS targets
 xcode mullvad/mullvadvpn-app: brew install protobuf ripgrep   # ios/BuildInstructions.md: protoc for the Rust build, ripgrep for a build script
+android home-assistant/android: cp .github/mock-google-services.json app/google-services.json   # its CI's mock (setup-build-env)
+android home-assistant/android: cp .github/mock-google-services.json wear/google-services.json
+android home-assistant/android: cp .github/mock-google-services.json automotive/google-services.json
+android ProtonVPN/android-app: mkdir -p .hecatron/languages/kotlin && printf '#!/usr/bin/env bash\ncd "$(git rev-parse --show-toplevel)" && exec ./gradlew assembleProductionVanillaOpenSourceDebug\n' > .hecatron/languages/kotlin/build.sh   # its README's build: one flavour, as a project hook

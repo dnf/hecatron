@@ -36,6 +36,11 @@ for _a in "$@"; do
         --fail) [ "${_action}" = outdated ] && export HECATRON_OUTDATED_FAIL=1 || _targets+=("${_a}") ;;
         --component=*) _components+=("${_a#--component=}") ;;
         --fail-on-skip) _fail_on_skip=1 ;;
+        # The binary's alone: they read git and the project model in Go.
+        --changed|--changed=*|--plan)
+            echo "hecatron: ${_a%%=*} needs hecatron's binary (install.sh downloads it with a release; docs/guide/runner.md)" >&2
+            exit 2
+            ;;
         *) _targets+=("${_a}") ;;
     esac
 done
@@ -134,7 +139,9 @@ _usage() {
         "             agent output for AI agents)" \
         "  --timeout DURATION" \
         "             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);" \
-        "             by default 5x its usual time from history.log, at least 10 minutes"
+        "             by default 5x its usual time from history.log, at least 10 minutes" \
+        "  --plan     Say what would run (with --changed: each changed file and what it selects)" \
+        "             and what would be skipped; run nothing"
     if [ "${_action}" = "audit" ]; then
         printf '%s\n' "  --history  The secrets scan reads every commit instead of the working tree"
     fi

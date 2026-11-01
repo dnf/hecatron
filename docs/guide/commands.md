@@ -83,6 +83,7 @@ Flags every run command takes:
 | `--output FORMAT` | `human`, `agent`, `json`, `ci`, `junit` or `sarif`; else `HECATRON_OUTPUT`, else chosen for whoever is calling ([output](output.md)). Binary only |
 | `--timeout DURATION` | Stop a job after `DURATION` (`90s`, `30m`, `1h30m`; `0`: no limit); else `HECATRON_TIMEOUT`, else 5× its usual time ([runner](runner.md#time-limits)). Binary only |
 | `--changed [REF]` | Only what the files changed since `REF` touch; not for `audit`, `outdated` or `clean` ([runner](runner.md#only-what-changed)). Binary only |
+| `--plan` | Run nothing: print the jobs that would run and those skipped up front (disabled, not installed, no hook); with `--changed`, the base and each changed file with what it selects and why ([runner](runner.md#the-plan-without-running)). Human, agent or JSON output. Binary only |
 
 Flags of one command:
 
@@ -106,6 +107,7 @@ hct outdated --json py
 hct docs rs               # cargo doc --no-deps; says where (target/doc)
 hct bench go              # go test -run '^$' -bench . ./...
 hct test --changed        # only what this branch changed
+hct test --changed --plan # what that would run, and why; runs nothing
 hct test --output agent   # a summary line and only the failures
 ```
 

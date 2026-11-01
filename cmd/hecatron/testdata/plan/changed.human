@@ -1,0 +1,22 @@
+hct test --plan: 4 jobs would run, 2 skipped; nothing was run
+
+Changed since main (the default branch, MERGE-BASE): 7 files; running go (clients/go/notes.txt), missing (clients/missing/x), off (clients/off/x), rust (crates/a/src/lib.rs), task always (no taskPaths: any change), task codegen (codegen/gen.txt), shell (scripts/x.sh)
+  .claude/worktrees/x/src/main.rs  nothing: inside another git repository below the root
+  .claude/worktrees/y/             nothing: inside another git repository below the root
+  clients/go/notes.txt             go [.]: in its directory
+  clients/missing/x                missing [.]: in its directory
+  clients/off/x                    off [.]: in its directory
+  codegen/gen.txt                  task codegen: matches the task's taskPaths
+  crates/a/src/lib.rs              rust [.]: in its directory
+  erl_crash.dump                   nothing: not in a language's directory, nor a build file
+  scripts/x.sh                     nothing: a shell script, which only hct lint's shell check reads
+
+Would run:
+  go       clients/go/
+  rust     ./
+  codegen  project task
+  always   project task
+
+Would skip:
+  missing  not installed (hecatron-no-such-tool not found)
+  off      disabled

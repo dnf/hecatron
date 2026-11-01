@@ -125,24 +125,32 @@ func isCommit(root, ref string) bool {
 // the untracked files it doesn't ignore, less those in another repository
 // or worktree below root (project.OutsideNestedRepos).
 func Files(root, commit string) ([]string, error) {
+	files, _, err := FilesAndNested(root, commit)
+	return files, err
+}
+
+// FilesAndNested are Files, and the changes left out for being in another
+// repository below root (hct test --changed --plan lists them).
+func FilesAndNested(root, commit string) (files, nested []string, err error) {
 	diff, err := git(root, "diff", "--name-only", "-z", "--no-renames", "--relative", commit, "--")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	untracked, err := git(root, "ls-files", "--others", "--exclude-standard", "-z", "--", ".")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	seen := map[string]bool{}
-	var files []string
+	var all []string
 	for _, name := range strings.Split(diff+untracked, "\x00") {
 		if name != "" && !seen[name] {
 			seen[name] = true
-			files = append(files, name)
+			all = append(all, name)
 		}
 	}
-	sort.Strings(files)
-	return project.OutsideNestedRepos(root, files), nil
+	sort.Strings(all)
+	files, nested = project.SplitNestedRepos(root, all)
+	return files, nested, nil
 }
 
 func git(dir string, args ...string) (string, error) {

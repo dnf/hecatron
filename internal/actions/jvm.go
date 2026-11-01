@@ -60,6 +60,10 @@ func jvm(def *Definition, ctx Context) ([]Op, error) {
 		}
 	case exists(ctx.Dir, "build.gradle") || exists(ctx.Dir, "build.gradle.kts") || gradleAbove != "":
 		tool, command = "gradle", gradleCommand(ctx)
+		if androidBuild(ctx.Dir) {
+			tasks["gradle"]["build"] = []string{"assembleDebug"}
+			tasks["gradle"]["test"] = []string{"testDebugUnitTest"}
+		}
 	case exists(ctx.Dir, "build.sbt"):
 		tool, command = "sbt", []string{"sbt"}
 	default:
@@ -101,6 +105,40 @@ func gradleProjectDir(dir, root string) string {
 }
 
 var settingsInclude = regexp.MustCompile(`(?m)^[ \t]*include[ \t(]`)
+
+// androidBuild is whether an Android module is here or below
+// (is_android_build in languages/_hooks.sh): an AndroidManifest.xml in a
+// src/main or src/androidMain, outside build output. Its release variants
+// need a signing config and services files only the maintainers have, so
+// the debug variants are built and tested.
+func androidBuild(dir string) bool {
+	found := false
+	_ = filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+		if err != nil || found {
+			return filepath.SkipDir
+		}
+		rel, _ := filepath.Rel(dir, path)
+		depth := len(strings.Split(filepath.ToSlash(rel), "/"))
+		if d.IsDir() {
+			switch d.Name() {
+			case "build", ".gradle", ".git", "node_modules":
+				if path != dir {
+					return filepath.SkipDir
+				}
+			}
+			if depth >= 6 {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		slashed := "/" + filepath.ToSlash(rel)
+		if d.Name() == "AndroidManifest.xml" && (strings.Contains(slashed, "/src/main/") || strings.Contains(slashed, "/src/androidMain/")) {
+			found = true
+		}
+		return nil
+	})
+	return found
+}
 
 // multiModule is whether the pom.xml here lists modules.
 func multiModule(dir string) bool {

@@ -240,6 +240,17 @@ gradle_() {
     if [ "${_wrapper}" != /gradlew ] && [ -x "${_wrapper}" ]; then run "${_wrapper}" "$@"; else run gradle "$@"; fi
 }
 is_gradle() { exists 'build.gradle' || exists 'build.gradle.kts'; }
+# An Android build: a module with an AndroidManifest.xml in src/main (or
+# Kotlin Multiplatform's src/androidMain) here or below. Its release
+# variants need a signing config and services files only the maintainers
+# have (AntennaPod's validateSigningFreeRelease), so hct builds and
+# unit-tests the debug variants, as a newcomer's `./gradlew assembleDebug`
+# does; Gradle runs those tasks in every project that has them.
+is_android_build() {
+    find . -maxdepth 6 \( -name build -o -name .gradle -o -name .git -o -name node_modules \) -prune -o \
+        -type f -name AndroidManifest.xml \( -path '*/src/main/*' -o -path '*/src/androidMain/*' \) -print 2>/dev/null |
+        grep -q .
+}
 
 # The one solution or project file `dotnet` should act on, when a directory
 # has several (dotnet refuses to choose); empty when it can choose itself.
@@ -1015,7 +1026,7 @@ jvm_hook() {
     elif is_gradle || [ -n "${_gradle_above}" ]; then
         case "$1" in
             test) gradle_test ;;
-            build) gradle_ assemble ;;
+            build) if is_android_build; then gradle_ assembleDebug; else gradle_ assemble; fi ;;
             clean) gradle_ clean ;;
             lint) gradle_ check -x test ;;
             format) jvm_format_gradle "${_gradle_above:-.}" ;;
@@ -1096,13 +1107,19 @@ maven_test() {
 # has none, its JVM target's (jvmTest), else every target's (allTests: a JS
 # target's browser tests need a browser installed).
 gradle_test() {
-    local _log _status _task
+    local _log _status _task _tasks=(test jvmTest allTests)
+    # An Android build's unit tests: the debug variants' (is_android_build).
+    if is_android_build; then _tasks=(testDebugUnitTest "${_tasks[@]}"); fi
     _log="$(mktemp)"
-    for _task in test jvmTest allTests; do
+    for _task in "${_tasks[@]}"; do
         _status=0
         gradle_ "${_task}" 2>&1 | tee "${_log}" || _status=$?
         if [ "${_status}" -eq 0 ] || ! grep -q "Task '${_task}' not found" "${_log}"; then break; fi
-        echo "${HECATRON_LANG:-}: ${_hook_action}: no ${_task} task (a Kotlin Multiplatform build)"
+        if [ "${_task}" = testDebugUnitTest ]; then
+            echo "${HECATRON_LANG:-}: ${_hook_action}: no ${_task} task"
+        else
+            echo "${HECATRON_LANG:-}: ${_hook_action}: no ${_task} task (a Kotlin Multiplatform build)"
+        fi
     done
     rm -f "${_log}"
     return "${_status}"
@@ -1233,41 +1250,52 @@ jvm_format_sbt() {
 
 # A build whose Gradle wrapper or Kotlin compiler predates the JDK it would
 # run on fails to start on it, so it runs on the newest installed JDK it
-# supports instead (libexec/lib/jvm.py; the JVM installers install one). A
-# build also can't run on a runtime without javac (a JRE another package
-# pulled in, first on PATH): then it runs on the newest installed JDK.
+# supports (its ceiling); one that compiles for a newer Java than that JDK
+# fails to compile ("invalid source release: 21"), so it runs on one at
+# least that new (its floor). See libexec/lib/jvm.py; the JVM installers
+# install such a JDK. A build also can't run on a runtime without javac (a
+# JRE another package pulled in, first on PATH): then it runs on the newest
+# installed JDK within those limits.
 jvm_select_jdk() {
     [ -n "${HECATRON_HOME:-}" ] || return 0
-    local _ceiling="" _why _current _version _home _jdk_home=""
-    IFS=$'\t' read -r _ceiling _why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling . "${HECATRON_ROOT:-.}") || true
-    if [ -z "${_ceiling}" ]; then
+    local _ceiling="" _ceiling_why="" _floor="" _floor_why="" _why="" _current _feature _version _home _jdk_home=""
+    IFS=$'\t' read -r _ceiling _ceiling_why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling . "${HECATRON_ROOT:-.}") || true
+    IFS=$'\t' read -r _floor _floor_why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" floor . "${HECATRON_ROOT:-.}") || true
+    if [ -z "${_ceiling}${_floor}" ]; then
         jvm_has_compiler && return 0
-        _why="the java it would run on has no javac"
     else
         _current="$(java_feature "$( (java -version 2>&1 || true) | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -1)")"
-        { [ -n "${_current}" ] && [ "${_current}" -le "${_ceiling}" ] && jvm_has_compiler; } && return 0
+        if [ -n "${_current}" ] && jvm_has_compiler && jvm_within "${_current}" "${_floor}" "${_ceiling}"; then
+            return 0
+        fi
     fi
+    if [ -n "${_ceiling}" ]; then _why="${_ceiling_why}, which runs on JDK ${_ceiling} at the newest"; fi
+    if [ -n "${_floor}" ]; then _why="${_why:+${_why}; }${_floor_why}, which needs JDK ${_floor} or later"; fi
+    [ -n "${_why}" ] || _why="the java it would run on has no javac"
     while IFS=$'\t' read -r _version _home; do
-        if [ -x "${_home}/bin/javac" ] && { [ -z "${_ceiling}" ] || [ "$(java_feature "${_version}")" -le "${_ceiling}" ]; }; then
+        _feature="$(java_feature "${_version}")"
+        if [ -x "${_home}/bin/javac" ] && jvm_within "${_feature}" "${_floor}" "${_ceiling}"; then
             _jdk_home="${_home}"
             break
         fi
     done < <(bash "${HECATRON_HOME}/languages/java/installed.sh" 2>/dev/null | sort -t. -k1,1nr -k2,2nr -k3,3nr)
     if [ -z "${_jdk_home}" ]; then
-        if [ -n "${_ceiling}" ]; then
-            echo "warning: ${_why}, which runs on JDK ${_ceiling} at the newest, and no such JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
+        if [ -n "${_ceiling}${_floor}" ]; then
+            echo "warning: ${_why}, and no such JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
         else
             echo "warning: ${_why}, and no JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
         fi
         return 0
     fi
-    if [ -n "${_ceiling}" ]; then
-        echo "Using JDK ${_version} (${_jdk_home}): ${_why}, which runs on JDK ${_ceiling} at the newest."
-    else
-        echo "Using JDK ${_version} (${_jdk_home}): ${_why}."
-    fi
+    echo "Using JDK ${_version} (${_jdk_home}): ${_why}."
     export JAVA_HOME="${_jdk_home}"
     export PATH="${_jdk_home}/bin:${PATH}"
+}
+# Whether a JDK feature version is within a floor and a ceiling (either
+# empty: no limit).
+jvm_within() {
+    [ -n "$1" ] || return 1
+    { [ -z "$2" ] || [ "$1" -ge "$2" ]; } && { [ -z "$3" ] || [ "$1" -le "$3" ]; }
 }
 # Whether the JDK a build would run on (JAVA_HOME's, else java's on PATH)
 # has a compiler.

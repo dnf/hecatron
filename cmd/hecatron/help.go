@@ -245,7 +245,9 @@ func (c *cli) runHelpText() (text string, ok bool) {
 		"             agent output for AI agents)\n" +
 		"  --timeout DURATION\n" +
 		"             Stop a job after DURATION (90s, 30m, 1h30m; 0: no limit; else HECATRON_TIMEOUT);\n" +
-		"             by default 5x its usual time from history.log, at least 10 minutes\n")
+		"             by default 5x its usual time from history.log, at least 10 minutes\n" +
+		"  --plan     Say what would run (with --changed: each changed file and what it selects)\n" +
+		"             and what would be skipped; run nothing\n")
 	if c.command == "audit" {
 		out.WriteString("  --history  The secrets scan reads every commit instead of the working tree\n")
 	}
