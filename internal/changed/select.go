@@ -3,6 +3,7 @@ package changed
 import (
 	"fmt"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/dnf/hecatron/internal/project"
@@ -48,9 +49,44 @@ type Selection struct {
 	Files      []string // relative to the root
 	Everything string   // set when everything runs: the file that made it so and why
 	Languages  []Language
-	tasks      map[string]string // task name: why it was selected
-	shell      string
+	// Attributions say what each of Files selected and why, in their
+	// order (hct test --changed --plan).
+	Attributions []Attribution
+	// Nested are the changes inside another git repository below the
+	// root, which select nothing (FilesAndNested); set by the caller.
+	Nested []string
+	tasks  map[string]string // task name: why it was selected
+	shell  string
 }
+
+// Why a changed file selects what it does (Attribution.Reason).
+const (
+	ReasonComponent     = "component"     // in a language's directory: that language and component
+	ReasonHooks         = "hooks"         // .hecatron/languages/<lang>/: that language, every component
+	ReasonConfiguration = "configuration" // elsewhere under .hecatron/: everything
+	ReasonLocal         = "local"         // .hecatron/local.json: nothing
+	ReasonBuildFile     = "build-file"    // a build or version file above languages' directories
+	ReasonTask          = "task"          // only a project task's taskPaths
+	ReasonShell         = "shell"         // only a shell script: lint's shell check
+	ReasonOther         = "other"         // nothing
+	ReasonNested        = "nested-repository"
+)
+
+// Attribution is what one changed file selects, and why.
+type Attribution struct {
+	File   string
+	Reason string // one of the Reason constants
+	Why    string // the reason in words
+	// Language and Component are the directory the file is in
+	// (ReasonComponent).
+	Language, Component string
+	Selects             []Pick   // every language and component it selects
+	Tasks               []string // the project tasks whose taskPaths match it
+	Shell               bool     // a shell script
+}
+
+// Pick is a language in a component.
+type Pick struct{ Language, Component string }
 
 // Language is a language selected, with the components selected and why.
 type Language struct {
@@ -113,38 +149,63 @@ func Select(p *project.Project, base Base, files []string, tasks []string) (*Sel
 			return nil, err
 		}
 	}
+	taskPatterns := map[string][]string{}
+	for _, task := range tasks {
+		patterns, declared, err := p.TaskPaths(task)
+		if err != nil {
+			return nil, err
+		}
+		if declared {
+			taskPatterns[task] = patterns
+		}
+	}
 	picked := map[string]map[string]bool{}
 	why := map[string]string{}
 	counted := map[string]map[string]bool{}
-	pick := func(lang, component, file, reason string) {
-		if picked[lang] == nil {
-			picked[lang], counted[lang] = map[string]bool{}, map[string]bool{}
-			why[lang] = file + reason
-		}
-		picked[lang][component] = true
-		counted[lang][file] = true
-	}
 	for _, file := range files {
+		a := Attribution{File: file}
+		pick := func(lang, component, reason string) {
+			if picked[lang] == nil {
+				picked[lang], counted[lang] = map[string]bool{}, map[string]bool{}
+				why[lang] = file + reason
+			}
+			picked[lang][component] = true
+			counted[lang][file] = true
+			if !slices.Contains(a.Selects, Pick{lang, component}) {
+				a.Selects = append(a.Selects, Pick{lang, component})
+			}
+			if a.Why == "" {
+				a.Why = strings.TrimPrefix(reason, ": ")
+			}
+		}
 		if rest, ok := strings.CutPrefix(file, ".hecatron/languages/"); ok {
 			lang, _, _ := strings.Cut(rest, "/")
 			for _, d := range dirs[lang] {
-				pick(lang, d.Component, file, ": its hooks or definition")
+				pick(lang, d.Component, ": its hooks or definition")
 			}
+			a.Reason, a.Why = ReasonHooks, "its hooks or definition"
+			s.Attributions = append(s.Attributions, a)
 			continue
 		}
 		if strings.HasPrefix(file, ".hecatron/") {
-			if s.Everything == "" && file != ".hecatron/local.json" {
-				s.Everything = file + ", the project's configuration"
+			a.Reason, a.Why = ReasonLocal, "local settings, which change nothing a run does"
+			if file != ".hecatron/local.json" {
+				a.Reason, a.Why = ReasonConfiguration, "the project's configuration: everything runs"
+				if s.Everything == "" {
+					s.Everything = file + ", the project's configuration"
+				}
 			}
+			s.Attributions = append(s.Attributions, a)
 			continue
 		}
 		if lang, component, ok := owners.Owner(project.PyJoin(p.Root, file)); ok {
-			pick(lang, component, file, "")
+			pick(lang, component, "")
+			a.Reason, a.Why, a.Language, a.Component = ReasonComponent, "in its directory", lang, component
 		}
 		below := func(lang, dir, reason string) {
 			for _, d := range dirs[lang] {
 				if under(project.PyRelpath(d.Dir, p.Root), dir) {
-					pick(lang, d.Component, file, reason)
+					pick(lang, d.Component, reason)
 				}
 			}
 		}
@@ -164,9 +225,29 @@ func Select(p *project.Project, base Base, files []string, tasks []string) (*Sel
 				below(lang, buildFileDir(file), ": a build file above it")
 			}
 		}
-		if s.shell == "" && (strings.HasSuffix(file, ".sh") || strings.HasSuffix(file, ".bash")) {
-			s.shell = file
+		for _, task := range tasks {
+			if patterns, ok := taskPatterns[task]; ok && isBuildFile(file, patterns) {
+				a.Tasks = append(a.Tasks, task)
+			}
 		}
+		if strings.HasSuffix(file, ".sh") || strings.HasSuffix(file, ".bash") {
+			a.Shell = true
+			if s.shell == "" {
+				s.shell = file
+			}
+		}
+		switch {
+		case a.Reason != "":
+		case len(a.Selects) > 0:
+			a.Reason = ReasonBuildFile
+		case len(a.Tasks) > 0:
+			a.Reason, a.Why = ReasonTask, "matches the task's taskPaths"
+		case a.Shell:
+			a.Reason, a.Why = ReasonShell, "a shell script, for lint's shell check"
+		default:
+			a.Reason, a.Why = ReasonOther, "not in a language's directory, nor a build file"
+		}
+		s.Attributions = append(s.Attributions, a)
 	}
 	for _, lang := range p.Languages {
 		if picked[lang] == nil {
@@ -181,10 +262,7 @@ func Select(p *project.Project, base Base, files []string, tasks []string) (*Sel
 		s.Languages = append(s.Languages, l)
 	}
 	for _, task := range tasks {
-		patterns, declared, err := p.TaskPaths(task)
-		if err != nil {
-			return nil, err
-		}
+		patterns, declared := taskPatterns[task]
 		for _, file := range files {
 			if !declared {
 				s.tasks[task] = "no taskPaths: any change"

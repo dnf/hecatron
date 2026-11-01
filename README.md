@@ -121,7 +121,8 @@ what your code does.
   `doctor --fix`) are separate from those that only run the project's
   tools, and the agent reference says to ask before the former.
 - **Only what a change touched.** `--changed` runs only the languages and
-  components a branch's changes touch, and `hct sync` catches up after a
+  components a branch's changes touch (`--plan` shows what that would run,
+  and why, without running it), and `hct sync` catches up after a
   pull ([runner](docs/guide/runner.md#only-what-changed)).
 
 ## Tested against real projects

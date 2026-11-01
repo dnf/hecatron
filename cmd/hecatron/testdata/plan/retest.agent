@@ -1,0 +1,3 @@
+hct retest --plan: 2 jobs would run, 0 skipped; nothing was run
+JOB clean rust (./)
+JOB test rust (./)

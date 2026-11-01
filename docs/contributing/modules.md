@@ -21,6 +21,7 @@ through them.
 | `home.go` | `findHome`: `HECATRON_HOME`, else the checkout or install the binary sits in |
 | `delegate.go` | `delegated`: the script each command falls back to, run with the same arguments and environment (`exec` where the platform allows: `exec_unix.go`, `exec_other.go`); the Python 3.9 check before delegating |
 | `help.go` | `hct help`, `help agents` (prints `docs/agents.md`), `self help`, and each run command's help |
+| `runplan.go` | A run command's `--plan`: the jobs and skips it would have, and with `--changed` each file's attribution, in human, agent or JSON output |
 | `run.go`, `hooks.go` | The run commands: argument parsing as `run.sh` reads it, named targets one at a time, every language and task through `internal/runner`, `--changed`, time limits; `languageExec` runs a language's hook for each component as `each-component.sh` does |
 | `reportfiles.go`, `reports.go` | A run's CI reports (`HECATRON_REPORT_DIR`, `--output junit|sarif`); the hidden `_audit`, `_outdated` and `_gotest` commands the hooks call in place of `audit.py`, `outdated.py` |
 | `doctor.go` | `doctor`'s driver: the checks, in parallel through the runner; `--fix` runs installers one at a time |
@@ -39,7 +40,7 @@ through them.
 | --- | --- |
 | `project` | The read-only project model, a port of `project.py` and `versions.py` that must agree with them: `FindRoot`, config and `local.json`, components and `implPath`, definitions and file resolution (`definitions.go`), detection (`detect.go`, `yields.go`, `rootlayout.go`: root workspaces and packages, `detected.go` and its cache), toolchain versions (`resolve.go`, `versions.go`, `pinfiles.go`, `environment.go`), each component's environment, the pin (`pin.go`), config validation (`check.go`, `licenses.go`, `ci.go`), and writing files as Python writes them (`save.go`, `json.go`, `pyexport.go`, `pytext.go`, `paths.go`). It declines (`IsUnsupported`) where Python's reading of a value would differ |
 | `runner` | Runs jobs in parallel with `run-parallel.sh`'s scheduling and `history.log`: concurrency (`-j`), the live display (`live.go`), human output off a terminal (`human.go`), the agent, JSON and CI formats (`render.go`), error excerpts from a definition's `errorPatterns` (`excerpt.go`), time limits (`limit.go`), stopping a job's processes (`process_*.go`) |
-| `changed` | `--changed` (which languages, components and tasks a diff touches; `select.go`) and `hct sync`'s reading of git (`sync.go`) |
+| `changed` | `--changed` (which languages, components and tasks a diff touches, and each file's attribution; `select.go`) and `hct sync`'s reading of git (`sync.go`) |
 | `generate` | Generated files: the Dockerfile, each language's workflow, the GitLab pipeline and caching (`ci.go`), Dependabot and Renovate (`updates.go`), banners; byte for byte what the scripts write |
 | `install` | The install engine: `install.json`'s schema and conditions, the plan, applying it (`apply.go`), release downloads (`download.go`), apt sources (`aptsource.go`), receipts and uninstall; `system.go` is the machine, replaced in tests. See [install engine](install-engine.md) |
 | `actions` | Plans a language's default hooks from the rules in its `config.json` or a Go family (`jvm.go`); used by `hct plan` while definitions move to data |

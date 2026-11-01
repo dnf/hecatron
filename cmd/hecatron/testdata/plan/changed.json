@@ -1,0 +1,137 @@
+{
+  "command": "test",
+  "summary": "Changed since main (the default branch, MERGE-BASE): 7 files; running go (clients/go/notes.txt), missing (clients/missing/x), off (clients/off/x), rust (crates/a/src/lib.rs), task always (no taskPaths: any change), task codegen (codegen/gen.txt), shell (scripts/x.sh)",
+  "base": "main",
+  "baseSource": "the default branch",
+  "mergeBase": "MERGE-BASE",
+  "files": [
+    {
+      "path": ".claude/worktrees/x/src/main.rs",
+      "reason": "nested-repository",
+      "why": "inside another git repository below the root"
+    },
+    {
+      "path": ".claude/worktrees/y/",
+      "reason": "nested-repository",
+      "why": "inside another git repository below the root"
+    },
+    {
+      "path": "clients/go/notes.txt",
+      "reason": "component",
+      "why": "in its directory",
+      "language": "go",
+      "component": ".",
+      "selects": [
+        {
+          "language": "go",
+          "component": "."
+        }
+      ]
+    },
+    {
+      "path": "clients/missing/x",
+      "reason": "component",
+      "why": "in its directory",
+      "language": "missing",
+      "component": ".",
+      "selects": [
+        {
+          "language": "missing",
+          "component": "."
+        }
+      ]
+    },
+    {
+      "path": "clients/off/x",
+      "reason": "component",
+      "why": "in its directory",
+      "language": "off",
+      "component": ".",
+      "selects": [
+        {
+          "language": "off",
+          "component": "."
+        }
+      ]
+    },
+    {
+      "path": "codegen/gen.txt",
+      "reason": "task",
+      "why": "matches the task's taskPaths",
+      "tasks": [
+        "codegen"
+      ]
+    },
+    {
+      "path": "crates/a/src/lib.rs",
+      "reason": "component",
+      "why": "in its directory",
+      "language": "rust",
+      "component": ".",
+      "selects": [
+        {
+          "language": "rust",
+          "component": "."
+        }
+      ]
+    },
+    {
+      "path": "erl_crash.dump",
+      "reason": "other",
+      "why": "not in a language's directory, nor a build file"
+    },
+    {
+      "path": "scripts/x.sh",
+      "reason": "other",
+      "why": "a shell script, which only hct lint's shell check reads"
+    }
+  ],
+  "jobs": [
+    {
+      "action": "test",
+      "label": "go",
+      "language": "go",
+      "components": [
+        "."
+      ],
+      "dirs": [
+        "clients/go/"
+      ]
+    },
+    {
+      "action": "test",
+      "label": "rust",
+      "language": "rust",
+      "components": [
+        "."
+      ],
+      "dirs": [
+        "./"
+      ]
+    },
+    {
+      "action": "test",
+      "label": "codegen",
+      "task": true
+    },
+    {
+      "action": "test",
+      "label": "always",
+      "task": true
+    }
+  ],
+  "skipped": [
+    {
+      "action": "test",
+      "label": "missing",
+      "language": "missing",
+      "reason": "not installed (hecatron-no-such-tool not found)"
+    },
+    {
+      "action": "test",
+      "label": "off",
+      "language": "off",
+      "reason": "disabled"
+    }
+  ]
+}

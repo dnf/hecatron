@@ -419,3 +419,66 @@ func TestASinglePackageAtTheRootClaimsEverything(t *testing.T) {
 		t.Errorf("selected %v, want [rust:.] (files %v)", got, s.Files)
 	}
 }
+
+// Each changed file's attribution (hct test --changed --plan): what it
+// selects and why, nested repositories' files apart.
+func TestAttributions(t *testing.T) {
+	setup(t)
+	root := repository(t)
+	commit(t, root, map[string]string{
+		"a/go/main.go":                   "package main\n",
+		"CMakeLists.txt":                 "project(x)\n",
+		".hecatron/languages/go/test.sh": "go test -race ./...\n",
+		"codegen/gen.py":                 "x\n",
+		"README.md":                      "x\n",
+		"tools/run.sh":                   "",
+		".hecatron/local.json":           "{}\n",
+	})
+	write(t, root, map[string]string{"vendor/lib/x.go": ""})
+	run(t, filepath.Join(root, "vendor/lib"), "init", "-q")
+	base, _, err := FindBase(root, "", noEnv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	files, nested, err := FilesAndNested(root, base.Commit)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(nested, []string{"vendor/lib/"}) {
+		t.Errorf("nested %v", nested)
+	}
+	p, err := project.Load(root, project.NewHome(t.TempDir()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := Select(p, base, files, []string{"codegen", "always"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]string{}
+	for _, a := range s.Attributions {
+		var picks []string
+		for _, pick := range a.Selects {
+			picks = append(picks, pick.Language+":"+pick.Component)
+		}
+		got[a.File] = a.Reason + " " + a.Language + "/" + a.Component + " " + strings.Join(picks, ",") + " " +
+			strings.Join(a.Tasks, ",") + " " + a.Why
+	}
+	want := map[string]string{
+		"a/go/main.go":                   "component go/a go:a  in its directory",
+		"CMakeLists.txt":                 "build-file / cpp:a,cpp:b  a build or version file above it",
+		".hecatron/languages/go/test.sh": "hooks / go:a,go:b  its hooks or definition",
+		"codegen/gen.py":                 "task /  codegen matches the task's taskPaths",
+		"README.md":                      "other /   not in a language's directory, nor a build file",
+		"tools/run.sh":                   "shell /   a shell script, for lint's shell check",
+		".hecatron/local.json":           "local /   local settings, which change nothing a run does",
+	}
+	for file := range want {
+		if got[file] != want[file] {
+			t.Errorf("%s: %q, want %q", file, got[file], want[file])
+		}
+	}
+	if len(got) != len(want) {
+		t.Errorf("attributions %v", got)
+	}
+}

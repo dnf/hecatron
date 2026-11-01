@@ -41,6 +41,12 @@ system of its own. `hct` and `hecatron` are the same command.
   pull request's base), uncommitted and untracked files included. Its
   first line says what it compared, what runs and why; nothing changed
   that hecatron runs: that line, exit 0. Needs the binary.
+- `--plan` (every run command): run nothing; print the jobs that would
+  run (`JOB label (dirs)`) and those skipped up front (`SKIP label:
+  reason`), and with `--changed` each changed file and what it selects
+  (`FILE path: what: why`). Exit 0. `--output json`: `files`
+  [{path, reason, language, component, selects}], `jobs`, `skipped`.
+  Check a selection with it before a long run. Needs the binary.
 - Targets: language names or abbreviations (`go`, `rs`, `ts`), or a
   project task named in config.json `tasks`.
 - `-c COMPONENT` (repeatable): one component only. `-j N`: concurrency.

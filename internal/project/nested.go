@@ -14,8 +14,15 @@ import (
 // directory with a trailing slash; a file under one can still come from a
 // listing that doesn't know it's a repository.
 func OutsideNestedRepos(root string, files []string) []string {
+	kept, _ := SplitNestedRepos(root, files)
+	return kept
+}
+
+// SplitNestedRepos are the files outside another git repository below
+// root (as OutsideNestedRepos), and those inside one.
+func SplitNestedRepos(root string, files []string) (kept, nested []string) {
 	isRepo := map[string]bool{}
-	nested := func(dir string) bool {
+	isNested := func(dir string) bool {
 		known, ok := isRepo[dir]
 		if !ok {
 			_, err := os.Lstat(filepath.Join(root, filepath.FromSlash(dir), ".git"))
@@ -24,13 +31,14 @@ func OutsideNestedRepos(root string, files []string) []string {
 		}
 		return known
 	}
-	var kept []string
 	for _, file := range files {
-		if !inNestedRepo(file, nested) {
+		if inNestedRepo(file, isNested) {
+			nested = append(nested, file)
+		} else {
 			kept = append(kept, file)
 		}
 	}
-	return kept
+	return kept, nested
 }
 
 // inNestedRepo is whether one of the file's directories below the root
