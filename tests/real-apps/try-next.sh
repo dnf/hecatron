@@ -5,7 +5,10 @@
 # was built. No judgement: report.py reports what the run recorded.
 #
 #   try-next.sh pick          the app to build: APP, else the oldest of the track's
-#                             issues labelled real-app-retry, else whose turn it is
+#                             issues labelled real-app-retry, else the next on the
+#                             list after the track's last build (whose turn it is,
+#                             by the clock, when none is found), unless
+#                             (GATE=minutes) the track built that recently
 #   try-next.sh build WORK    clone, the app's fixups.txt steps, hct init, (install,)
 #                             deps and build; records into WORK
 #   try-next.sh report WORK   files or updates the app's issue, writes the job summary
@@ -71,11 +74,53 @@ pick() {
             _issue="${_found#*$'\t'}"
         fi
     fi
+    if [ -z "${_app}" ] && [ -n "${GATE:-}" ] && built_lately "${GATE}"; then
+        echo "${_track} built an app in the last ${GATE} minutes: nothing to do"
+        if [ -n "${GITHUB_OUTPUT:-}" ]; then echo "skip=true" >>"${GITHUB_OUTPUT}"; fi
+        return 0
+    fi
+    if [ -z "${_app}" ] && [ -n "${GH_TOKEN:-}" ]; then
+        _app="$("${_report[@]}" next "${_list}" "$(last_built)")" || _app=""
+    fi
     [ -n "${_app}" ] || _app="$("${_report[@]}" pick "${_list}")"
     printf '%s\t%s\t%s\n' "${_track}" "${_app}" "${_issue}"
     if [ -n "${GITHUB_OUTPUT:-}" ]; then
         printf 'track=%s\nrunner=%s\napp=%s\nretry_issue=%s\n' "${_track}" "${_runner}" "${_app}" "${_issue}" >>"${GITHUB_OUTPUT}"
     fi
+}
+
+# Whether one of the track's runs started within the last $1 minutes and
+# built (its build job ran or is running, not skipped by this gate).
+built_lately() {
+    local _since _run _conclusion
+    _since="$(python3 -c 'import datetime, sys; print((datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=int(sys.argv[1]))).strftime("%Y-%m-%dT%H:%M:%SZ"))' "$1")"
+    while IFS= read -r _run; do
+        [ "${_run}" != "${GITHUB_RUN_ID:-}" ] || continue
+        _conclusion="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${_run}/jobs" \
+            --jq '.jobs[] | select(.name == "build") | (.conclusion // .status)' 2>/dev/null)" || continue
+        case "${_conclusion}" in
+            success | failure | in_progress | queued | timed_out) return 0 ;;
+        esac
+    done < <(gh run list --repo "${GITHUB_REPOSITORY}" --workflow real-apps.yml --limit 40 \
+        --json databaseId,displayTitle,createdAt \
+        --jq ".[] | select(.displayTitle == \"real apps (${_track})\" and .createdAt >= \"${_since}\") | .databaseId")
+    return 1
+}
+
+# The app the track's last build took in turn (not a retry), from that run's
+# real-app-meta artifact; nothing when none is found.
+last_built() {
+    local _run _dir _app
+    _dir="$(mktemp -d)"
+    while IFS= read -r _run; do
+        gh run download "${_run}" --repo "${GITHUB_REPOSITORY}" -n real-app-meta -D "${_dir}/${_run}" >/dev/null 2>&1 || continue
+        if ! grep -q "^retry_issue	." "${_dir}/${_run}/meta.tsv" 2>/dev/null; then
+            _app="$(sed -n 's/^app	//p' "${_dir}/${_run}/meta.tsv" | head -n 1)"
+            [ -z "${_app}" ] || break
+        fi
+    done < <(gh run list --repo "${GITHUB_REPOSITORY}" --workflow real-apps.yml --limit 40 \
+        --json databaseId,displayTitle --jq ".[] | select(.displayTitle == \"real apps (${_track})\") | .databaseId")
+    printf '%s' "${_app:-}"
 }
 
 # The app's setup steps from fixups.txt, as one command for bash -c.
@@ -98,6 +143,7 @@ build() {
     _app="${APP:-$("${_report[@]}" pick "${_list}")}"
     meta app "${_app}"
     meta track "${_track}"
+    meta retry_issue "${RETRY_ISSUE:-}"
     meta wanted "${_wanted_text}"
     meta hecatron_sha "$(git -C "${_home}" rev-parse HEAD)"
     if command -v sw_vers >/dev/null; then

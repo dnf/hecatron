@@ -1,9 +1,8 @@
 # Open-source Xcode apps the real-apps workflow's xcode track builds, one
 # every two hours in turn (.github/workflows/real-apps.yml, try-next.sh),
 # on macOS. One GitHub owner/repo per line; # starts a comment, which says
-# what the app is there for. Add to the end: the turn is the clock's
-# two-hour slot modulo the list's length, so inserting earlier only shifts
-# whose turn it is.
+# what the app is there for. Each run takes the app after the
+# last one built, so a new app can go anywhere.
 
 Ranchero-Software/NetNewsWire        # Mac app, Swift and Objective-C share the project
 Dimillian/IceCubesApp                # iOS with Catalyst, local Swift packages

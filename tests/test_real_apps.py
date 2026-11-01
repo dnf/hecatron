@@ -60,6 +60,12 @@ class ListTest(unittest.TestCase):
                 listed = {app.lower() for track in tracks for app in report.apps(LISTS[track])}
                 self.assertIn(words[-1].lower(), listed, f"a fixup for an app on no list: {line.strip()}")
 
+    def test_the_rotation_follows_the_last_build(self):
+        listed = report.apps(APPS)
+        self.assertEqual(report.next_after(APPS, listed[0]), listed[1])
+        self.assertEqual(report.next_after(APPS, listed[-1].upper()), listed[0])  # round to the start
+        self.assertIsNone(report.next_after(APPS, "gone/from-the-list"))
+
     def test_comments_and_blank_lines_are_ignored(self):
         with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
             f.write("# heading\n\na/b   # why\n  c/d\n")
@@ -187,7 +193,17 @@ class RunTest(unittest.TestCase):
                 self.assertIn(f"github.event.schedule == '{cron}' && '{track}'", workflow)
         pick_job = re.search(r"\n  pick:\n(.*?)\n  # Runs", workflow, re.S).group(1)
         self.assertIn("issues: read", pick_job)
+        self.assertIn("actions: read", pick_job)  # the last build's real-app-meta
         self.assertNotIn("write", pick_job)
+        # The run name carries the track the same way TRACK does, for the gate.
+        run_name = re.search(r"^run-name: (.*)$", workflow, re.M).group(1)
+        track = re.search(r"^  TRACK: (.*)$", workflow, re.M).group(1)
+        self.assertIn(track, run_name)
+        # A gated run builds and reports nothing.
+        self.assertIn("if: needs.pick.outputs.skip != 'true'", build_job)
+        report_job = workflow[workflow.index("\n  report:"):]
+        self.assertIn("needs.pick.outputs.skip != 'true'", report_job)
+        self.assertIn("GATE: ${{ github.event_name == 'schedule'", pick_job)
 
 
 if __name__ == "__main__":
