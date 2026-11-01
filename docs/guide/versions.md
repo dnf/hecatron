@@ -266,8 +266,14 @@ side by side, and Gradle and Maven find them themselves. A **ceiling**
 comes from a tool that predates newer JDKs and fails to start on them: a
 Gradle wrapper older than 9.1 or a Kotlin compiler older than 2.3 runs on
 the newest LTS JDK it supports, which the JVM installers install and the
-hooks run the build on (`JAVA_HOME`), saying so. The doctor reports either
-when missing.
+hooks run the build on (`JAVA_HOME`), saying so. A **floor** is the
+other way round: a build that compiles for a newer Java than the JDK it
+would run on (`sourceCompatibility`, `JavaVersion.VERSION_21`, Kotlin's
+`jvmTarget`, `options.release`, `maven.compiler.release`, written out, in a
+convention plugin under `build-logic/` or `buildSrc/`, or from the version
+catalog) fails to compile ("invalid source release: 21"), so the hooks run
+it on an installed JDK at least that new, and the installers add the
+oldest LTS that is when none is. The doctor reports them when missing.
 
 ## .NET runtimes a component runs on
 
