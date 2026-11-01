@@ -14,7 +14,6 @@ mastodon/mastodon-android            # Java app
 nextcloud/android                    # flavours, google-services
 nextcloud/talk-android               # flavours
 owncloud/android                     # multi-module
-bitwarden/android                    # several apps in one build
 wikimedia/apps-android-wikipedia     # flavours
 duckduckgo/Android                   # very many modules
 AntennaPod/AntennaPod                # Java, flavours
