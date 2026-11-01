@@ -347,7 +347,7 @@ func TestPlanFindsProjectsBelow(t *testing.T) {
 	}
 	p := plan(t, dir)
 	want := []string{filepath.Join("apps", "a", "A.xcodeproj"), filepath.Join("apps", "a", "A.xcworkspace"), filepath.Join("src", "GoMap.xcodeproj")}
-	if p.Container != "" || !reflect.DeepEqual(p.Nested, want) || p.Unsure != "no Xcode project or workspace here" {
+	if p.Container != "" || !reflect.DeepEqual(p.Nested, want) || !strings.HasPrefix(p.Unsure, "no Xcode project or workspace here: the apps below build on their own (apps") {
 		t.Errorf("got %+v", p)
 	}
 }

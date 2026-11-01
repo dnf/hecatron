@@ -10,6 +10,15 @@
   where an app's own SwiftLint build phase linted the package checkouts
   and failed (Gifski). `hct clean` removes it, and a leftover
   `.build/xcode`.
+- **A failed job's excerpt shows its errors before its warnings:** of the
+  lines it matches, those reporting only a warning or a note come last,
+  and the generic patterns also find make's `*** ... Error 2`, `No such
+  file or directory`, a file's `error:` without a line, and xcodebuild's
+  `** BUILD FAILED **` with the commands it lists as failed. An xcodebuild
+  log no longer gives an excerpt of its warnings about script phases
+  (mullvadvpn-app's missing `cargo`).
+- **`hct _xcode plan` says the apps below build on their own** where a
+  directory has no Xcode project but has apps below it.
 - **A scheme that runs a script target first is still the app's:** an
   aggregate or legacy target listed before the app (LoopKit/Loop's
   `Cartfile`) no longer hides the app's scheme, so `hct build` builds

@@ -58,6 +58,11 @@ func MakePlan(dir string, names ...string) (*Plan, error) {
 			plan.Nested = append(plan.Nested, relative(dir, path))
 		}
 		plan.Unsure = "no Xcode project or workspace here"
+		if len(plan.Nested) > 0 {
+			// Not a problem: the apps below build with their own plans
+			// (isowords' root, whose App/isowords.xcodeproj builds it).
+			plan.Unsure += ": the apps below build on their own (" + strings.Join(plan.Nested, ", ") + ")"
+		}
 		return plan, nil
 	}
 	plan.Kind = "-workspace"

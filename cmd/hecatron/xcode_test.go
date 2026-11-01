@@ -15,7 +15,7 @@ func TestXcodePlan(t *testing.T) {
 		t.Fatal(err)
 	}
 	r := runIn(t, dir, nil, binary, "_xcode", "plan")
-	if want := "unsure\tno Xcode project or workspace here\nnested\tsrc/App.xcodeproj\n"; r.status != 0 || r.stdout != want {
+	if want := "unsure\tno Xcode project or workspace here: the apps below build on their own (src/App.xcodeproj)\nnested\tsrc/App.xcodeproj\n"; r.status != 0 || r.stdout != want {
 		t.Errorf("got %+v, want %q", r, want)
 	}
 	r = runIn(t, t.TempDir(), nil, binary, "_xcode", "plan", "--json", dir)
