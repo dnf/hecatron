@@ -162,6 +162,64 @@ tasks that the files changed since `REF` touch.
   alone, and the exit status is 0.
 - The bash runner (`run.sh`, without the binary) has no `--changed`.
 
+### The plan, without running
+
+`--plan` on any run command (`hct test --changed --plan`, `hct lint
+--plan`, `hct retest --plan go`) works out what the run would do and
+prints it instead, then exits 0; no hook or task runs, and no log is
+written. It's for checking a selection on a shared machine or in review.
+
+```
+hct test --plan: 2 jobs would run, 1 skipped; nothing was run
+
+Changed since main (the default branch, merge base 1a2b3c4d5e): 3 files; running go (clients/go/main.go), rust (crates/a/src/lib.rs)
+  .claude/worktrees/x/   nothing: inside another git repository below the root
+  clients/go/main.go     go [.]: in its directory
+  crates/a/src/lib.rs    rust [.]: in its directory
+  erl_crash.dump         nothing: not in a language's directory, nor a build file
+
+Would run:
+  go       clients/go/
+  rust     ./
+
+Would skip:
+  zig      not installed (zig not found)
+```
+
+- **With `--changed`**: the base, then every changed file with what it
+  selects and why (its directory's language and component, a build file
+  selecting the languages below it, hooks, the configuration, a task's
+  `taskPaths`, a shell script, nothing), the files inside another git
+  repository among them.
+- **The jobs**: each language with its components' directories, project
+  tasks and tools; for `rebuild` and `retest`, the clean's and then the
+  build's or test's. Skipped up front: disabled, not installed, no hook
+  for the action. A hook that skips at run time (no tests found) can't be
+  known here.
+- **Agent output** (`--output agent`): a line per item, `FILE path: what:
+  why`, `JOB label (dirs)`, `SKIP label: reason`.
+- **JSON** (`--output json`):
+
+  ```json
+  {"command": "test", "summary": "Changed since main ...", "base": "main",
+   "baseSource": "the default branch", "mergeBase": "<commit>",
+   "files": [{"path": "clients/go/main.go", "reason": "component", "why": "in its directory",
+              "language": "go", "component": ".", "selects": [{"language": "go", "component": "."}]}],
+   "jobs": [{"action": "test", "label": "go", "language": "go", "components": ["."], "dirs": ["clients/go/"]}],
+   "skipped": [{"action": "test", "label": "zig", "language": "zig", "reason": "not installed (zig not found)"}]}
+  ```
+
+  `reason` is one of `component`, `hooks`, `configuration` (everything
+  runs), `local` (`.hecatron/local.json`: nothing), `build-file`, `task`,
+  `shell`, `other` (nothing) and `nested-repository` (nothing); a task's
+  file has `"tasks"`. Without `--changed`, there's no `summary`, `base` or
+  `files`; with no base to compare with (a CI run outside a pull request),
+  `note` says so and everything runs. `everything` names the file that
+  makes everything run.
+- `--output junit` and `sarif` are reports of a run, so `--plan` refuses
+  them. The bash runner has no `--plan`: it says it needs the binary, as
+  it does for `--changed`.
+
 ## After a pull: `hct sync`
 
 `hct sync [REF]` says, in a few lines, what the working tree moving (a

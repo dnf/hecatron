@@ -139,6 +139,17 @@ func skipReason(path string) string {
 // noHook is run.sh's word for a language without a hook for the action:
 // the job is skipped, saying why.
 func noHook(out io.Writer, action, lang string) runner.Outcome {
+	if reason, ok := noHookReason(action, lang); ok {
+		_, _ = fmt.Fprintf(out, "%s: %s skipped: %s\n", lang, action, reason)
+		return runner.Outcome{Skipped: reason}
+	}
+	_, _ = fmt.Fprintf(out, "error: %s has no %s hook (.hecatron/languages/%[1]s/%[2]s.sh)\n", lang, action)
+	return runner.Outcome{ExitCode: 1}
+}
+
+// noHookReason is why a language without a hook for the action is
+// skipped; ok is false for an action whose hook it must have (test).
+func noHookReason(action, lang string) (reason string, ok bool) {
 	reasons := map[string]string{
 		"lint":     "%s has no separate linter: its build treats warnings as errors (hecatron test %[1]s)",
 		"build":    "no build step for %s",
@@ -151,12 +162,9 @@ func noHook(out io.Writer, action, lang string) runner.Outcome {
 		"bench":    "no benchmark runner for %s",
 	}
 	if reason, ok := reasons[action]; ok {
-		reason = fmt.Sprintf(reason, lang)
-		_, _ = fmt.Fprintf(out, "%s: %s skipped: %s\n", lang, action, reason)
-		return runner.Outcome{Skipped: reason}
+		return fmt.Sprintf(reason, lang), true
 	}
-	_, _ = fmt.Fprintf(out, "error: %s has no %s hook (.hecatron/languages/%[1]s/%[2]s.sh)\n", lang, action)
-	return runner.Outcome{ExitCode: 1}
+	return "", false
 }
 
 // languageEnv is the environment for a language's hooks in a component:

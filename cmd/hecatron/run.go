@@ -32,6 +32,7 @@ type runArgs struct {
 	output        string
 	changed       bool   // --changed
 	changedRef    string // its ref, "" for the default
+	plan          bool   // --plan: say what would run, run nothing
 	timeout       string // --timeout
 	timeoutGiven  bool
 	env           []string // what the flags export to the hooks
@@ -80,6 +81,8 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 			}
 		case strings.HasPrefix(arg, "--changed="):
 			a.changed, a.changedRef = true, strings.TrimPrefix(arg, "--changed=")
+		case arg == "--plan":
+			a.plan = true
 		case arg == "--timeout":
 			if i+1 >= len(args) {
 				return a, fmt.Errorf("--timeout needs a duration (90s, 30m, 1h30m), or 0 for none")
@@ -138,7 +141,7 @@ func (c *cli) runCommand() (int, bool) {
 	}
 	shell, err := c.project.Shell()
 	if err != nil {
-		return a.declineChanged()
+		return a.decline()
 	}
 	for _, component := range a.components {
 		if !contains(c.project.Components, component) {
@@ -155,13 +158,17 @@ func (c *cli) runCommand() (int, bool) {
 		fmt.Print(text)
 		return 0, true
 	}
-	if a.outdatedJSON {
+	if a.outdatedJSON && !a.plan {
 		c.args = a.rest
 		return 0, false
 	}
 	stdoutReport, err := reportOutput(c.command, a.output)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
+		return 2, true
+	}
+	if stdoutReport != "" && a.plan {
+		fmt.Fprintf(os.Stderr, "hecatron: --plan prints human, agent or json output, not %s\n", stdoutReport)
 		return 2, true
 	}
 	if stdoutReport != "" {
@@ -179,12 +186,20 @@ func (c *cli) runCommand() (int, bool) {
 	}
 	r := &invocation{cli: c, shell: shell, args: a, format: format, timeout: timeout, patterns: map[string]*runner.Patterns{}}
 	if !r.resolveTargets() {
-		return a.declineChanged()
+		if a.plan {
+			fmt.Fprintf(os.Stderr, "hecatron: --plan: '%s' is not a language, project task or tool of hecatron %s (hecatron %[2]s help)\n",
+				r.unresolved, c.command)
+			return 2, true
+		}
+		return a.decline()
 	}
 	if a.changed {
 		if status := r.selectChanged(); status != 0 {
 			return status, true
 		}
+	}
+	if a.plan {
+		return r.printPlan(), true
 	}
 	if status := c.requirePython(); status != 0 {
 		return status, true
@@ -208,14 +223,20 @@ func (c *cli) runCommand() (int, bool) {
 var changedActions = map[string]bool{"test": true, "lint": true, "build": true, "format": true, "deps": true, "rebuild": true, "retest": true,
 	"docs": true, "bench": true}
 
-// declineChanged leaves the command to run.sh, which has no --changed: an
-// error with it, else delegated.
-func (a runArgs) declineChanged() (int, bool) {
-	if a.changed {
-		fmt.Fprintln(os.Stderr, "hecatron: --changed needs hecatron's binary to read this project, and it can't (try without --changed)")
-		return 2, true
+// decline leaves the command to run.sh, which has neither --changed nor
+// --plan: an error with them, else delegated.
+func (a runArgs) decline() (int, bool) {
+	flag := ""
+	switch {
+	case a.changed:
+		flag = "--changed"
+	case a.plan:
+		flag = "--plan"
+	default:
+		return 0, false
 	}
-	return 0, false
+	fmt.Fprintf(os.Stderr, "hecatron: %s needs hecatron's binary to read this project, and it can't (try without %[1]s)\n", flag)
+	return 2, true
 }
 
 // selectChanged works out what --changed runs; non-zero is the exit
@@ -226,9 +247,9 @@ func (r *invocation) selectChanged() int {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 2
 	}
-	var files []string
+	var files, nested []string
 	if note == "" {
-		if files, err = changed.Files(r.root, base.Commit); err != nil {
+		if files, nested, err = changed.FilesAndNested(r.root, base.Commit); err != nil {
 			fmt.Fprintln(os.Stderr, "hecatron:", err)
 			return 1
 		}
@@ -245,7 +266,7 @@ func (r *invocation) selectChanged() int {
 		fmt.Fprintln(os.Stderr, "hecatron:", err)
 		return 2
 	}
-	r.selection.Note = note
+	r.selection.Note, r.selection.Nested = note, nested
 	return 0
 }
 
@@ -301,15 +322,16 @@ func contains(list []string, item string) bool {
 // invocation is one run command's invocation.
 type invocation struct {
 	*cli
-	ctx       context.Context
-	shell     *project.Shell
-	args      runArgs
-	format    runner.Format
-	timeout   runner.Override
-	named     []runner.Job       // the targets, resolved
-	selection *changed.Selection // --changed's, else nil
-	patterns  map[string]*runner.Patterns
-	reports   *reportSettings // reportfiles.go
+	ctx        context.Context
+	shell      *project.Shell
+	args       runArgs
+	format     runner.Format
+	timeout    runner.Override
+	named      []runner.Job       // the targets, resolved
+	unresolved string             // the target that isn't one
+	selection  *changed.Selection // --changed's, else nil
+	patterns   map[string]*runner.Patterns
+	reports    *reportSettings // reportfiles.go
 }
 
 // resolveTargets turns the targets into jobs as run.sh's _run_target would
@@ -339,6 +361,7 @@ func (r *invocation) resolveTargets() bool {
 		} else if contains(r.shell.Added, label) {
 			job.Lang, job.Exec = label, r.languageExec(r.command, label, r.args.components)
 		} else {
+			r.unresolved = target
 			return false
 		}
 		r.named = append(r.named, job)
