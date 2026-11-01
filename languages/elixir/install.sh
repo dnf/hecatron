@@ -198,7 +198,7 @@ _install_versions() {
 # interactively without it.
 _rebar() {
     [ -f mix.exs ] || return 0
-    mix local.rebar --force --if-missing </dev/null
+    retry mix local.rebar --force --if-missing </dev/null
 }
 deps() {
     _install_versions

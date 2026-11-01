@@ -27,7 +27,7 @@ deps() {
 _cpan_deps() {
     [ -f cpanfile ] || [ -f Makefile.PL ] || [ -f Build.PL ] || return 0
     _cpanm
-    cpanm --notest --installdeps ${SUDO:+--sudo} .
+    retry cpanm --notest --installdeps ${SUDO:+--sudo} .
 }
 _cpanm() {
     has cpanm && return 0
@@ -37,7 +37,7 @@ _cpanm() {
 # site directory (macOS's has no packages for these).
 _cpan() {
     _cpanm
-    cpanm --notest ${SUDO:+--sudo} "$1"
+    retry cpanm --notest ${SUDO:+--sudo} "$1"
 }
 
 log "Installing Perl..."

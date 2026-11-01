@@ -17,7 +17,7 @@ _install() {
         # uv lands in ~/.local/bin, which this shell's PATH may predate.
         export PATH="${HOME}/.local/bin:${PATH}"
     fi
-    uv tool install --force "mojo==${MOJO_VERSION}" --with-executables-from mojo-compiler
+    retry uv tool install --force "mojo==${MOJO_VERSION}" --with-executables-from mojo-compiler
 }
 
 install_macos() {

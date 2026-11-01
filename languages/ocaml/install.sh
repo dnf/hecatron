@@ -8,7 +8,7 @@ install_macos() {
     fi
     opam init --auto-setup --disable-sandboxing --yes 2>/dev/null || true
     eval "$(opam env)"
-    opam install dune alcotest --yes
+    retry opam install dune alcotest --yes
 }
 
 install_linux() {
@@ -17,7 +17,7 @@ install_linux() {
     fi
     opam init --auto-setup --disable-sandboxing --yes 2>/dev/null || true
     eval "$(opam env)"
-    opam install dune alcotest --yes
+    retry opam install dune alcotest --yes
 }
 
 # shellcheck source=_ocamlformat.sh source-path=SCRIPTDIR
@@ -30,9 +30,9 @@ deps() {
     local _version
     while IFS= read -r _version; do
         if [ "${_version}" = "(any)" ]; then
-            opam install ocamlformat --yes
+            retry opam install ocamlformat --yes
         else
-            opam install "ocamlformat.${_version}" --yes
+            retry opam install "ocamlformat.${_version}" --yes
         fi </dev/null
     done < <(ocamlformat_missing)
     impl_deps ocaml

@@ -44,7 +44,7 @@ _install_versions() {
             return 1
         fi
         log "Downloading Go ${version}..."
-        GOTOOLCHAIN="go${version}" go version </dev/null
+        GOTOOLCHAIN="go${version}" retry go version </dev/null
     done <<<"${specs}"
 }
 
@@ -75,7 +75,7 @@ _build_golangci_lint() {
     # failing the pipeline (pipefail) and with it this installer.
     go="$(_installed | awk -F'\t' -v version="${newest}" '!found && $1 == version {print $2 "/bin/go"; found = 1}')"
     log "Building golangci-lint with $(GOTOOLCHAIN=local "${go}" env GOVERSION)..."
-    GOBIN="${gobin}" GOTOOLCHAIN=local "${go}" install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+    GOBIN="${gobin}" GOTOOLCHAIN=local retry "${go}" install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 }
 deps() {
     _install_versions

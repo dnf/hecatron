@@ -60,6 +60,26 @@ curl() {
         --speed-limit 1024 --speed-time 60 "$@"
 }
 
+# A command that downloads through its own tool (go's toolchain downloads,
+# go install, rustup, uv, opam, cpanm, npm...), retried as curl is: up to
+# five tries, 3, 6, 12 and 24 s apart (HECATRON_RETRY_DELAY sets the first
+# wait). Only for commands safe to run again; the last try's status is
+# returned.
+retry() {
+    local attempt=1 delay="${HECATRON_RETRY_DELAY:-3}" status
+    while true; do
+        "$@" && return 0
+        status=$?
+        if [ "${attempt}" -ge 5 ]; then
+            return "${status}"
+        fi
+        echo "hecatron: $1 failed (exit ${status}, try ${attempt} of 5); trying again in ${delay}s" >&2
+        sleep "${delay}"
+        attempt=$((attempt + 1))
+        delay=$((delay * 2))
+    done
+}
+
 # Each component's directory for a language, one per line, as hecatron
 # resolves it (a language's own implPath and directory names); outside a
 # hecatron run, the HECATRON_IMPL_PATH template (e.g. {component}/impl/{lang})
@@ -690,7 +710,7 @@ meson_install() {
     elif [ -n "$(meson_required "$1")" ]; then
         apt_install ninja-build
         uv_install
-        uv tool install --force meson
+        retry uv tool install --force meson
     else
         apt_install meson ninja-build
     fi
