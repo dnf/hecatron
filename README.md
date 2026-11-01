@@ -247,7 +247,7 @@ Adding another is a directory of small scripts; see
 
 ## Status
 
-Hecatron is young: version 0.7. It works and runs sayable's checks every
+Hecatron is young: version 0.8. It works and runs sayable's checks every
 day, but expect changes before 1.0; [CHANGELOG.md](CHANGELOG.md) lists
 them.
 
