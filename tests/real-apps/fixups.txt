@@ -17,3 +17,5 @@ android home-assistant/android: cp .github/mock-google-services.json app/google-
 android home-assistant/android: cp .github/mock-google-services.json wear/google-services.json
 android home-assistant/android: cp .github/mock-google-services.json automotive/google-services.json
 android ProtonVPN/android-app: mkdir -p .hecatron/languages/kotlin && printf '#!/usr/bin/env bash\ncd "$(git rev-parse --show-toplevel)" && exec ./gradlew assembleProductionVanillaOpenSourceDebug\n' > .hecatron/languages/kotlin/build.sh   # its README's build: one flavour, as a project hook
+xcode mozilla-mobile/firefox-ios: sh ./bootstrap.sh   # its README: nimbus-fml.sh, user scripts (#285)
+xcode mozilla-mobile/firefox-ios: sh ./bootstrap.sh focus   # focus-ios's content blocker lists
