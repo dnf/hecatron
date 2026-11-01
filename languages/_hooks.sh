@@ -1753,10 +1753,21 @@ build_jobs() {
 
 # An Xcode project or workspace here (Swift's and Objective-C's apps).
 xcode_project() { exists '*.xcodeproj' || exists '*.xcworkspace'; }
-# Where xcodebuild puts a build (its -derivedDataPath): inside SwiftPM's
-# hidden .build/, not xcodebuild's default ./build or ~/Library's
-# DerivedData, so clean knows what to remove.
-xcode_derived_data=.build/xcode
+# Where xcodebuild puts a build (its -derivedDataPath): outside the
+# repository, where Xcode puts its own, in a directory named after this one
+# and a hash of its path, so clean knows what to remove. Not inside it: a
+# project's SwiftLint run-script phase lints what's below it, the package
+# checkouts in the derived data too (Gifski's failed on DockProgress' and
+# sentry-cocoa's sources). HECATRON_XCODE_DERIVED_DATA sets the directory
+# it goes in instead of ~/Library/Developer/Xcode/DerivedData.
+xcode_derived_data() {
+    local _here _hash
+    _here="$(pwd -P)"
+    _hash="$(printf '%s' "${_here}" | cksum | cut -d ' ' -f 1)"
+    echo "${HECATRON_XCODE_DERIVED_DATA:-${HOME:-/tmp}/Library/Developer/Xcode/DerivedData}/hecatron-$(basename "${_here}")-${_hash}"
+}
+# Where earlier versions put it, which clean removes too.
+xcode_old_derived_data=.build/xcode
 
 # Xcode projects, on macOS (untested here: no macOS): xcodebuild builds one
 # scheme, unsigned (a check, not a release), for its platform's generic
@@ -1768,8 +1779,11 @@ xcode_hook() {
         build|clean)
             ! swift_builds_xcode_here || skip "built with swift's hook (Swift and Objective-C share this Xcode project)"
             if [ "$1" = clean ]; then
-                run rm -rf "${xcode_derived_data}"
-                rmdir .build 2>/dev/null || true
+                run rm -rf "$(xcode_derived_data)"
+                if [ -d "${xcode_old_derived_data}" ]; then
+                    run rm -rf "${xcode_old_derived_data}"
+                    rmdir .build 2>/dev/null || true
+                fi
                 exit
             fi
             has xcodebuild || skip "an Xcode project builds with xcodebuild (Xcode, on macOS), which isn't installed"
@@ -2050,7 +2064,7 @@ xcode_build() {
     fi
     local _status=0
     run xcodebuild build "${_kind}" "${_container}" -scheme "${_scheme}" -destination "${_destination}" \
-        -derivedDataPath "${xcode_derived_data}" -skipMacroValidation -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO ||
+        -derivedDataPath "$(xcode_derived_data)" -skipMacroValidation -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO ||
         _status=$?
     [ "${_status}" -eq 0 ] || xcode_newer_than_installed "${_container}"
     exit "${_status}"

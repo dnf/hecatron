@@ -30,8 +30,10 @@ class BuildHookTest(Fixture):
         write(os.path.join(self.bin, tool), f'#!/bin/sh\n{body}\necho "{tool} $*"\n', 0o755)
 
     def hook(self, lang: str, action: str, directory: str, **env) -> subprocess.CompletedProcess:
+        # xcodebuild's derived data in the fixture, not ~/Library.
         environment = {**os.environ, "PATH": self.bin + os.pathsep + os.environ["PATH"], "HECATRON_LANG": lang,
-                       "HECATRON_ROOT": self.root, "HECATRON_HOME": "", **env}
+                       "HECATRON_ROOT": self.root, "HECATRON_HOME": "",
+                       "HECATRON_XCODE_DERIVED_DATA": self.path(".derived-data"), **env}
         # The hooks ask hct's binary when it runs them: a test gives a fake.
         if "HECATRON_BINARY" not in env:
             environment.pop("HECATRON_BINARY", None)
@@ -338,6 +340,13 @@ class XcodeTest(BuildHookTest):
                 f'exit {status}')
         self.fake("xcodebuild", body)
 
+    def derived_data(self, directory: str = ".", parent: str = "") -> str:
+        """Where the hook puts the derived data of a build in directory:
+        hecatron-<its name>-<cksum of its real path> in parent."""
+        real = os.path.realpath(self.path(directory))
+        hashed = subprocess.run(["cksum"], input=real, capture_output=True, text=True).stdout.split()[0]
+        return os.path.join(parent or self.path(".derived-data"), f"hecatron-{os.path.basename(real)}-{hashed}")
+
     def calls(self) -> list[str]:
         if not os.path.exists(self.log):
             return []
@@ -365,7 +374,7 @@ class XcodeTest(BuildHookTest):
             result = self.hook(lang, "build", ".")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual(self.builds(), ["build -project App.xcodeproj -scheme App -destination generic/platform=iOS "
-                                             "Simulator -derivedDataPath .build/xcode -skipMacroValidation "
+                                             f"Simulator -derivedDataPath {self.derived_data()} -skipMacroValidation "
                                              "-skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO"])
             self.assertIn("-list -json -project App.xcodeproj", self.calls())
             self.assertIn("-showBuildSettings -project App.xcodeproj -scheme App", self.calls())
@@ -458,14 +467,30 @@ class XcodeTest(BuildHookTest):
         self.assertEqual(self.hook("swift", "build", "App").returncode, 0)
         self.assertIn("build -project App.xcodeproj ", self.builds()[0])
 
+    def test_the_derived_data_is_outside_the_repository(self):
+        # Gifski's SwiftLint phase linted the package checkouts in
+        # .build/xcode. Xcode's own place, named after the directory and
+        # its path: ~/Library/Developer/Xcode/DerivedData.
+        self.only("swift")
+        home = self.path(".home")
+        result = self.hook("swift", "build", ".", HOME=home, HECATRON_XCODE_DERIVED_DATA="")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        derived = self.derived_data(parent=os.path.join(home, "Library", "Developer", "Xcode", "DerivedData"))
+        self.assertIn(f" -derivedDataPath {derived} ", self.builds()[0])
+
     def test_clean_removes_the_derived_data(self):
+        # And .build/xcode, where earlier versions put it.
+        write(os.path.join(self.derived_data(), "Build", "App.o"), "")
         write(self.path(".build", "xcode", "Build", "App.o"), "")
         self.only("swift")
         result = self.hook("swift", "clean", ".")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"+ rm -rf {self.derived_data()}", result.stdout)
+        self.assertFalse(os.path.exists(self.derived_data()))
         self.assertIn("+ rm -rf .build/xcode", result.stdout)
         self.assertFalse(os.path.exists(self.path(".build")))
         self.assertEqual(self.calls(), [])
+        self.assertNotIn(".build/xcode", self.hook("swift", "clean", ".").stdout)
 
     def test_tests_skip_saying_how_to_run_them(self):
         for lang in ("swift", "objectivec"):
@@ -720,7 +745,7 @@ class XcodeTest(BuildHookTest):
         result = self.hook("swift", "build", ".", **env)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(self.builds(), ["build -project App.xcodeproj -scheme App-Debug -destination generic/platform=iOS "
-                                         "Simulator -derivedDataPath .build/xcode -skipMacroValidation "
+                                         f"Simulator -derivedDataPath {self.derived_data()} -skipMacroValidation "
                                          "-skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO"])
         self.assertEqual(len(self.calls()), 1)
         self.assertIn("scheme App-Debug: the scheme building the app, from the project's files", result.stdout)
@@ -974,7 +999,7 @@ class XcodeAppsBelowTest(BuildHookTest):
         result = self.hook("swift", "clean", ".")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("swift package clean", result.stdout)
-        self.assertEqual(result.stdout.count("+ rm -rf .build/xcode"), 2)
+        self.assertEqual(result.stdout.count("+ rm -rf " + self.path(".derived-data", "hecatron-")), 2)
 
     def test_an_app_alone_builds_itself(self):
         result = self.hook("swift", "build", "focus-ios")

@@ -264,10 +264,15 @@ tell, and everything on the bash-only path, `xcodebuild -list` and
   fails and the project's `LastUpgradeCheck` names a newer Xcode than the
   one building it, the log says so after the errors: they may be APIs of
   the newer SDK (home-assistant's project, at Xcode 27.0, on Xcode 26.6).
-- **The output:** `-derivedDataPath .build/xcode`, not `./build` or
-  `~/Library/Developer/Xcode/DerivedData`; `hct clean` removes it (and
-  `.build/` when that leaves it empty), without running `xcodebuild`. Add
-  `.build/` to `.gitignore` if it isn't there.
+- **The output:** outside the repository, where Xcode puts its own:
+  `-derivedDataPath ~/Library/Developer/Xcode/DerivedData/hecatron-<directory>-<hash>`,
+  named after the directory built and a hash (`cksum`) of its path.
+  `HECATRON_XCODE_DERIVED_DATA` names another directory to put it in.
+  Not inside the repository: a project's own SwiftLint run-script phase
+  lints what's below it, the package checkouts in the derived data
+  included (Gifski's failed on its dependencies' sources). `hct clean`
+  removes it, and `.build/xcode`, where earlier versions put it (and
+  `.build/` when that leaves it empty), without running `xcodebuild`.
 - **Swift and Objective-C together:** an app with both kinds of source (NetNewsWire)
   has both languages at the project's directory, and `hct build` runs
   languages at once; two `xcodebuild`s of one project would race on its
@@ -290,7 +295,7 @@ platform), it says so, naming the hooks to write:
 #!/usr/bin/env bash
 set -euo pipefail
 xcodebuild test -scheme NetNewsWire -destination 'platform=macOS' \
-    -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO
+    CODE_SIGNING_ALLOWED=NO
 ```
 
 For iOS: `-destination 'platform=iOS Simulator,name=iPhone 17'` (one
