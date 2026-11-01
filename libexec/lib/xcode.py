@@ -54,6 +54,10 @@ APPLICATION = "com.apple.product-type.application"
 # body up to the line closing it (a body holds lists, never an object).
 NATIVE_TARGET = re.compile(
     r"^\s*([0-9A-Za-z_]+)\s*(?:/\*[^\n]*?\*/)?\s*=\s*\{\s*isa\s*=\s*PBXNativeTarget\s*;(.*?)^\s*\};", re.M | re.S)
+# A PBXAggregateTarget or PBXLegacyTarget: builds no product (a script's,
+# Loop's Cartfile), so a scheme listing one first is still its app's.
+SCRIPT_TARGET = re.compile(
+    r"^\s*([0-9A-Za-z_]+)\s*(?:/\*[^\n]*?\*/)?\s*=\s*\{\s*isa\s*=\s*PBX(?:Aggregate|Legacy)Target\s*;", re.M)
 TARGET_DEPENDENCY = re.compile(
     r"^\s*([0-9A-Za-z_]+)\s*(?:/\*[^\n]*?\*/)?\s*=\s*\{\s*isa\s*=\s*PBXTargetDependency\s*;(.*?)^\s*\};", re.M | re.S)
 IDENTIFIER = re.compile(r"[0-9A-Za-z_]+")
@@ -86,6 +90,11 @@ def application_targets(project: str) -> dict[str, str]:
     """The project's application targets: object id → target name."""
     return {match.group(1): _setting(match.group(2), "name") for match in NATIVE_TARGET.finditer(_pbxproj(project))
             if _setting(match.group(2), "productType") == APPLICATION}
+
+
+def script_targets(project: str) -> set[str]:
+    """The project's aggregate and legacy targets' object ids."""
+    return {match.group(1) for match in SCRIPT_TARGET.finditer(_pbxproj(project))}
 
 
 def embedded_targets(project: str) -> set[str]:
@@ -163,9 +172,11 @@ def scheme(listing: dict, container: str, project: str, names: list[str]) -> tup
         projects += [p for p in workspace_projects(container) if p not in projects]
     apps: dict[str, str] = {}
     embedded: set[str] = set()
+    scripts: set[str] = set()
     for path in projects:
         apps.update(application_targets(path))
         embedded |= embedded_targets(path)
+        scripts |= script_targets(path)
     shared = [container] + [p for p in projects if p != container]
     app_schemes: dict[str, list[str]] = {}
     for directory in shared:
@@ -183,8 +194,11 @@ def scheme(listing: dict, container: str, project: str, names: list[str]) -> tup
         # extension first (focus-ios' ContentBlocker), and a helper app's
         # is for an app another embeds. Several schemes for the main app
         # (home-assistant's App-Debug and App-Release, focus-ios' Focus
-        # and Klar) are the project's to choose between.
-        main = sorted(name for name, built in app_schemes.items() if built[0] in apps and built[0] not in embedded)
+        # and Klar) are the project's to choose between. A script target
+        # listed first (Loop's Cartfile) builds nothing, so doesn't count.
+        firsts = {name: next((target for target in built if target not in scripts), "")
+                  for name, built in app_schemes.items()}
+        main = sorted(name for name, first in firsts.items() if first in apps and first not in embedded)
         if len(main) == 1:
             return main[0], "the shared scheme for the app no other app embeds"
         return "", f"several shared schemes build the app ({', '.join(main or sorted(app_schemes))})"

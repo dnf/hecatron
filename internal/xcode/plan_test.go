@@ -260,6 +260,23 @@ func TestPlanChoosesTheAppsScheme(t *testing.T) {
 	}
 }
 
+// Loop's Loop scheme runs an aggregate target (its Cartfile's) before
+// the app: the scheme is still the app's, not WatchApp's.
+func TestPlanSkipsAggregateTargetsInAScheme(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "Repo")
+	project(t, dir, app{sdk: "iphoneos"}, map[string]string{
+		"Main":   scheme("App.xcodeproj", &appRef, "Debug", ref{"AGG0", "Cartfile"}, appRef),
+		"Helper": scheme("App.xcodeproj", &helperRef, "Debug", helperRef),
+	})
+	text := strings.Replace(appProject(app{sdk: "iphoneos"}), "targets = (APP0, ", "targets = (AGG0, APP0, ", 1)
+	text = strings.Replace(text, "\t};\n\trootObject",
+		"\t\tAGG0 = {isa = PBXAggregateTarget; name = Cartfile; buildConfigurationList = ACL0; };\n\t};\n\trootObject", 1)
+	write(t, filepath.Join(dir, "App.xcodeproj", "project.pbxproj"), text)
+	if p := plan(t, dir); p.Scheme != "Main" {
+		t.Errorf("got scheme %q (%s), want Main", p.Scheme, p.Unsure)
+	}
+}
+
 func TestPlanDestination(t *testing.T) {
 	for name, tc := range map[string]struct {
 		app  app

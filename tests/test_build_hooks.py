@@ -509,6 +509,24 @@ class XcodeTest(BuildHookTest):
         self.xcodebuild(self.PACKAGES + ["Main", "Watch"])
         self.assertEqual(self.built_scheme(), "Main")
 
+    def test_a_script_target_listed_first_doesnt_hide_the_app(self):
+        # LoopKit/Loop: its Loop scheme runs the Cartfile aggregate target
+        # before the app; WatchApp's scheme is for the app Loop embeds.
+        self.only("swift")
+        self.targets(app="Main", others=((self.HELPER_TARGET, "Watch", "application"),), embeds=(self.HELPER_TARGET,))
+        cartfile = "C0FFEE000000000000000001"
+        with open(self.path("App.xcodeproj", "project.pbxproj")) as f:
+            text = f.read()
+        write(self.path("App.xcodeproj", "project.pbxproj"), text.replace(
+            "/* Begin PBXNativeTarget section */\n",
+            f"/* Begin PBXAggregateTarget section */\n\t\t{cartfile} /* Cartfile */ = {{\n"
+            "\t\t\tisa = PBXAggregateTarget;\n\t\t\tname = Cartfile;\n\t\t};\n"
+            "/* End PBXAggregateTarget section */\n\n/* Begin PBXNativeTarget section */\n"))
+        self.scheme("App.xcodeproj", "Main", cartfile, self.APP_TARGET)
+        self.scheme("App.xcodeproj", "Watch", self.HELPER_TARGET)
+        self.xcodebuild(self.PACKAGES + ["Main", "Watch"])
+        self.assertEqual(self.built_scheme(), "Main")
+
     def test_a_workspaces_shared_scheme_builds_its_projects_app(self):
         self.only("swift")
         self.targets()

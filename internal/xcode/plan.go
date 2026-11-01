@@ -252,18 +252,24 @@ func (s *set) target(ref BuildableRef) (*Project, *Target) {
 
 // appTarget is the app a scheme is for: its first build entry (else its
 // runnable), when that's an app. An extension's scheme builds its host app
-// too, and runs it, but lists the extension first.
+// too, and runs it, but lists the extension first. Aggregate and legacy
+// targets, which build no product, don't count as first: Loop's scheme
+// runs its Cartfile target before its app.
 func (s *set) appTarget(scheme *Scheme) (*Project, *Target) {
-	var first BuildableRef
-	switch {
-	case len(scheme.Build) > 0:
-		first = scheme.Build[0]
-	case scheme.Run != nil:
-		first = *scheme.Run
-	default:
+	var first *BuildableRef
+	for i := range scheme.Build {
+		if _, t := s.target(scheme.Build[i]); t == nil || t.ProductType != "" {
+			first = &scheme.Build[i]
+			break
+		}
+	}
+	if first == nil {
+		first = scheme.Run
+	}
+	if first == nil {
 		return nil, nil
 	}
-	if p, t := s.target(first); t != nil && t.IsApp() {
+	if p, t := s.target(*first); t != nil && t.IsApp() {
 		return p, t
 	}
 	return nil, nil
