@@ -271,9 +271,13 @@ other way round: a build that compiles for a newer Java than the JDK it
 would run on (`sourceCompatibility`, `JavaVersion.VERSION_21`, Kotlin's
 `jvmTarget`, `options.release`, `maven.compiler.release`, written out, in a
 convention plugin under `build-logic/` or `buildSrc/`, or from the version
-catalog) fails to compile ("invalid source release: 21"), so the hooks run
-it on an installed JDK at least that new, and the installers add the
-oldest LTS that is when none is. The doctor reports them when missing.
+catalog) fails to compile ("invalid source release: 21"), and a JDK the
+project pins (`.java-version`, `.sdkmanrc`, `.tool-versions`) is one its
+dependencies may be compiled for, so the hooks run it on an installed JDK
+at least that new, and the installers add the oldest LTS that is when none
+is. The JDK a build would run on is `JAVA_HOME`'s when it is set, as for
+Gradle and Maven, else the `java` on `PATH`. The doctor reports them when
+missing.
 
 ## .NET runtimes a component runs on
 
