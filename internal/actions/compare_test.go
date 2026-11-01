@@ -37,6 +37,10 @@ func projects() []project {
 		{name: "java maven", lang: "java", fixture: "maven"},
 		{name: "java gradle", lang: "java", fixture: "gradle"},
 		{name: "java gradle above", lang: "java", fixture: "gradle-above"},
+		// An Android app: its debug variants (androidBuild, is_android_build).
+		{name: "java android app", lang: "java", files: map[string]string{
+			"settings.gradle.kts": "include(\":app\")\n", "build.gradle.kts": "", "app/build.gradle.kts": "",
+			"app/src/main/AndroidManifest.xml": "<manifest/>\n"}},
 		{name: "python scripts only", lang: "python", files: map[string]string{"add.py": "", "test_add.py": ""}},
 		{name: "python projects below", lang: "python", files: map[string]string{
 			"py-polars/pyproject.toml": "", "sdk/python/setup.py": "", "sdk/python/x/pyproject.toml": "", "tests/conftest.py": ""}},

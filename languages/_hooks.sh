@@ -240,6 +240,17 @@ gradle_() {
     if [ "${_wrapper}" != /gradlew ] && [ -x "${_wrapper}" ]; then run "${_wrapper}" "$@"; else run gradle "$@"; fi
 }
 is_gradle() { exists 'build.gradle' || exists 'build.gradle.kts'; }
+# An Android build: a module with an AndroidManifest.xml in src/main (or
+# Kotlin Multiplatform's src/androidMain) here or below. Its release
+# variants need a signing config and services files only the maintainers
+# have (AntennaPod's validateSigningFreeRelease), so hct builds and
+# unit-tests the debug variants, as a newcomer's `./gradlew assembleDebug`
+# does; Gradle runs those tasks in every project that has them.
+is_android_build() {
+    find . -maxdepth 6 \( -name build -o -name .gradle -o -name .git -o -name node_modules \) -prune -o \
+        -type f -name AndroidManifest.xml \( -path '*/src/main/*' -o -path '*/src/androidMain/*' \) -print 2>/dev/null |
+        grep -q .
+}
 
 # The one solution or project file `dotnet` should act on, when a directory
 # has several (dotnet refuses to choose); empty when it can choose itself.
@@ -1015,7 +1026,7 @@ jvm_hook() {
     elif is_gradle || [ -n "${_gradle_above}" ]; then
         case "$1" in
             test) gradle_test ;;
-            build) gradle_ assemble ;;
+            build) if is_android_build; then gradle_ assembleDebug; else gradle_ assemble; fi ;;
             clean) gradle_ clean ;;
             lint) gradle_ check -x test ;;
             format) jvm_format_gradle "${_gradle_above:-.}" ;;
@@ -1096,13 +1107,19 @@ maven_test() {
 # has none, its JVM target's (jvmTest), else every target's (allTests: a JS
 # target's browser tests need a browser installed).
 gradle_test() {
-    local _log _status _task
+    local _log _status _task _tasks=(test jvmTest allTests)
+    # An Android build's unit tests: the debug variants' (is_android_build).
+    if is_android_build; then _tasks=(testDebugUnitTest "${_tasks[@]}"); fi
     _log="$(mktemp)"
-    for _task in test jvmTest allTests; do
+    for _task in "${_tasks[@]}"; do
         _status=0
         gradle_ "${_task}" 2>&1 | tee "${_log}" || _status=$?
         if [ "${_status}" -eq 0 ] || ! grep -q "Task '${_task}' not found" "${_log}"; then break; fi
-        echo "${HECATRON_LANG:-}: ${_hook_action}: no ${_task} task (a Kotlin Multiplatform build)"
+        if [ "${_task}" = testDebugUnitTest ]; then
+            echo "${HECATRON_LANG:-}: ${_hook_action}: no ${_task} task"
+        else
+            echo "${HECATRON_LANG:-}: ${_hook_action}: no ${_task} task (a Kotlin Multiplatform build)"
+        fi
     done
     rm -f "${_log}"
     return "${_status}"
