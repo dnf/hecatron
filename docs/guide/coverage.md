@@ -21,8 +21,8 @@ reinstalling on such a machine rather than installing from nothing.
 
 | Language | Ubuntu 24.04 x86_64 | Ubuntu 26.04 x86_64 | Debian 13 x86_64 | Ubuntu 24.04 arm64 | Ubuntu 26.04 arm64 | Debian 13 arm64 | macOS arm64 | macOS x86_64 |
 | --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-| ada | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
-| bash | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ada | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| bash | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | c | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | clojure | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | cobol | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -32,13 +32,13 @@ reinstalling on such a machine rather than installing from nothing.
 | d | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | dart | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | elixir | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| elm | ✅ | ✅ | ✅ | ➖ | ➖ | ➖ | ✅ | ✅ |
+| elm | ❌ | ❌ | ❌ | ➖ | ➖ | ➖ | ✅ | ✅ |
 | erlang | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| fortran | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| fortran | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | fsharp | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | gleam | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | go | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| goose | ✅ | ✅ | ✅ | ➖ | ➖ | ➖ | ✅ | ✅ |
+| goose | ❌ | ❌ | ❌ | ➖ | ➖ | ➖ | ❌ | ❌ |
 | groovy | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | haskell | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | haxe | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -50,7 +50,7 @@ reinstalling on such a machine rather than installing from nothing.
 | lisp | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | lua | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | mojo | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ➖ |
-| nim | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| nim | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | objectivec | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | ocaml | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | octave | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -65,13 +65,13 @@ reinstalling on such a machine rather than installing from nothing.
 | r | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | racket | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | raku | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ruby | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| ruby | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | rust | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| scala | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| scala | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | swift | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | tcl | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | typescript | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | vbnet | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | wren | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | zig | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -80,13 +80,13 @@ reinstalling on such a machine rather than installing from nothing.
 
 | Platform | ✅ | 💻 | ❌ | ➖ | ❔ |
 | --- | --: | --: | --: | --: | --: |
-| Ubuntu 24.04 x86_64 | 54 | 0 | 0 | 0 | 0 |
-| Ubuntu 26.04 x86_64 | 54 | 0 | 0 | 0 | 0 |
-| Debian 13 x86_64 | 54 | 0 | 0 | 0 | 0 |
-| Ubuntu 24.04 arm64 | 52 | 0 | 0 | 2 | 0 |
-| Ubuntu 26.04 arm64 | 52 | 0 | 0 | 2 | 0 |
-| Debian 13 arm64 | 52 | 0 | 0 | 2 | 0 |
-| macOS arm64 | 50 | 0 | 4 | 0 | 0 |
+| Ubuntu 24.04 x86_64 | 50 | 0 | 4 | 0 | 0 |
+| Ubuntu 26.04 x86_64 | 50 | 0 | 4 | 0 | 0 |
+| Debian 13 x86_64 | 50 | 0 | 4 | 0 | 0 |
+| Ubuntu 24.04 arm64 | 49 | 0 | 3 | 2 | 0 |
+| Ubuntu 26.04 arm64 | 49 | 0 | 3 | 2 | 0 |
+| Debian 13 arm64 | 49 | 0 | 3 | 2 | 0 |
+| macOS arm64 | 51 | 0 | 3 | 0 | 0 |
 | macOS x86_64 | 50 | 0 | 3 | 1 | 0 |
 
-Last checked: 2026-10-27 at 038fda3.
+Last checked: 2026-11-02 at a819ada.
