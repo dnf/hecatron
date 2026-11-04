@@ -236,7 +236,9 @@ tell, and everything on the bash-only path, `xcodebuild -list` and
   is one in the directory itself), outside hidden directories, build
   output, dependencies (`Pods`, `Carthage`, `node_modules`) and vendored
   code (`ThirdParty`, `third_party`, `Vendor`, `External`: firefox-ios'
-  `ThirdParty/Deferred`), examples and tests, in directories holding the
+  `ThirdParty/Deferred`), examples (a directory named `Example`, or whose
+  name starts or ends with sample, example or demo: firefox-ios'
+  `SampleBrowser`) and tests, in directories holding the
   language's sources: firefox-ios' root `Package.swift`, then
   `firefox-ios/Client.xcodeproj` and `focus-ios/Blockzilla.xcodeproj`
   (SwiftPM builds only the targets `Package.swift` names, so nothing
