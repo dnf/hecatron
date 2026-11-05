@@ -2119,12 +2119,27 @@ xcode_build() {
         [ -n "${_destination}" ] ||
             skip "can't tell a destination for scheme ${_scheme} from its SUPPORTED_PLATFORMS: $(xcode_write_hooks)"
     fi
-    local _status=0
+    local _status=0 _arch=()
+    if xcode_host_arch_only "${_destination}"; then _arch=("ARCHS=$(uname -m)"); fi
     run xcodebuild build "${_kind}" "${_container}" -scheme "${_scheme}" -destination "${_destination}" \
-        -derivedDataPath "$(xcode_derived_data)" -skipMacroValidation -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO ||
-        _status=$?
+        -derivedDataPath "$(xcode_derived_data)" -skipMacroValidation -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO \
+        ${_arch[@]+"${_arch[@]}"} || _status=$?
     [ "${_status}" -eq 0 ] || xcode_newer_than_installed "${_container}"
     exit "${_status}"
+}
+
+# Whether a build for destination $1 needs only this Mac's architecture: a
+# generic simulator destination builds them all, and a simulator runs this
+# Mac's, as a developer's build for one does (Delta's melonDS has ARM
+# assembly that x86_64 can't compile). Not when the project's settings
+# exclude it (a project whose dependencies only build for the other).
+xcode_host_arch_only() {
+    case "$1" in
+        *" Simulator") ;;
+        *) return 1 ;;
+    esac
+    [ -z "$(find . \( -name .git -o -name .build -o -name build -o -name node_modules \) -prune -o \
+        \( -name project.pbxproj -o -name '*.xcconfig' \) -exec grep -lE "EXCLUDED_ARCHS.*$(uname -m)" {} + 2>/dev/null)" ]
 }
 
 # The version of Xcode an xcodebuild ($1, else the one xcode-select or

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -433,7 +434,7 @@ class XcodeTest(BuildHookTest):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual(self.builds(), ["build -project App.xcodeproj -scheme App -destination generic/platform=iOS "
                                              f"Simulator -derivedDataPath {self.derived_data()} -skipMacroValidation "
-                                             "-skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO"])
+                                             "-skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO ARCHS=" + platform.machine()])
             self.assertIn("-list -json -project App.xcodeproj", self.calls())
             self.assertIn("-showBuildSettings -project App.xcodeproj -scheme App", self.calls())
 
@@ -565,6 +566,19 @@ class XcodeTest(BuildHookTest):
             result = self.hook("swift", action, ".")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn(f"an Xcode project has no standard {action} command", result.stdout)
+
+    def test_a_simulator_build_is_for_this_macs_architecture(self):
+        # rileytestut/Delta: melonDS' ARM assembly can't compile for x86_64.
+        arch = platform.machine()
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("generic/platform=iOS Simulator", result.stdout)
+        self.assertIn(f"CODE_SIGNING_ALLOWED=NO ARCHS={arch}", result.stdout)
+        # A project excluding it builds for what it says.
+        write(self.path("Config", "Sim.xcconfig"), f"EXCLUDED_ARCHS[sdk=iphonesimulator*] = {arch}\n")
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("ARCHS=", result.stdout)
 
     def test_deps_leaves_the_local_packages_below_to_the_project(self):
         # openhab/openhab-ios: CommonUI's own Package.resolved is stale; the
@@ -816,7 +830,7 @@ class XcodeTest(BuildHookTest):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(self.builds(), ["build -project App.xcodeproj -scheme App-Debug -destination generic/platform=iOS "
                                          f"Simulator -derivedDataPath {self.derived_data()} -skipMacroValidation "
-                                         "-skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO"])
+                                         "-skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO ARCHS=" + platform.machine()])
         self.assertEqual(len(self.calls()), 1)
         self.assertIn("scheme App-Debug: the scheme building the app, from the project's files", result.stdout)
         with open(self.path(".hct.log")) as log:
