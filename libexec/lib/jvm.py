@@ -27,7 +27,9 @@ maven.compiler.release) needs a JDK of 21 or later; on JDK 17, javac says
 "invalid source release: 21" (nextcloud's Android app). So does a JDK the
 project pins (.java-version, .sdkmanrc, .tool-versions): its dependencies may
 be compiled for it (pocket-casts' Android app pins 21 and targets 17, and
-javac on JDK 17 can't read a dependency's Java 21 class files).
+javac on JDK 17 can't read a dependency's Java 21 class files), as is the
+file a CI workflow's setup-java reads (java-version-file): Mihon's Gradle
+plugins need JDK 21 to run.
 """
 
 from __future__ import annotations
@@ -245,15 +247,29 @@ _PINS = (
 )
 
 
+# A CI workflow's setup-java that reads the JDK from a file
+# ("java-version-file: .github/.java-version", Mihon's), relative to the
+# repository's root.
+_JAVA_VERSION_FILE = re.compile(r"^\s*(?:-\s+)?java-version-file\s*:\s*[\"']?([^\s\"'#]+)", re.M)
+
+
+def _pin_files(directory: str, root: str | None) -> list[tuple[str, re.Pattern]]:
+    files = [(os.path.join(where, name), pattern)
+             for where in dict.fromkeys((directory, _gradle_root(directory, root), root or directory))
+             for name, pattern in _PINS]
+    top = root or directory
+    for workflow in _files(os.path.join(top, ".github", "workflows"), (".yml", ".yaml"), depth=1):
+        files += [(os.path.join(top, path), _PINS[0][1]) for path in _JAVA_VERSION_FILE.findall(_read(workflow))]
+    return files
+
+
 def _pinned(directory: str, root: str | None) -> list[tuple[int, str]]:
     found = []
-    for where in dict.fromkeys((directory, _gradle_root(directory, root), root or directory)):
-        for name, pattern in _PINS:
-            path = os.path.join(where, name)
-            match = pattern.search(_read(path))
-            version = re.match(r"(?:1\.)?(\d+)", re.sub(r"^[A-Za-z]\w*?-", "", match.group(1))) if match else None
-            if version:
-                found.append((int(version.group(1)), path))
+    for path, pattern in dict.fromkeys(_pin_files(directory, root)):
+        match = pattern.search(_read(path))
+        version = re.match(r"(?:1\.)?(\d+)", re.sub(r"^[A-Za-z]\w*?-", "", match.group(1))) if match else None
+        if version:
+            found.append((int(version.group(1)), path))
     return found
 
 
