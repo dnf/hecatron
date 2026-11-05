@@ -222,6 +222,10 @@ tell, and everything on the bash-only path, `xcodebuild -list` and
   its Catalyst variant, which can fail where iOS wouldn't. Without a
   destination, xcodebuild can't choose among a multiplatform target's
   platforms.
+- **The architecture:** a simulator build is for this Mac's architecture
+  only, as a developer's is, unless the project's settings exclude it
+  (`EXCLUDED_ARCHS`). A generic simulator destination would otherwise build
+  them all, and ARM assembly can't compile for x86_64 (Delta's melonDS).
 - **Dependencies:** `deps` skips for an Xcode project without a
   `Package.swift` beside it: the build resolves its packages from the
   project's own `Package.resolved`, so the local packages below aren't
