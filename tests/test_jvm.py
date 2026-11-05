@@ -131,6 +131,16 @@ class JvmTest(unittest.TestCase):
             self.assertEqual(jvm.floor(self.component, self.root)[0], version, name)
             os.remove(os.path.join(self.root, name))
 
+    def test_the_jdk_file_ci_reads_is_a_floor(self):
+        # Mihon: setup-java's java-version-file names .github/.java-version.
+        write(os.path.join(self.component, "build.gradle.kts"), "")
+        write(os.path.join(self.root, ".github", "workflows", "build.yml"),
+              "steps:\n  - uses: actions/setup-java@v6\n    with:\n      java-version-file: .github/.java-version\n")
+        write(os.path.join(self.root, ".github", ".java-version"), "21\n")
+        self.assertEqual(jvm.floor(self.component, self.root), (21, "it pins JDK 21 (.github/.java-version)"))
+        os.remove(os.path.join(self.root, ".github", ".java-version"))
+        self.assertIsNone(jvm.floor(self.component, self.root))  # a file the workflow names but the repository lacks
+
     def test_maven_and_old_targets(self):
         write(os.path.join(self.component, "pom.xml"),
               "<properties><maven.compiler.release>17</maven.compiler.release></properties>\n")
