@@ -566,6 +566,18 @@ class XcodeTest(BuildHookTest):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn(f"an Xcode project has no standard {action} command", result.stdout)
 
+    def test_deps_leaves_the_local_packages_below_to_the_project(self):
+        # openhab/openhab-ios: CommonUI's own Package.resolved is stale; the
+        # app builds from its workspace's.
+        write(self.path("CommonUI", "Package.swift"), "")
+        write(self.path("CommonUI", "Package.resolved"), "")
+        self.fake("swift", "exit 1")
+        self.commit()
+        result = self.hook("swift", "deps", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("an Xcode project has no standard deps command", result.stdout)
+        self.assertNotIn("swift package", result.stdout)
+
     def test_without_xcodebuild_the_build_skips(self):
         if shutil.which("xcodebuild"):
             self.skipTest("xcodebuild is installed")
