@@ -31,10 +31,13 @@ _track="${TRACK:-xcode}"
 # A track: the runner its builds need, the languages it builds (and how
 # the report names them), and whether hct installs their toolchains first
 # (GitHub's macOS runner has Xcode; the Linux one has JDKs and the Android
-# SDK, but hct picks the JDK a build asks for).
+# SDK, but hct picks the JDK a build asks for). The xcode track runs on the
+# xcode-27 image: macos-latest's newest Xcode is 26.6, while apps follow
+# the newest release (openhab, Swiftfin and yattee build on 27.x in their
+# CI); an app pinned to an older Xcode is skipped there.
 case "${_track}" in
     xcode)
-        _runner=macos-latest _wanted=(swift objectivec) _wanted_text="Swift or Objective-C" _installs=0 ;;
+        _runner=xcode-27 _wanted=(swift objectivec) _wanted_text="Swift or Objective-C" _installs=0 ;;
     android)
         _runner=ubuntu-latest _wanted=(kotlin java) _wanted_text="Kotlin or Java" _installs=1 ;;
     *)
