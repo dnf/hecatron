@@ -399,8 +399,10 @@ swift_package() {
         build|clean) xcode_apps_below Package.swift ;;
     esac
     if [ ! -f Package.swift ] && xcode_project; then
+        # deps too: the local packages below build from the project's
+        # Package.resolved, so their own may be stale (openhab-ios' CommonUI).
         case "${_hook_action}" in
-            build|clean|test|docs|bench) xcode_hook "${_hook_action}" ;;
+            build|clean|test|docs|bench|deps) xcode_hook "${_hook_action}" ;;
         esac
     fi
     if xcode_builds_app_beside_package; then

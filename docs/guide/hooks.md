@@ -222,6 +222,10 @@ tell, and everything on the bash-only path, `xcodebuild -list` and
   its Catalyst variant, which can fail where iOS wouldn't. Without a
   destination, xcodebuild can't choose among a multiplatform target's
   platforms.
+- **Dependencies:** `deps` skips for an Xcode project without a
+  `Package.swift` beside it: the build resolves its packages from the
+  project's own `Package.resolved`, so the local packages below aren't
+  held to theirs, which may be stale.
 - **Beside a `Package.swift`:** where the Xcode project has an
   application target and `xcodebuild` is installed, the app is the
   product, and Swift's build and clean are the Xcode app's (isowords'
