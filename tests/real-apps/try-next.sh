@@ -173,8 +173,11 @@ build() {
     fi
     export HECATRON_HOME="${_home}"
 
+    # A submodule given by its SSH URL (Delta's DeltaCore) needs a key the
+    # runner hasn't: a newcomer without one fetches it over HTTPS.
     step clone "git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/${_app}" \
-        git clone --depth 1 --recurse-submodules --shallow-submodules "https://github.com/${_app}.git" "${_work}/app" ||
+        git -c url.https://github.com/.insteadOf=git@github.com: -c url.https://github.com/.insteadOf=ssh://git@github.com/ \
+        clone --depth 1 --recurse-submodules --shallow-submodules "https://github.com/${_app}.git" "${_work}/app" ||
         return 0
     meta app_sha "$(git -C "${_work}/app" rev-parse HEAD)"
     cd "${_work}/app" || return 1
