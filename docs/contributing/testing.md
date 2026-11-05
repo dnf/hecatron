@@ -162,7 +162,7 @@ open-source app every two hours on each of its tracks:
 
 | Track | List | Runner | Languages | Steps after `hct init` |
 | --- | --- | --- | --- | --- |
-| `xcode` | [`xcode.txt`](../../tests/real-apps/xcode.txt) | macOS, the newest released Xcode | Swift, Objective-C | `deps`, `build` |
+| `xcode` | [`xcode.txt`](../../tests/real-apps/xcode.txt) | macOS, the `xcode-27` image's default Xcode (its newest release) | Swift, Objective-C | `deps`, `build` |
 | `android` | [`android.txt`](../../tests/real-apps/android.txt) | Linux, the runner's Android SDK | Kotlin, Java | `install --no-deps`, `deps`, `build` |
 
 Each run takes an app whose issue is labelled `real-app-retry`, oldest

@@ -32,9 +32,11 @@ _track="${TRACK:-xcode}"
 # the report names them), and whether hct installs their toolchains first
 # (GitHub's macOS runner has Xcode; the Linux one has JDKs and the Android
 # SDK, but hct picks the JDK a build asks for). The xcode track runs on the
-# xcode-27 image: macos-latest's newest Xcode is 26.6, while apps follow
-# the newest release (openhab, Swiftfin and yattee build on 27.x in their
-# CI); an app pinned to an older Xcode is skipped there.
+# xcode-27 image, with its default Xcode, the newest released (27.1):
+# macos-latest's newest is 26.6, while apps follow the newest release
+# (openhab, Swiftfin and yattee build on 27.x in their CI), and the image's
+# release candidate (27.2) has aliases a name can't tell from a release. An
+# app pinned to an older Xcode is skipped there.
 case "${_track}" in
     xcode)
         _runner=xcode-27 _wanted=(swift objectivec) _wanted_text="Swift or Objective-C" _installs=0 ;;

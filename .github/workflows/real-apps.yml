@@ -81,14 +81,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      # The image's default Xcode trails its newest; apps follow the newest
-      # SDK (IceCubesApp's toolbarVerticalEdge, #251).
-      - name: Use the newest released Xcode
-        if: env.TRACK == 'xcode'
-        run: |
-          xcode="$(ls -d /Applications/Xcode_*.app | grep -viE 'beta|release_candidate|_rc' | sort -V | tail -n 1)"
-          if [ -n "${xcode}" ]; then sudo xcode-select -s "${xcode}"; fi
-          xcodebuild -version
       # Gradle builds of large apps fill the runner's disk; these aren't used.
       - name: Free disk space
         if: env.TRACK == 'android'
