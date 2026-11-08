@@ -93,6 +93,12 @@ jobs:
         run: |
           git config --global url.https://github.com/.insteadOf git@github.com:
           git config --global --add url.https://github.com/.insteadOf ssh://git@github.com/
+      # A setup script that applies patches with git am (vlc-android's) needs
+      # a committer, as on a contributor's machine.
+      - name: Give git a committer
+        run: |
+          git config --global user.name "hecatron real apps"
+          git config --global user.email "real-apps@hecatron.invalid"
       - name: Build the next app
         env:
           APP: ${{ needs.pick.outputs.app }}
