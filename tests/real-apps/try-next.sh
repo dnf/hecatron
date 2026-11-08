@@ -137,6 +137,16 @@ setup_command() {
     printf '%s' "${_command}"
 }
 
+# Clone an app, then each submodule (recursively) that can be fetched; the
+# paths of those that can't go to missing-submodules.
+clone_app() {
+    local _path
+    git clone --depth 1 "$1" "$2" || return 1
+    while IFS= read -r _path; do
+        git -C "$2" submodule update --init --recursive --depth 1 -- "${_path}" || echo "${_path}" >>"${_work}/missing-submodules"
+    done < <(git -C "$2" config -f .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null | cut -d' ' -f2-)
+}
+
 # hct build's JSON report into build.json; its log goes to the step's.
 hct_build() { "${_hct}" build "$@" --output json --timeout 45m >"${_work}/build.json"; }
 
@@ -175,12 +185,15 @@ build() {
     fi
     export HECATRON_HOME="${_home}"
 
-    # A submodule given by its SSH URL (Delta's DeltaCore) needs a key the
-    # runner hasn't: a newcomer without one fetches it over HTTPS.
+    # Submodules one at a time: one a newcomer can't fetch (Element's
+    # private Enterprise) leaves the app to build without it, as theirs
+    # would, and the report names it.
     step clone "git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/${_app}" \
-        git -c url.https://github.com/.insteadOf=git@github.com: -c url.https://github.com/.insteadOf=ssh://git@github.com/ \
-        clone --depth 1 --recurse-submodules --shallow-submodules "https://github.com/${_app}.git" "${_work}/app" ||
+        clone_app "https://github.com/${_app}.git" "${_work}/app" ||
         return 0
+    if [ -s "${_work}/missing-submodules" ]; then
+        meta missing_submodules "$(tr '\n' ' ' <"${_work}/missing-submodules" | sed 's/ *$//')"
+    fi
     meta app_sha "$(git -C "${_work}/app" rev-parse HEAD)"
     cd "${_work}/app" || return 1
     _setup="$(setup_command "${_app}")"

@@ -85,6 +85,14 @@ jobs:
       - name: Free disk space
         if: env.TRACK == 'android'
         run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost
+      # A submodule or package given by its SSH URL (Delta's DeltaCore,
+      # Simplenote's Swift packages) needs a key the runner hasn't: a
+      # newcomer without one fetches it over HTTPS. Global, so xcodebuild's
+      # and Gradle's git fetches get it too.
+      - name: Fetch GitHub over HTTPS
+        run: |
+          git config --global url.https://github.com/.insteadOf git@github.com:
+          git config --global --add url.https://github.com/.insteadOf ssh://git@github.com/
       - name: Build the next app
         env:
           APP: ${{ needs.pick.outputs.app }}
