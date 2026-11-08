@@ -169,7 +169,8 @@ def facts(run: Run) -> str:
         ("Languages", meta.get("languages") or "none detected"),
         ("OS", meta.get("os", "?")),
     ]
-    rows += [(label, meta[key]) for key, label in (("xcode", "Xcode"), ("java", "Java"), ("android_sdk", "Android SDK"))
+    rows += [(label, meta[key]) for key, label in (("xcode", "Xcode"), ("java", "Java"), ("android_sdk", "Android SDK"),
+                                                    ("missing_submodules", "Submodules it couldn't fetch"))
              if meta.get(key)]
     if meta.get("run_url"):
         rows.append(("Run", f"{meta['run_url']} (logs: the `real-app-logs` artifact)"))
