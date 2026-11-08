@@ -276,7 +276,9 @@ project pins (`.java-version`, `.sdkmanrc`, `.tool-versions`, or the file
 a CI workflow's setup-java reads through `java-version-file`) is one its
 dependencies and build plugins may need, so the hooks run it on an installed JDK
 at least that new, and the installers add the oldest LTS that is when none
-is. The JDK a build would run on is `JAVA_HOME`'s when it is set, as for
+is. With none that new to be had (a pin to a JDK not yet released), the
+hooks warn and run it on the newest installed JDK, if that's newer than the
+one it would run on. The JDK a build would run on is `JAVA_HOME`'s when it is set, as for
 Gradle and Maven, else the `java` on `PATH`. A Gradle plugin can need a newer
 JDK to run than anything in the build declares (Metro's needs 21): when
 Gradle fails saying so ("Dependency requires at least JVM runtime version
