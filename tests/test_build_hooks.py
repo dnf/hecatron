@@ -244,10 +244,21 @@ class JdkTest(BuildHookTest):
         self.assertIn("JAVA_HOME=\n", result.stdout)
 
     def test_no_jdk_new_enough_warns(self):
-        self.java_on_path("17.0.11")
+        self.java_on_path("21.0.4")
         write(self.path("build.gradle.kts"), "java { sourceCompatibility = JavaVersion.VERSION_25 }\n")
         result = self.hook("kotlin", "test", ".", HECATRON_HOME=self.home, JAVA_HOME="")
-        self.assertIn("which needs JDK 25 or later, and no such JDK is installed (hecatron install kotlin)", result.stderr)
+        self.assertIn("which needs JDK 25 or later, and no such JDK is installed (hecatron install kotlin)\n", result.stderr)
+        self.assertIn("JAVA_HOME=\n", result.stdout)
+
+    def test_without_a_jdk_new_enough_the_newest_installed_is_used(self):
+        # Quran's CI pins a JDK hecatron can't install yet; its build runs on
+        # 21, and Metro's plugin won't run on the runner's 17.
+        self.java_on_path("17.0.11")
+        write(self.path(".java-version"), "27\n")
+        result = self.hook("kotlin", "build", ".", HECATRON_HOME=self.home, JAVA_HOME="")
+        self.assertIn("it pins JDK 27 (.java-version), which needs JDK 27 or later, and no such JDK is installed "
+                      f"(hecatron install kotlin): using the newest installed, JDK 21.0.2 ({self.jdk})", result.stderr)
+        self.assertIn("JAVA_HOME=" + self.jdk, result.stdout)
 
     def test_a_jdk_with_javac_is_kept(self):
         write(os.path.join(self.bin, "java"), "#!/bin/sh\n", 0o755)

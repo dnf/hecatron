@@ -1313,10 +1313,12 @@ jvm_format_sbt() {
 # JRE another package pulled in, first on PATH): then it runs on the newest
 # installed JDK within those limits. A floor and its reason as arguments
 # raise the build's own (gradle_'s, when Gradle says a plugin needs a newer
-# JDK to run: Metro's, which no build file declares).
+# JDK to run: Metro's, which no build file declares). With no JDK installed
+# that new, a newer one than the build's still gets closer: Quran's CI pins a
+# JDK hecatron can't install yet, and its build runs on any from 21.
 jvm_select_jdk() {
     [ -n "${HECATRON_HOME:-}" ] || return 0
-    local _ceiling="" _ceiling_why="" _floor="" _floor_why="" _why="" _current _feature _version _home _jdk_home=""
+    local _ceiling="" _ceiling_why="" _floor="" _floor_why="" _why="" _current="" _newer _version _jdk_home=""
     IFS=$'\t' read -r _ceiling _ceiling_why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling . "${HECATRON_ROOT:-.}") || true
     IFS=$'\t' read -r _floor _floor_why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" floor . "${HECATRON_ROOT:-.}") || true
     if [ -n "${1:-}" ] && { [ -z "${_floor}" ] || [ "$1" -gt "${_floor}" ]; }; then
@@ -1334,13 +1336,18 @@ jvm_select_jdk() {
     if [ -n "${_ceiling}" ]; then _why="${_ceiling_why}, which runs on JDK ${_ceiling} at the newest"; fi
     if [ -n "${_floor}" ]; then _why="${_why:+${_why}; }${_floor_why}, which needs JDK ${_floor} or later"; fi
     [ -n "${_why}" ] || _why="the java it would run on has no javac"
-    while IFS=$'\t' read -r _version _home; do
-        _feature="$(java_feature "${_version}")"
-        if [ -x "${_home}/bin/javac" ] && jvm_within "${_feature}" "${_floor}" "${_ceiling}"; then
-            _jdk_home="${_home}"
-            break
+    IFS=$'\t' read -r _version _jdk_home < <(jvm_newest_jdk "${_floor}" "${_ceiling}") || true
+    if [ -z "${_jdk_home}" ] && [ -n "${_floor}" ]; then
+        _newer="$((${_current:-0} + 1))"
+        jvm_has_compiler || _newer="${_current}"
+        IFS=$'\t' read -r _version _jdk_home < <(jvm_newest_jdk "${_newer}" "${_ceiling}") || true
+        if [ -n "${_jdk_home}" ]; then
+            echo "warning: ${_why}, and no such JDK is installed (hecatron install ${HECATRON_LANG:-}): using the newest installed, JDK ${_version} (${_jdk_home})" >&2
+            export JAVA_HOME="${_jdk_home}"
+            export PATH="${_jdk_home}/bin:${PATH}"
+            return 0
         fi
-    done < <(bash "${HECATRON_HOME}/languages/java/installed.sh" 2>/dev/null | sort -t. -k1,1nr -k2,2nr -k3,3nr)
+    fi
     if [ -z "${_jdk_home}" ]; then
         if [ -n "${_ceiling}${_floor}" ]; then
             echo "warning: ${_why}, and no such JDK is installed (hecatron install ${HECATRON_LANG:-})" >&2
@@ -1352,6 +1359,18 @@ jvm_select_jdk() {
     echo "Using JDK ${_version} (${_jdk_home}): ${_why}."
     export JAVA_HOME="${_jdk_home}"
     export PATH="${_jdk_home}/bin:${PATH}"
+}
+# The newest installed JDK (with javac) within a floor and a ceiling (either
+# empty: no limit), as its version and home, tab-separated.
+jvm_newest_jdk() {
+    local _version _home
+    while IFS=$'\t' read -r _version _home; do
+        if [ -x "${_home}/bin/javac" ] && jvm_within "$(java_feature "${_version}")" "$1" "$2"; then
+            printf '%s\t%s\n' "${_version}" "${_home}"
+            return 0
+        fi
+    done < <(bash "${HECATRON_HOME}/languages/java/installed.sh" 2>/dev/null | sort -t. -k1,1nr -k2,2nr -k3,3nr)
+    return 1
 }
 # The java a build runs on: Gradle and Maven take JAVA_HOME's over PATH's
 # (a runner's JAVA_HOME can name JDK 17 while PATH finds the 25 hecatron
