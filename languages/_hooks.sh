@@ -235,15 +235,24 @@ note_build_dir() {
 # Gradle subproject's wrapper is usually in the build's root, above it.
 maven() { if [ -x ./mvnw ]; then run ./mvnw -B "$@"; else run mvn -B "$@"; fi; }
 gradle_() {
-    local _wrapper=./gradlew
+    local _wrapper=./gradlew _gradle=(gradle) _build=. _status=0 _log _needs _java_home
     [ -x "${_wrapper}" ] || _wrapper="$(dir_above_with gradlew || true)/gradlew"
-    local _status=0
     if [ "${_wrapper}" != /gradlew ] && [ -x "${_wrapper}" ]; then
-        gradle_lock "$(dirname "${_wrapper}")"
-        run "${_wrapper}" "$@" || _status=$?
-    else
-        gradle_lock .
-        run gradle "$@" || _status=$?
+        _gradle=("${_wrapper}")
+        _build="$(dirname "${_wrapper}")"
+    fi
+    gradle_lock "${_build}"
+    _log="$(mktemp)"
+    run "${_gradle[@]}" "$@" 2>&1 | tee "${_log}" || _status=$?
+    _needs="$(sed -n 's/.*requires at least JVM runtime version \([0-9][0-9]*\).*/\1/p' "${_log}" | head -n 1)"
+    rm -f "${_log}"
+    if [ "${_status}" -ne 0 ] && [ -n "${_needs}" ]; then
+        _java_home="${JAVA_HOME:-}"
+        jvm_select_jdk "${_needs}" "Gradle says a plugin the build applies needs a newer JVM"
+        if [ "${JAVA_HOME:-}" != "${_java_home}" ]; then
+            _status=0
+            run "${_gradle[@]}" "$@" || _status=$?
+        fi
     fi
     rm -rf "${_gradle_lock:?}"
     return "${_status}"
@@ -1302,12 +1311,18 @@ jvm_format_sbt() {
 # least that new (its floor). See libexec/lib/jvm.py; the JVM installers
 # install such a JDK. A build also can't run on a runtime without javac (a
 # JRE another package pulled in, first on PATH): then it runs on the newest
-# installed JDK within those limits.
+# installed JDK within those limits. A floor and its reason as arguments
+# raise the build's own (gradle_'s, when Gradle says a plugin needs a newer
+# JDK to run: Metro's, which no build file declares).
 jvm_select_jdk() {
     [ -n "${HECATRON_HOME:-}" ] || return 0
     local _ceiling="" _ceiling_why="" _floor="" _floor_why="" _why="" _current _feature _version _home _jdk_home=""
     IFS=$'\t' read -r _ceiling _ceiling_why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" ceiling . "${HECATRON_ROOT:-.}") || true
     IFS=$'\t' read -r _floor _floor_why < <(python3 "${HECATRON_HOME}/libexec/lib/jvm.py" floor . "${HECATRON_ROOT:-.}") || true
+    if [ -n "${1:-}" ] && { [ -z "${_floor}" ] || [ "$1" -gt "${_floor}" ]; }; then
+        _floor="$1"
+        _floor_why="$2"
+    fi
     if [ -z "${_ceiling}${_floor}" ]; then
         jvm_has_compiler && return 0
     else

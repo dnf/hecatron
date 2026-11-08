@@ -277,7 +277,10 @@ a CI workflow's setup-java reads through `java-version-file`) is one its
 dependencies and build plugins may need, so the hooks run it on an installed JDK
 at least that new, and the installers add the oldest LTS that is when none
 is. The JDK a build would run on is `JAVA_HOME`'s when it is set, as for
-Gradle and Maven, else the `java` on `PATH`. The doctor reports them when
+Gradle and Maven, else the `java` on `PATH`. A Gradle plugin can need a newer
+JDK to run than anything in the build declares (Metro's needs 21): when
+Gradle fails saying so ("Dependency requires at least JVM runtime version
+21"), the hooks run it once more on an installed JDK that new. The doctor reports them when
 missing.
 
 ## .NET runtimes a component runs on
