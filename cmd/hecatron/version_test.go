@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -88,14 +89,17 @@ func TestVersionMatchesBinHecatron(t *testing.T) {
 
 // withoutJobReport drops what bash says on stderr when version.sh's hook is
 // killed by a signal ("Terminated", with the command after it in some bash
-// versions), which the Go port doesn't say (its wording follows bash's
-// version and the C library).
+// versions; macOS's bash 3.2 puts the script, line and pid before it:
+// "version.sh: line 18: 50686 Terminated: 15 ..."), which the Go port
+// doesn't say (its wording follows bash's version and the C library).
 func withoutJobReport(stderr string) string {
 	var kept []string
 	for _, line := range strings.SplitAfter(stderr, "\n") {
-		if !strings.HasPrefix(line, "Terminated") {
+		if !jobReport.MatchString(line) {
 			kept = append(kept, line)
 		}
 	}
 	return strings.Join(kept, "")
 }
+
+var jobReport = regexp.MustCompile(`^(?:\S+: line \d+: \d+ +)?Terminated\b`)
