@@ -1,0 +1,1 @@
+Configuring project ':native:lib' without an existing directory is not allowed. The configured projectDirectory '/tmp/capture/gradle-missing-project-dir/native/lib' does not exist, can't be written to or is not a directory.
