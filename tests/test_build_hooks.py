@@ -214,6 +214,28 @@ class JdkTest(BuildHookTest):
         self.assertIn("it pins JDK 21 (.java-version), which needs JDK 21 or later.", result.stdout)
         self.assertIn("JAVA_HOME=" + self.jdk, result.stdout)
 
+    def test_gradle_reruns_on_the_jdk_a_plugin_needs(self):
+        # Metro's Gradle plugin needs JDK 21 to run (kotlinconf-app, Mihon);
+        # nothing in the build files says so.
+        self.java_on_path("17.0.11")
+        self.fake("gradle", f'if [ "${{JAVA_HOME:-}}" != "{self.jdk}" ]; then\n'
+                  "  echo '      > Dependency requires at least JVM runtime version 21. This build uses a Java 17 JVM.'\n"
+                  "  exit 1\nfi")
+        result = self.hook("kotlin", "build", ".", HECATRON_HOME=self.home, JAVA_HOME="")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Using JDK 21.0.2 (" + self.jdk + "): Gradle says a plugin the build applies needs a newer JVM, "
+                      "which needs JDK 21 or later.", result.stdout)
+        self.assertEqual(result.stdout.count("+ gradle assemble"), 2)
+
+    def test_gradle_isnt_rerun_without_a_newer_jdk(self):
+        self.java_on_path("21.0.4")
+        write(os.path.join(self.bin, "javac"), "#!/bin/sh\n", 0o755)
+        self.fake("gradle", "echo '> Dependency requires at least JVM runtime version 25. This build uses a Java 21 JVM.'; exit 1")
+        result = self.hook("kotlin", "build", ".", HECATRON_HOME=self.home, JAVA_HOME="")
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout.count("+ gradle assemble"), 1)
+        self.assertIn("needs JDK 25 or later, and no such JDK is installed", result.stderr)
+
     def test_a_jdk_at_the_floor_or_later_is_kept(self):
         self.java_on_path("21.0.4")
         write(self.path("build.gradle.kts"), "java { sourceCompatibility = JavaVersion.VERSION_17 }\n")
