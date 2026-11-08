@@ -23,3 +23,6 @@ xcode mozilla-mobile/firefox-ios: sh ./bootstrap.sh   # its README: nimbus-fml.s
 xcode mozilla-mobile/firefox-ios: sh ./bootstrap.sh focus   # focus-ios's content blocker lists
 xcode bitwarden/ios: brew install mint && ./Scripts/bootstrap.sh   # its README: Mint's XcodeGen generates the four projects (#295)
 xcode kiwix/kiwix-apple: brew bundle && python3 localizations.py generate && xcodegen   # its README: CoreKiwix.xcframework, generated strings, XcodeGen's project (#298)
+xcode Automattic/pocket-casts-ios: make external_contributor   # its README's external contributor setup: LocalApiCredentials.swift, which the credentials build phase uses before a8c-secrets (#313)
+xcode nextcloud/ios: curl -fsSL https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist -o GoogleService-Info.plist   # its README: Firebase's mock config at the root (#317)
+android videolan/vlc-android: ANDROID_SDK="${ANDROID_HOME}" ANDROID_NDK="${ANDROID_NDK_HOME}" buildsystem/compile.sh --init   # its Gradle setup: clones libvlcjni (settings.gradle includes it) and writes local.properties, then stops before the native build (#321)
