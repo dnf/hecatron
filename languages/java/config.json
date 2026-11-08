@@ -142,6 +142,22 @@
     {
       "tool": "gradle",
       "regex": "^(?P<message>Execution failed for task .+)$"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^(?P<message>A problem (?:occurred|was found) .+)$"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^\\s*> (?P<message>Could not .+)$"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^\\s+> (?P<message>(?:Dependency requires|A failure occurred|Failed to|Cannot|Unable to|No matching) .+)$"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^\\s+(?P<message>Configuring project .+ is not allowed\\.).*$"
     }
   ],
   "notes": {
