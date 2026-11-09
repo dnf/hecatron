@@ -441,10 +441,12 @@ swift_package() {
 # simulator to run on, which is the project's choice.
 swift_package_builds_on_host() {
     [ "$(uname -s)" = Darwin ] || return 0
-    grep -qs 'platforms[[:space:]]*:' "${build_dir}/Package.swift" || return 0
-    ! grep -qs '\.macOS' "${build_dir}/Package.swift" || return 0
+    local _platforms
+    _platforms=" $(xcode_py package-platforms "${build_dir}/Package.swift" 2>/dev/null) "
+    [ "${_platforms}" != "  " ] || return 0
+    case "${_platforms}" in *" macOS "*) return 0 ;; esac
     if [ "${_hook_action}" = build ] && has xcodebuild && ! xcode_app_above_uses_package; then
-        cd "${build_dir}" && xcode_package_build
+        cd "${build_dir}" && xcode_package_build "${_platforms}"
     fi
     skip "the package's platforms don't include macOS, which SwiftPM here builds for (an Xcode project builds it for its platform)"
 }
@@ -2186,7 +2188,8 @@ xcode_build() {
 # the Mac can't build (swift_package_builds_on_host), built with
 # xcodebuild, which opens a Package.swift as a workspace: the scheme of all
 # its products (xcode.py's package-scheme), for its platform's generic
-# simulator (xcode_package_destination), unsigned. Exits.
+# simulator (xcode_package_destination, from its platforms: $1), unsigned.
+# Exits.
 xcode_package_build() {
     local _list _scheme _destination _status=0 _arch=()
     xcode_select_version
@@ -2194,7 +2197,7 @@ xcode_package_build() {
     _list="$(xcodebuild -list -json)" || exit 1
     _scheme="$(printf '%s\n' "${_list}" | xcode_py package-scheme)"
     [ -n "${_scheme}" ] || skip "xcodebuild lists no scheme for the package: $(xcode_write_hooks)"
-    _destination="$(xcode_package_destination)"
+    _destination="$(xcode_package_destination "$1")"
     [ -n "${_destination}" ] || skip "can't tell a simulator to build for from the package's platforms: $(xcode_write_hooks)"
     echo "${HECATRON_LANG:-}: ${_hook_action}: the package's platforms don't include macOS, which SwiftPM here builds for: building scheme ${_scheme} with xcodebuild"
     if xcode_host_arch_only "${_destination}"; then _arch=("ARCHS=$(uname -m)"); fi
@@ -2203,17 +2206,15 @@ xcode_package_build() {
         ${_arch[@]+"${_arch[@]}"} || _status=$?
     exit "${_status}"
 }
-# The generic simulator for the package's platforms (its Package.swift's):
-# iOS's (Mac Catalyst's too), else visionOS's, tvOS's or watchOS's, as
-# xcode_destination prefers them.
+# The generic simulator for a package's platforms ($1, xcode.py's
+# package-platforms, space-padded): iOS's (Mac Catalyst's too), else
+# visionOS's, tvOS's or watchOS's, as xcode_destination prefers them.
 xcode_package_destination() {
-    local _platforms
-    _platforms="$(sed -n '/platforms[[:space:]]*:/,/\]/p' Package.swift)"
-    case "${_platforms}" in
-        *.iOS* | *.macCatalyst*) echo "generic/platform=iOS Simulator" ;;
-        *.visionOS*) echo "generic/platform=visionOS Simulator" ;;
-        *.tvOS*) echo "generic/platform=tvOS Simulator" ;;
-        *.watchOS*) echo "generic/platform=watchOS Simulator" ;;
+    case "$1" in
+        *" iOS "* | *" macCatalyst "*) echo "generic/platform=iOS Simulator" ;;
+        *" visionOS "*) echo "generic/platform=visionOS Simulator" ;;
+        *" tvOS "*) echo "generic/platform=tvOS Simulator" ;;
+        *" watchOS "*) echo "generic/platform=watchOS Simulator" ;;
     esac
 }
 # What xcode_package_build built, which swift package clean leaves.

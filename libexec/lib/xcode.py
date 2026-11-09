@@ -20,6 +20,9 @@ Xcode project's files, run in the directory being built.
                                     -list -json's report (stdin), and why,
                                     tab-separated; nothing when none fits,
                                     and only the why when several do
+    xcode.py package-platforms <Package.swift>
+                                    the platforms its Package(platforms:)
+                                    names, space-separated (iOS macOS ...)
     xcode.py package-scheme         the scheme building a Swift package,
                                     from xcodebuild -list -json's report
                                     (stdin); nothing when there's none
@@ -232,6 +235,26 @@ def scheme(listing: dict, container: str, project: str, names: list[str]) -> tup
     return "", ""
 
 
+PACKAGE_INIT = re.compile(r"\bPackage\s*\(")
+PACKAGE_PLATFORMS = re.compile(r"\bplatforms\s*:\s*\[([^\]]*)\]")
+LATER_ARGUMENT = re.compile(r"\b(?:products|dependencies|targets)\s*:")
+
+
+def package_platforms(manifest: str) -> list[str]:
+    """The platforms a Package.swift's Package(platforms: [...]) names
+    (iOS, macOS, ...), not a target's .when(platforms:) condition: Swift
+    takes Package's arguments in order, so its platforms come before its
+    products, dependencies and targets."""
+    start = PACKAGE_INIT.search(manifest)
+    if not start:
+        return []
+    found = PACKAGE_PLATFORMS.search(manifest, start.end())
+    later = LATER_ARGUMENT.search(manifest, start.end())
+    if not found or (later and later.start() < found.start()):
+        return []
+    return re.findall(r"\.(\w+)\s*\(", found.group(1))
+
+
 def package_scheme(listing: dict) -> str:
     """The scheme building a Swift package xcodebuild opened (its listing):
     <name>-Package, which builds every product and is listed when there are
@@ -395,6 +418,13 @@ def main(argv: list[str]) -> int:
                            argv[3:])
         if name or why:
             print(f"{name}\t{why}")
+        return 0
+    if len(argv) == 2 and argv[0] == "package-platforms":
+        try:
+            with open(argv[1], encoding="utf-8") as f:
+                print(" ".join(package_platforms(f.read())))
+        except OSError:
+            pass
         return 0
     if argv == ["package-scheme"]:
         try:

@@ -1083,6 +1083,22 @@ class XcodeTest(BuildHookTest):
         self.hook("swift", "build", "Packages/Core")
         self.assertIn("-destination generic/platform=visionOS Simulator", self.builds()[0])
 
+    def test_only_the_packages_own_platforms_count(self):
+        # A target's .when(platforms:) condition isn't the package's list,
+        # nor is anything after a one-line list.
+        conditioned = ('// swift-tools-version:6.0\nlet package = Package(name: "Core", platforms: [.tvOS(.v17)],\n'
+                       '  products: [.library(name: "Core", targets: ["Core"])],\n'
+                       '  targets: [.target(name: "Core", swiftSettings: [.define("PHONE", .when(platforms: [.iOS, .macOS]))])])\n')
+        write(self.path("Packages", "Core", "Package.swift"), conditioned)
+        self.fake("swift")
+        self.fake("uname", 'echo Darwin; exit')
+        self.package_listing(["Core"])
+        self.hook("swift", "build", "Packages/Core")
+        self.assertIn("-destination generic/platform=tvOS Simulator", self.builds()[0])
+        # Without a list of its own, the package builds anywhere: SwiftPM.
+        write(self.path("Packages", "Core", "Package.swift"), conditioned.replace("platforms: [.tvOS(.v17)],\n", ""))
+        self.assertIn("+ swift build", self.hook("swift", "build", "Packages/Core").stdout)
+
 
 @unittest.skipUnless(sys.platform == "darwin" and shutil.which("xcodebuild"), "needs Xcode")
 class XcodePackageBuildTest(BuildHookTest):
