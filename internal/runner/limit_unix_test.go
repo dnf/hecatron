@@ -16,17 +16,34 @@ import (
 	"time"
 )
 
-// alive reports whether a process exists and isn't a zombie.
+// alive reports whether a process exists and isn't a zombie (from /proc,
+// else ps: without /proc, macOS).
 func alive(pid int) bool {
 	if syscall.Kill(pid, 0) != nil {
 		return false
 	}
 	stat, err := os.ReadFile(filepath.Join("/proc", strconv.Itoa(pid), "stat"))
 	if err != nil {
-		return runtime.GOOS != "linux"
+		if runtime.GOOS == "linux" {
+			return false
+		}
+		state, err := exec.Command("ps", "-o", "stat=", "-p", strconv.Itoa(pid)).Output()
+		return err == nil && !strings.HasPrefix(strings.TrimSpace(string(state)), "Z")
 	}
 	end := strings.LastIndexByte(string(stat), ')')
 	return end >= 0 && stat[end+2] != 'Z'
+}
+
+// aliveAfter reports whether a process is still alive after a while: one
+// sent SIGKILL takes a moment to go, longer on a loaded machine (the whole
+// package's tests at once).
+func aliveAfter(pid int, wait time.Duration) bool {
+	for deadline := time.Now().Add(wait); time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+		if !alive(pid) {
+			return false
+		}
+	}
+	return alive(pid)
 }
 
 // A job past its limit is stopped with everything it started: a child in
@@ -75,7 +92,7 @@ func TestTimeLimitStopsTheJobAndItsChildren(t *testing.T) {
 		}
 		pid, _ := strconv.Atoi(strings.TrimSpace(string(data)))
 		pids = append(pids, pid)
-		if alive(pid) {
+		if aliveAfter(pid, 2*time.Second) {
 			t.Errorf("%s (pid %d) still running", name, pid)
 		}
 	}
