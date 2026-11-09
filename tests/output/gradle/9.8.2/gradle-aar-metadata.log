@@ -1,0 +1,44 @@
+=== build . (kotlin) ===
++ ./gradlew assembleDebug
+Configuration on demand is an incubating feature.
+> Task :core-database:checkDebugAarMetadata
+> Task :core-data:stripDebugDebugSymbols NO-SOURCE
+> Task :core-data:copyDebugJniLibsProjectAndLocalJars
+> Task :core-data:checkDebugAarMetadata FAILED
+> Task :core-data:extractDeepLinksForAarDebug
+> Task :core-data:prepareDebugArtProfile
+> Task :core-model:kspDebugKotlin
+
+[Incubating] Problems report is available at: file:///home/runner/work/_temp/real-app/app/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':core-data:checkDebugAarMetadata' (registered by plugin 'com.android.internal.library').
+> A failure occurred while executing com.android.build.gradle.internal.tasks.CheckAarMetadataWorkAction
+   > An issue was found when checking AAR metadata:
+     
+       1.  Dependency 'com.squareup.okhttp3:okhttp-android:5.5.1' requires libraries and applications that
+           depend on it to compile against version 37 or later of the
+           Android APIs.
+     
+           :core-data is currently compiled against android-36.
+     
+           Recommended action: Update this project to use a newer compileSdk
+           of at least 37, for example 37.2.
+     
+           Note that updating a library or application's compileSdk (which
+           allows newer APIs to be used) can be done separately from updating
+           targetSdk (which opts the app in to new runtime behavior) and
+           minSdk (which determines which devices the app can be installed
+           on).
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 13s
+65 actionable tasks: 54 executed, 8 from cache, 3 up-to-date
+kotlin: build failed: .

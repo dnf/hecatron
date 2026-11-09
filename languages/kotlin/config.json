@@ -106,11 +106,29 @@
     },
     {
       "tool": "gradle",
-      "regex": "^\\s+> (?P<message>(?:Dependency requires|A failure occurred|Failed to|Cannot|Unable to|No matching) .+)$"
+      "regex": "^\\s*> (?P<message>(?:Dependency requires|An issue was found|Failed to|Cannot|Unable to|No matching) .+)$"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^\\s+> (?P<message>A failure occurred .+)$"
     },
     {
       "tool": "gradle",
       "regex": "^\\s+(?P<message>Configuring project .+ is not allowed\\.).*$"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^\\s+\\d+\\.\\s+(?P<message>Dependency '[^']+' requires .+)$",
+      "next": "^\\s+(?P<message>depend on it to compile against version \\d+ or later)"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^\\s+(?P<message>\\S+ is currently compiled against android-\\d+\\.)$"
+    },
+    {
+      "tool": "gradle",
+      "regex": "^\\s+(?P<message>Recommended action: .+)$",
+      "next": "^\\s+(?P<message>of at least \\d+, for example [\\d.]+\\.)$"
     }
   ],
   "notes": {
