@@ -90,7 +90,8 @@ func TestVersionMatchesBinHecatron(t *testing.T) {
 // withoutJobReport drops what bash says on stderr when version.sh's hook is
 // killed by a signal ("Terminated", with the command after it in some bash
 // versions; macOS's bash 3.2 puts the script, line and pid before it:
-// "version.sh: line 18: 50686 Terminated: 15 ..."), which the Go port
+// "version.sh: line 18: 50686 Terminated: 15 ...", the pid padded to five
+// columns: "line 18:  5536"), which the Go port
 // doesn't say (its wording follows bash's version and the C library).
 func withoutJobReport(stderr string) string {
 	var kept []string
@@ -102,4 +103,17 @@ func withoutJobReport(stderr string) string {
 	return strings.Join(kept, "")
 }
 
-var jobReport = regexp.MustCompile(`^(?:\S+: line \d+: \d+ +)?Terminated\b`)
+var jobReport = regexp.MustCompile(`^(?:\S+: line \d+: +\d+ +)?Terminated\b`)
+
+func TestWithoutJobReport(t *testing.T) {
+	for _, report := range []string{
+		"Terminated\n",
+		"Terminated: 15          bash \"${_hook}\" \"${_version}\"\n",
+		"/x/version.sh: line 18: 50686 Terminated: 15          bash \"${_hook}\" \"${_version}\"\n",
+		"/x/version.sh: line 18:  5536 Terminated: 15          bash \"${_hook}\" \"${_version}\"\n",
+	} {
+		if got := withoutJobReport("alpha to stderr\n" + report); got != "alpha to stderr\n" {
+			t.Errorf("%q: kept %q", report, got)
+		}
+	}
+}
