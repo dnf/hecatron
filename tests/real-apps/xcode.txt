@@ -32,7 +32,6 @@ yattee/yattee                        # multiplatform: iOS, macOS, tvOS
 quran/quran-ios                      # Swift packages
 Aidoku/Aidoku                        # iOS and macOS
 rileytestut/Delta                    # submodules, emulator cores
-Provenance-Emu/Provenance            # C, C++, Objective-C and Swift, tvOS
 ivpn/ios-app                         # VPN app, network extension
 simplex-chat/simplex-chat            # app in apps/ios of a Haskell monorepo
 Dimillian/MovieSwiftUI               # SwiftUI, iOS and macOS
