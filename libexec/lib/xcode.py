@@ -20,6 +20,9 @@ Xcode project's files, run in the directory being built.
                                     -list -json's report (stdin), and why,
                                     tab-separated; nothing when none fits,
                                     and only the why when several do
+    xcode.py package-scheme         the scheme building a Swift package,
+                                    from xcodebuild -list -json's report
+                                    (stdin); nothing when there's none
     xcode.py missing <workspace>    the projects a workspace refers to that
                                     aren't there, one per line
     xcode.py uses-package <dir>...  exits 0 when an Xcode project in one of
@@ -229,6 +232,19 @@ def scheme(listing: dict, container: str, project: str, names: list[str]) -> tup
     return "", ""
 
 
+def package_scheme(listing: dict) -> str:
+    """The scheme building a Swift package xcodebuild opened (its listing):
+    <name>-Package, which builds every product and is listed when there are
+    several, else its only scheme, else the one named like it."""
+    info = listing.get("workspace") or {}
+    name, listed = info.get("name") or "", info.get("schemes") or []
+    if f"{name}-Package" in listed:
+        return f"{name}-Package"
+    if len(listed) == 1:
+        return listed[0]
+    return name if name in listed else ""
+
+
 def language_sources(lang: str) -> list[str]:
     """The language's "detectWithSources" "sources" patterns (*.swift)."""
     try:
@@ -379,6 +395,15 @@ def main(argv: list[str]) -> int:
                            argv[3:])
         if name or why:
             print(f"{name}\t{why}")
+        return 0
+    if argv == ["package-scheme"]:
+        try:
+            listing = json.load(sys.stdin)
+        except ValueError:
+            listing = {}
+        name = package_scheme(listing if isinstance(listing, dict) else {})
+        if name:
+            print(name)
         return 0
     if len(argv) >= 2 and argv[0] == "uses-package":
         return 0 if uses_package(argv[1:]) else 1

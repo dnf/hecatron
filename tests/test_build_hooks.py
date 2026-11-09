@@ -1033,6 +1033,81 @@ class XcodeTest(BuildHookTest):
         write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE)
         self.assertIn("+ swift test", self.hook("swift", "test", "Packages/Core").stdout)
 
+    def package_listing(self, schemes: list[str]) -> None:
+        write(self.path(".list.json"), json.dumps({"workspace": {"name": "Core", "schemes": schemes}}))
+
+    def test_an_ios_only_package_builds_with_xcodebuild_on_macos(self):
+        # quran-ios' QuranEngine: iOS only, and no app's project builds it.
+        write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE)
+        self.fake("swift")
+        self.fake("uname", 'echo Darwin; exit')
+        self.package_listing(["Core", "Core-Package", "Extra"])
+        result = self.hook("swift", "build", "Packages/Core")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("swift: build: the package's platforms don't include macOS, which SwiftPM here builds for: "
+                      "building scheme Core-Package with xcodebuild", result.stdout)
+        self.assertEqual(self.builds(), [
+            f"build -scheme Core-Package -destination generic/platform=iOS Simulator "
+            f"-derivedDataPath {self.derived_data('Packages/Core')} -skipMacroValidation "
+            "-skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO ARCHS=Darwin"])
+        self.assertNotIn("+ swift build", result.stdout)
+        # One product: its scheme is the only one.
+        open(self.log, "w").close()
+        self.package_listing(["Core"])
+        self.hook("swift", "build", "Packages/Core")
+        self.assertIn("build -scheme Core -destination", self.builds()[0])
+        # Clean removes what xcodebuild built, as well as SwiftPM's.
+        os.makedirs(self.derived_data("Packages/Core"))
+        result = self.hook("swift", "clean", "Packages/Core")
+        self.assertIn("swift package clean", result.stdout)
+        self.assertFalse(os.path.exists(self.derived_data("Packages/Core")))
+
+    def test_an_ios_only_package_an_app_above_uses_is_left_to_it(self):
+        # IceCubesApp's Packages/*: the app's project builds them.
+        write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE)
+        write(self.path("App.xcodeproj", "project.pbxproj"),
+              "{\n\tobjects = {\n\t\tL0 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Core; };\n\t};\n}\n")
+        self.fake("swift")
+        self.fake("uname", 'echo Darwin; exit')
+        self.package_listing(["Core"])
+        result = self.hook("swift", "build", "Packages/Core")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("the package's platforms don't include macOS", result.stdout)
+        self.assertEqual(self.builds(), [])
+
+    def test_a_visionos_only_package_builds_for_its_simulator(self):
+        write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE.replace(".iOS(.v17), ", ""))
+        self.fake("swift")
+        self.fake("uname", 'echo Darwin; exit')
+        self.package_listing(["Core"])
+        self.hook("swift", "build", "Packages/Core")
+        self.assertIn("-destination generic/platform=visionOS Simulator", self.builds()[0])
+
+
+@unittest.skipUnless(sys.platform == "darwin" and shutil.which("xcodebuild"), "needs Xcode")
+class XcodePackageBuildTest(BuildHookTest):
+    """A real build of an iOS-only Swift package with xcodebuild, for the
+    iOS simulator, where Xcode has its SDK (the macOS CI runners)."""
+
+    def setUp(self):
+        super().setUp()
+        sdks = subprocess.run(["xcodebuild", "-showsdks"], capture_output=True, text=True).stdout
+        if "iphonesimulator" not in sdks:
+            self.skipTest("no iOS simulator SDK")
+
+    def test_an_ios_only_package_builds_for_the_simulator(self):
+        write(self.path("Package.swift"), '// swift-tools-version:5.9\nimport PackageDescription\n'
+              'let package = Package(name: "Tint", platforms: [.iOS(.v17)],\n'
+              '  products: [.library(name: "Tint", targets: ["Tint"]), .library(name: "Shade", targets: ["Shade"])],\n'
+              '  targets: [.target(name: "Tint"), .target(name: "Shade")])\n')
+        # UIKit: there's none on macOS, so only a build for iOS compiles.
+        write(self.path("Sources", "Tint", "Tint.swift"), "import UIKit\npublic func tint() -> UIColor { .systemBlue }\n")
+        write(self.path("Sources", "Shade", "Shade.swift"), "import UIKit\npublic let shade = UIColor.systemGray\n")
+        result = self.hook("swift", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout[-3000:] + result.stderr[-3000:])
+        self.assertIn("+ xcodebuild build -scheme Tint-Package -destination generic/platform=iOS Simulator", result.stdout)
+        self.assertIn("** BUILD SUCCEEDED **", result.stdout)
+
 
 class XcodeAppsBelowTest(BuildHookTest):
     """Apps with Xcode projects of their own below a root Package.swift

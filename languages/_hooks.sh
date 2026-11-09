@@ -426,6 +426,7 @@ swift_package() {
     note_build_dir
     case "${_hook_action}" in
         build|test|docs|bench) swift_package_builds_on_host ;;
+        clean) xcode_package_clean ;;
     esac
     # shellcheck disable=SC2034 # read by the swift hooks
     [ "${build_dir}" = . ] || swift_package_args=(--package-path "${build_dir}")
@@ -434,12 +435,31 @@ swift_package() {
 # On macOS, SwiftPM builds for macOS: a package whose platforms: names
 # others but not macOS (an iOS app's local package) builds at macOS's
 # oldest deployment target, where the newer APIs it uses aren't available.
-# Its app's Xcode project builds it instead.
+# Its app's Xcode project builds it instead; one no app above uses
+# (quran-ios' QuranEngine, iOS only) builds with xcodebuild, for its
+# platform's simulator (xcode_package_build). Its tests skip: they need a
+# simulator to run on, which is the project's choice.
 swift_package_builds_on_host() {
     [ "$(uname -s)" = Darwin ] || return 0
     grep -qs 'platforms[[:space:]]*:' "${build_dir}/Package.swift" || return 0
-    grep -qs '\.macOS' "${build_dir}/Package.swift" ||
-        skip "the package's platforms don't include macOS, which SwiftPM here builds for (an Xcode project builds it for its platform)"
+    ! grep -qs '\.macOS' "${build_dir}/Package.swift" || return 0
+    if [ "${_hook_action}" = build ] && has xcodebuild && ! xcode_app_above_uses_package; then
+        cd "${build_dir}" && xcode_package_build
+    fi
+    skip "the package's platforms don't include macOS, which SwiftPM here builds for (an Xcode project builds it for its platform)"
+}
+# Whether an Xcode project in a directory above the package (build_dir), up
+# to the project's root, uses it as a local package: the app's build builds
+# it (IceCubesApp's Packages/*).
+xcode_app_above_uses_package() {
+    local _dir _root _above=()
+    _dir="$(cd "${build_dir}" && pwd -P)"
+    _root="$(cd "${HECATRON_ROOT:-/}" && pwd -P)"
+    while [ "${_dir}" != "${_root}" ] && [ "${_dir}" != / ]; do
+        _dir="$(dirname "${_dir}")"
+        _above+=("${_dir}")
+    done
+    [ "${#_above[@]}" -gt 0 ] && (cd "${build_dir}" && xcode_py uses-package "${_above[@]}" 2>/dev/null)
 }
 
 # Janet's jpm, in the project's local tree (jpm -l) when it keeps its
@@ -2160,6 +2180,47 @@ xcode_build() {
         ${_arch[@]+"${_arch[@]}"} || _status=$?
     [ "${_status}" -eq 0 ] || xcode_newer_than_installed "${_container}"
     exit "${_status}"
+}
+
+# A Swift package for Apple platforms other than macOS, which SwiftPM on
+# the Mac can't build (swift_package_builds_on_host), built with
+# xcodebuild, which opens a Package.swift as a workspace: the scheme of all
+# its products (xcode.py's package-scheme), for its platform's generic
+# simulator (xcode_package_destination), unsigned. Exits.
+xcode_package_build() {
+    local _list _scheme _destination _status=0 _arch=()
+    xcode_select_version
+    echo "+ xcodebuild -list -json"
+    _list="$(xcodebuild -list -json)" || exit 1
+    _scheme="$(printf '%s\n' "${_list}" | xcode_py package-scheme)"
+    [ -n "${_scheme}" ] || skip "xcodebuild lists no scheme for the package: $(xcode_write_hooks)"
+    _destination="$(xcode_package_destination)"
+    [ -n "${_destination}" ] || skip "can't tell a simulator to build for from the package's platforms: $(xcode_write_hooks)"
+    echo "${HECATRON_LANG:-}: ${_hook_action}: the package's platforms don't include macOS, which SwiftPM here builds for: building scheme ${_scheme} with xcodebuild"
+    if xcode_host_arch_only "${_destination}"; then _arch=("ARCHS=$(uname -m)"); fi
+    run xcodebuild build -scheme "${_scheme}" -destination "${_destination}" \
+        -derivedDataPath "$(xcode_derived_data)" -skipMacroValidation -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO \
+        ${_arch[@]+"${_arch[@]}"} || _status=$?
+    exit "${_status}"
+}
+# The generic simulator for the package's platforms (its Package.swift's):
+# iOS's (Mac Catalyst's too), else visionOS's, tvOS's or watchOS's, as
+# xcode_destination prefers them.
+xcode_package_destination() {
+    local _platforms
+    _platforms="$(sed -n '/platforms[[:space:]]*:/,/\]/p' Package.swift)"
+    case "${_platforms}" in
+        *.iOS* | *.macCatalyst*) echo "generic/platform=iOS Simulator" ;;
+        *.visionOS*) echo "generic/platform=visionOS Simulator" ;;
+        *.tvOS*) echo "generic/platform=tvOS Simulator" ;;
+        *.watchOS*) echo "generic/platform=watchOS Simulator" ;;
+    esac
+}
+# What xcode_package_build built, which swift package clean leaves.
+xcode_package_clean() {
+    local _derived
+    _derived="$(cd "${build_dir}" && xcode_derived_data)"
+    [ ! -d "${_derived}" ] || run rm -rf "${_derived}"
 }
 
 # Whether a build for destination $1 needs only this Mac's architecture: a
