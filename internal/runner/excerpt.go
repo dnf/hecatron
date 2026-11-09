@@ -45,7 +45,8 @@ type Excerpt struct {
 // tool's versions in Versions (">=7", "<2.0", ">=1.2,<3"; any when empty).
 // Next, when set, finds the error's location on one of the three lines
 // that follow (rustc's "--> src/lib.rs:2:25"), which is then added to the
-// line.
+// line: its message group alone when it has one (the rest of a sentence
+// Gradle wrapped).
 type Pattern struct {
 	Tool     string
 	Versions string
@@ -324,7 +325,11 @@ func matchUpTo(lines, components []string, patterns *Patterns, limit int) []Erro
 				for j := i + 1; j < len(lines) && j <= i+3; j++ {
 					if n := p.Next.FindStringSubmatch(lines[j]); n != nil {
 						at := located(strings.TrimSpace(lines[j]), "", p.Next, n)
-						e.Text += " " + at.Text
+						if at.Message != "" {
+							e.Text += " " + at.Message
+						} else {
+							e.Text += " " + at.Text
+						}
 						if e.File == "" {
 							e.File, e.Line, e.Column = at.File, at.Line, at.Column
 						}

@@ -760,7 +760,8 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
   the first that matches a line takes it. `regex` is RE2 with optional
   named groups `file`, `line`, `col` and `message`; `next` finds the
   location on one of the next three lines (rustc's `--> src/lib.rs:2:25`)
-  and adds it to the line; `versions` (`">=7"`, `">=1.2,<3"`) limits a
+  and adds it to the line (only its `message` group, when it has one: the
+  rest of a sentence Gradle wrapped); `versions` (`">=7"`, `">=1.2,<3"`) limits a
   pattern to the versions of `tool` found in the log by the definition's
   `"errorToolVersions"` (`{"pytest": "pytest-(\\S+)"}`; a version not found
   doesn't exclude a pattern). Lines matching no language pattern are tried

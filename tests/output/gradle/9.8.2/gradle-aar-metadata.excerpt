@@ -1,0 +1,5 @@
+Execution failed for task ':core-data:checkDebugAarMetadata' (registered by plugin 'com.android.internal.library').
+> An issue was found when checking AAR metadata:
+1.  Dependency 'com.squareup.okhttp3:okhttp-android:5.5.1' requires libraries and applications that depend on it to compile against version 37 or later
+:core-data is currently compiled against android-36.
+Recommended action: Update this project to use a newer compileSdk of at least 37, for example 37.2.
