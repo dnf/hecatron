@@ -63,7 +63,7 @@ bin/hecatron self test    # shellcheck (zero warnings), then the unit tests
 - **Every per-language command covers every component.** Dispatch through
   `each-component.sh`; never hard-code a component's path.
 - **Zero warnings.** shellcheck clean at warning level
-  (`bash tools/lint/shellcheck.sh`); any `# shellcheck disable=` carries a
+  (`bash libexec/lint/shellcheck.sh`); any `# shellcheck disable=` carries a
   comment saying why.
 - **Language count.** Any line in a `.md` file or `llms.txt` that states how
   many languages hecatron supports ends with `<!-- language-count -->`
