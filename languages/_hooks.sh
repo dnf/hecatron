@@ -287,7 +287,9 @@ gradle_lock() {
 }
 # Remove the lock ($1) of a killed holder ($2). Two waiters can both find it
 # dead: renaming it aside lets only one have it, and the other, renaming the
-# lock the first has since taken, puts that back.
+# lock the first has since taken, puts that back. Accepted: a third waiter
+# creating the lock between that rename and the putting back still runs
+# beside the first, which takes a losing takeover racing a winning one.
 gradle_lock_take_over() {
     local _aside="$1.stale.$$"
     mv "$1" "${_aside}" 2>/dev/null || return 0
