@@ -46,12 +46,14 @@ type Excerpt struct {
 // Next, when set, finds the error's location on one of the three lines
 // that follow (rustc's "--> src/lib.rs:2:25"), which is then added to the
 // line: its message group alone when it has one (the rest of a sentence
-// Gradle wrapped).
+// Gradle wrapped). Indented, when set, adds the indented line under an
+// error that ends in a colon.
 type Pattern struct {
 	Tool     string
 	Versions string
 	Regex    *regexp.Regexp
 	Next     *regexp.Regexp
+	Indented bool
 }
 
 // Patterns are a language's error patterns, in the order they're tried,
@@ -118,14 +120,15 @@ func stringField(object *project.Object, key string) (string, bool) {
 // DefaultPatterns are tried for a job whose language's patterns match
 // nothing, and for project tasks: a compiler's file:line[:col]: error, a
 // file's error without a line (xcodebuild's "Foo.xcodeproj: error:"), a
-// line starting with error or fatal, test runners' FAIL lines, make's
+// line starting with error or fatal (with the indented line under either
+// when it ends in a colon), test runners' FAIL lines, make's
 // "*** ... Error 2", a missing file, and xcodebuild's "** BUILD FAILED **"
 // and the failed commands it lists after it (mullvad's build script
 // running a cargo that isn't there, which its warnings had buried).
 var DefaultPatterns = &Patterns{List: []Pattern{
 	{Regex: regexp.MustCompile(`^\s*(?P<file>[^\s:]+):(?P<line>\d+)(?::(?P<col>\d+))?:?\s+(?:fatal )?[Ee]rror\b:?\s*(?P<message>.*)$`)},
-	{Regex: regexp.MustCompile(`^\s*(?P<file>[^\s:]+): (?:fatal )?error: (?P<message>.+)$`)},
-	{Regex: regexp.MustCompile(`^\s*(?:[Ee]rror|ERROR|[Ff]atal|FATAL)(?:\[[^\]]*\])?:\s+(?P<message>.+)$`)},
+	{Regex: regexp.MustCompile(`^\s*(?P<file>[^\s:]+): (?:fatal )?error: (?P<message>.+)$`), Indented: true},
+	{Regex: regexp.MustCompile(`^\s*(?:[Ee]rror|ERROR|[Ff]atal|FATAL)(?:\[[^\]]*\])?:\s+(?P<message>.+)$`), Indented: true},
 	{Regex: regexp.MustCompile(`^\s*(?:FAIL|FAILED|FAILURE)\b[: ]\s*(?P<message>.+)$`)},
 	{Regex: regexp.MustCompile(`^\S*make(?:\[\d+\])?: \*\*\* (?P<message>.+)$`)},
 	{Regex: regexp.MustCompile(`^(?P<message>\S.*: No such file or directory)$`)},
@@ -337,6 +340,14 @@ func matchUpTo(lines, components []string, patterns *Patterns, limit int) []Erro
 					}
 				}
 			}
+			if p.Indented && strings.HasSuffix(e.Text, ":") {
+				if cause := indentedAfter(lines, i); cause != "" {
+					e.Text += " " + cause
+					if e.Message != "" {
+						e.Message += " " + cause
+					}
+				}
+			}
 			e.Text = truncate(e.Text)
 			if !seen[e.Text] {
 				seen[e.Text] = true
@@ -349,6 +360,16 @@ func matchUpTo(lines, components []string, patterns *Patterns, limit int) []Erro
 		}
 	}
 	return found
+}
+
+// indentedAfter is the indented line after line i, which an error ending
+// in a colon is followed by: why (xcodebuild's "Could not resolve package
+// dependencies:" over the download that failed), or what (the first file).
+func indentedAfter(lines []string, i int) string {
+	if i+1 >= len(lines) || strings.TrimLeft(lines[i+1], " \t") == lines[i+1] {
+		return ""
+	}
+	return strings.TrimSpace(lines[i+1])
 }
 
 func located(text, component string, re *regexp.Regexp, m []string) ErrorLine {
