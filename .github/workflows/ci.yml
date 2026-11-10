@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Gradle lock test, looped
         run: |
-          uname -a; bash --version | head -1; java -version 2>&1 | head -1; echo "CDPATH=${CDPATH:-}"; nproc
+          uname -a; bash --version | head -1; java -version 2>&1 | head -1; echo "CDPATH=${CDPATH:-}"; nproc; type -a mkdir; bash -c 'type mkdir; enable -a | grep -w mkdir'; d=$(mktemp -d); mkdir "$d/x"; mkdir "$d/x"; echo "second mkdir: $?"; df -T /tmp; ls -la /bin/sh; echo "PATH=$PATH"
           python3 - <<'PY'
           p = "languages/_hooks.sh"
           s = open(p).read()
@@ -21,7 +21,7 @@ jobs:
           PY
           sed -n '/^gradle_lock()/,/^}/p' languages/_hooks.sh
           fails=0
-          for i in $(seq 1 6); do
+          for i in $(seq 1 4); do
             out="$(python3 -m unittest tests.test_build_hooks.GradleTest.test_one_gradle_run_at_a_time_in_a_build 2>&1)" || { fails=$((fails+1)); echo "=== run ${i} failed"; echo "${out}" | python3 -c "import sys; t=sys.stdin.read(); i=t.find(\"AssertionError\"); print(t[i:i+6000].encode().decode(\"unicode_escape\"))"; }
           done
           echo "failures: ${fails}/25"
