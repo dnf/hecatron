@@ -9,20 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Gradle lock test, looped
+      - name: Gradle lock tests, looped, with the noclobber lock
         run: |
-          uname -a; bash --version | head -1; java -version 2>&1 | head -1; mkdir --version | head -2; ls -la /usr/bin/mkdir; d2=$(mktemp -d); n=0; for k in $(seq 1 200); do rm -rf "$d2/l"; (mkdir "$d2/l" 2>/dev/null && echo ok) > "$d2/a" & (mkdir "$d2/l" 2>/dev/null && echo ok) > "$d2/b" & wait; [ "$(cat "$d2/a" "$d2/b" | wc -l)" -eq 2 ] && n=$((n+1)); done; echo "both mkdirs succeeded in ${n}/200 races"; type -a mkdir; bash -c 'type mkdir; enable -a | grep -w mkdir || true'; d=$(mktemp -d); mkdir "$d/x"; if mkdir "$d/x"; then echo "second mkdir SUCCEEDED"; else echo "second mkdir failed"; fi; df -T /tmp; ls -la /bin/sh; echo "PATH=$PATH"
-          python3 - <<'PY'
-          p = "languages/_hooks.sh"
-          s = open(p).read()
-          s = s.replace('    local _lock _holder _said=""\n', '    local _lock _holder _said=""\n    PS4="+ \\$(date +%s.%N) \\$\\$ "; set -x\n', 1)
-          s = s.replace('    _gradle_lock="${_lock}"\n}', '    _gradle_lock="${_lock}"\n    set +x\n}', 1)
-          open(p, "w").write(s)
-          PY
-          sed -n '/^gradle_lock()/,/^}/p' languages/_hooks.sh
+          mkdir --version | head -1
           fails=0
-          for i in $(seq 1 1); do
-            out="$(python3 -m unittest tests.test_build_hooks.GradleTest.test_one_gradle_run_at_a_time_in_a_build 2>&1)" || { fails=$((fails+1)); echo "=== run ${i} failed"; echo "${out}" | python3 -c "import sys; t=sys.stdin.read(); i=t.find(\"AssertionError\"); print(t[i:i+6000].encode().decode(\"unicode_escape\"))"; }
+          for i in $(seq 1 25); do
+            python3 -m unittest tests.test_build_hooks.GradleTest.test_one_gradle_run_at_a_time_in_a_build tests.test_build_hooks.GradleTest.test_a_lock_left_by_a_killed_run_is_taken_over >/dev/null 2>&1 || fails=$((fails+1))
           done
           echo "failures: ${fails}/25"
-          echo "=== whole GradleTest class"; python3 -m unittest tests.test_build_hooks.GradleTest 2>&1 | tail -30
+          [ "${fails}" -eq 0 ]
