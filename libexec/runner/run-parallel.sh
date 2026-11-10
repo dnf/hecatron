@@ -130,14 +130,26 @@ if [ -n "${SUDO_USER:-}" ]; then
     chown -R "${SUDO_USER}" "$logdir"
 fi
 
-# Prevent concurrent runs of the same command. The lock is a file bash's
-# noclobber creates exclusively (O_EXCL): mkdir isn't atomic everywhere
-# (uutils coreutils' isn't). Earlier versions' lock was a directory.
+# Prevent concurrent runs of the same command. The lock is a file holding
+# the run's pid, which bash's noclobber creates exclusively (O_EXCL): mkdir
+# isn't atomic everywhere (uutils coreutils' isn't). Earlier versions' lock
+# was an empty file or a directory.
 lock="$logdir/.lock"
-take_lock() { (set -o noclobber && : >"$lock") 2>/dev/null; }
+take_lock() { (set -o noclobber && echo "$$" >"$lock") 2>/dev/null; }
+# A lock whose run has exited; one without a pid, when over 2 minutes old.
+# kill -0 fails for another user's run (one under sudo), which ps still
+# lists; a container without ps has kill.
+lock_is_stale() {
+    local holder
+    holder="$(cat "$lock" 2>/dev/null || true)"
+    if [ -n "$holder" ]; then
+        ! kill -0 "$holder" 2>/dev/null && ! ps -p "$holder" >/dev/null 2>&1
+    else
+        [ -n "$(find "$lock" -maxdepth 0 -mmin +2 2>/dev/null)" ]
+    fi
+}
 if ! take_lock; then
-    # Clean up stale locks older than 2 minutes
-    if [ -n "$(find "$lock" -maxdepth 0 -mmin +2 2>/dev/null)" ]; then
+    if lock_is_stale; then
         rm -rf "${lock:?}"
     fi
     if ! take_lock; then

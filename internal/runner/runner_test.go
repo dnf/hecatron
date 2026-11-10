@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -155,6 +156,7 @@ func TestHistoryKeepsFiftyRuns(t *testing.T) {
 
 func TestLock(t *testing.T) {
 	dir := t.TempDir()
+	lock := filepath.Join(dir, ".lock")
 	unlock, err := Lock(dir)
 	if err != nil {
 		t.Fatal(err)
@@ -162,30 +164,58 @@ func TestLock(t *testing.T) {
 	if _, err := Lock(dir); err == nil {
 		t.Error("locked twice")
 	}
+	// A run longer than two minutes still holds it: its process is alive.
+	old := time.Now().Add(-3 * time.Minute)
+	if err := os.Chtimes(lock, old, old); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Lock(dir); err == nil {
+		t.Error("took the lock of a run still going")
+	}
 	unlock()
 	if _, err := Lock(dir); err != nil {
 		t.Errorf("after unlocking: %v", err)
 	}
-	old := time.Now().Add(-3 * time.Minute)
-	if err := os.Chtimes(filepath.Join(dir, ".lock"), old, old); err != nil {
-		t.Fatal(err)
+	// A run that exited without unlocking: its lock is stale at once.
+	if runtime.GOOS != "windows" {
+		exited := exec.Command("true")
+		if err := exited.Run(); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(lock, []byte(fmt.Sprintf("%d\n", exited.Process.Pid)), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := Lock(dir); err != nil {
+			t.Errorf("an exited run's lock: %v", err)
+		}
+		// pid 1 is root's: signalling it isn't permitted, but it's running.
+		other := t.TempDir()
+		if err := os.WriteFile(filepath.Join(other, ".lock"), []byte("1\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := Lock(other); err == nil {
+			t.Error("took another user's run's lock")
+		}
 	}
-	if _, err := Lock(dir); err != nil {
-		t.Errorf("a stale lock: %v", err)
-	}
-	// An earlier version's lock directory is held too, and taken when stale.
-	other := t.TempDir()
-	if err := os.Mkdir(filepath.Join(other, ".lock"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := Lock(other); err == nil {
-		t.Error("locked beside a lock directory")
-	}
-	if err := os.Chtimes(filepath.Join(other, ".lock"), old, old); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := Lock(other); err != nil {
-		t.Errorf("a stale lock directory: %v", err)
+	// Earlier versions' locks, without a pid: held, and stale when old.
+	for _, create := range []func(string) error{
+		func(path string) error { return os.WriteFile(path, nil, 0o644) },
+		func(path string) error { return os.Mkdir(path, 0o755) },
+	} {
+		other := t.TempDir()
+		lock := filepath.Join(other, ".lock")
+		if err := create(lock); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := Lock(other); err == nil {
+			t.Error("locked beside an earlier version's lock")
+		}
+		if err := os.Chtimes(lock, old, old); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := Lock(other); err != nil {
+			t.Errorf("an earlier version's stale lock: %v", err)
+		}
 	}
 }
 

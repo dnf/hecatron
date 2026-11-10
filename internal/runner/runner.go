@@ -481,28 +481,44 @@ func (h History) Append(path string, results []Result) {
 }
 
 // Lock keeps two runs of a command from sharing a log directory, as
-// run-parallel.sh's .lock file does: created exclusively, and stale when
-// older than two minutes. Earlier versions' lock was a directory, which
-// counts as held too.
+// run-parallel.sh's .lock file does: created exclusively, holding the run's
+// pid, and stale once that process has exited. Earlier versions' lock, an
+// empty file or a directory, is stale when older than two minutes.
 func Lock(logDir string) (unlock func(), err error) {
 	lock := filepath.Join(logDir, ".lock")
-	if createExclusive(lock) != nil {
-		if info, statErr := os.Stat(lock); statErr == nil && time.Since(info.ModTime()) > 2*time.Minute {
+	if createLock(lock) != nil {
+		if lockIsStale(lock) {
 			_ = os.RemoveAll(lock)
 		}
-		if err := createExclusive(lock); err != nil {
+		if err := createLock(lock); err != nil {
 			return nil, fmt.Errorf("%s", lock)
 		}
 	}
 	return func() { _ = os.RemoveAll(lock) }, nil
 }
 
-func createExclusive(path string) error {
+func createLock(path string) error {
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
 	}
-	return f.Close()
+	_, err = fmt.Fprintln(f, os.Getpid())
+	if closeErr := f.Close(); err == nil {
+		err = closeErr
+	}
+	return err
+}
+
+func lockIsStale(path string) bool {
+	if data, err := os.ReadFile(path); err == nil {
+		if pid, err := strconv.Atoi(strings.TrimSpace(string(data))); err == nil {
+			if alive, known := processAlive(pid); known {
+				return !alive
+			}
+		}
+	}
+	info, err := os.Stat(path)
+	return err == nil && time.Since(info.ModTime()) > 2*time.Minute
 }
 
 // NothingRan reports whether there were jobs and none passed or failed:

@@ -155,3 +155,10 @@ func zombie(pid string) bool {
 	end := bytes.LastIndexByte(stat, ')')
 	return end < 0 || end+2 >= len(stat) || stat[end+2] == 'Z'
 }
+
+// processAlive reports whether the process exists (one of another user's
+// too); known is always true here.
+func processAlive(pid int) (alive, known bool) {
+	err := syscall.Kill(pid, 0)
+	return err == nil || err == syscall.EPERM, true
+}
