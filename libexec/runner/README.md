@@ -139,7 +139,7 @@ When piped or in CI, the runner waits for all jobs to complete, then prints a st
   <label>.log        Captured stdout+stderr for each job
   <label>.result     Internal: "duration_ds return_code [skipped]"
   history.log        Duration history for prediction
-  .lock/             Directory-based lock (prevents concurrent runs)
+  .lock              Lock file (prevents concurrent runs)
 ```
 
 ### history.log format

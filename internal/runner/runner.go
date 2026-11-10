@@ -481,19 +481,28 @@ func (h History) Append(path string, results []Result) {
 }
 
 // Lock keeps two runs of a command from sharing a log directory, as
-// run-parallel.sh's .lock directory does (it honours that one too): a lock
-// older than two minutes is stale.
+// run-parallel.sh's .lock file does: created exclusively, and stale when
+// older than two minutes. Earlier versions' lock was a directory, which
+// counts as held too.
 func Lock(logDir string) (unlock func(), err error) {
 	lock := filepath.Join(logDir, ".lock")
-	if os.Mkdir(lock, 0o755) != nil {
+	if createExclusive(lock) != nil {
 		if info, statErr := os.Stat(lock); statErr == nil && time.Since(info.ModTime()) > 2*time.Minute {
-			_ = os.Remove(lock)
+			_ = os.RemoveAll(lock)
 		}
-		if err := os.Mkdir(lock, 0o755); err != nil {
+		if err := createExclusive(lock); err != nil {
 			return nil, fmt.Errorf("%s", lock)
 		}
 	}
-	return func() { _ = os.Remove(lock) }, nil
+	return func() { _ = os.RemoveAll(lock) }, nil
+}
+
+func createExclusive(path string) error {
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	return f.Close()
 }
 
 // NothingRan reports whether there were jobs and none passed or failed:

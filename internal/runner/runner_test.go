@@ -173,6 +173,20 @@ func TestLock(t *testing.T) {
 	if _, err := Lock(dir); err != nil {
 		t.Errorf("a stale lock: %v", err)
 	}
+	// An earlier version's lock directory is held too, and taken when stale.
+	other := t.TempDir()
+	if err := os.Mkdir(filepath.Join(other, ".lock"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Lock(other); err == nil {
+		t.Error("locked beside a lock directory")
+	}
+	if err := os.Chtimes(filepath.Join(other, ".lock"), old, old); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Lock(other); err != nil {
+		t.Errorf("a stale lock directory: %v", err)
+	}
 }
 
 func TestExitStatus(t *testing.T) {
