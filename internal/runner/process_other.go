@@ -8,3 +8,7 @@ import "os/exec"
 // the process itself, not the processes it started (a job object would;
 // not done yet: docs/guide/runner.md).
 func Supervise(cmd *exec.Cmd) (wait func()) { return func() {} }
+
+// processAlive can't tell off Unix: known is false, and a lock falls back to
+// its age.
+func processAlive(pid int) (alive, known bool) { return false, false }

@@ -14,6 +14,11 @@ HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNNER = os.path.join(HOME, "libexec", "runner", "run-parallel.sh")
 
 
+def write(path: str, text: str) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+
+
 class RunnerLockTest(unittest.TestCase):
     def setUp(self):
         self.logs = tempfile.mkdtemp()
@@ -38,10 +43,36 @@ class RunnerLockTest(unittest.TestCase):
         self.assertIn("is already running", "".join(errors))
         self.assertFalse(os.path.lexists(self.lock))
 
-    def test_a_held_lock_stops_the_run_and_a_stale_one_doesnt(self):
+    def test_a_running_runs_lock_is_held_however_old(self):
         os.makedirs(os.path.dirname(self.lock))
-        for make in (lambda: open(self.lock, "w").close(), lambda: os.mkdir(self.lock)):
-            # A file, and an earlier version's directory.
+        write(self.lock, f"{os.getpid()}\n")
+        old = time.time() - 180
+        os.utime(self.lock, (old, old))
+        status, stderr = self.run_check()
+        self.assertEqual(status, 1)
+        self.assertIn("check is already running", stderr)
+
+    def test_another_users_run_holds_the_lock(self):
+        # pid 1 is root's: kill -0 fails for anyone else, but it's running.
+        os.makedirs(os.path.dirname(self.lock))
+        write(self.lock, "1\n")
+        status, stderr = self.run_check()
+        self.assertEqual(status, 1)
+        self.assertIn("check is already running", stderr)
+
+    def test_an_exited_runs_lock_is_taken(self):
+        os.makedirs(os.path.dirname(self.lock))
+        exited = subprocess.Popen(["true"])
+        exited.wait()
+        write(self.lock, f"{exited.pid}\n")
+        status, stderr = self.run_check()
+        self.assertEqual(status, 0, stderr)
+        self.assertFalse(os.path.lexists(self.lock))
+
+    def test_an_earlier_versions_lock_is_held_until_stale(self):
+        os.makedirs(os.path.dirname(self.lock))
+        for make in (lambda: write(self.lock, ""), lambda: os.mkdir(self.lock)):
+            # An empty file, and a directory.
             make()
             status, stderr = self.run_check()
             self.assertEqual(status, 1)
