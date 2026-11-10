@@ -40,7 +40,7 @@ class RubyDoctorTest(Fixture):
         for directory in ("/usr/bin", "/bin"):
             for name in os.listdir(directory):
                 link = os.path.join(self.bin, name)
-                if name != "bundle" and not os.path.exists(link):
+                if name != "bundle" and not os.path.lexists(link):
                     os.symlink(os.path.join(directory, name), link)
         # This Python, and the bash on PATH (CI's bash 3.2 isn't in /bin).
         for name, target in (("python3", sys.executable), ("bash", shutil.which("bash"))):
