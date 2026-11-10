@@ -2196,7 +2196,10 @@ xcode_package_build() {
     echo "+ xcodebuild -list -json"
     _list="$(xcodebuild -list -json)" || exit 1
     _scheme="$(printf '%s\n' "${_list}" | xcode_py package-scheme)"
-    [ -n "${_scheme}" ] || skip "xcodebuild lists no scheme for the package: $(xcode_write_hooks)"
+    if [ -z "${_scheme}" ]; then
+        printf '%s\n' "${_list}" | head -40
+        skip "xcodebuild lists no scheme for the package: $(xcode_write_hooks)"
+    fi
     _destination="$(xcode_package_destination "$1")"
     [ -n "${_destination}" ] || skip "can't tell a simulator to build for from the package's platforms: $(xcode_write_hooks)"
     echo "${HECATRON_LANG:-}: ${_hook_action}: the package's platforms don't include macOS, which SwiftPM here builds for: building scheme ${_scheme} with xcodebuild"

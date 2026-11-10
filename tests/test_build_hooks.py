@@ -1056,6 +1056,12 @@ class XcodeTest(BuildHookTest):
         self.package_listing(["Core"])
         self.hook("swift", "build", "Packages/Core")
         self.assertIn("build -scheme Core -destination", self.builds()[0])
+        # Resolving the package can print lines before the listing.
+        open(self.log, "w").close()
+        write(self.path(".list.json"), "Resolve Package Graph\n\n"
+              + json.dumps({"workspace": {"name": "Core", "schemes": ["Core", "Core-Package"]}}))
+        self.hook("swift", "build", "Packages/Core")
+        self.assertIn("build -scheme Core-Package -destination", self.builds()[0])
         # Clean removes what xcodebuild built, as well as SwiftPM's.
         os.makedirs(self.derived_data("Packages/Core"))
         result = self.hook("swift", "clean", "Packages/Core")

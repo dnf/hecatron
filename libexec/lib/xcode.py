@@ -255,6 +255,17 @@ def package_platforms(manifest: str) -> list[str]:
     return re.findall(r"\.(\w+)\s*\(", found.group(1))
 
 
+def listing_json(text: str) -> dict:
+    """xcodebuild -list -json's object, from where it starts: xcodebuild can
+    print lines before it (a package's resolution), {} when there's none."""
+    start = text.find("{")
+    try:
+        listing = json.JSONDecoder().raw_decode(text[start:])[0] if start >= 0 else {}
+    except ValueError:
+        return {}
+    return listing if isinstance(listing, dict) else {}
+
+
 def package_scheme(listing: dict) -> str:
     """The scheme building a Swift package xcodebuild opened (its listing):
     <name>-Package, which builds every product and is listed when there are
@@ -410,11 +421,8 @@ def main(argv: list[str]) -> int:
     if argv[:1] == ["swift-builds"]:
         return 0 if swift_builds() else 1
     if len(argv) >= 2 and argv[0] == "scheme":
-        try:
-            listing = json.load(sys.stdin)
-        except ValueError:
-            listing = {}
-        name, why = scheme(listing if isinstance(listing, dict) else {}, argv[1], argv[2] if len(argv) > 2 else "",
+        listing = listing_json(sys.stdin.read())
+        name, why = scheme(listing, argv[1], argv[2] if len(argv) > 2 else "",
                            argv[3:])
         if name or why:
             print(f"{name}\t{why}")
@@ -427,11 +435,8 @@ def main(argv: list[str]) -> int:
             pass
         return 0
     if argv == ["package-scheme"]:
-        try:
-            listing = json.load(sys.stdin)
-        except ValueError:
-            listing = {}
-        name = package_scheme(listing if isinstance(listing, dict) else {})
+        listing = listing_json(sys.stdin.read())
+        name = package_scheme(listing)
         if name:
             print(name)
         return 0
