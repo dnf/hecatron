@@ -261,14 +261,18 @@ gradle_() {
 # (Lawnchair) make two jobs, and two Gradle runs at once in one project
 # overwrite each other's generated sources (KSP's Dagger components) and
 # double the memory. The second waits, then finds most tasks up to date. A
-# lock whose holder was killed is taken over.
+# lock whose holder was killed is taken over. The lock is a file holding its
+# holder's pid, which bash's noclobber creates exclusively (O_EXCL): mkdir
+# isn't atomic everywhere (both of two racing mkdirs succeed on the
+# ubuntu-latest runner). Earlier versions' lock was a directory with a pid
+# file in it.
 _gradle_lock=""
 gradle_lock() {
     local _lock _holder _said=""
     _lock="$(cd "$1" && pwd -P)/.gradle/hecatron.lock"
     mkdir -p "$(dirname "${_lock}")"
-    until mkdir "${_lock}" 2>/dev/null; do
-        _holder="$(cat "${_lock}/pid" 2>/dev/null || true)"
+    until (set -o noclobber && echo "$$" >"${_lock}") 2>/dev/null; do
+        _holder="$(cat "${_lock}" "${_lock}/pid" 2>/dev/null || true)"
         if [ -n "${_holder}" ] && ! kill -0 "${_holder}" 2>/dev/null; then
             rm -rf "${_lock:?}"
             continue
@@ -279,7 +283,6 @@ gradle_lock() {
         fi
         sleep 2
     done
-    echo "$$" >"${_lock}/pid"
     _gradle_lock="${_lock}"
 }
 is_gradle() { exists 'build.gradle' || exists 'build.gradle.kts'; }
