@@ -185,16 +185,20 @@ tail -50 history.log > history.log.tmp && mv history.log.tmp history.log
 
 ## Locking
 
-Concurrent runs of the same command are prevented with a directory-based lock:
+Concurrent runs of the same command are prevented with a lock file, which
+bash's noclobber creates exclusively (`O_EXCL`):
 
 ```bash
-lockdir="$logdir/.lock"
-mkdir "$lockdir"  # atomic on all filesystems
+lock="$logdir/.lock"
+(set -o noclobber && : >"$lock")  # fails if it exists
 ```
+
+`mkdir` isn't atomic everywhere: uutils coreutils' (recent Ubuntu's)
+lets both of two racing `mkdir`s succeed.
 
 ### Stale lock recovery
 
-If the lock directory exists but is older than 2 minutes (checked via `find -mmin +2`), it's assumed stale and removed. This handles cases where the script was killed without cleanup.
+If the lock exists but is older than 2 minutes (checked via `find -mmin +2`), it's assumed stale and removed. This handles cases where the script was killed without cleanup.
 
 ### Cleanup
 

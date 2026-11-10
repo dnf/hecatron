@@ -130,15 +130,18 @@ if [ -n "${SUDO_USER:-}" ]; then
     chown -R "${SUDO_USER}" "$logdir"
 fi
 
-# Prevent concurrent runs of the same command
-lockdir="$logdir/.lock"
-if ! mkdir "$lockdir" 2>/dev/null; then
+# Prevent concurrent runs of the same command. The lock is a file bash's
+# noclobber creates exclusively (O_EXCL): mkdir isn't atomic everywhere
+# (uutils coreutils' isn't). Earlier versions' lock was a directory.
+lock="$logdir/.lock"
+take_lock() { (set -o noclobber && : >"$lock") 2>/dev/null; }
+if ! take_lock; then
     # Clean up stale locks older than 2 minutes
-    if [ -n "$(find "$lockdir" -maxdepth 0 -mmin +2 2>/dev/null)" ]; then
-        rmdir "$lockdir" 2>/dev/null
+    if [ -n "$(find "$lock" -maxdepth 0 -mmin +2 2>/dev/null)" ]; then
+        rm -rf "${lock:?}"
     fi
-    if ! mkdir "$lockdir" 2>/dev/null; then
-        echo "error: ${job_cmd##*/} $name is already running (lock: $lockdir)" >&2
+    if ! take_lock; then
+        echo "error: ${job_cmd##*/} $name is already running (lock: $lock)" >&2
         exit 1
     fi
 fi
@@ -348,7 +351,7 @@ if [ "$run_n" -eq 0 ]; then
     [ "$disable_n" -gt 0 ] && _summary="$_summary, $disable_n disabled"
     echo "$_summary"
     echo "Logs: $logdir/"
-    rmdir "$lockdir" 2>/dev/null
+    rm -rf "${lock:?}"
     if [ "$_fail_on_skip" -eq 1 ]; then
         echo "hecatron: nothing ran: every job skipped (--fail-on-skip)" >&2
         exit 1
@@ -732,7 +735,7 @@ _cleanup() {
     for i in "${!all_labels[@]}"; do
         [ "${all_skip[$i]}" -eq 0 ] && rm -f "$logdir/${all_labels[$i]}.result"
     done
-    rmdir "$lockdir" 2>/dev/null
+    rm -rf "${lock:?}"
     # If running under sudo, fix log ownership so non-sudo runs aren't blocked
     if [ -n "${SUDO_USER:-}" ]; then
         chown -R "${SUDO_USER}" "$logdir" 2>/dev/null
