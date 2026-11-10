@@ -12,12 +12,17 @@ jobs:
       - name: Gradle lock test, looped
         run: |
           uname -a; bash --version | head -1; java -version 2>&1 | head -1; echo "CDPATH=${CDPATH:-}"; nproc
-          sed -i 's|        until mkdir "${_lock}" 2>/dev/null; do|        echo "LOCKDBG $$ lock=${_lock}" >\&2\n        until mkdir "${_lock}"; do echo "LOCKDBG $$ mkdir failed, holder=$(cat "${_lock}/pid" 2>/dev/null)" >\&2|' languages/_hooks.sh
-          sed -i 's|    _gradle_lock="${_lock}"|    echo "LOCKDBG $$ took the lock: $(ls -la "${_lock}")" >\&2\n    _gradle_lock="${_lock}"|' languages/_hooks.sh
+          python3 - <<'PY'
+          p = "languages/_hooks.sh"
+          s = open(p).read()
+          s = s.replace('    local _lock _holder _said=""\n', '    local _lock _holder _said=""\n    set -x\n', 1)
+          s = s.replace('    _gradle_lock="${_lock}"\n}', '    _gradle_lock="${_lock}"\n    set +x\n}', 1)
+          open(p, "w").write(s)
+          PY
           sed -n '/^gradle_lock()/,/^}/p' languages/_hooks.sh
           fails=0
-          for i in $(seq 1 25); do
-            out="$(python3 -m unittest tests.test_build_hooks.GradleTest.test_one_gradle_run_at_a_time_in_a_build 2>&1)" || { fails=$((fails+1)); echo "=== run ${i} failed"; echo "${out}" | tail -30; }
+          for i in $(seq 1 6); do
+            out="$(python3 -m unittest tests.test_build_hooks.GradleTest.test_one_gradle_run_at_a_time_in_a_build 2>&1)" || { fails=$((fails+1)); echo "=== run ${i} failed"; echo "${out}" | python3 -c "import sys; t=sys.stdin.read(); i=t.find(\"AssertionError\"); print(t[i:i+6000].encode().decode(\"unicode_escape\"))"; }
           done
           echo "failures: ${fails}/25"
           echo "=== whole GradleTest class"; python3 -m unittest tests.test_build_hooks.GradleTest 2>&1 | tail -30
