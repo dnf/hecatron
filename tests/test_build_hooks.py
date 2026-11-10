@@ -162,6 +162,18 @@ class GradleTest(BuildHookTest):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertNotIn("waiting", result.stdout)
 
+    def test_a_lock_another_waiter_took_over_first_is_put_back(self):
+        # Both waiters found the killed holder: the first took the lock, so
+        # what the second renames aside is the first's, and it's restored.
+        write(self.path(".gradle", "hecatron.lock"), f"{os.getpid()}\n")
+        take_over = 'source "${HECATRON_HOME}/languages/_hooks.sh"; gradle_lock_take_over "$1" 999999'
+        for lock in (self.path(".gradle", "hecatron.lock"), self.path(".gradle", "gone.lock")):
+            subprocess.run(["bash", "-c", take_over, "bash", lock], env={**os.environ, "HECATRON_HOME": HOME},
+                           cwd=self.root, check=True)
+        with open(self.path(".gradle", "hecatron.lock"), encoding="utf-8") as f:
+            self.assertEqual(f.read(), f"{os.getpid()}\n")
+        self.assertEqual(sorted(os.listdir(self.path(".gradle"))), ["hecatron.lock"])
+
     def test_the_jvm_gets_a_utf8_locale_when_none_is_set(self):
         write(self.path("build.gradle"), "")
         self.fake("gradle", 'echo "LANG=${LANG:-}"')

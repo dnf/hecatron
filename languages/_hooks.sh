@@ -274,7 +274,7 @@ gradle_lock() {
     until (set -o noclobber && echo "$$" >"${_lock}") 2>/dev/null; do
         _holder="$(cat "${_lock}" "${_lock}/pid" 2>/dev/null || true)"
         if [ -n "${_holder}" ] && ! kill -0 "${_holder}" 2>/dev/null; then
-            rm -rf "${_lock:?}"
+            gradle_lock_take_over "${_lock}" "${_holder}"
             continue
         fi
         if [ -z "${_said}" ]; then
@@ -284,6 +284,17 @@ gradle_lock() {
         sleep 2
     done
     _gradle_lock="${_lock}"
+}
+# Remove the lock ($1) of a killed holder ($2). Two waiters can both find it
+# dead: renaming it aside lets only one have it, and the other, renaming the
+# lock the first has since taken, puts that back.
+gradle_lock_take_over() {
+    local _aside="$1.stale.$$"
+    mv "$1" "${_aside}" 2>/dev/null || return 0
+    if [ "$(cat "${_aside}" "${_aside}/pid" 2>/dev/null || true)" != "$2" ]; then
+        (set -o noclobber && cat "${_aside}" >"$1") 2>/dev/null || true
+    fi
+    rm -rf "${_aside:?}"
 }
 is_gradle() { exists 'build.gradle' || exists 'build.gradle.kts'; }
 # An Android build: a module with an AndroidManifest.xml in src/main (or
