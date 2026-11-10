@@ -162,6 +162,16 @@ class GradleTest(BuildHookTest):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertNotIn("waiting", result.stdout)
 
+    def test_another_users_run_holds_the_lock(self):
+        # pid 1 is root's: kill -0 fails for anyone else, but it's running.
+        write(self.path("build.gradle"), "")
+        write(self.path(".gradle", "hecatron.lock"), "1\n")
+        self.fake("gradle")
+        self.fake("sleep", 'rm -f "$HECATRON_ROOT/.gradle/hecatron.lock"')
+        result = self.hook("java", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("waiting for another Gradle run", result.stdout)
+
     def test_a_lock_another_waiter_took_over_first_is_put_back(self):
         # Both waiters found the killed holder: the first took the lock, so
         # what the second renames aside is the first's, and it's restored.

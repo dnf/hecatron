@@ -273,7 +273,7 @@ gradle_lock() {
     mkdir -p "$(dirname "${_lock}")"
     until (set -o noclobber && echo "$$" >"${_lock}") 2>/dev/null; do
         _holder="$(cat "${_lock}" "${_lock}/pid" 2>/dev/null || true)"
-        if [ -n "${_holder}" ] && ! kill -0 "${_holder}" 2>/dev/null; then
+        if [ -n "${_holder}" ] && ! process_running "${_holder}"; then
             gradle_lock_take_over "${_lock}" "${_holder}"
             continue
         fi
@@ -285,6 +285,9 @@ gradle_lock() {
     done
     _gradle_lock="${_lock}"
 }
+# Whether process $1 exists: kill -0 fails for another user's (a run under
+# sudo), which ps still lists; a container without ps has kill.
+process_running() { kill -0 "$1" 2>/dev/null || ps -p "$1" >/dev/null 2>&1; }
 # Remove the lock ($1) of a killed holder ($2). Two waiters can both find it
 # dead: renaming it aside lets only one have it, and the other, renaming the
 # lock the first has since taken, puts that back. Accepted: a third waiter
