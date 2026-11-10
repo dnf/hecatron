@@ -298,8 +298,13 @@ tell, and everything on the bash-only path, `xcodebuild -list` and
   project's choice. So do Swift's docs and bench there, and the local
   packages below aren't tested with SwiftPM (`swift test` builds them for
   the Mac, and an app's are often iOS-only); lint and deps still act on
-  them. Elsewhere, on macOS, SwiftPM's build, test, docs and bench skip a
-  package whose `platforms:` leaves out `.macOS`.
+  them. Elsewhere, on macOS, SwiftPM's test, docs and bench skip a
+  package whose `platforms:` leaves out `.macOS`, and its build does when an
+  app's Xcode project above it uses it as a local package (the app builds
+  it). Otherwise, with Xcode installed, `xcodebuild` builds it (quran-ios'
+  `QuranEngine`): its `<name>-Package` scheme, which builds every product,
+  or its only scheme, for its platform's generic simulator (iOS first,
+  then visionOS, tvOS and watchOS), unsigned.
 
 Where a build skips (several schemes, workspaces or projects, an unknown
 platform), it says so, naming the hooks to write:

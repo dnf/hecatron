@@ -20,6 +20,12 @@ Xcode project's files, run in the directory being built.
                                     -list -json's report (stdin), and why,
                                     tab-separated; nothing when none fits,
                                     and only the why when several do
+    xcode.py package-platforms <Package.swift>
+                                    the platforms its Package(platforms:)
+                                    names, space-separated (iOS macOS ...)
+    xcode.py package-scheme         the scheme building a Swift package,
+                                    from xcodebuild -list -json's report
+                                    (stdin); nothing when there's none
     xcode.py missing <workspace>    the projects a workspace refers to that
                                     aren't there, one per line
     xcode.py uses-package <dir>...  exits 0 when an Xcode project in one of
@@ -229,6 +235,55 @@ def scheme(listing: dict, container: str, project: str, names: list[str]) -> tup
     return "", ""
 
 
+PACKAGE_INIT = re.compile(r"\bPackage\s*\(")
+PACKAGE_PLATFORMS = re.compile(r"\bplatforms\s*:\s*\[([^\]]*)\]")
+LATER_ARGUMENT = re.compile(r"\b(?:products|dependencies|targets)\s*:")
+
+
+def package_platforms(manifest: str) -> list[str]:
+    """The platforms a Package.swift's Package(platforms: [...]) names
+    (iOS, macOS, ...), not a target's .when(platforms:) condition: Swift
+    takes Package's arguments in order, so its platforms come before its
+    products, dependencies and targets."""
+    start = PACKAGE_INIT.search(manifest)
+    if not start:
+        return []
+    found = PACKAGE_PLATFORMS.search(manifest, start.end())
+    later = LATER_ARGUMENT.search(manifest, start.end())
+    if not found or (later and later.start() < found.start()):
+        return []
+    return re.findall(r"\.(\w+)\s*\(", found.group(1))
+
+
+def listing_json(text: str) -> dict:
+    """xcodebuild -list -json's object, from where it starts: xcodebuild can
+    print lines before it (a package's resolution), {} when there's none."""
+    start = text.find("{")
+    try:
+        listing = json.JSONDecoder().raw_decode(text[start:])[0] if start >= 0 else {}
+    except ValueError:
+        return {}
+    return listing if isinstance(listing, dict) else {}
+
+
+def package_scheme(listing: dict) -> str:
+    """The scheme building a Swift package xcodebuild opened (its listing):
+    <name>-Package, which builds every product and is listed when there are
+    several, else its only scheme, else the one named like it. Some Xcodes
+    name the workspace after the directory, not the package: then the one
+    -Package scheme is it."""
+    info = listing.get("workspace") or {}
+    name, listed = info.get("name") or "", info.get("schemes") or []
+    whole = [scheme for scheme in listed if scheme.endswith("-Package")]
+    if f"{name}-Package" in listed:
+        return f"{name}-Package"
+    if len(whole) == 1:
+        return whole[0]
+    if len(listed) == 1:
+        return listed[0]
+    return name if name in listed else ""
+
+
 def language_sources(lang: str) -> list[str]:
     """The language's "detectWithSources" "sources" patterns (*.swift)."""
     try:
@@ -371,14 +426,24 @@ def main(argv: list[str]) -> int:
     if argv[:1] == ["swift-builds"]:
         return 0 if swift_builds() else 1
     if len(argv) >= 2 and argv[0] == "scheme":
-        try:
-            listing = json.load(sys.stdin)
-        except ValueError:
-            listing = {}
-        name, why = scheme(listing if isinstance(listing, dict) else {}, argv[1], argv[2] if len(argv) > 2 else "",
+        listing = listing_json(sys.stdin.read())
+        name, why = scheme(listing, argv[1], argv[2] if len(argv) > 2 else "",
                            argv[3:])
         if name or why:
             print(f"{name}\t{why}")
+        return 0
+    if len(argv) == 2 and argv[0] == "package-platforms":
+        try:
+            with open(argv[1], encoding="utf-8") as f:
+                print(" ".join(package_platforms(f.read())))
+        except OSError:
+            pass
+        return 0
+    if argv == ["package-scheme"]:
+        listing = listing_json(sys.stdin.read())
+        name = package_scheme(listing)
+        if name:
+            print(name)
         return 0
     if len(argv) >= 2 and argv[0] == "uses-package":
         return 0 if uses_package(argv[1:]) else 1
