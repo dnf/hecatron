@@ -1033,8 +1033,8 @@ class XcodeTest(BuildHookTest):
         write(self.path("Packages", "Core", "Package.swift"), self.IOS_PACKAGE)
         self.assertIn("+ swift test", self.hook("swift", "test", "Packages/Core").stdout)
 
-    def package_listing(self, schemes: list[str]) -> None:
-        write(self.path(".list.json"), json.dumps({"workspace": {"name": "Core", "schemes": schemes}}))
+    def package_listing(self, schemes: list[str], name: str = "Core") -> None:
+        write(self.path(".list.json"), json.dumps({"workspace": {"name": name, "schemes": schemes}}))
 
     def test_an_ios_only_package_builds_with_xcodebuild_on_macos(self):
         # quran-ios' QuranEngine: iOS only, and no app's project builds it.
@@ -1056,6 +1056,11 @@ class XcodeTest(BuildHookTest):
         self.package_listing(["Core"])
         self.hook("swift", "build", "Packages/Core")
         self.assertIn("build -scheme Core -destination", self.builds()[0])
+        # Some Xcodes name the workspace after the directory, not the package.
+        open(self.log, "w").close()
+        self.package_listing(["Core", "Core-Package", "Extra"], name="checkout")
+        self.hook("swift", "build", "Packages/Core")
+        self.assertIn("build -scheme Core-Package -destination", self.builds()[0])
         # Resolving the package can print lines before the listing.
         open(self.log, "w").close()
         write(self.path(".list.json"), "Resolve Package Graph\n\n"

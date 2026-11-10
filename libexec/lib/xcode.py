@@ -269,11 +269,16 @@ def listing_json(text: str) -> dict:
 def package_scheme(listing: dict) -> str:
     """The scheme building a Swift package xcodebuild opened (its listing):
     <name>-Package, which builds every product and is listed when there are
-    several, else its only scheme, else the one named like it."""
+    several, else its only scheme, else the one named like it. Some Xcodes
+    name the workspace after the directory, not the package: then the one
+    -Package scheme is it."""
     info = listing.get("workspace") or {}
     name, listed = info.get("name") or "", info.get("schemes") or []
+    whole = [scheme for scheme in listed if scheme.endswith("-Package")]
     if f"{name}-Package" in listed:
         return f"{name}-Package"
+    if len(whole) == 1:
+        return whole[0]
     if len(listed) == 1:
         return listed[0]
     return name if name in listed else ""
