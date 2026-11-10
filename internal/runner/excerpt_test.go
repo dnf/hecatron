@@ -68,6 +68,32 @@ func TestXcodebuildErrorsLeadTheExcerpt(t *testing.T) {
 	}
 }
 
+// NetNewsWire's xcodebuild: the error ends in a colon and the reason is
+// the indented line under it.
+func TestAnErrorEndingInAColonTakesTheLineUnderIt(t *testing.T) {
+	log := strings.Join([]string{
+		"=== build . (swift) ===",
+		"xcodebuild: error: Could not resolve package dependencies:",
+		"  failed downloading 'https://github.com/a/B/releases/download/2.9.5/B.zip' which is required by binary target 'B': badResponseStatusCode(504)",
+		"  fatalError",
+		"",
+		"error: go: not formatted:",
+		"",
+		"  a.go",
+	}, "\n")
+	excerpt := Extract([]byte(log), nil)
+	want := []string{
+		"xcodebuild: error: Could not resolve package dependencies: failed downloading 'https://github.com/a/B/releases/download/2.9.5/B.zip' which is required by binary target 'B': badResponseStatusCode(504)",
+		"error: go: not formatted:",
+	}
+	if len(excerpt.Lines) != 2 || excerpt.Lines[0].Text != want[0] || excerpt.Lines[1].Text != want[1] {
+		t.Errorf("got %+v", excerpt.Lines)
+	}
+	if !strings.HasSuffix(excerpt.Lines[0].Message, "badResponseStatusCode(504)") {
+		t.Errorf("message: %q", excerpt.Lines[0].Message)
+	}
+}
+
 // A language's patterns that match warnings too: the errors come first,
 // even after more warnings than an excerpt holds.
 func TestErrorsComeBeforeWarnings(t *testing.T) {
