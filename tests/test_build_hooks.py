@@ -150,8 +150,14 @@ class GradleTest(BuildHookTest):
 
     def test_a_lock_left_by_a_killed_run_is_taken_over(self):
         write(self.path("build.gradle"), "")
-        write(self.path(".gradle", "hecatron.lock", "pid"), "999999\n")
+        write(self.path(".gradle", "hecatron.lock"), "999999\n")
         self.fake("gradle")
+        result = self.hook("java", "build", ".")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("waiting", result.stdout)
+        self.assertFalse(os.path.exists(self.path(".gradle", "hecatron.lock")))
+        # An earlier version's lock: a directory with the pid in it.
+        write(self.path(".gradle", "hecatron.lock", "pid"), "999999\n")
         result = self.hook("java", "build", ".")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertNotIn("waiting", result.stdout)
