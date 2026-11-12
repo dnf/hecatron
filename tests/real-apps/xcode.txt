@@ -10,7 +10,6 @@ home-assistant/iOS                   # App-Debug/App-Release, watchOS app and Ma
 wikimedia/wikipedia-ios              # .xcconfig its setup script makes
 mozilla-mobile/firefox-ios           # root Package.swift, apps below, Swift macros, ThirdParty/
 bryceco/GoMap                        # project in src/, Catalyst
-artsy/eidolon                        # CocoaPods workspace, Pods not committed (archived)
 pointfreeco/isowords                 # app beside its Package.swift, ten app targets
 nalexn/clean-architecture-swiftui    # small SwiftUI app with a root Package.swift
 kickstarter/ios-oss                  # large app, several projects
