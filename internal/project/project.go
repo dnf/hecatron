@@ -111,7 +111,12 @@ type Project struct {
 	Disabled   []string // sorted, from local.json
 	Logs       string
 	Metadata   string // the metadata file's path, or ""
-	Detected   bool   // a git repository without a config of its own
+	// Wrapper is config.json "wrapper": the command every job runs under
+	// (a hook, a task, hct exec's command), given the job's command as its
+	// arguments; a relative path in its first word is the root's. Nil for
+	// none.
+	Wrapper  []string
+	Detected bool // a git repository without a config of its own
 	// Announcement is what to say on stderr having just detected the
 	// project for the first time (LoadDetected), else "".
 	Announcement string
@@ -304,7 +309,48 @@ func (p *Project) readConfig() error {
 	if metadata != "" {
 		p.Metadata = pyJoin(p.Root, metadata)
 	}
+	return p.readWrapper()
+}
+
+// readWrapper reads "wrapper": a command as a string (one word, a path) or
+// a list of words. Its first word, when a relative path ("scripts/job.sh",
+// not a bare "nice"), is relative to the root, wherever a job runs.
+func (p *Project) readWrapper() error {
+	value, set := p.config.Get("wrapper")
+	if !set || value == nil {
+		return nil
+	}
+	var words []string
+	switch v := value.(type) {
+	case string:
+		words = []string{v}
+	case []any:
+		for _, item := range v {
+			word, ok := item.(string)
+			if !ok {
+				words = nil
+				break
+			}
+			words = append(words, word)
+		}
+	}
+	if len(words) == 0 || words[0] == "" {
+		return &Error{`config.json: "wrapper" must be a command: a path, or a list of words starting with one`}
+	}
+	if strings.Contains(words[0], "/") && !filepath.IsAbs(words[0]) {
+		words[0] = pyJoin(p.Root, words[0])
+	}
+	p.Wrapper = words
 	return nil
+}
+
+// Wrap is argv run under the project's wrapper: the wrapper's words, then
+// argv; argv itself without one.
+func (p *Project) Wrap(argv []string) []string {
+	if len(p.Wrapper) == 0 {
+		return argv
+	}
+	return append(append([]string(nil), p.Wrapper...), argv...)
 }
 
 func (p *Project) readLocal() error { return p.readLocalFrom(pyJoin(p.Dir, "local.json")) }

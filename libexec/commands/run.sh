@@ -51,6 +51,15 @@ for _component in ${_components[@]+"${_components[@]}"}; do
     fi
 done
 
+# config.json "wrapper" (every job under a command of the project's: nice, a
+# per-checkout environment...) is the binary's alone. Running the jobs
+# without it would break what the project asked of them, so refuse.
+if python3 -c 'import json, sys; sys.exit(0 if "wrapper" in json.load(open(sys.argv[1])) else 1)' \
+    "${HECATRON_ROOT}/.hecatron/config.json" 2>/dev/null; then
+    echo "hecatron: config.json's \"wrapper\" needs hecatron's binary (install.sh downloads it with a release; docs/guide/configuration.md)" >&2
+    exit 2
+fi
+
 _tasks() { python3 "${HECATRON_HOME}/libexec/lib/project.py" tasks "$1"; }
 _task_command() { python3 "${HECATRON_HOME}/libexec/lib/project.py" task "$1" "$2"; }
 

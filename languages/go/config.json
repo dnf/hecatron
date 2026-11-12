@@ -158,6 +158,10 @@
       "regex": "^FAIL\\s+(?P<message>\\S+\\s+\\[(?:build|setup) failed\\])$"
     }
   ],
+  "errorPassedBlock": {
+    "start": "^\\s*(?:=== (?:RUN|CONT|PAUSE|NAME) |--- FAIL: )",
+    "end": "^\\s*--- (?:PASS|SKIP): "
+  },
   "cache": {
     "dependencies": [
       "~/go/pkg/mod",

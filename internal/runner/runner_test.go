@@ -299,7 +299,7 @@ func TestDefaultPatternsAndVersions(t *testing.T) {
 		e.Lines[0].Column != 5 || e.Lines[0].Message != "expected ';'" {
 		t.Errorf("%+v", e)
 	}
-	list, _ := ParsePatterns(nil, nil)
+	list, _ := ParsePatterns(nil, nil, nil)
 	if len(list.List) != 0 {
 		t.Error("patterns from nothing")
 	}

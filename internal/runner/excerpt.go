@@ -62,13 +62,31 @@ type Pattern struct {
 type Patterns struct {
 	List         []Pattern
 	ToolVersions map[string]*regexp.Regexp
+	// PassedStart and PassedEnd ("errorPassedBlock": {"start", "end"})
+	// bound a test's own lines in a verbose log: from a line PassedStart
+	// matches to one PassedEnd matches, a test that passed or was skipped
+	// (go test -v's "=== RUN" to "--- PASS:" or "--- SKIP:"). Its lines
+	// aren't error lines, though a pattern matches them (a skipped test's
+	// "x_test.go:12: needs a server"). Nil for none.
+	PassedStart, PassedEnd *regexp.Regexp
 }
 
-// ParsePatterns reads a definition's "errorPatterns" and
-// "errorToolVersions". What it can't read is left out, with why.
-func ParsePatterns(patterns, toolVersions any) (*Patterns, []string) {
+// ParsePatterns reads a definition's "errorPatterns", "errorToolVersions"
+// and "errorPassedBlock". What it can't read is left out, with why.
+func ParsePatterns(patterns, toolVersions, passedBlock any) (*Patterns, []string) {
 	result := &Patterns{ToolVersions: map[string]*regexp.Regexp{}}
 	var problems []string
+	if object, ok := passedBlock.(*project.Object); ok {
+		start, _ := stringField(object, "start")
+		end, _ := stringField(object, "end")
+		startRe, startErr := regexp.Compile(start)
+		endRe, endErr := regexp.Compile(end)
+		if start == "" || end == "" || startErr != nil || endErr != nil {
+			problems = append(problems, fmt.Sprintf("errorPassedBlock: bad start %q or end %q", start, end))
+		} else {
+			result.PassedStart, result.PassedEnd = startRe, endRe
+		}
+	}
 	list, _ := patterns.([]any)
 	for n, item := range list {
 		object, ok := item.(*project.Object)
@@ -317,7 +335,11 @@ func matchUpTo(lines, components []string, patterns *Patterns, limit int) []Erro
 	}
 	var found []ErrorLine
 	seen := map[string]bool{}
+	passed := patterns.passedLines(lines)
 	for i, line := range lines {
+		if passed[i] {
+			continue
+		}
 		for _, p := range active {
 			m := p.Regex.FindStringSubmatch(line)
 			if m == nil {
@@ -360,6 +382,32 @@ func matchUpTo(lines, components []string, patterns *Patterns, limit int) []Erro
 		}
 	}
 	return found
+}
+
+// passedLines marks the lines of the tests that passed or were skipped:
+// those after the last PassedStart line before a PassedEnd line, to that
+// line. The PassedStart line itself stays, so a start pattern can match a
+// failure's result line too (go test -v's "--- FAIL: TestA/sub1" before a
+// subtest's "--- PASS: TestA/sub2") and keep it. A block a failure ends (no
+// PassedEnd) stays, as does everything outside one.
+func (p *Patterns) passedLines(lines []string) []bool {
+	passed := make([]bool, len(lines))
+	if p.PassedStart == nil || p.PassedEnd == nil {
+		return passed
+	}
+	start := -1
+	for i, line := range lines {
+		switch {
+		case p.PassedStart.MatchString(line):
+			start = i
+		case p.PassedEnd.MatchString(line) && start >= 0:
+			for j := start + 1; j <= i; j++ {
+				passed[j] = true
+			}
+			start = -1
+		}
+	}
+	return passed
 }
 
 // indentedAfter is the indented line after line i, which an error ending

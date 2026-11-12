@@ -30,7 +30,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | Is each toolchain working | `hct doctor [lang...]` | Read-only; see Installing. `--output json`: each language's problems and notes (needs the binary) |
 | Validate config and generated files | `hct check` | |
 | A language's environment in a shell | `eval "$(hct env LANG)"` | The PATH and variables its commands run with |
-| Run one command with a component's toolchain | `hct exec LANG [-c COMPONENT] -- CMD...` | That environment, in the working directory; exit status is CMD's; needs the binary |
+| Run one command with a component's toolchain | `hct exec LANG [-c COMPONENT] -- CMD...` | That environment, in the working directory; exit status is CMD's; needs the binary. `--output agent` (before `--`): its output to `<logs>/exec/<CMD>.log`, one line on a pass, the log, error lines and `Rerun:` on a failure; use it for one crate's or package's tests |
 | A newer hecatron | `hct self update --check` | Exit 3: a newer release exists (`hct status` says so from its daily check). `hct self update` installs it: ask the user first, as a new version can change generated files |
 
 - `--changed [REF]` (every run command but `audit`, `outdated` and
@@ -111,6 +111,7 @@ saves that.
 | `advisor.ignore` | Silenced advisor rules: `{"id", "reason"}` each, optional `"path"` |
 | `licenses` | License policy for `hct licenses`: `allow`, `deny` (SPDX IDs), `ignore` (`{"package": "npm:name", "reason", "until"}`), `includeDev` |
 | `logs` | Log directory |
+| `wrapper` | A command every job and `hct exec` runs under (nice, per-checkout variables on a shared machine); run the commands through hct rather than the tools directly, so they get it |
 
 Change languages with `hct add LANG` / `hct remove LANG`, not by hand.
 

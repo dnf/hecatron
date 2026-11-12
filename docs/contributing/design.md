@@ -731,6 +731,17 @@ today. On Windows the binary runs `<action>.ps1`, `.cmd` or `.exe`; elsewhere
 `<action>.sh` or any executable. A project that wants one hook for every
 platform declares rules in its config instead of a script.
 
+**A project's wrapper** (config.json `"wrapper"`) is a command every job
+runs under, given the job's command: each hook, task and lint's shell
+check, and `hct exec`'s command. It came from a repository whose agents and
+CI runners share machines, where every build must run niced, with a build
+directory of its own checkout's and through the machine's compiler cache:
+written once as a wrapper, `hct test` and the `Rerun:` lines it prints are
+safe to run as they stand, which a wrapper around hct alone can't give. The
+wrapper, not hecatron, sets those, so hecatron needs no notion of priority
+or caches. Without the binary the run commands refuse such a project rather
+than run its jobs bare.
+
 ### Output
 The four formats, how one is chosen and the exit codes moved to the user
 guide: [output](../guide/output.md).
@@ -764,7 +775,12 @@ Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
   rest of a sentence Gradle wrapped); `versions` (`">=7"`, `">=1.2,<3"`) limits a
   pattern to the versions of `tool` found in the log by the definition's
   `"errorToolVersions"` (`{"pytest": "pytest-(\\S+)"}`; a version not found
-  doesn't exclude a pattern). Lines matching no language pattern are tried
+  doesn't exclude a pattern). A definition's `"errorPassedBlock"`
+  (`{"start", "end"}`) leaves out the lines of a verbose log's tests that
+  passed or were skipped: after the last line `start` matches before a line
+  `end` matches, to that line (Go's `go test -v`, whose skipped tests'
+  `x_test.go:12: needs a server` lines otherwise filled the excerpt ahead of
+  the failure). Lines matching no language pattern are tried
   against built-in generic ones (`file:line[:col]: error`, `file: error:`,
   `error:`, `FAIL`, make's `*** ... Error 2`, `No such file or directory`,
   xcodebuild's `** BUILD FAILED **` and the failed commands it lists). Of

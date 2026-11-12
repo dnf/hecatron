@@ -1,0 +1,6 @@
+calc_test.go:17: Sub(5, 3) = 8, want 2
+    -> calc_test.go:17 Sub(5, 3) = 8, want 2
+--- FAIL: TestSub (0.00s)
+calc_test.go:31: Add(-1, -1) = 0, want -2
+    -> calc_test.go:31 Add(-1, -1) = 0, want -2
+--- FAIL: TestTable (0.00s)

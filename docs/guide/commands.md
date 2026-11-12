@@ -411,7 +411,7 @@ eval "$(hct env java -c age)"
 ### exec
 
 ```
-hct exec LANG [-c COMPONENT] -- CMD [ARGS...]
+hct exec LANG [-c COMPONENT] [--output agent] -- CMD [ARGS...]
 ```
 
 **Binary only.** Runs CMD with the language's environment for a component,
@@ -419,13 +419,34 @@ what `hct env LANG -c COMPONENT` prints, without changing your shell: handy
 when components use different versions of one toolchain. Without `-c`, the
 component whose directory for the language holds the working directory,
 else the only component in the language. CMD runs in the working directory,
-with your terminal; the exit status is CMD's (127 when it isn't found).
+with your terminal, under the project's [wrapper](configuration.md) when it
+has one; the exit status is CMD's (127 when it isn't found).
 When the component's version isn't installed, it says so (exit 3): `hct
 install LANG` installs it.
+
+`--output agent` runs CMD as a run command runs a job for an agent: its
+output goes to `<logs>/exec/<CMD>.log` (the last run of each command name),
+and what's printed is one line when it passes, and when it fails, the log,
+its error lines (found with the language's error patterns) and the `hct
+exec` command that reruns it. The exit status is still CMD's. It's for one
+command an agent runs that isn't a language's whole test or lint, such as
+one crate's or one package's tests.
 
 ```bash
 hct exec zig -c parser -- zig build
 cd age/python && hct exec python -- python -m pytest -x
+hct exec rust --output agent -- cargo test -p parser
+```
+
+```
+hct exec rust: 0 passed, 1 failed (41s)
+FAIL cargo exit 101, 41s, log .logs/exec/cargo.log
+  test tests::parses_empty ... FAILED
+  thread 'tests::parses_empty' panicked at src/lib.rs:12:9:
+  assertion `left == right` failed
+    left: 1
+   right: 2
+Rerun: hct exec rust --output agent -- cargo test -p parser
 ```
 
 ### parallel
