@@ -325,6 +325,12 @@ def _version_tuple(version: str) -> tuple[int, ...]:
     return tuple(int(part) for part in version.split(".") if part.isdigit())
 
 
+def _is_command(value: object) -> bool:
+    """config.json "wrapper": a path, or a list of words starting with one."""
+    words = [value] if isinstance(value, str) else value
+    return isinstance(words, list) and bool(words) and all(isinstance(w, str) for w in words) and bool(words[0])
+
+
 def hecatron_version() -> str:
     path = os.path.join(HECATRON_HOME, "VERSION")
     if os.path.isfile(path):
@@ -358,6 +364,9 @@ class Project:
         if needed and _version_tuple(hecatron_version()) < _version_tuple(needed):
             raise ProjectError(
                 f"this project needs hecatron {needed} or newer (installed: {hecatron_version()})")
+        if self.config.get("wrapper") is not None and not _is_command(self.config["wrapper"]):
+            raise ProjectError(
+                f'{self.config_path}: "wrapper" must be a command: a path, or a list of words starting with one')
         self.local = _read_json(self.local_path, {})
         self._definitions: dict[str, dict] | None = None
         self._installed: dict[str, list[tuple[str, str]]] = {}

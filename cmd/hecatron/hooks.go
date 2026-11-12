@@ -80,13 +80,13 @@ func (r *invocation) languageExec(action, lang string, wanted []string) func(con
 					if reports := r.testReportDir(lang, dir.Component); reports != "" {
 						hookEnv = append(hookEnv, "HECATRON_TEST_REPORTS="+reports)
 					}
-					ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECKED="+checked.Name(),
+					ok = r.runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECKED="+checked.Name(),
 						"HECATRON_SKIPPED="+skip), hook, dir.Component)
 					// Lint's format check: a component whose linter skipped
 					// is skipped only if its format check skipped too.
 					formatSkipped := true // or no format check ran
 					if info, err := os.Stat(checked.Name()); formatHook != "" && err == nil && info.Size() == 0 {
-						ok = runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECK=1", "HECATRON_SKIPPED="+skip+".format"),
+						ok = r.runHook(ctx, out, dir.Dir, append(hookEnv, "HECATRON_FORMAT_CHECK=1", "HECATRON_SKIPPED="+skip+".format"),
 							formatHook, dir.Component) && ok
 						formatSkipped = skipReason(skip+".format") != ""
 					}
@@ -260,16 +260,23 @@ func getenv(env []string, name string) string {
 	return ""
 }
 
-// runHook runs a hook with bash, as each-component.sh does; ok is its
-// success.
-func runHook(ctx context.Context, out io.Writer, dir string, env []string, hook, component string) bool {
-	argv := []string{hook, component}
+// runHook runs a hook with bash, as each-component.sh does, under the
+// project's wrapper; ok is its success.
+func (r *invocation) runHook(ctx context.Context, out io.Writer, dir string, env []string, hook, component string) bool {
+	argv := []string{"bash", hook, component}
 	if exports := getenv(env, "HECATRON_EVAL_ENV"); exports != "" {
-		argv = append([]string{"-c", `eval "${HECATRON_EVAL_ENV}" && unset HECATRON_EVAL_ENV && exec bash "$@"`, "bash"}, argv...)
+		argv = append([]string{"bash", "-c", `eval "${HECATRON_EVAL_ENV}" && unset HECATRON_EVAL_ENV && exec bash "$@"`, "bash"}, argv[1:]...)
 	}
-	cmd := exec.CommandContext(ctx, "bash", argv...)
+	cmd := r.jobCommand(ctx, argv)
 	cmd.Dir, cmd.Env = dir, env
 	return runCommand(cmd, out) == 0
+}
+
+// jobCommand is argv to run as a job: under the project's wrapper
+// (config.json "wrapper"), when it has one.
+func (r *invocation) jobCommand(ctx context.Context, argv []string) *exec.Cmd {
+	argv = r.project.Wrap(argv)
+	return exec.CommandContext(ctx, argv[0], argv[1:]...)
 }
 
 // runCommand runs a command with stdin from /dev/null and its output in
@@ -296,7 +303,7 @@ func runCommand(cmd *exec.Cmd, out io.Writer) int {
 // run.sh does.
 func (r *invocation) taskExec(command string) func(context.Context, io.Writer) runner.Outcome {
 	return func(ctx context.Context, out io.Writer) runner.Outcome {
-		cmd := exec.CommandContext(ctx, "bash", "-c", command)
+		cmd := r.jobCommand(ctx, []string{"bash", "-c", command})
 		cmd.Dir, cmd.Env = r.root, r.environment()
 		return runner.Outcome{ExitCode: runCommand(cmd, out)}
 	}
@@ -305,7 +312,7 @@ func (r *invocation) taskExec(command string) func(context.Context, io.Writer) r
 // shellcheckExec is lint's shell tool: libexec/lint/shellcheck.sh.
 func (r *invocation) shellcheckExec() func(context.Context, io.Writer) runner.Outcome {
 	return func(ctx context.Context, out io.Writer) runner.Outcome {
-		cmd := exec.CommandContext(ctx, "bash", r.homePath("libexec/lint/shellcheck.sh"))
+		cmd := r.jobCommand(ctx, []string{"bash", r.homePath("libexec/lint/shellcheck.sh")})
 		cmd.Dir, cmd.Env = r.root, r.environment()
 		return runner.Outcome{ExitCode: runCommand(cmd, out)}
 	}

@@ -97,7 +97,8 @@ func languagePatterns(t *testing.T, root, lang string) *Patterns {
 	definition := decoded.(*project.Object)
 	list, _ := definition.Get("errorPatterns")
 	versions, _ := definition.Get("errorToolVersions")
-	patterns, problems := ParsePatterns(list, versions)
+	passed, _ := definition.Get("errorPassedBlock")
+	patterns, problems := ParsePatterns(list, versions, passed)
 	if len(problems) > 0 {
 		t.Fatalf("%s: %v", lang, problems)
 	}

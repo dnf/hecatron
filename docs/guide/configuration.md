@@ -73,6 +73,7 @@ saves it as `.hecatron/config.json` to commit and adjust.
 | `tasks` | Extra named jobs per action (`test`, `lint`, ...): shell commands run from the root, in parallel with the languages and by name (`hct test codegen`) | `{}` |
 | `metadata` | JSON file `hct metadata` reads (name, description, author, license, repository) | none |
 | `logs` | Log directory for runs | `.logs` |
+| `wrapper` | A command every job runs under: each hook, project task and lint's shell check, and `hct exec`'s command, given the job's command as its arguments (`"scripts/job.sh"`, or `["nice", "-n", "10"]`); it must run them (`exec "$@"`) and exit with their status. A relative path as its first word is the root's. For what every build on a machine shared with others needs: a lower priority, a per-checkout build directory, a shared compiler cache. Binary only: without the binary, the run commands refuse to run rather than run jobs without it | none |
 
 `.hecatron/local.json` holds per-developer state, currently only
 `{"disabled": ["haskell"]}` (was `disabled.json`). `hct init` adds it to

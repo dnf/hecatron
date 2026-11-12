@@ -521,7 +521,8 @@ func (r *invocation) errorPatterns(lang string) *runner.Patterns {
 	}
 	list, _ := r.project.DefinitionValue(lang, "errorPatterns")
 	versions, _ := r.project.DefinitionValue(lang, "errorToolVersions")
-	p, _ := runner.ParsePatterns(list, versions)
+	passed, _ := r.project.DefinitionValue(lang, "errorPassedBlock")
+	p, _ := runner.ParsePatterns(list, versions, passed)
 	if len(p.List) == 0 {
 		p = nil
 	}

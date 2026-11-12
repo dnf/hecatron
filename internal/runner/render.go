@@ -60,6 +60,9 @@ type Report struct {
 	Changed    *Changed // what --changed selected, else nil
 	FailOnSkip bool     // --fail-on-skip: a run in which nothing ran fails
 	Audit      *Audit   // hct audit's findings, for JSON output; nil for none
+	// RerunCommand, when set, is what Rerun says reruns a failure, for a
+	// report whose jobs hct <action> <label> doesn't name (hct exec's).
+	RerunCommand string
 }
 
 // Audit is what hct audit found, every finding of every component, as
@@ -145,6 +148,9 @@ func (r *Report) Rerun() string {
 	}
 	if len(failed) == 0 {
 		return ""
+	}
+	if r.RerunCommand != "" {
+		return r.RerunCommand
 	}
 	words := append([]string{"hct", r.Action}, failed...)
 	for _, c := range r.Components {
