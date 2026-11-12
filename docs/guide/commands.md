@@ -428,7 +428,9 @@ install LANG` installs it.
 output goes to `<logs>/exec/<CMD>.log` (the last run of each command name),
 and what's printed is one line when it passes, and when it fails, the log,
 its error lines (found with the language's error patterns) and the `hct
-exec` command that reruns it. The exit status is still CMD's. It's for one
+exec` command that reruns it, or `HECATRON_RERUN` when it's set (by a
+script that runs `hct exec` for its users, whom it tells how to run it
+again). The exit status is still CMD's. It's for one
 command an agent runs that isn't a language's whole test or lint, such as
 one crate's or one package's tests.
 

@@ -31,7 +31,8 @@ CMD's status (127 when it isn't found).
              Keep CMD's output in <logs>/exec/<CMD>.log and print one line
              when it passes; when it fails, the log, its error lines (LANG's
              error patterns) and the command that reruns it, as a run
-             command's agent output does
+             command's agent output does (HECATRON_RERUN, when a script
+             running hct exec for its users sets it, is that command)
 
   hct exec zig -c parser -- zig build
   hct exec python -- python -m pytest
@@ -175,9 +176,13 @@ func execLabel(command string) string {
 	return label
 }
 
-// execRerun is the hct exec command line that runs it again, quoted for a
-// POSIX shell.
+// execRerun is the command line that runs it again: HECATRON_RERUN, set by
+// a script that runs hct exec for its own users and is how they run it
+// again; else the hct exec command line, quoted for a POSIX shell.
 func execRerun(a execArgs) string {
+	if rerun := os.Getenv("HECATRON_RERUN"); rerun != "" {
+		return rerun
+	}
 	words := []string{"hct", "exec", a.lang}
 	if a.component != "" {
 		words = append(words, "-c", a.component)

@@ -125,6 +125,11 @@ func TestExecForAgent(t *testing.T) {
 	if out := times.ReplaceAllString(fail.stdout, "T"); out != want || fail.status != 7 {
 		t.Errorf("a failure: status %d, stdout:\n%s\nwant:\n%s", fail.status, out, want)
 	}
+	// A script running hct exec for its users says how they rerun it.
+	wrapped := runIn(t, root, append(env, "ZZ_EXIT=7", "HECATRON_RERUN=scripts/run.sh zz"), binary, "exec", "zz", "--output", "agent", "--", "zz")
+	if !strings.HasSuffix(wrapped.stdout, "\nRerun: scripts/run.sh zz\n") {
+		t.Errorf("HECATRON_RERUN: %+v", wrapped)
+	}
 	if bad := runIn(t, root, env, binary, "exec", "zz", "--output", "json", "--", "zz"); bad.status != 2 ||
 		!strings.Contains(bad.stderr, "--output takes agent or human, not 'json'") {
 		t.Errorf("--output json: %+v", bad)
