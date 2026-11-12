@@ -2,7 +2,8 @@
   tests, say) as a run command runs a job for an agent: its output in
   `<logs>/exec/<CMD>.log`, one line when it passes, and when it fails the
   log, its error lines from the language's error patterns and the command
-  that reruns it. The exit status is still the command's.
+  that reruns it (`HECATRON_RERUN`, when a script running `hct exec` for
+  its users sets it). The exit status is still the command's.
 - **`"wrapper"` in config.json:** a command every job runs under (each
   hook, project task and lint's shell check, and `hct exec`'s command),
   given the job's command as its arguments: for what every build on a
