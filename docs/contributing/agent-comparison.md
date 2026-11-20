@@ -29,14 +29,20 @@ made-up result. It needs neither Docker nor credentials.
 
 Put the credentials in a file only Docker reads. Run `claude setup-token`
 in your own terminal (not through an agent, so the token stays out of its
-transcript), then save the token it prints. `read -rs` asks for it without
-showing it or putting it in your shell's history:
+transcript), then save the token it prints:
 
 ```bash
 mkdir -p ~/.config/hecatron-bench && chmod 700 ~/.config/hecatron-bench
-read -rs -p 'Token: ' t && printf 'CLAUDE_CODE_OAUTH_TOKEN=%s\n' "$t" > ~/.config/hecatron-bench/env; unset t
-chmod 600 ~/.config/hecatron-bench/env
+stty -echo; printf 'Paste the token, then press Enter and Ctrl-D: '; t=$(tr -d '[:space:]'); stty echo; echo
+(umask 077; printf 'CLAUDE_CODE_OAUTH_TOKEN=%s\n' "$t" > ~/.config/hecatron-bench/env); unset t
 ```
+
+The token is long enough that the terminal wraps it, and copying it can
+bring a line break along; reading until Ctrl-D and dropping whitespace
+keeps all of it (a prompt that stops at the first line break can save part
+of it, which the API rejects as `authentication_failed`). It isn't echoed or kept
+in the shell's history, and `umask 077` makes the file readable only by
+you from the start.
 
 (`ANTHROPIC_API_KEY=...` works too.) Then:
 
