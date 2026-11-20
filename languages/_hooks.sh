@@ -90,6 +90,90 @@ docs_written() {
     echo "${HECATRON_LANG:-}: docs: written to ${_dir}${2:+ ($2)}"
 }
 
+# hct prune (docs/guide/prune.md): libexec/lib/prune.py does the trimming,
+# reading the flags from HECATRON_PRUNE_*, and ends each directory with the
+# line the runner reads ("LANG: prune: freed ... from WHERE").
+prune_py() { python3 "${HECATRON_HOME:-${_hooks_home}}/libexec/lib/prune.py" "$@"; }
+# --caches: the per-user caches too (~/.nuget/packages, uv's, npm's).
+prune_caches() { [ "${HECATRON_PRUNE_CACHES:-}" = 1 ]; }
+prune_say() { echo "${HECATRON_LANG:-}: prune: $*"; }
+
+# Cargo's target directory for the package or workspace here, as cargo
+# itself finds it (CARGO_TARGET_DIR, build.target-dir, else target/ beside
+# the workspace's Cargo.toml).
+cargo_target_dir() {
+    local _dir
+    if _dir="$(cargo metadata --no-deps --format-version 1 --offline 2>/dev/null |
+        python3 -c 'import json, sys; print(json.load(sys.stdin)["target_directory"])' 2>/dev/null)" &&
+        [ -n "${_dir}" ]; then
+        echo "${_dir}"
+    elif [ -n "${CARGO_TARGET_DIR:-}" ]; then
+        echo "${CARGO_TARGET_DIR}"
+    else
+        echo "${build_dir:-.}/target"
+    fi
+}
+
+# Node's prune: npm's own trim of its cache (npm cache verify: it removes
+# what nothing in the cache refers to), and pnpm's of its store, with
+# --caches. A project has nothing for prune: node_modules is installed
+# dependencies, and its build output is the build's.
+prune_node() {
+    prune_caches || skip "nothing in a Node project to prune (node_modules is the installed dependencies); --caches trims npm's cache"
+    has npm || has pnpm || skip "neither npm nor pnpm is installed"
+    local _status=0
+    if has npm; then prune_py tool "$(npm config get cache)" -- npm cache verify || _status=1; fi
+    if has pnpm && [ -f pnpm-lock.yaml ]; then
+        prune_py tool "$(pnpm store path)" -- pnpm store prune || _status=1
+    fi
+    return "${_status}"
+}
+
+# Swift's prune: SwiftPM's .build/ for the package (its configurations
+# unused for 7d), and with --caches on macOS, Xcode's DerivedData folders
+# whose workspace is gone (where xcodebuild puts the Xcode hooks' builds,
+# xcode_derived_data, and Xcode its own).
+prune_swift() {
+    local _derived="${HECATRON_XCODE_DERIVED_DATA:-${HOME:-/tmp}/Library/Developer/Xcode/DerivedData}"
+    if find_build Package.swift; then
+        note_build_dir
+        prune_py swiftpm "${build_dir}/.build"
+    elif ! prune_caches; then
+        skip "no Package.swift: an Xcode project builds in DerivedData, which --caches prunes"
+    fi
+    if prune_caches && [ "$(uname -s)" = Darwin ]; then
+        prune_py derived-data "${_derived}"
+    fi
+}
+
+# .NET's prune: each project's bin/<configuration>/ and obj/<configuration>/
+# unused for 7d, never the configuration built last; with --caches, the
+# versions in NuGet's packages folder that aren't a package's newest and
+# no restore has used for 30d.
+prune_dotnet() {
+    prune_py dotnet .
+    if prune_caches; then
+        prune_py nuget "${NUGET_PACKAGES:-${HOME:-/tmp}/.nuget/packages}"
+    fi
+}
+
+# Gradle's prune: the build's project caches (.gradle/<version>/ in its
+# root) for the Gradle versions it no longer uses. Gradle trims the caches
+# in ~/.gradle itself, which --caches says; Maven and sbt have nothing for
+# prune.
+prune_gradle() {
+    local _root
+    if _root="$(nearest_with settings.gradle settings.gradle.kts)" ||
+        { is_gradle && _root="$(pwd)"; }; then
+        prune_py gradle "${_root}"
+    elif ! prune_caches; then
+        skip "no Gradle build here or above: Maven's and sbt's builds keep nothing for prune (hecatron clean ${HECATRON_LANG:-} removes their output)"
+    fi
+    if prune_caches; then
+        prune_say "Gradle trims its caches in ~/.gradle itself (downloaded files unused for 30 days, ones it made for 7, and the caches and wrapper distributions of Gradle versions unused for 30), set in an init script (docs.gradle.org: \"Configure cache cleanup\")"
+    fi
+}
+
 # Whether a format hook only checks (hecatron format --check, and hecatron
 # lint): it changes nothing and fails, listing what it would change.
 format_checking() { [ "${HECATRON_FORMAT_CHECK:-}" = 1 ]; }

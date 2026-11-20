@@ -22,7 +22,7 @@ hct test          # every language's tests, in parallel
   (a single-component project has one). Each language's code for a
   component lives at a path built from a template, e.g.
   `{component}/impl/{lang}`.
-- **Action:** `test`, `lint`, `build`, `clean`, `deps`, `format`, `audit`,
+- **Action:** `test`, `lint`, `build`, `clean`, `prune`, `deps`, `format`, `audit`,
   `outdated`, `docs`, `bench`. A **hook** script implements it, run once per component.
 
 ## Pages
@@ -36,6 +36,7 @@ hct test          # every language's tests, in parallel
 | [Hooks](hooks.md) | The hook contract, what the default hooks do, dependencies, formatting, trust |
 | [Toolchain versions](versions.md) | Pin files, `version`, defaults, version syntax, old checkouts |
 | [Installing toolchains](installing-toolchains.md) | `install`, `uninstall`, `doctor`, shared toolchains, platforms |
+| [Pruning build output](prune.md) | `hct prune`: trimming stale builds and caches, what each language prunes, its safety rules |
 | [The parallel runner](runner.md) | Concurrency, scheduling, the live display, time limits, `--changed`, `hct sync`, reports |
 | [Output](output.md) | Human, agent, JSON and CI output; exit codes |
 | [Generated files](generated-files.md) | The Dockerfile, CI workflows, the GitLab pipeline, caching, Dependabot and Renovate |

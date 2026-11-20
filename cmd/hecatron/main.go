@@ -7,7 +7,7 @@
 // user but the speed.
 //
 // Ported: --version, help, the run commands (test, lint, build, clean,
-// rebuild, retest, audit, format, deps, outdated, docs, bench: run.go), doctor
+// prune, rebuild, retest, audit, format, deps, outdated, docs, bench: run.go), doctor
 // (doctor.go; each language's doctor.sh stays bash), version (version.go; each
 // language's version.sh stays bash), list,
 // env (with a language, its environment for a component), status, sync, advisor, the
@@ -151,6 +151,7 @@ var nativeCommands = map[string]func(*cli) (status int, handled bool){
 	"lint":       (*cli).runCommand,
 	"build":      (*cli).runCommand,
 	"clean":      (*cli).runCommand,
+	"prune":      (*cli).runCommand,
 	"rebuild":    (*cli).runCommand,
 	"retest":     (*cli).runCommand,
 	"audit":      (*cli).runCommand,

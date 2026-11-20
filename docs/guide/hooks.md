@@ -8,7 +8,7 @@ followed; `libexec/lib/each-component.sh` (sayable's `each-library.sh`) is
 hecatron's dispatcher.
 
 A project's `.hecatron/languages/<lang>/<action>.sh` (`test.sh`, `lint.sh`,
-`build.sh`, `clean.sh`, `deps.sh`, `format.sh`, `audit.sh`,
+`build.sh`, `clean.sh`, `prune.sh`, `deps.sh`, `format.sh`, `audit.sh`,
 `outdated.sh`, `docs.sh`, `bench.sh`) replaces the built-in default for that language
 ([resolving a language's files](configuration.md#resolving-a-languages-files));
 `version.sh` and `metadata.sh` serve `hct version` and `hct metadata`.
@@ -20,7 +20,8 @@ Rules carried over from sayable:
 - Every component runs even after one fails, and the summary names the
   failures.
 - `clean` removes build artifacts only, never installed dependencies or
-  tracked files.
+  tracked files. `prune` removes only the stale part of them, never what a
+  build is using ([prune](prune.md#safety)).
 - A language-specific command acts on every component of that language.
 - A hook with nothing to run in a component, or that can't run there,
   says so and is reported **skipped**, not passed ([skipping](#skipping)).
@@ -347,6 +348,32 @@ elsewhere only where the project configures one (Prettier, clang-format,
 Spotless), since a default would rewrite every file of a project that
 doesn't use it. (Owner's brief, 2026-10-27; the per-formatter choices are
 the implementation's, in [format.md](format.md).)
+
+## Prune
+
+A `prune` hook removes the stale part of the component's build output and
+keeps what the next build reuses ([prune](prune.md)). It reads the flags
+from `HECATRON_PRUNE_DRY_RUN`, `HECATRON_PRUNE_OLDER_THAN`,
+`HECATRON_PRUNE_MAX_SIZE` and `HECATRON_PRUNE_CACHES`, and ends with one
+line per directory, which `hct prune` repeats with the total and puts in
+agent and JSON output (`"pruned"`):
+
+```
+LANG: prune: would free|freed 1.2 GiB (BYTES bytes) in N items from WHERE
+```
+
+The default hooks call `libexec/lib/prune.py` (`prune_py` in
+`languages/_hooks.sh`), which removes nothing in a dry run, skips what a
+build holds a lock on, and writes that line. A project hook can call it
+too, here to prune a target directory the project keeps somewhere of its
+own:
+
+```bash
+#!/usr/bin/env bash
+# .hecatron/languages/rust/prune.sh
+source "${HECATRON_HOME}/languages/_hooks.sh"
+prune_py cargo "${HECATRON_ROOT}/build/cargo"
+```
 
 ## Docs and benchmarks
 

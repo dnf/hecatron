@@ -69,7 +69,7 @@ adjust. `hct help` lists every command.
   the binary checks step by step, without root, ready for CI caches
   ([installing toolchains](docs/guide/installing-toolchains.md)).
 - **One command per task, for every language.** `hct test`, `lint`,
-  `build`, `clean`, `format`, `docs` and `bench`, with defaults chosen from
+  `build`, `clean`, `prune`, `format`, `docs` and `bench`, with defaults chosen from
   the build files present (`Cargo.toml` → Cargo, `pom.xml` → Maven, an
   Xcode project → `xcodebuild` with the right scheme and simulator). A
   project overrides any of them with its own script

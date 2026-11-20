@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hecatron test|lint|build|clean|rebuild|retest|audit|format|deps|outdated|docs|bench [-j N] [-s MODE] [-c COMPONENT]... [target ...]
+# hecatron test|lint|build|clean|prune|rebuild|retest|audit|format|deps|outdated|docs|bench [-j N] [-s MODE] [-c COMPONENT]... [target ...]
 #
 # With targets, runs each one in turn, streaming its output and saving it to
 # <logs>/<action>/<target>.log. A target is a language (every component), a
@@ -27,10 +27,17 @@ for _a in "$@"; do
     if [ "${_prev}" = "-s" ]; then _sflag="${_a}"; _prev=""; continue; fi
     if [ "${_prev}" = "-c" ]; then _components+=("${_a}"); _prev=""; continue; fi
     if [ "${_prev}" = "--fail-on" ]; then export HECATRON_AUDIT_FAIL_ON="${_a}"; _prev=""; continue; fi
+    if [ "${_prev}" = "--older-than" ]; then export HECATRON_PRUNE_OLDER_THAN="${_a}"; _prev=""; continue; fi
+    if [ "${_prev}" = "--max-size" ]; then export HECATRON_PRUNE_MAX_SIZE="${_a}"; _prev=""; continue; fi
     case "${_a}" in
         -j|-s|-c) _prev="${_a}" ;;
         --fail-on) [ "${_action}" = audit ] && _prev="${_a}" || _targets+=("${_a}") ;;
         --fail-on=*) export HECATRON_AUDIT_FAIL_ON="${_a#--fail-on=}" ;;
+        --older-than|--max-size) [ "${_action}" = prune ] && _prev="${_a}" || _targets+=("${_a}") ;;
+        --older-than=*) [ "${_action}" = prune ] && export HECATRON_PRUNE_OLDER_THAN="${_a#--older-than=}" || _targets+=("${_a}") ;;
+        --max-size=*) [ "${_action}" = prune ] && export HECATRON_PRUNE_MAX_SIZE="${_a#--max-size=}" || _targets+=("${_a}") ;;
+        --dry-run) [ "${_action}" = prune ] && export HECATRON_PRUNE_DRY_RUN=1 || _targets+=("${_a}") ;;
+        --caches) [ "${_action}" = prune ] && export HECATRON_PRUNE_CACHES=1 || _targets+=("${_a}") ;;
         --check) [ "${_action}" = format ] && export HECATRON_FORMAT_CHECK=1 || _targets+=("${_a}") ;;
         --json) [ "${_action}" = outdated ] && _json=1 || _targets+=("${_a}") ;;
         --fail) [ "${_action}" = outdated ] && export HECATRON_OUTDATED_FAIL=1 || _targets+=("${_a}") ;;
@@ -44,6 +51,13 @@ for _a in "$@"; do
         *) _targets+=("${_a}") ;;
     esac
 done
+if [ "${_prev}" = "--older-than" ] || [ "${_prev}" = "--max-size" ]; then
+    echo "hecatron: ${_prev} needs a value" >&2
+    exit 2
+fi
+if [ "${_action}" = prune ]; then
+    python3 "${HECATRON_HOME}/libexec/lib/prune.py" check || exit 2
+fi
 for _component in ${_components[@]+"${_components[@]}"}; do
     if ! _in_list "${_component}" ${HECATRON_COMPONENTS}; then
         echo "hecatron: unknown component '${_component}' (components: ${HECATRON_COMPONENTS})" >&2
@@ -60,6 +74,7 @@ _describe() {
         lint) echo "Run each language's linter for every component" ;;
         build) echo "Build each language for every component" ;;
         clean) echo "Remove each language's build artifacts for every component (keeps installed dependencies)" ;;
+        prune) echo "Trim each language's stale build output for every component, keeping what the next build reuses" ;;
         rebuild) echo "Clean, then build" ;;
         retest) echo "Clean, then test" ;;
         audit) echo "Check each language's dependencies for known vulnerabilities in every component" ;;
@@ -78,6 +93,7 @@ _action_langs() {
         lint) echo "${_LINT_LANGS}" ;;
         build|rebuild) echo "${_COMPILED_LANGS}" ;;
         clean) echo "${_CLEAN_LANGS}" ;;
+        prune) echo "${_PRUNE_LANGS}" ;;
         audit) echo "${_AUDIT_LANGS}" ;;
         format) echo "${_FORMAT_LANGS}" ;;
         deps) echo "${_DEPS_LANGS}" ;;
@@ -125,6 +141,15 @@ _usage() {
             "  --json     Print one JSON array of every outdated dependency (component, language," \
             "             package, current, wanted, latest); the languages run one at a time" \
             "  --fail     Fail when anything is outdated (by default this only reports)"
+    fi
+    if [ "${_action}" = "prune" ]; then
+        printf '%s\n' \
+            "  --dry-run  Remove nothing; say what each language would free, in bytes and items" \
+            "  --older-than DURATION" \
+            "             What counts as stale (90s, 6h, 7d, 2w); each language has its own default" \
+            "  --max-size SIZE" \
+            "             Then trim oldest first until each directory is under SIZE (500M, 50G)" \
+            "  --caches   Also the per-user caches (NuGet's packages, uv's, npm's; docs/guide/prune.md)"
     fi
     if [ "${_action}" = "format" ]; then
         printf '%s\n' \
@@ -203,6 +228,29 @@ if [ "${_json}" -eq 1 ]; then
     exit "${_status}"
 fi
 
+# The lines a docs or prune job's log ends with that the run repeats at its
+# end: where the docs are, what each prune freed.
+_summary_pattern() {
+    case "${_action}" in
+        docs) echo '^[^[:space:]]+: docs: written to ' ;;
+        prune) echo '^[^[:space:]]+: prune: (would free|freed) [^ ]+ [^ ]+ \([0-9]+ bytes\)' ;;
+    esac
+}
+
+# hct prune's total over its summary lines (stdin), as the binary says it.
+_prune_total() {
+    awk '{ if (match($0, /\([0-9]+ bytes\)/)) total += substr($0, RSTART + 1, RLENGTH - 8) + 0
+           if ($0 ~ /: prune: would free /) verb = "would free"; else if (!verb) verb = "freed" }
+        END {
+            n = total; unit = "B"
+            if (n >= 1024) { n /= 1024; unit = "KiB" }
+            if (n >= 1024) { n /= 1024; unit = "MiB" }
+            if (n >= 1024) { n /= 1024; unit = "GiB" }
+            if (unit == "B") printf "prune: %s %.0f B in all\n", verb, n
+            else printf "prune: %s %.1f %s in all\n", verb, n, unit
+        }'
+}
+
 # --- Everything, in parallel ------------------------------------------------
 if [ "${#_targets[@]}" -eq 0 ]; then
     _cflags=""
@@ -242,12 +290,13 @@ if [ "${#_targets[@]}" -eq 0 ]; then
     fi
     _runner_flags=()
     [ "${_fail_on_skip}" -eq 0 ] || _runner_flags+=(--fail-on-skip)
-    if [ "${_action}" != docs ]; then
+    if [ "${_action}" != docs ] && [ "${_action}" != prune ]; then
         exec "${HECATRON_HOME}/libexec/runner/run-parallel.sh" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} \
             ${_runner_flags[@]+"${_runner_flags[@]}"} "${_action}" "${_jobs[@]}"
     fi
     # hct docs ends with where each language's docs are, from the lines its
-    # hooks end with (docs_written in languages/_hooks.sh), as the binary does.
+    # hooks end with (docs_written in languages/_hooks.sh), and hct prune
+    # with what each freed (libexec/lib/prune.py), as the binary does.
     _status=0
     "${HECATRON_HOME}/libexec/runner/run-parallel.sh" ${_jflag:+-j "${_jflag}"} ${_sflag:+-s "${_sflag}"} \
         ${_runner_flags[@]+"${_runner_flags[@]}"} "${_action}" "${_jobs[@]}" || _status=$?
@@ -256,12 +305,13 @@ if [ "${#_targets[@]}" -eq 0 ]; then
         case "${_job}" in
             *::*)
                 while IFS= read -r _line; do _written+=("${_line}"); done < <(
-                    grep -hE '^[^[:space:]]+: docs: written to ' "${HECATRON_LOGS}/docs/${_job%%::*}.log" 2>/dev/null) ;;
+                    grep -hE "$(_summary_pattern)" "${HECATRON_LOGS}/${_action}/${_job%%::*}.log" 2>/dev/null) ;;
         esac
     done
     if [ "${#_written[@]}" -gt 0 ]; then
         printf '\n'
         printf '%s\n' "${_written[@]}"
+        [ "${_action}" != prune ] || [ "${#_written[@]}" -lt 2 ] || printf '%s\n' "${_written[@]}" | _prune_total
     fi
     exit "${_status}"
 fi
@@ -288,6 +338,7 @@ _run_target() {
         lint) echo "${name}: lint skipped: ${name} has no separate linter: its build treats warnings as errors (hecatron test ${name})" ;;
         build) echo "${name}: build skipped: no build step for ${name}" ;;
         clean) echo "${name}: clean skipped: no build artifacts for ${name}" ;;
+        prune) echo "${name}: prune skipped: no prune hook for ${name} (hecatron clean ${name} removes its build artifacts)" ;;
         audit) echo "${name}: audit skipped: nothing to audit for ${name} (hecatron has no auditor for its dependencies)" ;;
         format) echo "${name}: format skipped: no formatter for ${name}" ;;
         deps) echo "${name}: deps skipped: no dependency manager for ${name}" ;;

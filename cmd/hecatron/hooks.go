@@ -154,6 +154,7 @@ func noHookReason(action, lang string) (reason string, ok bool) {
 		"lint":     "%s has no separate linter: its build treats warnings as errors (hecatron test %[1]s)",
 		"build":    "no build step for %s",
 		"clean":    "no build artifacts for %s",
+		"prune":    "no prune hook for %s (hecatron clean %[1]s removes its build artifacts)",
 		"audit":    "nothing to audit for %s (hecatron has no auditor for its dependencies)",
 		"format":   "no formatter for %s",
 		"deps":     "no dependency manager for %s",

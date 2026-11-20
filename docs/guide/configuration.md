@@ -13,6 +13,7 @@ saves it as `.hecatron/config.json` to commit and adjust.
   local.json                 # per-developer settings (disabled languages), gitignored
   languages/<lang>/          # project hooks and overrides, committed
     test.sh lint.sh build.sh clean.sh   # override the built-in default hooks
+    prune.sh deps.sh format.sh ...      #   (any action: hooks.md)
     workflow.yml             # this language's CI workflow template
     version.sh metadata.sh   # optional: update versions and package metadata
     install.sh doctor.sh ... # optional: override a built-in definition file

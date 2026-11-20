@@ -102,6 +102,9 @@ type Result struct {
 	// Docs are where hct docs wrote each component's documentation, as
 	// its hooks said (DocsWritten).
 	Docs []string
+	// Pruned is what hct prune freed (or, in a dry run, would free) in
+	// each directory, as its hooks said (PrunedFrom).
+	Pruned []Pruned
 	// Skipped is Outcome.Skipped: why the job ran no component.
 	Skipped string
 }
@@ -117,6 +120,96 @@ func DocsWritten(log []byte) []string {
 		dirs = append(dirs, strings.TrimRight(string(match[1]), "\r"))
 	}
 	return dirs
+}
+
+// Pruned is one directory's line from a prune hook (libexec/lib/prune.py):
+// LANG: prune: would free|freed 1.2 GiB (BYTES bytes) [in N items] from WHERE.
+type Pruned struct {
+	Line   string `json:"-"`
+	Where  string `json:"where"`
+	Bytes  int64  `json:"bytes"`
+	Items  *int   `json:"items,omitempty"` // none from a tool's own trim
+	DryRun bool   `json:"dryRun"`
+}
+
+var prunedLine = regexp.MustCompile(`(?m)^\S+: prune: (would free|freed) \S+ \S+ \((\d+) bytes\)(?: in (\d+) items?)? from (.+)$`)
+
+// PrunedFrom are the directories a prune job's log says it trimmed.
+func PrunedFrom(log []byte) []Pruned {
+	var out []Pruned
+	for _, m := range prunedLine.FindAllSubmatch(log, -1) {
+		p := Pruned{Line: strings.TrimRight(string(m[0]), "\r"), Where: strings.TrimRight(string(m[4]), "\r"),
+			DryRun: string(m[1]) == "would free"}
+		p.Bytes, _ = strconv.ParseInt(string(m[2]), 10, 64)
+		if len(m[3]) > 0 {
+			items, _ := strconv.Atoi(string(m[3]))
+			p.Items = &items
+		}
+		out = append(out, p)
+	}
+	return out
+}
+
+// HumanBytes is a size as prune.py says it: 512 B, 1.5 KiB ... 69.2 GiB.
+func HumanBytes(n int64) string {
+	f, unit := float64(n), "B"
+	for _, next := range []string{"KiB", "MiB", "GiB"} {
+		if f < 1024 {
+			break
+		}
+		f, unit = f/1024, next
+	}
+	if unit == "B" {
+		return fmt.Sprintf("%.0f B", f)
+	}
+	return fmt.Sprintf("%.1f %s", f, unit)
+}
+
+// WritePruned writes what each language's prune freed after a parallel
+// hct prune, and the total when there's more than one (run.sh prints the
+// same from the logs).
+func WritePruned(w io.Writer, r *Report) {
+	if hasPruned(r) {
+		_, _ = fmt.Fprintln(w)
+		writePrunedLines(w, r)
+	}
+}
+
+func hasPruned(r *Report) bool {
+	for _, result := range r.Results {
+		if len(result.Pruned) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// writePrunedLines writes each directory's line and the total.
+func writePrunedLines(w io.Writer, r *Report) {
+	var lines []string
+	var total int64
+	dry := false
+	for _, result := range r.Results {
+		for _, p := range result.Pruned {
+			lines = append(lines, p.Line)
+			total += p.Bytes
+			dry = dry || p.DryRun
+		}
+	}
+	for _, line := range lines {
+		_, _ = fmt.Fprintln(w, line)
+	}
+	if len(lines) > 1 {
+		_, _ = fmt.Fprintln(w, pruneTotal(total, dry))
+	}
+}
+
+func pruneTotal(total int64, dry bool) string {
+	verb := "freed"
+	if dry {
+		verb = "would free"
+	}
+	return fmt.Sprintf("prune: %s %s in all", verb, HumanBytes(total))
 }
 
 // WriteDocs writes where each language's docs are, after a parallel hct

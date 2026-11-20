@@ -37,6 +37,7 @@ var delegated = map[string]func(*cli) target{
 	"lint":        runScript,
 	"build":       runScript,
 	"clean":       runScript,
+	"prune":       runScript,
 	"rebuild":     runScript,
 	"retest":      runScript,
 	"audit":       runScript,
