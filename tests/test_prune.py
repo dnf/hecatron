@@ -375,14 +375,16 @@ class CommandTest(Fixture):
                       result.stdout)
 
     def test_a_parallel_run_ends_with_what_each_freed_and_the_total(self):
-        self.configure(languages=["go", "python"], implPath=".")
-        for lang, n in (("go", 1024), ("python", 2048)):
+        # Languages of the project's own, whose toolchain (sh) is everywhere.
+        self.configure(languages=["alpha", "beta"], implPath=".")
+        for lang, size, n in (("alpha", "1.0 KiB", 1024), ("beta", "2.0 KiB", 2048)):
+            write(self.path(".hecatron", "languages", lang, "config.json"), '{"dependency": "sh"}')
             write(self.path(".hecatron", "languages", lang, "prune.sh"),
-                  f'echo "{lang}: prune: would free 1.0 KiB ({n} bytes) in 1 item from {lang}-cache"\n')
+                  f'echo "{lang}: prune: would free {size} ({n} bytes) in 1 item from {lang}-cache"\n')
         result = self.run_hct("prune", "--dry-run")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("go: prune: would free 1.0 KiB (1024 bytes) in 1 item from go-cache\n"
-                      "python: prune: would free 1.0 KiB (2048 bytes) in 1 item from python-cache\n"
+        self.assertIn("alpha: prune: would free 1.0 KiB (1024 bytes) in 1 item from alpha-cache\n"
+                      "beta: prune: would free 2.0 KiB (2048 bytes) in 1 item from beta-cache\n"
                       "prune: would free 3.0 KiB in all\n", result.stdout)
 
 
@@ -398,7 +400,7 @@ class DefaultHookTest(Fixture):
         write(os.path.join(self.bin, tool), f'#!/bin/sh\n{body}\necho "{tool} $*"\n', 0o755)
 
     def hook(self, lang: str, **env: str) -> subprocess.CompletedProcess:
-        environment = {**os.environ, "PATH": self.bin + os.pathsep + "/usr/bin:/bin", "HECATRON_LANG": lang,
+        environment = {**os.environ, "PATH": self.bin + os.pathsep + os.environ["PATH"], "HECATRON_LANG": lang,
                        "HECATRON_ROOT": self.root, "HECATRON_HOME": "", "HOME": self.path("home"), **env}
         for name in ("HECATRON_PRUNE_DRY_RUN", "HECATRON_PRUNE_CACHES", "HECATRON_PRUNE_OLDER_THAN"):
             if name not in env:
