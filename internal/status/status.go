@@ -392,12 +392,21 @@ func gitTop(dir string) string {
 // testing what changed.
 func suggest(s *Status) []Next {
 	var next []Next
+	// What's missing, in one command that then tests (hct go): an agent
+	// runs one, where a line for each language took a turn each.
+	var missing []string
 	for _, l := range s.Languages {
-		if l.Toolchain == "missing" || l.Toolchain == "partly" {
-			next = append(next, Next{"hct install " + l.Name, l.Dependency + " not found; installs a toolchain", true})
-		} else if versionsMissing(l) != "" {
-			next = append(next, Next{"hct install " + l.Name, "installs " + versionsMissing(l) + ", which hct doctor finds missing", true})
+		if l.Disabled {
+			continue
 		}
+		if l.Toolchain == "missing" || l.Toolchain == "partly" {
+			missing = append(missing, l.Name+" ("+l.Dependency+" not found)")
+		} else if versionsMissing(l) != "" {
+			missing = append(missing, l.Name+" ("+versionsMissing(l)+")")
+		}
+	}
+	if len(missing) > 0 {
+		next = append(next, Next{"hct go", "installs " + strings.Join(missing, ", ") + ", then runs the tests", true})
 	}
 	for _, l := range s.Languages {
 		tested := false

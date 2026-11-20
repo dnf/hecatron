@@ -14,6 +14,7 @@ system of its own. `hct` and `hecatron` are the same command.
 
 | Goal | Command | Notes |
 | --- | --- | --- |
+| Get the tests running | `HECATRON_OUTPUT=agent hct go [lang...]` | Installs what's missing (ask first), then tests, in a few lines: each language and its version, the install (its output in `<logs>/go/install.log`), each test job with its runners' counts, and `Test again: hct test ...`. In place of `status`, `install` and `test` one at a time; needs the binary |
 | Run tests | `hct test [lang...]` | No language: all, in parallel |
 | Lint | `hct lint [lang...]` | Includes each language's format check |
 | Fix formatting | `hct format [lang...]` | `--check` changes nothing and lists unformatted files |
@@ -90,7 +91,7 @@ system of its own. `hct` and `hecatron` are the same command.
 
 ## Installing toolchains: ask first
 
-`hct install [lang...]` and `hct doctor --fix` install or repair toolchains
+`hct go`, `hct install [lang...]` and `hct doctor --fix` install or repair toolchains
 on this machine (system packages, files in the home directory). Ask the
 user before running them. `hct doctor` without `--fix` only checks, and is
 safe. Both also install the project's dependencies (`hct deps`, which runs

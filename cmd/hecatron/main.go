@@ -87,6 +87,8 @@ func (c *cli) dispatch() int {
 		return plan(c.home, c.args)
 	case "status":
 		return c.status()
+	case "go":
+		return c.goCommand()
 	case "sync":
 		return c.sync()
 	case "licenses":

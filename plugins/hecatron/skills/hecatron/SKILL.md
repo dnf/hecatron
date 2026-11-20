@@ -1,6 +1,6 @@
 ---
 name: hecatron
-description: Sets up, builds, tests, lints and formats code in almost any programming language through one CLI, hecatron (`hct`). Use it whenever you are about to get a repository working, build it or run its tests, including one you have just cloned or been asked to set up, before installing compilers, SDKs or package managers yourself; and whenever the user mentions hct, hecatron or a .hecatron directory. `hct status` says which languages a repository uses and which toolchains are missing, `hct install` sets them up, and `hct test` runs every language's tests.
+description: Sets up, builds, tests, lints and formats code in almost any programming language through one CLI, hecatron (`hct`). Use it whenever you are about to get a repository working, build it or run its tests, including one you have just cloned or been asked to set up, before installing compilers, SDKs or package managers yourself; and whenever the user mentions hct, hecatron or a .hecatron directory. `hct go` gets a repository's tests running in one command (installs what's missing, then tests), `hct status` says which languages it uses and what's installed, and `hct test` runs every language's tests.
 license: MIT
 compatibility: Needs the hct command (macOS or Linux), installed with hecatron's install.sh.
 metadata:
@@ -16,13 +16,22 @@ each language's test, lint or build command.
 
 ## First
 
-1. `HECATRON_OUTPUT=agent hct status`. Not found: tell the user hecatron
+1. To get a repository's tests running (one just cloned, "set this up",
+   "make the tests pass"): `HECATRON_OUTPUT=agent hct go`, or
+   `hct go <lang...>` for some of its languages. In a few lines: each
+   language and the version it uses, the install (one line; its output is
+   in a log), then each language's tests with its test runners' own
+   counts (`PASS python ..., log ...: 246 passed, 15 skipped`) and the
+   command that runs them again. That's usually everything in one turn. It
+   installs toolchains, so ask the user first unless they asked you to
+   install what's needed.
+2. Not found: tell the user hecatron
    isn't installed and that
    `curl -fsSL https://raw.githubusercontent.com/dnf/hecatron/main/install.sh | sh`
    installs it (it changes their shell startup files); don't install it
    yourself unless they say to. Meanwhile, run the language's own command
    if you know it, and say that's what you did.
-2. Read it: each language and where its code is, the toolchain version it
+3. For anything else, `HECATRON_OUTPUT=agent hct status`. Read it: each language and where its code is, the toolchain version it
    uses and whether that's installed, the last run of each action, the
    uncommitted changes, and the commands worth running next (those marked
    "ask the user first" install something). Any git repository works;
@@ -30,9 +39,10 @@ each language's test, lint or build command.
    writes nothing. If it says status needs hecatron's binary (an older or
    source install), `hct list` gives the languages and `hct doctor` the
    toolchains.
-3. Set `HECATRON_OUTPUT=agent` on every `hct` command (or pass
+4. Set `HECATRON_OUTPUT=agent` on every `hct` command (or pass
    `--output agent`): one summary line, then only the failures, each with
-   its log path and its key error lines.
+   its log path and its key error lines (`hct test` also lists what
+   passed, with each test runner's counts).
 
 ## The loop
 
@@ -55,7 +65,7 @@ each language's test, lint or build command.
 
 ## Ask the user first
 
-`hct install`, `hct doctor --fix` and `hct uninstall` install, repair or
+`hct go`, `hct install`, `hct doctor --fix` and `hct uninstall` install, repair or
 remove toolchains on this machine (system packages, files in the home
 directory). Propose the exact command and wait for a yes. `hct doctor`
 without `--fix` only checks and is safe.
