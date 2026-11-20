@@ -336,12 +336,13 @@ func TestRenderers(t *testing.T) {
 		Results: []Result{
 			{Label: "go", Lang: "go", Status: Failed, ExitCode: 1, Duration: 12 * time.Second, Log: "/repo/.logs/test/go.log",
 				Components: []Component{{Name: ".", Dir: "/repo/go", Failed: true}},
+				Tally:      []string{"go test: 1 failed: example.com/calc"},
 				Excerpt: Excerpt{Source: "patterns", Lines: []ErrorLine{
 					{Text: "--- FAIL: TestAdd (0.00s)", Component: "."},
 					{Text: "calc_test.go:7: Add(2, 3) = -1, want 5", Component: ".", File: "calc_test.go", Line: 7, Message: "Add(2, 3) = -1, want 5"},
 				}}},
 			{Label: "python", Lang: "python", Status: Passed, Duration: 2500 * time.Millisecond, Log: "/repo/.logs/test/python.log",
-				Components: []Component{{Name: ".", Dir: "/repo/python"}}},
+				Components: []Component{{Name: ".", Dir: "/repo/python"}}, Tally: []string{"246 passed, 15 skipped in 0.14s"}},
 			{Label: "rust", Lang: "rust", Status: StatusNotInstall},
 			{Label: "zig", Lang: "zig", Status: StatusDisabled},
 			{Label: "php", Lang: "php", Status: Failed, ExitCode: 1, Duration: 61 * time.Second, Log: "/repo/.logs/test/php.log",

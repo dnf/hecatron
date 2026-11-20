@@ -2,7 +2,11 @@ hct test: 4 passed, 2 failed, 1 timed out, 4 skipped (4m31s)
 SKIP javascript (web/js/, api/js/): web: package.json has no test script; api: package.json has no test script
 SKIP ruby (api/ruby/): api: no spec or test directory
 SKIP elm: no test runner for elm
-FAIL go (go/) exit 1, 12s, log .logs/test/go.log
+PASS python 2.5s, log .logs/test/python.log: 246 passed, 15 skipped in 0.14s
+PASS python2 2.0s, log .logs/test/python2.log
+PASS ruby 3.0s, log .logs/test/ruby.log
+PASS docs 0.3s, log .logs/test/docs.log
+FAIL go (go/) exit 1, 12s, log .logs/test/go.log: go test: 1 failed: example.com/calc
   --- FAIL: TestAdd (0.00s)
   calc_test.go:7: Add(2, 3) = -1, want 5
 FAIL php (php/) toolchain not found, 1m01s, log .logs/test/php.log

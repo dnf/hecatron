@@ -47,6 +47,7 @@ func TestTimeLimit(t *testing.T) {
 
 	got := runIn(t, root, env, binary, "test", "--timeout", "1s")
 	want := "hct test: 1 passed, 1 timed out (T)\n" +
+		"PASS quick T, log .logs/test/quick.log\n" +
 		"TIMEOUT slow (slow/) stopped at its T limit (--timeout), T, log .logs/test/slow.log\n" +
 		"  waiting\n" +
 		"Rerun: hct test slow\n"

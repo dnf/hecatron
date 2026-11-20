@@ -527,7 +527,7 @@ func (r *invocation) exitStatus(report *runner.Report) int {
 	return status
 }
 
-// report adds each failure's excerpt.
+// report adds each failure's excerpt, and each test job's tally.
 func (r *invocation) report(results []runner.Result, wall time.Duration) *runner.Report {
 	for i := range results {
 		if r.command == "docs" && results[i].Ran() && results[i].Lang != "" {
@@ -538,6 +538,11 @@ func (r *invocation) report(results []runner.Result, wall time.Duration) *runner
 		if r.command == "prune" && results[i].Ran() && results[i].Lang != "" {
 			if log, err := os.ReadFile(results[i].Log); err == nil {
 				results[i].Pruned = runner.PrunedFrom(log)
+			}
+		}
+		if (r.command == "test" || r.command == "retest") && results[i].Ran() {
+			if log, err := os.ReadFile(results[i].Log); err == nil {
+				results[i].Tally = runner.Tally(log)
 			}
 		}
 		if !results[i].Unsuccessful() {
