@@ -735,6 +735,20 @@ platform declares rules in its config instead of a script.
 The four formats, how one is chosen and the exit codes moved to the user
 guide: [output](../guide/output.md).
 
+**`hct go`, an agent's first command** (decided 2026-11-20, from the
+agent comparison, #171). Given a fresh clone and asked to get its tests
+running, an agent with hecatron used about 50% more tokens than one
+without: it ran `status`, `install` and `test` as three turns, read
+installer output, then found the logs and reran the tests to count them,
+while the other agent ran `apt-get install` and the tests in four. Nearly
+all of an agent's tokens are its conversation read again each turn, so
+turns are the cost. `hct go` is those three commands in one, with the
+installer's output in a log and one line for it, and `hct test`'s agent
+output gives each passed job its test runners' counts (`tally`). It runs
+`hct install` and `hct test` as child processes, unchanged, rather than a
+second path through either; `hct status` suggests it in place of an
+`hct install` line per language.
+
 Decided with the runner (#74, `internal/runner`, `cmd/hecatron/run.go`):
 
 - **Jobs stay one per language**, covering its components (and one per

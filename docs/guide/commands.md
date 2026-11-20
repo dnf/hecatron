@@ -159,6 +159,37 @@ hct sbom --format spdx --no-dev > sbom.spdx.json
 
 ## The project at a glance
 
+### go
+
+```
+hct go [lang...] [--output human|agent|json]
+```
+
+Getting a project's tests running in one command, as an agent's first
+step in a repository: one line saying each language, the version it
+resolves to and whether its toolchain is installed; then `hct install`
+for those languages (every one of the project's when none is named), its
+output in `<logs>/go/install.log` and one line here (`install: done, 2m14s,
+log ...`, or `FAIL install exit 1, ...` with the log's error lines); then
+`hct test`, whose output follows as it would on its own, with a `PASS` line
+and the test runners' counts for each job ([output](output.md)); and
+`Test again: hct test ...` when they pass. The tests run even when the
+install failed, so what does work is tested. Exits with the test run's
+status, or 1 when only the install failed. It installs toolchains, as
+`hct install` does. With `--output json` the test run's document is all
+of stdout and the other lines go to stderr. Binary only.
+
+```
+$ HECATRON_OUTPUT=agent hct go go python ruby   # cucumber/tag-expressions, a fresh Ubuntu
+hct go: go 1.24 (missing), python 3.14 (missing), ruby 4.0.9 (missing)
+install: done, 2m21s, log .git/hecatron/logs/go/install.log
+hct test: 3 passed (5.5s)
+PASS go 4.4s, log .git/hecatron/logs/test/go.log: ok github.com/cucumber/tag-expressions/go/v11 0.003s
+PASS python 0.8s, log .git/hecatron/logs/test/python.log: 246 passed, 15 skipped in 0.14s
+PASS ruby 0.3s, log .git/hecatron/logs/test/ruby.log: 64 examples, 0 failures
+Test again: hct test go python ruby
+```
+
 ### status
 
 ```

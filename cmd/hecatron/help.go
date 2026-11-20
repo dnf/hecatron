@@ -15,6 +15,7 @@ import (
 const usageText = `Usage: hecatron <command> [arguments]     (or: hct <command>)
 
 Set up:
+  go [lang...]               Get the tests running: install what's missing, then test (installs: ask first)
   status                     Languages, toolchain versions, last runs and changes at a glance
   sync [ref]                 After a pull or checkout: fetch changed lock files, check pins and config
   advisor [--fix] [lang...]  Recommend each ecosystem's good practices for the project
