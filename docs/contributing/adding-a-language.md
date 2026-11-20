@@ -20,7 +20,7 @@ combine.
 | `releases.sh` | The language's releases, newest first, as `version<TAB>flags` (`lts`, `eol`); `endoflife_releases <product>` from `_common.sh` covers languages endoflife.date tracks | No |
 | `dockerfile` | Snippet for `hct dockerfile`: `# apt:` packages, `# after: <lang>`, `RUN`/`ENV` blocks, an `# each-version` … `# end-each-version` block repeated per version ([toolchain versions](../guide/versions.md#installing-and-using-a-version)). Its `curl` needs no retry options: the generated Dockerfile's curlrc retries ([generated files](../guide/generated-files.md)) | No |
 | `advice.json` | `hct advisor`'s rules for the language: its ecosystem's own guidance on lock files, pins, end of life, linter configuration and CI, each citing that ecosystem's documentation, or `include`s of shared sets in `languages/_advice.json` ([advisor.md](../guide/advisor.md)); each rule needs a fixture in `internal/advisor/testdata/rules.json` | No |
-| `hooks/test.sh`, `lint.sh`, `build.sh`, `clean.sh`, `audit.sh`, `format.sh`, `deps.sh`, `outdated.sh`, `docs.sh`, `bench.sh` | Default hooks for a conventional layout ([hooks](../guide/hooks.md)) | No |
+| `hooks/test.sh`, `lint.sh`, `build.sh`, `clean.sh`, `prune.sh`, `audit.sh`, `format.sh`, `deps.sh`, `outdated.sh`, `docs.sh`, `bench.sh` | Default hooks for a conventional layout ([hooks](../guide/hooks.md)) | No |
 
 `config.json`:
 
@@ -125,7 +125,11 @@ or the component already has, never one hecatron would install, and ends
 with `docs_written <dir>`; `bench.sh` runs the component's benchmarks; both
 `skip` where the component has nothing for them (`languages/_docs.sh`,
 `_bench.sh`). Without either, `hct docs` and `hct bench` say the language
-has none. `deps.sh` fetches the
+has none. `prune.sh` is optional too: it trims the stale part of the build
+output through `libexec/lib/prune.py` (a kind of directory there, or a
+tool's own trim with `prune.py tool`), which ends with the line `hct prune`
+reports; without one, `hct prune` skips the language
+([prune](../guide/prune.md)). `deps.sh` fetches the
 component's dependencies, held to its lock file; where other hooks install
 missing dependencies too, both call one `*_fetch` function in
 `languages/_hooks.sh` (the rest are in `languages/_deps.sh`).

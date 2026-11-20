@@ -30,6 +30,7 @@ Run (every component of each language; no languages means all, in parallel):
   lint [lang...|shell]       Linters (shell: shellcheck on every shell script)
   build [lang...]            Builds
   clean [lang...]            Remove build artifacts
+  prune [lang...]            Trim stale build output (--dry-run, --older-than, --max-size, --caches)
   rebuild, retest [lang...]  Clean, then build or test
   audit [lang...]            Check dependencies for known vulnerabilities (--fail-on SEVERITY)
   outdated [lang...]         Report newer versions of dependencies (--json, --fail)
@@ -173,6 +174,7 @@ var runActions = map[string]struct{ description, hook string }{
 	"lint":     {"Run each language's linter for every component", "lint.sh"},
 	"build":    {"Build each language for every component", "build.sh"},
 	"clean":    {"Remove each language's build artifacts for every component (keeps installed dependencies)", "clean.sh"},
+	"prune":    {"Trim each language's stale build output for every component, keeping what the next build reuses", "prune.sh"},
 	"rebuild":  {"Clean, then build", "build.sh"},
 	"retest":   {"Clean, then test", "test.sh"},
 	"audit":    {"Check each language's dependencies for known vulnerabilities in every component", "audit.sh"},
@@ -232,6 +234,14 @@ func (c *cli) runHelpText() (text string, ok bool) {
 		out.WriteString("  --json     Print one JSON array of every outdated dependency (component, language,\n" +
 			"             package, current, wanted, latest); the languages run one at a time\n" +
 			"  --fail     Fail when anything is outdated (by default this only reports)\n")
+	}
+	if c.command == "prune" {
+		out.WriteString("  --dry-run  Remove nothing; say what each language would free, in bytes and items\n" +
+			"  --older-than DURATION\n" +
+			"             What counts as stale (90s, 6h, 7d, 2w); each language has its own default\n" +
+			"  --max-size SIZE\n" +
+			"             Then trim oldest first until each directory is under SIZE (500M, 50G)\n" +
+			"  --caches   Also the per-user caches (NuGet's packages, uv's, npm's; docs/guide/prune.md)\n")
 	}
 	if c.command == "format" {
 		out.WriteString("  --check    Change nothing; fail, listing the files the formatter would change\n" +

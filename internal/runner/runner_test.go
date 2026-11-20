@@ -450,6 +450,56 @@ func TestDocsWritten(t *testing.T) {
 	}
 }
 
+func TestPrunedFrom(t *testing.T) {
+	log := "=== prune a (rust) ===\nrust: prune: keeping each package and target's builds made within 6h of its newest\n" +
+		"rust: prune:   2.0 GiB  debug: serde/lib-serde 0123456789abcdef\n" +
+		"rust: prune: would free 69.2 GiB (74301234567 bytes) in 10412 items from target\r\n" +
+		"python: prune: would free 1.5 MiB (1572864 bytes) from ~/.cache/uv\n"
+	pruned := PrunedFrom([]byte(log))
+	ten, want := 10412, []Pruned{
+		{Line: "rust: prune: would free 69.2 GiB (74301234567 bytes) in 10412 items from target", Where: "target",
+			Bytes: 74301234567, DryRun: true},
+		{Line: "python: prune: would free 1.5 MiB (1572864 bytes) from ~/.cache/uv", Where: "~/.cache/uv", Bytes: 1572864,
+			DryRun: true},
+	}
+	want[0].Items = &ten
+	if !reflect.DeepEqual(pruned, want) {
+		t.Errorf("PrunedFrom = %+v, want %+v", pruned, want)
+	}
+	for n, text := range map[int64]string{0: "0 B", 512: "512 B", 1536: "1.5 KiB", 74301234567: "69.2 GiB", 3 << 40: "3072.0 GiB"} {
+		if got := HumanBytes(n); got != text {
+			t.Errorf("HumanBytes(%d) = %q, want %q", n, got, text)
+		}
+	}
+	report := &Report{Action: "prune", Wall: time.Second, Results: []Result{
+		{Label: "rust", Lang: "rust", Status: Passed, Pruned: pruned[:1]}, {Label: "python", Lang: "python", Status: Passed, Pruned: pruned[1:]}}}
+	var agent, human, js bytes.Buffer
+	WriteAgent(&agent, report)
+	lines := "rust: prune: would free 69.2 GiB (74301234567 bytes) in 10412 items from target\n" +
+		"python: prune: would free 1.5 MiB (1572864 bytes) from ~/.cache/uv\n" +
+		"prune: would free 69.2 GiB in all\n"
+	if want := "hct prune: 2 passed (1.0s)\n" + lines; agent.String() != want {
+		t.Errorf("agent output %q, want %q", agent.String(), want)
+	}
+	WritePruned(&human, report)
+	if want := "\n" + lines; human.String() != want {
+		t.Errorf("WritePruned %q, want %q", human.String(), want)
+	}
+	if err := WriteJSON(&js, report); err != nil {
+		t.Fatal(err)
+	}
+	if want := `"pruned": [
+        {
+          "where": "target",
+          "bytes": 74301234567,
+          "items": 10412,
+          "dryRun": true
+        }
+      ]`; !strings.Contains(js.String(), want) {
+		t.Errorf("JSON output %s lacks %s", js.String(), want)
+	}
+}
+
 func golden(t *testing.T, name, got string) {
 	t.Helper()
 	path := filepath.Join("testdata", name)

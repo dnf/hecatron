@@ -19,7 +19,7 @@ only failures were toolchains not installed ([output](output.md)). A
 language whose toolchain is missing is reported as "not installed" and
 doesn't fail a parallel run.
 
-- [Run commands](#run-commands): `test`, `lint`, `build`, `clean`,
+- [Run commands](#run-commands): `test`, `lint`, `build`, `clean`, `prune`,
   `rebuild`, `retest`, `deps`, `format`, `audit`, `outdated`, `docs`, `bench`
 - [Dependency reports](#dependency-reports): `licenses`, `sbom`
 - [The project at a glance](#the-project-at-a-glance): `status`, `sync`, `advisor`
@@ -32,7 +32,7 @@ doesn't fail a parallel run.
 ## Run commands
 
 ```
-hct test|lint|build|clean|rebuild|retest|deps|format|audit|outdated|docs|bench [flags] [target ...]
+hct test|lint|build|clean|prune|rebuild|retest|deps|format|audit|outdated|docs|bench [flags] [target ...]
 ```
 
 Each runs the language's hook for the action ([hooks](hooks.md)) once for
@@ -49,6 +49,7 @@ streamed. Each job's output is saved to `<logs>/<action>/<target>.log`.
 | `lint` | Run each language's linter, then its format check ([format](format.md#the-check-in-hct-lint)); languages without a lint hook rely on warnings-as-errors builds |
 | `build` | Build each language |
 | `clean` | Remove build artifacts (never installed dependencies or tracked files) |
+| `prune` | Remove only the stale build output (old builds in a cargo target directory, unused caches and configurations), keeping what the next build reuses ([prune](prune.md)) |
 | `rebuild`, `retest` | Clean, then build or test |
 | `deps` | Fetch dependencies with each ecosystem's tool, held to the lock file |
 | `format` | Rewrite the code with each language's formatter ([format](format.md)) |
@@ -82,7 +83,7 @@ Flags every run command takes:
 | `--fail-on-skip` | Exit 1 when nothing ran: every job [skipped](output.md#skipped) (by its hooks, not installed or disabled); else `HECATRON_FAIL_ON_SKIP=1` |
 | `--output FORMAT` | `human`, `agent`, `json`, `ci`, `junit` or `sarif`; else `HECATRON_OUTPUT`, else chosen for whoever is calling ([output](output.md)). Binary only |
 | `--timeout DURATION` | Stop a job after `DURATION` (`90s`, `30m`, `1h30m`; `0`: no limit); else `HECATRON_TIMEOUT`, else 5× its usual time ([runner](runner.md#time-limits)). Binary only |
-| `--changed [REF]` | Only what the files changed since `REF` touch; not for `audit`, `outdated` or `clean` ([runner](runner.md#only-what-changed)). Binary only |
+| `--changed [REF]` | Only what the files changed since `REF` touch; not for `audit`, `outdated`, `clean` or `prune` ([runner](runner.md#only-what-changed)). Binary only |
 | `--plan` | Run nothing: print the jobs that would run and those skipped up front (disabled, not installed, no hook); with `--changed`, the base and each changed file with what it selects and why ([runner](runner.md#the-plan-without-running)). Human, agent or JSON output. Binary only |
 
 Flags of one command:
@@ -93,6 +94,10 @@ Flags of one command:
 | `--fail-on SEVERITY` | `audit` | Fail on a finding at or above `critical`, `high` (default), `moderate` or `low`; the project's own is `"audit": {"failOn": ...}` |
 | `--json` | `outdated` | Print one JSON array of every outdated dependency (component, language, package, current, wanted, latest); the languages run one at a time |
 | `--fail` | `outdated` | Fail when anything is outdated |
+| `--dry-run` | `prune` | Remove nothing; say what each directory would free, in bytes and items ([prune](prune.md#flags)) |
+| `--older-than DURATION` | `prune` | What counts as stale (`6h`, `7d`, `2w`); each language has its own default |
+| `--max-size SIZE` | `prune` | Then remove the oldest builds until each directory is under `SIZE` (`500M`, `50G`) |
+| `--caches` | `prune` | Also the per-user caches (NuGet's packages, uv's, npm's) |
 
 ```bash
 hct test                  # everything, in parallel

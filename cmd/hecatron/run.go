@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -16,7 +17,7 @@ import (
 	"github.com/dnf/hecatron/internal/runner"
 )
 
-// The run commands (test, lint, build, clean, rebuild, retest, audit,
+// The run commands (test, lint, build, clean, prune, rebuild, retest, audit,
 // format, deps, outdated, docs, bench), as run.sh runs them: named targets one at a
 // time, streaming their output; none, every language and project task in
 // parallel with internal/runner. Each language job runs the language's hook
@@ -96,6 +97,18 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 			a.env = append(a.env, "HECATRON_AUDIT_FAIL_ON="+strings.TrimPrefix(arg, "--fail-on="))
 		case arg == "--history" && action == "audit":
 			a.history = true
+		case action == "prune" && (arg == "--older-than" || arg == "--max-size"):
+			if i+1 >= len(args) {
+				return a, fmt.Errorf("%s needs a value", arg)
+			}
+			a.env = append(a.env, pruneEnv[arg]+"="+value())
+		case action == "prune" && (strings.HasPrefix(arg, "--older-than=") || strings.HasPrefix(arg, "--max-size=")):
+			flag, given, _ := strings.Cut(arg, "=")
+			a.env = append(a.env, pruneEnv[flag]+"="+given)
+		case arg == "--dry-run" && action == "prune":
+			a.env = append(a.env, "HECATRON_PRUNE_DRY_RUN=1")
+		case arg == "--caches" && action == "prune":
+			a.env = append(a.env, "HECATRON_PRUNE_CACHES=1")
 		case arg == "--check" && action == "format":
 			a.env = append(a.env, "HECATRON_FORMAT_CHECK=1")
 		case arg == "--json" && action == "outdated":
@@ -117,7 +130,31 @@ func parseRunArgs(action string, args []string) (runArgs, error) {
 			a.rest = append(a.rest, args[i])
 		}
 	}
-	return a, nil
+	return a, checkPruneEnv(a.env)
+}
+
+// pruneEnv are the variables prune's flags set for its hooks
+// (libexec/lib/prune.py reads them).
+var pruneEnv = map[string]string{"--older-than": "HECATRON_PRUNE_OLDER_THAN", "--max-size": "HECATRON_PRUNE_MAX_SIZE"}
+
+var (
+	pruneDuration = regexp.MustCompile(`^(?:\d+(?:\.\d+)?[smhdw])+$`)
+	pruneSize     = regexp.MustCompile(`(?i)^(\d+(?:\.\d+)?)\s*([kmgt]?)(?:i?b)?$`)
+)
+
+// checkPruneEnv is prune.py check: --older-than takes a duration and
+// --max-size a size, as prune.py reads them.
+func checkPruneEnv(env []string) error {
+	for _, assignment := range env {
+		name, value, _ := strings.Cut(assignment, "=")
+		switch {
+		case name == "HECATRON_PRUNE_OLDER_THAN" && !pruneDuration.MatchString(value):
+			return fmt.Errorf("--older-than takes a duration such as 6h, 7d or 2w (got '%s')", value)
+		case name == "HECATRON_PRUNE_MAX_SIZE" && !pruneSize.MatchString(strings.TrimSpace(value)):
+			return fmt.Errorf("--max-size takes a size such as 500M or 50G (got '%s')", value)
+		}
+	}
+	return nil
 }
 
 // runCommand is a run command in Go; handled is false for what it leaves
@@ -498,6 +535,11 @@ func (r *invocation) report(results []runner.Result, wall time.Duration) *runner
 				results[i].Docs = runner.DocsWritten(log)
 			}
 		}
+		if r.command == "prune" && results[i].Ran() && results[i].Lang != "" {
+			if log, err := os.ReadFile(results[i].Log); err == nil {
+				results[i].Pruned = runner.PrunedFrom(log)
+			}
+		}
 		if !results[i].Unsuccessful() {
 			continue
 		}
@@ -669,6 +711,7 @@ func (r *invocation) runAll() int {
 		}
 		runner.WriteTally(os.Stdout, report)
 		runner.WriteDocs(os.Stdout, report)
+		runner.WritePruned(os.Stdout, report)
 	}
 	r.writeReport(report)
 	return r.exitStatus(report)

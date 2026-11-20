@@ -214,6 +214,7 @@ func WriteAgent(w io.Writer, r *Report) {
 			_, _ = fmt.Fprintf(w, "%s: docs: written to %s\n", result.Label, dir)
 		}
 	}
+	writePrunedLines(w, r)
 	writeSkips(w, r)
 	if failed+timedOut == 0 {
 		return
@@ -311,7 +312,8 @@ type jsonJob struct {
 	Components []Component `json:"components,omitempty"`
 	Errors     []ErrorLine `json:"errors,omitempty"`
 	Source     string      `json:"errorsFrom,omitempty"`
-	Docs       []string    `json:"docs,omitempty"` // hct docs: where they were written
+	Docs       []string    `json:"docs,omitempty"`   // hct docs: where they were written
+	Pruned     []Pruned    `json:"pruned,omitempty"` // hct prune: what it freed, per directory
 }
 
 // WriteJSON writes the run as one JSON document.
@@ -343,7 +345,7 @@ func WriteJSON(w io.Writer, r *Report) error {
 		if result.Ran() {
 			exit, duration := result.ExitCode, seconds(result.Duration)
 			job.ExitCode, job.Duration, job.Log = &exit, &duration, result.Log
-			job.Components, job.Docs = result.Components, result.Docs
+			job.Components, job.Docs, job.Pruned = result.Components, result.Docs, result.Pruned
 			if l := result.Limit; l.Duration > 0 {
 				job.TimeLimit = &jsonLimit{l.Duration.Seconds(), string(l.Source), l.Describe()}
 			}

@@ -39,6 +39,8 @@ var runProject = map[string]string{
 	".hecatron/languages/alpha/outdated.sh": stubHook,
 	".hecatron/languages/alpha/deps.sh":     stubHook,
 	".hecatron/languages/alpha/docs.sh":     stubHook + `echo "${HECATRON_LANG}: docs: written to $1/docs"` + "\n",
+	".hecatron/languages/alpha/prune.sh":    stubHook + pruneHook,
+	".hecatron/languages/gamma/prune.sh":    stubHook + pruneHook,
 	".hecatron/languages/gamma/bench.sh":    stubHook + `[ "$1" = b ] && exit 3; echo "no benchmarks in a" >"${HECATRON_SKIPPED}"` + "\n",
 	// delta's hooks skip with _hooks.sh's skip: its tests, benchmarks
 	// and linter everywhere, its format check in a only.
@@ -88,7 +90,17 @@ var runInvocations = [][]string{
 	{"test", "delta"}, {"test", "delta", "--fail-on-skip"}, {"test", "delta", "alpha", "--fail-on-skip"},
 	{"test", "--fail-on-skip"}, {"lint", "delta"}, {"lint", "alpha"}, {"docs", "gamma", "--fail-on-skip"},
 	{"bench", "-c", "a"}, {"bench", "-c", "a", "--fail-on-skip"}, {"retest", "delta", "--fail-on-skip"},
+	{"prune"}, {"prune", "--dry-run"}, {"prune", "alpha", "--older-than", "2d", "--max-size=5G", "--caches"},
+	{"prune", "gamma", "-c", "a", "--dry-run"}, {"prune", "beta"}, {"prune", "--older-than", "soon"},
+	{"prune", "--max-size=lots", "alpha"}, {"prune", "--older-than"},
 }
+
+// pruneHook ends a stub prune hook as libexec/lib/prune.py ends one, with
+// what the flags set.
+const pruneHook = `echo "  dry=${HECATRON_PRUNE_DRY_RUN:-} age=${HECATRON_PRUNE_OLDER_THAN:-} size=${HECATRON_PRUNE_MAX_SIZE:-} caches=${HECATRON_PRUNE_CACHES:-}"
+verb=freed; [ "${HECATRON_PRUNE_DRY_RUN:-}" = 1 ] && verb="would free"
+echo "${HECATRON_LANG}: prune: ${verb} 1.5 KiB (1536 bytes) in 3 items from $1/cache"
+`
 
 // skippingHook makes a stub hook one that can skip (skip in
 // languages/_hooks.sh).

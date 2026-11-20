@@ -18,6 +18,7 @@ system of its own. `hct` and `hecatron` are the same command.
 | Lint | `hct lint [lang...]` | Includes each language's format check |
 | Fix formatting | `hct format [lang...]` | `--check` changes nothing and lists unformatted files |
 | Build / clean | `hct build`, `hct clean` | `rebuild`, `retest`: clean first |
+| Free disk space, keeping warm builds | `hct prune [lang...]` | Only stale build output (old cargo builds, unused caches); `--dry-run` says what it would free; `--older-than 7d`, `--max-size 40G`, `--caches` (NuGet, uv, npm). Ends with `<lang>: prune: freed <size> (<bytes> bytes) in <n> items from <dir>` (JSON: `"pruned"`). Skips a directory a build is using |
 | Fetch dependencies | `hct deps [lang...]` | Held to the lock file; a stale lock fails |
 | Known vulnerabilities | `hct audit [lang...]` | `--fail-on critical\|high\|moderate\|low` (default high) |
 | Newer dependency versions | `hct outdated [lang...]` | Report only; `--json`, `--fail` |
@@ -35,8 +36,8 @@ system of its own. `hct` and `hecatron` are the same command.
 | Run one command with a component's toolchain | `hct exec LANG [-c COMPONENT] -- CMD...` | That environment, in the working directory; exit status is CMD's; needs the binary |
 | A newer hecatron | `hct self update --check` | Exit 3: a newer release exists (`hct status` says so from its daily check). `hct self update` installs it: ask the user first, as a new version can change generated files |
 
-- `--changed [REF]` (every run command but `audit`, `outdated` and
-  `clean`): only the languages, components and tasks whose files changed
+- `--changed [REF]` (every run command but `audit`, `outdated`, `clean`
+  and `prune`): only the languages, components and tasks whose files changed
   since the merge base with `REF` (default: the default branch; in CI, the
   pull request's base), uncommitted and untracked files included. Its
   first line says what it compared, what runs and why; nothing changed
@@ -119,7 +120,7 @@ Change languages with `hct add LANG` / `hct remove LANG`, not by hand.
 ## Overriding how a language is built or tested
 
 A script at `.hecatron/languages/<lang>/<action>.sh` (`test`, `lint`,
-`build`, `clean`, `format`, `deps`, `audit`, `outdated`, `docs`,
+`build`, `clean`, `prune`, `format`, `deps`, `audit`, `outdated`, `docs`,
 `bench`) replaces hecatron's default for that language. It runs once per
 component, in the component's directory, with `HECATRON_LANG`,
 `HECATRON_COMPONENT` and `HECATRON_ROOT` set; exit non-zero to fail.
