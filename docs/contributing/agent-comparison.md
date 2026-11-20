@@ -28,11 +28,13 @@ made-up result. It needs neither Docker nor credentials.
 ## Running it
 
 Put the credentials in a file only Docker reads. Run `claude setup-token`
-yourself, then write its token to a file only you can read:
+in your own terminal (not through an agent, so the token stays out of its
+transcript), then save the token it prints. `read -rs` asks for it without
+showing it or putting it in your shell's history:
 
 ```bash
-mkdir -p ~/.config/hecatron-bench
-printf 'CLAUDE_CODE_OAUTH_TOKEN=%s\n' '<token>' > ~/.config/hecatron-bench/env
+mkdir -p ~/.config/hecatron-bench && chmod 700 ~/.config/hecatron-bench
+read -rs -p 'Token: ' t && printf 'CLAUDE_CODE_OAUTH_TOKEN=%s\n' "$t" > ~/.config/hecatron-bench/env; unset t
 chmod 600 ~/.config/hecatron-bench/env
 ```
 
