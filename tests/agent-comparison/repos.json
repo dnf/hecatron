@@ -1,0 +1,11 @@
+[
+  {"name": "cJSON", "language": "C", "url": "https://github.com/DaveGamble/cJSON",
+   "commit": "6d9f2443ab071f86e5d9b43025a40929ec41c46c", "scope": ""},
+  {"name": "jason", "language": "Elixir", "url": "https://github.com/michalmuskala/jason",
+   "commit": "4ede42858eb19f80ec9e863aab52df466eab8608", "scope": ""},
+  {"name": "inspect.lua", "language": "Lua", "url": "https://github.com/kikito/inspect.lua",
+   "commit": "a8ca3120dfec48801036eaeff9335ab7a096dd24", "scope": ""},
+  {"name": "tag-expressions", "language": "Go, Python, Ruby", "url": "https://github.com/cucumber/tag-expressions",
+   "commit": "9a90e3b8ca796d442022835a06f7b0a6a7768a9d",
+   "scope": " for its Go, Python and Ruby implementations (go/, python/, ruby/), all three"}
+]

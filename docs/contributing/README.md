@@ -14,6 +14,7 @@ users is in the [user guide](../guide/README.md).
 | [Adding a language](adding-a-language.md) | A language definition's files and checklist |
 | [Build conventions](build-conventions.md) | Where each language's build artifacts go |
 | [Testing](testing.md) | The test suites, Docker tests, parity tests and what CI runs |
+| [The agent comparison](agent-comparison.md) | Measuring an agent with and without hecatron: the harness, running it, keeping it fair |
 | [Releasing](releasing.md) | Changelog fragments, `release.sh`, the release workflow |
 | [Design record](design.md) | Goals, concepts, the owner's decisions and their history, the Go core's design and plans |
 
