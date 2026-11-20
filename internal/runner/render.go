@@ -190,9 +190,10 @@ func FormatDuration(d time.Duration) string {
 	return fmt.Sprintf("%dh%02dm", int(d.Hours()), int(d.Minutes())%60)
 }
 
-// WriteAgent writes agent output: one summary line; then each failure with
-// its components, exit status, time, log and error lines; then the command
-// that reruns them. A run where nothing failed is one line.
+// WriteAgent writes agent output: one summary line; for hct test, each
+// passed job with its time, log and tally; then each failure with its
+// components, exit status, time, log, tally and error lines; then the
+// command that reruns them. Any other run where nothing failed is one line.
 func WriteAgent(w io.Writer, r *Report) {
 	if r.Changed != nil {
 		_, _ = fmt.Fprintln(w, r.Changed.Line)
@@ -216,6 +217,12 @@ func WriteAgent(w io.Writer, r *Report) {
 	}
 	writePrunedLines(w, r)
 	writeSkips(w, r)
+	for _, result := range r.Results {
+		if result.Status == Passed && r.isTest() {
+			_, _ = fmt.Fprintf(w, "PASS %s %s, log %s%s\n", result.Label, FormatDuration(result.Duration),
+				r.shownPath(result.Log), tallyText(result.Tally))
+		}
+	}
 	if failed+timedOut == 0 {
 		return
 	}
@@ -239,14 +246,26 @@ func WriteAgent(w io.Writer, r *Report) {
 			_, _ = fmt.Fprintf(w, "TIMEOUT %s%s stopped at its %s limit (%s), %s, log %s\n", result.Label, where,
 				FormatLimit(result.Limit.Duration), result.Limit.Describe(), FormatDuration(result.Duration), r.shownPath(result.Log))
 		} else {
-			_, _ = fmt.Fprintf(w, "FAIL %s%s %s, %s, log %s\n", result.Label, where, reason,
-				FormatDuration(result.Duration), r.shownPath(result.Log))
+			_, _ = fmt.Fprintf(w, "FAIL %s%s %s, %s, log %s%s\n", result.Label, where, reason,
+				FormatDuration(result.Duration), r.shownPath(result.Log), tallyText(result.Tally))
 		}
 		for _, line := range result.Excerpt.Lines {
 			_, _ = fmt.Fprintf(w, "  %s\n", line.Text)
 		}
 	}
 	_, _ = fmt.Fprintf(w, "Rerun: %s\n", r.Rerun())
+}
+
+// isTest is whether the run tests, so its passed jobs are reported too:
+// an agent asked how many tests passed shouldn't read the logs to find out.
+func (r *Report) isTest() bool { return r.Action == "test" || r.Action == "retest" }
+
+// tallyText is a job's tally after its log: ": 246 passed in 0.14s; ...".
+func tallyText(tally []string) string {
+	if len(tally) == 0 {
+		return ""
+	}
+	return ": " + strings.Join(tally, "; ")
 }
 
 // writeSkips writes a line for each job that had nothing to do in some
@@ -314,6 +333,7 @@ type jsonJob struct {
 	Source     string      `json:"errorsFrom,omitempty"`
 	Docs       []string    `json:"docs,omitempty"`   // hct docs: where they were written
 	Pruned     []Pruned    `json:"pruned,omitempty"` // hct prune: what it freed, per directory
+	Tally      []string    `json:"tally,omitempty"`  // hct test: each test runner's result line
 }
 
 // WriteJSON writes the run as one JSON document.
@@ -345,7 +365,7 @@ func WriteJSON(w io.Writer, r *Report) error {
 		if result.Ran() {
 			exit, duration := result.ExitCode, seconds(result.Duration)
 			job.ExitCode, job.Duration, job.Log = &exit, &duration, result.Log
-			job.Components, job.Docs, job.Pruned = result.Components, result.Docs, result.Pruned
+			job.Components, job.Docs, job.Pruned, job.Tally = result.Components, result.Docs, result.Pruned, result.Tally
 			if l := result.Limit; l.Duration > 0 {
 				job.TimeLimit = &jsonLimit{l.Duration.Seconds(), string(l.Source), l.Describe()}
 			}

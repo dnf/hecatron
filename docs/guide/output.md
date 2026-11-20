@@ -9,7 +9,12 @@ duration, log path, error excerpt) in one of four formats:
   generic ones: a compiler's `error:`, make's `***`, a missing file,
   xcodebuild's `** BUILD FAILED **`; errors before warnings and notes;
   else the last fifteen, without colour codes or download noise), and a `Rerun:`
-  line; one line when everything passes;
+  line; one line when everything passes, except for `hct test`, which
+  also gives each passed job a `PASS` line with its time and log; a test
+  job's `PASS` or `FAIL` line ends with its **tally**, each test runner's
+  own result line (`246 passed, 15 skipped in 0.14s`, `3 examples, 2
+  failures`, cargo's `test result: ...`, Go's packages), so an agent asked
+  how many tests passed needn't read the logs;
 - **json**, for scripts: the run's `command`, `status` (`passed`,
   `failed` or `skipped`), `exitCode`, `duration`, `summary` (`passed`,
   `failed`, `timedOut`, `skipped`), `logs`, `rerun` and, with
@@ -17,7 +22,8 @@ duration, log path, error excerpt) in one of four formats:
   `kind` (`language`, `task` or `tool`), `language`, `status` (`passed`,
   `failed`, `timed out`, `skipped`, `not installed` or `disabled`),
   `reason`, `exitCode`, `duration`, `log`, `timeLimit`, `components`,
-  `docs` (`hct docs`) and, when it failed, its error excerpt (`errors`);
+  `docs` (`hct docs`), `tally` (`hct test`) and, when it failed, its
+  error excerpt (`errors`);
   `hct audit` adds every finding as
   a `vulnerabilities` record and the secret scan's as `secrets`
   ([audit](audit.md#in-ci));

@@ -63,11 +63,12 @@ func TestChanged(t *testing.T) {
 		}
 		return got
 	}
-	times := regexp.MustCompile(`\(\d+\.\ds\)|merge base [0-9a-f]+`)
+	times := regexp.MustCompile(`\(\d+\.\ds\)|\b\d+\.\ds\b|merge base [0-9a-f]+`)
 
 	got := runIn(t, root, env, binary, "test", "--changed")
 	want := "Changed since main (the default branch, X): 1 file; running one [b] (b/one/x)\n" +
-		"hct test: 1 passed X\n"
+		"hct test: 1 passed X\n" +
+		"PASS one X, log .logs/test/one.log\n"
 	if out := times.ReplaceAllString(got.stdout, "X"); out != want || got.status != 0 {
 		t.Errorf("status %d, stdout:\n%s\nwant:\n%s\nstderr: %s", got.status, out, want, got.stderr)
 	}

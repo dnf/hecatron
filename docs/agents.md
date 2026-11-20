@@ -71,7 +71,10 @@ system of its own. `hct` and `hecatron` are the same command.
   output for agents: `HECATRON_OUTPUT=agent` (or `--output agent`,
   and by default when `CLAUDECODE=1` is set and stdout isn't a terminal)
   gives one summary line, then each failure with its log and its error
-  lines, then a `Rerun:` command; a passing run is one line.
+  lines, then a `Rerun:` command; a passing run is one line, except that
+  `hct test` adds a `PASS` line for each job with its log and the test
+  runners' own result lines (`246 passed, 15 skipped in 0.14s`), also on
+  each `FAIL` line, so how many tests ran is there without reading a log.
   `--output json` gives one JSON document (`--output junit`, and `sarif`
   for lint and audit, give those formats). Its exit status 3 means a
   failure whose language command (`go`, `cargo`...) isn't on PATH:

@@ -238,6 +238,9 @@ func TestAgentOutput(t *testing.T) {
 	got := runIn(t, root, env, binary, "test")
 	want := "hct test: 3 passed, 2 failed, 3 skipped (T)\n" +
 		"SKIP delta (a/delta/, b/delta/): a: no tests in a; b: no tests in b\n" +
+		"PASS alpha T, log .logs/test/alpha.log\n" +
+		"PASS gamma T, log .logs/test/gamma.log\n" +
+		"PASS docs T, log .logs/test/docs.log\n" +
 		"FAIL beta (a/beta/) exit 1, T, log .logs/test/beta.log\n" +
 		"  beta.src:3: broken\n" +
 		"FAIL flaky exit 4, T, log .logs/test/flaky.log\n" +
@@ -248,7 +251,8 @@ func TestAgentOutput(t *testing.T) {
 		t.Errorf("status %d, stderr %q, stdout:\n%s\nwant:\n%s", got.status, got.stderr, out, want)
 	}
 	passing := runIn(t, root, env, binary, "test", "alpha", "gamma")
-	if !regexp.MustCompile(`^hct test: 2 passed \(\d+\.\ds\)\n$`).MatchString(passing.stdout) || passing.status != 0 {
+	if !regexp.MustCompile(`^hct test: 2 passed \(\d+\.\ds\)\nPASS alpha \d+\.\ds, log \S+\nPASS gamma \d+\.\ds, log \S+\n$`).MatchString(passing.stdout) ||
+		passing.status != 0 {
 		t.Errorf("a passing run: %+v", passing)
 	}
 	jsonRun := runIn(t, root, append(env, "HECATRON_OUTPUT=json"), binary, "test", "beta")

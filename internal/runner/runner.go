@@ -107,6 +107,8 @@ type Result struct {
 	Pruned []Pruned
 	// Skipped is Outcome.Skipped: why the job ran no component.
 	Skipped string
+	// Tally is what a test job's runners said they ran (Tally).
+	Tally []string
 }
 
 // docsWritten is the line a docs hook ends with (docs_written in
