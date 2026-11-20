@@ -15,6 +15,7 @@ users is in the [user guide](../guide/README.md).
 | [Build conventions](build-conventions.md) | Where each language's build artifacts go |
 | [Testing](testing.md) | The test suites, Docker tests, parity tests and what CI runs |
 | [Releasing](releasing.md) | Changelog fragments, `release.sh`, the release workflow |
+| [Proposal: shared caches](proposal-shared-caches.md) | `hct cache`: sharing dependency stores and build caches across worktrees (not built; decisions pending) |
 | [Design record](design.md) | Goals, concepts, the owner's decisions and their history, the Go core's design and plans |
 
 The bash runner's internals have their own docs beside it:
