@@ -107,10 +107,20 @@ what your code does.
   it); other agents that read Agent Skills take it with `hct skill install
   --dir <their skills folder>`; in claude.ai,
   upload a release's `hecatron-skill.zip` under Settings > Features.
+- **One command to get the tests running.** `hct go` says which
+  languages the repository uses and at which versions, installs what's
+  missing (its output goes to a log; one line here), then runs the tests,
+  in a few lines; the skill starts with it.
 - **Output sized for agents.** With `HECATRON_OUTPUT=agent`, a run prints
   one summary line, then only the failures with their log paths and key
-  error lines, under a third of the human summary; exit status 3 means a
-  toolchain is missing.
+  error lines, under a third of the human summary; `hct test` adds each
+  test runner's own counts (`246 passed, 15 skipped`). Exit status 3 means
+  a toolchain is missing.
+- **Measured.** Given a fresh clone and asked to get its tests running,
+  Claude with hecatron used 19% fewer tokens than without it, over 12 runs
+  each on four repositories: 39% fewer on the one in three languages, and
+  within 6% on single-language libraries whose toolchains Ubuntu packages
+  ([method and numbers](docs/contributing/agent-comparison.md#results)).
 - **One reference to learn.** `hct help agents` prints [a compact
   reference](docs/agents.md) written for agents, matching the installed
   version; [llms.txt](llms.txt) points web-reading tools to it.

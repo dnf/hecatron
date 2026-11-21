@@ -64,6 +64,42 @@ A rerun with the same RESULTS skips the runs that finished, so an
 interrupted batch picks up where it stopped; to rerun one arm only, copy
 the other arm's run directories into a new RESULTS first.
 
+## Results
+
+Sonnet 5.5 (`claude-sonnet-5-5`), the four repositories in `repos.json`, 3
+runs per arm, 2026-11-20. Every run in every batch passed: the harness
+reran the test command the agent recorded. Median tokens and turns per
+run:
+
+| Repository | Without hecatron | 0.8.0 | 0.9.0 | 0.9.0, skill from #386 |
+| --- | --- | --- | --- | --- |
+| cJSON (C) | 77k · 4 turns | 142k · 8 | 101k · 6 | 80k · 5 (+4%) |
+| inspect.lua (Lua) | 75k · 4 | 100k · 6 | 101k · 6 | 80k · 5 (+6%) |
+| jason (Elixir) | 94k · 5 | 144k · 8 | 80k · 5 | 80k · 5 (−15%) |
+| tag-expressions (Go, Python, Ruby) | 167k · 8 | 196k · 10 | 103k · 6 | 102k · 6 (−39%) |
+| All 12 runs, against the column without | | +51% tokens, +37% cost | −3%, −12% | −19%, −14% |
+
+- **0.8.0:** the agent ran `hct status`, `hct install` and `hct test` as
+  three turns, read the installers' output, then looked for the logs and
+  ran the tests again to count them. Nearly all of a run's tokens are its
+  conversation read again each turn, so turns are the cost.
+- **0.9.0:** `hct go` does all three, and `hct test` reports each test
+  runner's counts. The agent still ran `hct status` before `hct go`.
+- **0.9.0 with #386's skill** (`SKILL=`, before its release): `hct go`
+  first. The hecatron agent's whole run is now the skill, `hct go`, and
+  writing down the test command.
+
+Hecatron saves most where an agent would otherwise read several build
+systems and work out their packages; on a single-language library whose
+toolchain Ubuntu packages, an agent does about as well with `apt-get`.
+Runs with hecatron took about 70% longer: it installs the versions the
+project asks for (tag-expressions' Ruby 4.0.9, built from source) where
+`apt-get` gives Ubuntu's.
+
+The without-hecatron column is from the 0.9.0 batch, which the last
+column reuses; the 0.8.0 batch's was within a few percent, except
+tag-expressions at 119k. #171 has the discussion.
+
 ## Keeping it fair
 
 - Both arms have Python 3 and perl, because hecatron's installer adds them.
