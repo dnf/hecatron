@@ -56,8 +56,13 @@ tests/agent-comparison/chart.py RESULTS/summary.json RESULTS/tokens.svg
 (default 3), `PARALLEL` containers at a time (default 3). Each run writes
 `RESULTS/<repo>/<arm>-<n>/`. `MODEL` picks the model (default
 `claude-sonnet-5-5`), `ONLY` runs one repository by name, and `TIMEOUT`
-limits a run (default `45m`). A rerun with the same RESULTS skips the runs
-that finished, so an interrupted batch picks up where it stopped.
+limits a run (default `45m`). `SKILL=plugins/hecatron/skills/hecatron`
+puts a checkout's Agent Skill in the hecatron arm in place of the
+release's, to measure a change to the skill before releasing it (say so
+with the numbers: that arm is then not quite what a newcomer installs).
+A rerun with the same RESULTS skips the runs that finished, so an
+interrupted batch picks up where it stopped; to rerun one arm only, copy
+the other arm's run directories into a new RESULTS first.
 
 ## Keeping it fair
 

@@ -11,7 +11,9 @@
 # ENV_FILE names a docker --env-file with the agent's credentials
 # (CLAUDE_CODE_OAUTH_TOKEN=... or ANTHROPIC_API_KEY=...), read only by
 # docker. MODEL picks the model (default claude-sonnet-5-5); ONLY runs one
-# repository by name.
+# repository by name. SKILL, a skill directory (plugins/hecatron/skills/hecatron
+# in a checkout), replaces the release's Agent Skill in the hecatron arm, to
+# measure a change to the skill before releasing it.
 
 set -uo pipefail
 
@@ -34,7 +36,20 @@ latest_release() {
 images() {
     docker build -q --target plain -t hecatron-agent-comparison:plain "${_here}" >/dev/null &&
         docker build -q --target hecatron --build-arg HECATRON_RELEASE="$(latest_release)" \
-            -t hecatron-agent-comparison:hecatron "${_here}" >/dev/null
+            -t hecatron-agent-comparison:hecatron "${_here}" >/dev/null || return 1
+    if [ -n "${SKILL:-}" ]; then
+        local_skill
+    fi
+}
+
+# The hecatron image with SKILL's skill in place of the release's. Without
+# SKILL, images() tags the release's image again.
+local_skill() {
+    [ -f "${SKILL}/SKILL.md" ] || { echo "error: SKILL: no SKILL.md in ${SKILL}" >&2; return 1; }
+    printf '%s\n' 'FROM hecatron-agent-comparison:hecatron' \
+        'RUN rm -rf /home/dev/.claude/skills/hecatron' \
+        'COPY --chown=dev . /home/dev/.claude/skills/hecatron/' |
+        docker build -q -t hecatron-agent-comparison:hecatron -f - "${SKILL}" >/dev/null
 }
 
 # One run: repository index, arm, run number. Writes RESULTS/<repo>/<arm>-<n>/.
