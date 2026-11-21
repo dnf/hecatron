@@ -6,6 +6,130 @@ minor version can change behaviour. Numbers are
 
 ## Unreleased
 
+## 0.9.0 (2026-11-21)
+
+- **Downloads through a tool's own client are retried:** Go's toolchain
+  downloads and `go install`, `rustup`, `uv`, `opam`, `cpanm`, `npm -g`,
+  `mix local.rebar` and `raco pkg install` in the installers are tried up
+  to five times, 3 to 24 s apart (`retry` in `languages/_common.sh`), as
+  curl's downloads already were; a dropped Go toolchain download
+  ("stream error") no longer fails `hct install`. The binary's release
+  downloads now also retry a transfer that breaks partway, not only a
+  failed connection or a 5xx answer.
+
+- **A pinned JDK is a floor:** a JVM build runs on a JDK at least as new as
+  the one its `.java-version`, `.sdkmanrc` or `.tool-versions` pins, and
+  `hct install` adds one when none is installed (a dependency compiled for
+  Java 21 fails in javac on JDK 17).
+- **The JDK a build runs on is `JAVA_HOME`'s:** hct checked the `java` on
+  `PATH`, so a build whose `JAVA_HOME` named an older JDK ran on it.
+- **Android builds in AOSP's layout** (an `AndroidManifest.xml` beside its
+  `build.gradle`, as Lawnchair has) build and test their debug variants.
+
+- **One Gradle run at a time in a build:** a Gradle build with Java and
+  Kotlin sources runs as two jobs, which ran Gradle at once in one project,
+  overwrote each other's generated sources and doubled the memory; the
+  second now waits for the first.
+
+- **Example apps below aren't built:** besides directories named
+  `Example` or `Samples`, the Xcode apps a language's hooks build below
+  its directory leave out those whose directory name starts or ends with
+  sample, example or demo (firefox-ios' `SampleBrowser`, which its own CI
+  doesn't build).
+
+- **The JDK file CI reads is a floor:** a JVM build runs on a JDK at least
+  as new as the one in the file a workflow's setup-java names
+  (`java-version-file: .github/.java-version`), as Mihon's Gradle plugins
+  need JDK 21 to run.
+
+- **`hct deps swift` leaves an Xcode project's local packages to it:** with a
+  project or workspace in the directory and no `Package.swift`, it no longer
+  resolves each package below against that package's own `Package.resolved`,
+  which the app doesn't build from and which may be stale (openhab-ios'
+  `CommonUI` failed `hct deps` this way).
+
+- **Simulator builds are for this Mac's architecture:** `hct build` on an
+  Xcode app passes `ARCHS=<this Mac's>` for a simulator destination, unless
+  the project's settings exclude it, so code that only compiles for one
+  architecture builds (Delta's melonDS) and the build takes less time.
+
+- **Gradle reruns on the JDK a plugin needs:** when Gradle fails because a
+  plugin needs a newer JVM ("Dependency requires at least JVM runtime
+  version 21"), hct runs it again on an installed JDK that new.
+
+- **Gradle configuration failures in the excerpt:** a failed Gradle build's
+  excerpt shows what went wrong while configuring it ("A problem occurred
+  configuring root project", "Could not resolve ...", "Dependency requires
+  at least JVM runtime version 21", a project directory that doesn't exist)
+  instead of only "FAILURE: Build failed with an exception."
+
+- **A JVM build gets the newest JDK when none is new enough:** a build
+  whose pinned JDK can't be installed yet (a CI pin to an unreleased JDK)
+  runs on the newest installed JDK, with a warning, instead of staying on
+  an older one.
+
+- **Android's AAR metadata failures in the excerpt:** when a dependency
+  needs a newer compileSdk, a failed Gradle build's excerpt names the
+  dependency, the Android API level it needs, the one the module compiles
+  against and the recommended fix, instead of only "Execution failed for
+  task ':core-data:checkDebugAarMetadata'".
+
+- **Swift packages for iOS build on the Mac:** a package whose
+  `platforms:` leave out macOS, which SwiftPM on the Mac can't build, builds
+  with `xcodebuild` for its platform's simulator (its `<name>-Package`
+  scheme) instead of skipping, unless an app's Xcode project above it
+  builds it.
+
+- **One run of a command at a time, on Ubuntu too:** two runs of the same
+  command started together could both get past the lock where `mkdir`
+  isn't atomic (Ubuntu's uutils coreutils); the lock is now a file created
+  exclusively.
+
+- **A long run keeps its lock:** a second run of the same command took the
+  lock of any run going for over two minutes, as stale, and ran beside it;
+  the lock now holds the run's pid, and is stale only once that process has
+  exited.
+
+- **The cause under an error:** a failed job's summary adds the indented
+  line under an error that ends in a colon, so xcodebuild's "Could not
+  resolve package dependencies:" now says which download failed and why.
+
+- **`hct prune [lang...]`:** trims the stale part of each language's build
+  output and keeps what the next build reuses, beside `hct clean`, which
+  removes it all. Rust's prune removes a cargo target directory's old
+  builds (each package and target's builds older than 6h next to its
+  newest; `CARGO_TARGET_DIR` respected), Zig's its caches unused for 7d,
+  Swift's SwiftPM configurations unused for 7d, .NET's build configurations
+  unused for 7d, and Gradle's project caches for Gradle versions no longer
+  used; Go, Python and Node say what their tools trim themselves.
+  `--dry-run` says what each directory would free, in bytes and items;
+  `--older-than DURATION` and `--max-size SIZE` set what goes; `--caches`
+  also trims the per-user caches (NuGet's old package versions, Xcode's
+  DerivedData of deleted projects, `uv cache prune`, `npm cache verify`).
+  It never touches a directory a build holds a lock on (cargo's
+  `.cargo-lock`, SwiftPM's `.build/.lock`, Zig's manifests), judges age by
+  modification time, and never removes tracked files or installed
+  dependencies. Each language's `prune.sh` hook is overridable like the
+  others; agent and JSON output carry what each directory freed
+  ([prune](docs/guide/prune.md)).
+
+- **`hct test` says how many tests ran:** agent output gives each passed
+  job a `PASS` line with its time and log, and a test job's `PASS` or
+  `FAIL` line ends with each test runner's own result line (pytest's
+  `246 passed, 15 skipped in 0.14s`, RSpec's `3 examples, 2 failures`,
+  cargo's `test result:`, a count of Go's packages, and more); JSON output
+  has them as `tally`. In the agent comparison, agents asked for the counts
+  read the logs or ran the tests again to find them.
+
+- **`hct go [lang...]`:** getting a project's tests running in one
+  command: each language and its version in one line, `hct install` with
+  its output in a log and one line for it, then `hct test` with each test
+  runner's counts. An agent's first command in a repository, in place of
+  `hct status`, `hct install` and `hct test` one turn at a time; the Agent
+  Skill now starts with it, and `hct status` suggests it in place of an
+  `hct install` line per language. It installs toolchains, as
+  `hct install` does. Needs the binary.
+
 ## 0.8.0 (2026-11-01)
 
 - **`hct audit --output json` lists every finding:** a top-level
