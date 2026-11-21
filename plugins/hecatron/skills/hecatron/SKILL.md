@@ -22,7 +22,9 @@ each language's test, lint or build command.
    language and the version it uses, the install (one line; its output is
    in a log), then each language's tests with its test runners' own
    counts (`PASS python ..., log ...: 246 passed, 15 skipped`) and the
-   command that runs them again. That's usually everything in one turn. It
+   command that runs them again. That's usually everything in one turn:
+   run it first, not after `hct status`, whose languages, versions and
+   missing toolchains are `hct go`'s first line. It
    installs toolchains, so ask the user first unless they asked you to
    install what's needed.
 2. Not found: tell the user hecatron
